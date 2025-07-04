@@ -1,11 +1,10 @@
 # Table of contents
 
-* [Getting Started]()
-  * [Introduction](overview/index.md)
+* [Getting Started](overview/index.md)
   * [mirrord for Teams](overview/index-1.md)
   * [Quick Start](overview/quick-start.md)
   * [Contributing](overview/contributing.md)
-* Using mirrord
+* [Using mirrord](using-mirrord/README.md)
   * [Copy Target](using-mirrord/copy-target.md)
   * [Local Container](using-mirrord/local-container.md)
   * [Outgoing Filter](using-mirrord/outgoing-filter.md)
