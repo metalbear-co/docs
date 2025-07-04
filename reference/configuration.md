@@ -1,36 +1,34 @@
 ---
-title: "Configuration"
-description: "Config"
-date: 2023-05-17T13:59:39+01:00
-lastmod: 2025-02-24T00:00:00+00:00
+title: Configuration
+date: 2023-05-17T12:59:39.000Z
+lastmod: 2025-02-24T00:00:00.000Z
 draft: false
 images: []
 menu:
   docs:
-    parent: "reference"
+    parent: reference
 weight: 110
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags:
+  - open source
+  - team
+  - enterprise
+description: Config
 ---
 
-mirrord allows for a high degree of customization when it comes to which features you want to
-enable, and how they should function.
+# Configuration
 
-All of the configuration fields have a default value, so a minimal configuration would be no
-configuration at all.
+mirrord allows for a high degree of customization when it comes to which features you want to enable, and how they should function.
 
-The configuration supports templating using the [Tera](https://keats.github.io/tera/docs/) template engine.
-Currently we don't provide additional values to the context, if you have anything you want us to
-provide please let us know.
+All of the configuration fields have a default value, so a minimal configuration would be no configuration at all.
 
-To use a configuration file in the CLI, use the `-f <CONFIG_PATH>` flag.
-Or if using VSCode Extension or JetBrains plugin, simply create a `.mirrord/mirrord.json` file
-or use the UI.
+The configuration supports templating using the [Tera](https://keats.github.io/tera/docs/) template engine. Currently we don't provide additional values to the context, if you have anything you want us to provide please let us know.
 
-To help you get started, here are examples of a basic configuration file, and a complete
-configuration file containing all fields.
+To use a configuration file in the CLI, use the `-f <CONFIG_PATH>` flag. Or if using VSCode Extension or JetBrains plugin, simply create a `.mirrord/mirrord.json` file or use the UI.
 
-### Basic `config.json` 
+To help you get started, here are examples of a basic configuration file, and a complete configuration file containing all fields.
+
+#### Basic `config.json`
 
 ```json
 {
@@ -43,7 +41,7 @@ configuration file containing all fields.
 }
 ```
 
-### Basic `config.json` with templating 
+#### Basic `config.json` with templating
 
 ```json
 {
@@ -56,10 +54,10 @@ configuration file containing all fields.
 }
 ```
 
-### Complete `config.json` 
+#### Complete `config.json`
 
- Don't use this example as a starting point, it's just here to show you all the available
- options.
+Don't use this example as a starting point, it's just here to show you all the available options.
+
 ```json
 {
   "accept_invalid_certificates": false,
@@ -142,21 +140,19 @@ configuration file containing all fields.
 }
 ```
 
-# Options 
+## Options
 
-## accept_invalid_certificates 
+### accept\_invalid\_certificates
 
-Controls whether or not mirrord accepts invalid TLS certificates (e.g. self-signed
-certificates).
+Controls whether or not mirrord accepts invalid TLS certificates (e.g. self-signed certificates).
 
 If not provided, mirrord will use value from the kubeconfig.
 
-## agent 
+### agent
 
 Configuration for the mirrord-agent pod that is spawned in the Kubernetes cluster.
 
-**Note:** this configuration is ignored when using the mirrord Operator.
-Agent configuration is done by the cluster admin.
+**Note:** this configuration is ignored when using the mirrord Operator. Agent configuration is done by the cluster admin.
 
 We provide sane defaults for this option, so you don't have to set up anything here.
 
@@ -179,7 +175,7 @@ We provide sane defaults for this option, so you don't have to set up anything h
 }
 ```
 
-### agent.annotations 
+#### agent.annotations
 
 Allows setting up custom annotations for the agent Job and Pod.
 
@@ -193,54 +189,45 @@ Allows setting up custom annotations for the agent Job and Pod.
 }
 ```
 
-### agent.check_out_of_pods 
+#### agent.check\_out\_of\_pods
 
-Determine if to check whether there is room for agent job in target node. (Not applicable
-when using ephemeral containers feature)
+Determine if to check whether there is room for agent job in target node. (Not applicable when using ephemeral containers feature)
 
-Can be disabled if the check takes too long and you are sure there is enough resources on
-each node
+Can be disabled if the check takes too long and you are sure there is enough resources on each node
 
-### agent.communication_timeout 
+#### agent.communication\_timeout
 
 Controls how long the agent lives when there are no connections.
 
-Each connection has its own heartbeat mechanism, so even if the local application has no
-messages, the agent stays alive until there are no more heartbeat messages.
+Each connection has its own heartbeat mechanism, so even if the local application has no messages, the agent stays alive until there are no more heartbeat messages.
 
-### agent.disabled_capabilities 
+#### agent.disabled\_capabilities
 
-Disables specified Linux capabilities for the agent container.
-If nothing is disabled here, agent uses `NET_ADMIN`, `NET_RAW`, `SYS_PTRACE` and
-`SYS_ADMIN`.
+Disables specified Linux capabilities for the agent container. If nothing is disabled here, agent uses `NET_ADMIN`, `NET_RAW`, `SYS_PTRACE` and `SYS_ADMIN`.
 
-Has no effect when using the targetless mode,
-as targetless agent containers have no capabilities.
+Has no effect when using the targetless mode, as targetless agent containers have no capabilities.
 
-### agent.dns 
+#### agent.dns
 
-### agent.ephemeral 
+#### agent.ephemeral
 
-Runs the agent as an
-[ephemeral container](https://kubernetes.io/docs/concepts/workloads/pods/ephemeral-containers/).
+Runs the agent as an [ephemeral container](https://kubernetes.io/docs/concepts/workloads/pods/ephemeral-containers/).
 
 Not compatible with targetless runs.
 
 Defaults to `false`.
 
-### agent.flush_connections 
+#### agent.flush\_connections
 
-Flushes existing connections when starting to steal, might fix issues where connections
-aren't stolen (due to being already established)
+Flushes existing connections when starting to steal, might fix issues where connections aren't stolen (due to being already established)
 
 Defaults to `true`.
 
-### agent.image 
+#### agent.image
 
 Name of the agent's docker image.
 
-Useful when a custom build of mirrord-agent is required, or when using an internal
-registry.
+Useful when a custom build of mirrord-agent is required, or when using an internal registry.
 
 Defaults to the latest stable image `"ghcr.io/metalbear-co/mirrord:latest"`.
 
@@ -261,16 +248,15 @@ Complete setup:
 }
 ```
 
-### agent.image_pull_policy
+#### agent.image\_pull\_policy
 
 Controls when a new agent image is downloaded.
 
-Supports `"IfNotPresent"`, `"Always"`, `"Never"`, or any valid kubernetes
-[image pull policy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy)
+Supports `"IfNotPresent"`, `"Always"`, `"Never"`, or any valid kubernetes [image pull policy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy)
 
 Defaults to `"IfNotPresent"`
 
-### agent.image_pull_secrets 
+#### agent.image\_pull\_secrets
 
 List of secrets the agent pod has access to.
 
@@ -289,7 +275,7 @@ Read more [here](https://kubernetes.io/docs/concepts/containers/images/#referrin
 }
 ```
 
-### agent.json_log 
+#### agent.json\_log
 
 Controls whether the agent produces logs in a human-friendly format, or json.
 
@@ -301,7 +287,7 @@ Controls whether the agent produces logs in a human-friendly format, or json.
 }
 ```
 
-### agent.labels 
+#### agent.labels
 
 Allows setting up custom labels for the agent Job and Pod.
 
@@ -311,13 +297,11 @@ Allows setting up custom labels for the agent Job and Pod.
 }
 ```
 
-### agent.log_level 
+#### agent.log\_level
 
 Log level for the agent.
 
-
-Supports `"trace"`, `"debug"`, `"info"`, `"warn"`, `"error"`, or any string that would work
-with `RUST_LOG`.
+Supports `"trace"`, `"debug"`, `"info"`, `"warn"`, `"error"`, or any string that would work with `RUST_LOG`.
 
 ```json
 {
@@ -327,12 +311,11 @@ with `RUST_LOG`.
 }
 ```
 
-### agent.metrics 
+#### agent.metrics
 
 Enables prometheus metrics for the agent pod.
 
-You might need to add annotations to the agent pod depending on how prometheus is
-configured to scrape for metrics.
+You might need to add annotations to the agent pod depending on how prometheus is configured to scrape for metrics.
 
 ```json
 {
@@ -340,7 +323,7 @@ configured to scrape for metrics.
 }
 ```
 
-### agent.namespace
+#### agent.namespace
 
 Namespace where the agent shall live.
 
@@ -348,24 +331,21 @@ Namespace where the agent shall live.
 
 Defaults to the current kubernetes namespace.
 
-### agent.network_interface 
+#### agent.network\_interface
 
 Which network interface to use for mirroring.
 
-The default behavior is try to access the internet and use that interface. If that fails
-it uses `eth0`.
+The default behavior is try to access the internet and use that interface. If that fails it uses `eth0`.
 
-### agent.nftables 
+#### agent.nftables
 
-Use iptables-nft instead of iptables-legacy.
-Defaults to `false`.
+Use iptables-nft instead of iptables-legacy. Defaults to `false`.
 
 Needed if your mesh uses nftables instead of iptables-legacy,
 
-### agent.node_selector 
+#### agent.node\_selector
 
-Allows setting up custom node selector for the agent Pod. Applies only to targetless runs,
-as targeted agent always runs on the same node as its target container.
+Allows setting up custom node selector for the agent Pod. Applies only to targetless runs, as targeted agent always runs on the same node as its target container.
 
 ```json
 {
@@ -373,19 +353,18 @@ as targeted agent always runs on the same node as its target container.
 }
 ```
 
-### agent.privileged
-Run the mirror agent as privileged container.
-Defaults to `false`.
+#### agent.privileged
+
+Run the mirror agent as privileged container. Defaults to `false`.
 
 Might be needed in strict environments such as Bottlerocket.
 
-Has no effect when using the targetless mode,
-as targetless agent containers are never privileged.
+Has no effect when using the targetless mode, as targetless agent containers are never privileged.
 
-### agent.resources
+#### agent.resources
 
-Set pod resource reqirements. (not with ephemeral agents)
-Default is
+Set pod resource reqirements. (not with ephemeral agents) Default is
+
 ```json
 {
   "requests":
@@ -401,7 +380,7 @@ Default is
 }
 ```
 
-### agent.service_account 
+#### agent.service\_account
 
 Allows setting up custom Service Account for the agent Job and Pod.
 
@@ -411,7 +390,7 @@ Allows setting up custom Service Account for the agent Job and Pod.
 }
 ```
 
-### agent.startup_timeout 
+#### agent.startup\_timeout
 
 Controls how long to wait for the agent to finish initialization.
 
@@ -419,7 +398,7 @@ If initialization takes longer than this value, mirrord exits.
 
 Defaults to `60`.
 
-### agent.tolerations 
+#### agent.tolerations
 
 Set pod tolerations. (not with ephemeral agents).
 
@@ -435,7 +414,7 @@ Defaults to `operator: Exists`.
 
 Set to an empty array to have no tolerations at all
 
-### agent.ttl 
+#### agent.ttl
 
 Controls how long the agent pod persists for after the agent exits (in seconds).
 
@@ -443,16 +422,16 @@ Can be useful for collecting logs.
 
 Defaults to `1`.
 
-## container 
+### container
 
 Unstable: `mirrord container` command specific config.
 
-### container.cli_extra_args 
+#### container.cli\_extra\_args
 
 Any extra args to use when creating the sidecar mirrord-cli container.
 
-This is useful when you want to use portforwarding, passing `-p local:container` won't work
-for main command but adding them here will work
+This is useful when you want to use portforwarding, passing `-p local:container` won't work for main command but adding them here will work
+
 ```json
 {
   "container": {
@@ -461,26 +440,25 @@ for main command but adding them here will work
 }
 ```
 
-### container.cli_image 
+#### container.cli\_image
 
 Tag of the `mirrord-cli` image you want to use.
 
 Defaults to `"ghcr.io/metalbear-co/mirrord-cli:<cli version>"`.
 
-### container.cli_image_lib_path 
+#### container.cli\_image\_lib\_path
 
 Path of the mirrord-layer lib inside the specified mirrord-cli image.
 
 Defaults to `"/opt/mirrord/lib/libmirrord_layer.so"`.
 
-### container.cli_prevent_cleanup 
+#### container.cli\_prevent\_cleanup
 
 Don't add `--rm` to sidecar command to prevent cleanup.
 
-### container.override_host_ip 
+#### container.override\_host\_ip
 
-Allows to override the IP address for the internal proxy to use
-when connecting to the host machine from within the container.
+Allows to override the IP address for the internal proxy to use when connecting to the host machine from within the container.
 
 ```json5
 {
@@ -490,74 +468,59 @@ when connecting to the host machine from within the container.
 }
 ```
 
-This should be useful if your host machine is exposed with a different IP address than the
-one bound as host.
+This should be useful if your host machine is exposed with a different IP address than the one bound as host.
 
-## experimental 
+### experimental
 
-mirrord Experimental features.
-This shouldn't be used unless someone from MetalBear/mirrord tells you to.
+mirrord Experimental features. This shouldn't be used unless someone from MetalBear/mirrord tells you to.
 
-### _experimental_ disable_reuseaddr 
+#### _experimental_ disable\_reuseaddr
 
-Disables the `SO_REUSEADDR` socket option on sockets that mirrord steals/mirrors.
-On macOS the application can use the same address many times but then we don't steal it
-correctly. This probably should be on by default but we want to gradually roll it out.
-https://github.com/metalbear-co/mirrord/issues/2819
-This option applies only on macOS.
+Disables the `SO_REUSEADDR` socket option on sockets that mirrord steals/mirrors. On macOS the application can use the same address many times but then we don't steal it correctly. This probably should be on by default but we want to gradually roll it out. https://github.com/metalbear-co/mirrord/issues/2819 This option applies only on macOS.
 
-### _experimental_ enable_exec_hooks_linux 
+#### _experimental_ enable\_exec\_hooks\_linux
 
-Enables exec hooks on Linux. Enable Linux hooks can fix issues when the application
-shares sockets with child commands (e.g Python web servers with reload),
-but the feature is not stable and may cause other issues.
+Enables exec hooks on Linux. Enable Linux hooks can fix issues when the application shares sockets with child commands (e.g Python web servers with reload), but the feature is not stable and may cause other issues.
 
-### _experimental_ hide_ipv6_interfaces 
+#### _experimental_ hide\_ipv6\_interfaces
 
 Enables `getifaddrs` hook that removes IPv6 interfaces from the list returned by libc.
 
-### _experimental_ idle_local_http_connection_timeout 
+#### _experimental_ idle\_local\_http\_connection\_timeout
 
 Sets a timeout for idle local HTTP connections (in milliseconds).
 
-HTTP requests stolen with a filter are delivered to the local application
-from a HTTP connection made from the local machine. Once a request is delivered,
-the connection is cached for some time, so that it can be reused to deliver
-the next request.
+HTTP requests stolen with a filter are delivered to the local application from a HTTP connection made from the local machine. Once a request is delivered, the connection is cached for some time, so that it can be reused to deliver the next request.
 
 This timeout determines for how long such connections are cached.
 
-Set to 0 to disable caching local HTTP connections (connections will be dropped as soon as
-the request is delivered).
+Set to 0 to disable caching local HTTP connections (connections will be dropped as soon as the request is delivered).
 
 Defaults to 3000ms.
 
-### _experimental_ readlink 
+#### _experimental_ readlink
 
 DEPRECATED, WILL BE REMOVED
 
-### _experimental_ readonly_file_buffer
+#### _experimental_ readonly\_file\_buffer
 
-DEPRECATED, WILL BE REMOVED: moved to `feature.fs.readonly_file_buffer` as part of
-stabilisation. See https://github.com/metalbear-co/mirrord/issues/2069.
+DEPRECATED, WILL BE REMOVED: moved to `feature.fs.readonly_file_buffer` as part of stabilisation. See https://github.com/metalbear-co/mirrord/issues/2069.
 
-### _experimental_ tcp_ping4_mock 
+#### _experimental_ tcp\_ping4\_mock
 
 https://github.com/metalbear-co/mirrord/issues/2421#issuecomment-2093200904
 
-### _experimental_ trust_any_certificate 
+#### _experimental_ trust\_any\_certificate
 
 Enables trusting any certificate on macOS, useful for https://github.com/golang/go/issues/51991#issuecomment-2059588252
 
-### _experimental_ use_dev_null 
+#### _experimental_ use\_dev\_null
 
 Uses /dev/null for creating local fake files (should be better than using /tmp)
 
-## external_proxy 
+### external\_proxy
 
-Configuration for the external proxy mirrord spawns when using the `mirrord container` command.
-This proxy is used to allow the internal proxy running in sidecar to connect to the mirrord
-agent.
+Configuration for the external proxy mirrord spawns when using the `mirrord container` command. This proxy is used to allow the internal proxy running in sidecar to connect to the mirrord agent.
 
 If you get `ConnectionRefused` errors, increasing the timeouts a bit might solve the issue.
 
@@ -570,19 +533,17 @@ If you get `ConnectionRefused` errors, increasing the timeouts a bit might solve
 }
 ```
 
-### external_proxy.host_ip 
+#### external\_proxy.host\_ip
 
 Specify a custom host ip addr to listen on.
 
-This address must be accessible from within the container.
-If not specified, mirrord will try and resolve a local address to use.
+This address must be accessible from within the container. If not specified, mirrord will try and resolve a local address to use.
 
-### external_proxy.idle_timeout
+#### external\_proxy.idle\_timeout
 
 How much time to wait while we don't have any active connections before exiting.
 
-Common cases would be running a chain of processes that skip using the layer
-and don't connect to the proxy.
+Common cases would be running a chain of processes that skip using the layer and don't connect to the proxy.
 
 ```json
 {
@@ -592,33 +553,31 @@ and don't connect to the proxy.
 }
 ```
 
-### external_proxy.json_log 
+#### external\_proxy.json\_log
 
-Whether the proxy should output logs in JSON format. If false, logs are output in
-human-readable format.
+Whether the proxy should output logs in JSON format. If false, logs are output in human-readable format.
 
 Defaults to true.
 
-### external_proxy.log_destination 
+#### external\_proxy.log\_destination
 
 Set the log file destination for the external proxy.
 
 Defaults to a randomized path inside the temporary directory.
 
-### external_proxy.log_level 
+#### external\_proxy.log\_level
 
 Set the log level for the external proxy.
 
-The value should follow the RUST_LOG convention (i.e `mirrord=trace`).
+The value should follow the RUST\_LOG convention (i.e `mirrord=trace`).
 
 Defaults to `mirrord=info,warn`.
 
-### external_proxy.start_idle_timeout 
+#### external\_proxy.start\_idle\_timeout
 
 How much time to wait for the first connection to the external proxy in seconds.
 
-Common cases would be running with dlv or any other debugger, which sets a breakpoint
-on process execution, delaying the layer startup and connection to the external proxy.
+Common cases would be running with dlv or any other debugger, which sets a breakpoint on process execution, delaying the layer startup and connection to the external proxy.
 
 ```json
 {
@@ -628,14 +587,13 @@ on process execution, delaying the layer startup and connection to the external 
 }
 ```
 
-## feature 
+### feature
 
 Controls mirrord features.
 
-See the [technical reference](/reference) to learn more about what each feature does.
+See the [technical reference](./) to learn more about what each feature does.
 
-The [`env`](#feature-env), [`fs`](#feature-fs) and [`network`](#feature-network) options
-have support for a shortened version, that you can see [here](#root-shortened).
+The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) and [`network`](configuration.md#feature-network) options have support for a shortened version, that you can see [here](configuration.md#root-shortened).
 
 ```json
 {
@@ -681,16 +639,13 @@ have support for a shortened version, that you can see [here](#root-shortened).
 }
 ```
 
-## feature.copy_target 
+### feature.copy\_target
 
-Creates a new copy of the target. mirrord will use this copy instead of the original target
-(e.g. intercept network traffic). This feature requires a [mirrord operator](/overview/teams/?utm_source=copytarget).
+Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../overview/teams).
 
-This feature is not compatible with rollout targets and running without a target
-(`targetless` mode).
+This feature is not compatible with rollout targets and running without a target (`targetless` mode).
 
-Allows the user to target a pod created dynamically from the orignal [`target`](#target).
-The new pod inherits most of the original target's specification, e.g. labels.
+Allows the user to target a pod created dynamically from the orignal [`target`](configuration.md#target). The new pod inherits most of the original target's specification, e.g. labels.
 
 ```json
 {
@@ -710,22 +665,21 @@ The new pod inherits most of the original target's specification, e.g. labels.
 }
 ```
 
-### feature.copy_target.scale_down 
+#### feature.copy\_target.scale\_down
 
-If this option is set, mirrord will scale down the target deployment to 0 for the time
-the copied pod is alive.
+If this option is set, mirrord will scale down the target deployment to 0 for the time the copied pod is alive.
 
 This option is compatible only with deployment targets.
+
 ```json
     {
       "scale_down": true
     }
 ```
 
-## feature.env 
+### feature.env
 
-Allows the user to set or override the local process' environment variables with the ones
-from the remote pod.
+Allows the user to set or override the local process' environment variables with the ones from the remote pod.
 
 Can be set to one of the options:
 
@@ -733,10 +687,9 @@ Can be set to one of the options:
 2. `true` - Enables the feature, will obtain remote environment variables.
 3. object - see below (means `true` + additional configuration).
 
-Which environment variables to load from the remote pod are controlled by setting either
-[`include`](#feature-env-include) or [`exclude`](#feature-env-exclude).
+Which environment variables to load from the remote pod are controlled by setting either [`include`](configuration.md#feature-env-include) or [`exclude`](configuration.md#feature-env-exclude).
 
-See the environment variables [reference](/reference/env/) for more details.
+See the environment variables [reference](env/) for more details.
 
 ```json
 {
@@ -756,50 +709,42 @@ See the environment variables [reference](/reference/env/) for more details.
 }
 ```
 
-### feature.env_file 
+#### feature.env\_file
 
 Allows for passing environment variables from an env file.
 
 These variables will override environment fetched from the remote target.
 
-### feature.env.exclude 
+#### feature.env.exclude
 
-Include the remote environment variables in the local process that are **NOT** specified by
-this option.
-Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of
-any character and `*` matches arbitrary many (including zero) occurrences of any character.
+Include the remote environment variables in the local process that are **NOT** specified by this option. Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of any character and `*` matches arbitrary many (including zero) occurrences of any character.
 
-Some of the variables that are excluded by default:
-`PATH`, `HOME`, `HOMEPATH`, `CLASSPATH`, `JAVA_EXE`, `JAVA_HOME`, `PYTHONPATH`.
+Some of the variables that are excluded by default: `PATH`, `HOME`, `HOMEPATH`, `CLASSPATH`, `JAVA_EXE`, `JAVA_HOME`, `PYTHONPATH`.
 
 Can be passed as a list or as a semicolon-delimited string (e.g. `"VAR;OTHER_VAR"`).
 
-### feature.env.include 
+#### feature.env.include
 
-Include only these remote environment variables in the local process.
-Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of
-any character and `*` matches arbitrary many (including zero) occurrences of any character.
+Include only these remote environment variables in the local process. Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of any character and `*` matches arbitrary many (including zero) occurrences of any character.
 
 Can be passed as a list or as a semicolon-delimited string (e.g. `"VAR;OTHER_VAR"`).
 
-Some environment variables are excluded by default (`PATH` for example), including these
-requires specifying them with `include`
+Some environment variables are excluded by default (`PATH` for example), including these requires specifying them with `include`
 
-### feature.env.load_from_process 
+#### feature.env.load\_from\_process
 
-Allows for changing the way mirrord loads remote environment variables.
-If set, the variables are fetched after the user application is started.
+Allows for changing the way mirrord loads remote environment variables. If set, the variables are fetched after the user application is started.
 
-This setting is meant to resolve issues when using mirrord via the IntelliJ plugin on WSL
-and the remote environment contains a lot of variables.
+This setting is meant to resolve issues when using mirrord via the IntelliJ plugin on WSL and the remote environment contains a lot of variables.
 
-### feature.env.mapping 
+#### feature.env.mapping
 
 Specify map of patterns that if matched will replace the value according to specification.
 
-*Capture groups are allowed.*
+_Capture groups are allowed._
 
 Example:
+
 ```json
 {
   ".+_TIMEOUT": "10000"
@@ -811,84 +756,58 @@ Example:
 Will do the next replacements for environment variables that match:
 
 * `CONNECTION_TIMEOUT: 500` => `CONNECTION_TIMEOUT: 10000`
-
 * `LOG_FILE_VERBOSITY: info` => `LOG_FILE_VERBOSITY: debug`
-
 * `DATA_1234: common-value` => `DATA_1234: magic-value`
 
-### feature.env.override 
+#### feature.env.override
 
 Allows setting or overriding environment variables (locally) with a custom value.
 
-For example, if the remote pod has an environment variable `REGION=1`, but this is an
-undesirable value, it's possible to use `override` to set `REGION=2` (locally) instead.
+For example, if the remote pod has an environment variable `REGION=1`, but this is an undesirable value, it's possible to use `override` to set `REGION=2` (locally) instead.
 
 Environment specified here will also override variables passed via the env file.
 
-### feature.env.unset 
+#### feature.env.unset
 
 Allows unsetting environment variables in the executed process.
 
-This is useful for when some system/user-defined environment like `AWS_PROFILE` make the
-application behave as if it's running locally, instead of using the remote settings.
-The unsetting happens from extension (if possible)/CLI and when process initializes.
-In some cases, such as Go the env might not be able to be modified from the process itself.
-This is case insensitive, meaning if you'd put `AWS_PROFILE` it'd unset both `AWS_PROFILE`
-and `Aws_Profile` and other variations.
+This is useful for when some system/user-defined environment like `AWS_PROFILE` make the application behave as if it's running locally, instead of using the remote settings. The unsetting happens from extension (if possible)/CLI and when process initializes. In some cases, such as Go the env might not be able to be modified from the process itself. This is case insensitive, meaning if you'd put `AWS_PROFILE` it'd unset both `AWS_PROFILE` and `Aws_Profile` and other variations.
 
-## feature.fs 
+### feature.fs
 
 Allows the user to specify the default behavior for file operations:
 
 1. `"read"` or `true` - Read from the remote file system (default)
 2. `"write"` - Read/Write from the remote file system.
 3. `"local"` or `false` - Read from the local file system.
-4. `"localwithoverrides"` - perform fs operation locally, unless the path matches a pre-defined
-   or user-specified exception.
+4. `"localwithoverrides"` - perform fs operation locally, unless the path matches a pre-defined or user-specified exception.
 
-> Note: by default, some paths are read locally or remotely, regardless of the selected FS mode.
-> This is described in further detail below.
+> Note: by default, some paths are read locally or remotely, regardless of the selected FS mode. This is described in further detail below.
 
-Besides the default behavior, the user can specify behavior for specific regex patterns.
-Case insensitive.
+Besides the default behavior, the user can specify behavior for specific regex patterns. Case insensitive.
 
 1. `"read_write"` - List of patterns that should be read/write remotely.
 2. `"read_only"` - List of patterns that should be read only remotely.
 3. `"local"` - List of patterns that should be read locally.
-4. `"not_found"` - List of patters that should never be read nor written. These files should be
-   treated as non-existent.
-4. `"mapping"` - Map of patterns and their corresponding replacers. The replacement happens before any specific behavior as defined above or mode (uses [`Regex::replace`](https://docs.rs/regex/latest/regex/struct.Regex.html#method.replace))
+4. `"not_found"` - List of patters that should never be read nor written. These files should be treated as non-existent.
+5. `"mapping"` - Map of patterns and their corresponding replacers. The replacement happens before any specific behavior as defined above or mode (uses [`Regex::replace`](https://docs.rs/regex/latest/regex/struct.Regex.html#method.replace))
 
 The logic for choosing the behavior is as follows:
 
+1. Check agains "mapping" if path needs to be replaced, if matched then continue to next step with new path after replacements otherwise continue as usual.
+2.  Check if one of the patterns match the file path, do the corresponding action. There's no specified order if two lists match the same path, we will use the first one (and we do not guarantee what is first).
 
-1. Check agains "mapping" if path needs to be replaced, if matched then continue to next step
-   with new path after replacements otherwise continue as usual.
-2. Check if one of the patterns match the file path, do the corresponding action. There's no
-   specified order if two lists match the same path, we will use the first one (and we do not
-   guarantee what is first).
+    **Warning**: Specifying the same path in two lists is unsupported and can lead to undefined behaviour.
+3.  There are pre-defined exceptions to the set FS mode.
 
-    **Warning**: Specifying the same path in two lists is unsupported and can lead to undefined
-    behaviour.
+    1. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs) are read locally by default.
+    2. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_remote_by_default.rs) are read remotely by default when the mode is `localwithoverrides`.
+    3. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/not_found_by_default.rs) under the running user's home directory will not be found by the application when the mode is not `local`.
 
-3. There are pre-defined exceptions to the set FS mode.
-    1. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs)
-       are read locally by default.
-    2. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_remote_by_default.rs)
-       are read remotely by default when the mode is `localwithoverrides`.
-    3. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/not_found_by_default.rs)
-       under the running user's home directory will not be found by the application when the
-       mode is not `local`.
-
-    In order to override that default setting for a path, or a pattern, include it the
-    appropriate pattern set from above. E.g. in order to read files under `/etc/` remotely even
-    though it is covered by [the set of patterns that are read locally by default](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs),
-    add `"^/etc/."` to the `read_only` set.
-
+    In order to override that default setting for a path, or a pattern, include it the appropriate pattern set from above. E.g. in order to read files under `/etc/` remotely even though it is covered by [the set of patterns that are read locally by default](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs), add `"^/etc/."` to the `read_only` set.
 4. If none of the above match, use the default behavior (mode).
 
-For more information, check the file operations
-[technical reference](/reference/fileops).
+For more information, check the file operations [technical reference](fileops/).
 
 ```json
 {
@@ -904,75 +823,68 @@ For more information, check the file operations
 }
 ```
 
-### feature.fs.local 
+#### feature.fs.local
 
 Specify file path patterns that if matched will be opened locally.
 
-### feature.fs.mapping 
+#### feature.fs.mapping
 
 Specify map of patterns that if matched will replace the path according to specification.
 
-*Capture groups are allowed.*
+_Capture groups are allowed._
 
 Example:
+
 ```json
 {
   "^/home/(?<user>\\S+)/dev/tomcat": "/etc/tomcat"
   "^/home/(?<user>\\S+)/dev/config/(?<app>\\S+)": "/mnt/configs/${user}-$app"
 }
 ```
+
 Will do the next replacements for any io operaton
 
-`/home/johndoe/dev/tomcat/context.xml` => `/etc/tomcat/context.xml`
-`/home/johndoe/dev/config/api/app.conf` => `/mnt/configs/johndoe-api/app.conf`
+`/home/johndoe/dev/tomcat/context.xml` => `/etc/tomcat/context.xml` `/home/johndoe/dev/config/api/app.conf` => `/mnt/configs/johndoe-api/app.conf`
 
-- Relative paths: this feature (currently) does not apply mappings to relative paths, e.g.
-  `../dev`.
+* Relative paths: this feature (currently) does not apply mappings to relative paths, e.g. `../dev`.
 
-### feature.fs.mode 
+#### feature.fs.mode
 
 Configuration for enabling read-only or read-write file operations.
 
 These options are overriden by user specified overrides and mirrord default overrides.
 
-If you set [`"localwithoverrides"`](#feature-fs-mode-localwithoverrides) then some files
-can be read/write remotely based on our default/user specified.
-Default option for general file configuration.
+If you set [`"localwithoverrides"`](configuration.md#feature-fs-mode-localwithoverrides) then some files can be read/write remotely based on our default/user specified. Default option for general file configuration.
 
 The accepted values are: `"local"`, `"localwithoverrides`, `"read"`, or `"write`.
 
-### feature.fs.not_found 
+#### feature.fs.not\_found
 
 Specify file path patterns that if matched will be treated as non-existent.
 
-### feature.fs.read_only 
+#### feature.fs.read\_only
 
-Specify file path patterns that if matched will be read from the remote.
-if file matching the pattern is opened for writing or read/write it will be opened locally.
+Specify file path patterns that if matched will be read from the remote. if file matching the pattern is opened for writing or read/write it will be opened locally.
 
-### feature.fs.read_write 
+#### feature.fs.read\_write
 
 Specify file path patterns that if matched will be read and written to the remote.
 
-### feature.fs.readonly_file_buffer 
+#### feature.fs.readonly\_file\_buffer
 
-Sets buffer size for read-only remote files in bytes. By default, the value is
-128000 bytes, or 128 kB.
+Sets buffer size for read-only remote files in bytes. By default, the value is 128000 bytes, or 128 kB.
 
-Setting the value to 0 disables file buffering.
-Otherwise, read-only remote files will be read in chunks and buffered locally.
-This improves performance when the user application reads data in small portions.
+Setting the value to 0 disables file buffering. Otherwise, read-only remote files will be read in chunks and buffered locally. This improves performance when the user application reads data in small portions.
 
-## feature.hostname 
+### feature.hostname
 
 Should mirrord return the hostname of the target pod when calling `gethostname`
 
-## feature.network 
+### feature.network
 
 Controls mirrord network operations.
 
-See the network traffic [reference](/reference/traffic)
-for more details.
+See the network traffic [reference](traffic/) for more details.
 
 ```json
 {
@@ -1007,35 +919,28 @@ for more details.
 }
 ```
 
-### feature.network.dns 
+#### feature.network.dns
 
 Resolve DNS via the remote pod.
 
 Defaults to `true`.
 
 Mind that:
-- DNS resolving can be done in multiple ways. Some frameworks use `getaddrinfo`/`gethostbyname`
-  functions, while others communicate directly with the DNS server at port `53` and perform a
-  sort of manual resolution. Just enabling the `dns` feature in mirrord might not be enough. If
-  you see an address resolution error, try enabling the [`fs`](#feature-fs) feature, and setting
-  `read_only: ["/etc/resolv.conf"]`.
-- DNS filter currently works only with frameworks that use `getaddrinfo`/`gethostbyname`
-  functions.
 
-#### feature.network.dns.filter 
+* DNS resolving can be done in multiple ways. Some frameworks use `getaddrinfo`/`gethostbyname` functions, while others communicate directly with the DNS server at port `53` and perform a sort of manual resolution. Just enabling the `dns` feature in mirrord might not be enough. If you see an address resolution error, try enabling the [`fs`](configuration.md#feature-fs) feature, and setting `read_only: ["/etc/resolv.conf"]`.
+* DNS filter currently works only with frameworks that use `getaddrinfo`/`gethostbyname` functions.
+
+**feature.network.dns.filter**
 
 Unstable: the precise syntax of this config is subject to change.
 
-List of addresses/ports/subnets that should be resolved through either the remote pod or local
-app, depending how you set this up with either `remote` or `local`.
+List of addresses/ports/subnets that should be resolved through either the remote pod or local app, depending how you set this up with either `remote` or `local`.
 
-You may use this option to specify when DNS resolution is done from the remote pod (which
-is the default behavior when you enable remote DNS), or from the local app (default when
-you have remote DNS disabled).
+You may use this option to specify when DNS resolution is done from the remote pod (which is the default behavior when you enable remote DNS), or from the local app (default when you have remote DNS disabled).
 
 Takes a list of values, such as:
 
-- Only queries for hostname `my-service-in-cluster` will go through the remote pod.
+* Only queries for hostname `my-service-in-cluster` will go through the remote pod.
 
 ```json
 {
@@ -1043,8 +948,7 @@ Takes a list of values, such as:
 }
 ```
 
-- Only queries for addresses in subnet `1.1.1.0/24` with service port `1337`` will go through
-  the remote pod.
+* Only queries for addresses in subnet `1.1.1.0/24` with service port \`1337\`\` will go through the remote pod.
 
 ```json
 {
@@ -1052,8 +956,7 @@ Takes a list of values, such as:
 }
 ```
 
-- Only queries for hostname `google.com` with service port `1337` or `7331` will go through the
-  remote pod.
+* Only queries for hostname `google.com` with service port `1337` or `7331` will go through the remote pod.
 
 ```json
 {
@@ -1061,7 +964,7 @@ Takes a list of values, such as:
 }
 ```
 
-- Only queries for `localhost` with service port `1337` will go through the local app.
+* Only queries for `localhost` with service port `1337` will go through the local app.
 
 ```json
 {
@@ -1069,7 +972,7 @@ Takes a list of values, such as:
 }
 ```
 
-- Only queries with service port `1337` or `7331` will go through the local app.
+* Only queries with service port `1337` or `7331` will go through the local app.
 
 ```json
 {
@@ -1079,28 +982,24 @@ Takes a list of values, such as:
 
 Valid values follow this pattern: `[name|address|subnet/mask][:port]`.
 
-### feature.network.incoming 
+#### feature.network.incoming
 
 Controls the incoming TCP traffic feature.
 
-See the incoming [reference](/reference/traffic/#incoming) for more
-details.
+See the incoming [reference](traffic/#incoming) for more details.
 
-Incoming traffic supports 3 [modes](#feature-network-incoming-mode) of operation:
+Incoming traffic supports 3 [modes](configuration.md#feature-network-incoming-mode) of operation:
 
-1. Mirror (**default**): Sniffs the TCP data from a port, and forwards a copy to the interested
-   listeners;
-
+1. Mirror (**default**): Sniffs the TCP data from a port, and forwards a copy to the interested listeners;
 2. Steal: Captures the TCP data from a port, and forwards it to the local process.
-
 3. Off: Disables the incoming network feature.
 
-This field can either take an object with more configuration fields (that are documented below),
-or alternatively -
-- A boolean:
-  - `true`: use the default configuration, same as not specifying this field at all.
-  - `false`: disable incoming configuration.
-- One of the incoming [modes](#feature-network-incoming-mode) (lowercase).
+This field can either take an object with more configuration fields (that are documented below), or alternatively -
+
+* A boolean:
+  * `true`: use the default configuration, same as not specifying this field at all.
+  * `false`: disable incoming configuration.
+* One of the incoming [modes](configuration.md#feature-network-incoming-mode) (lowercase).
 
 Examples:
 
@@ -1128,8 +1027,7 @@ Disable the incoming traffic feature:
 }
 ```
 
-Steal only traffic that matches the
-[`http_filter`](#feature-network-incoming-http_filter) (steals only HTTP traffic).
+Steal only traffic that matches the [`http_filter`](configuration.md#feature-network-incoming-http_filter) (steals only HTTP traffic).
 
 ```json
 {
@@ -1150,59 +1048,58 @@ Steal only traffic that matches the
 }
 ```
 
-#### feature.network.incoming.http_filter 
+**feature.network.incoming.http\_filter**
 
 Filter configuration for the HTTP traffic stealer feature.
 
-Allows the user to set a filter (regex) for the HTTP headers, so that the stealer traffic
-feature only captures HTTP requests that match the specified filter, forwarding unmatched
-requests to their original destinations.
+Allows the user to set a filter (regex) for the HTTP headers, so that the stealer traffic feature only captures HTTP requests that match the specified filter, forwarding unmatched requests to their original destinations.
 
-Only does something when [`feature.network.incoming.mode`](#feature-network-incoming-mode) is
-set as `"steal"`, ignored otherwise.
+Only does something when [`feature.network.incoming.mode`](configuration.md#feature-network-incoming-mode) is set as `"steal"`, ignored otherwise.
 
 For example, to filter based on header:
+
 ```json
 {
   "header_filter": "host: api\\..+"
 }
 ```
-Setting that filter will make mirrord only steal requests with the `host` header set to hosts
-that start with "api", followed by a dot, and then at least one more character.
+
+Setting that filter will make mirrord only steal requests with the `host` header set to hosts that start with "api", followed by a dot, and then at least one more character.
 
 For example, to filter based on path:
+
 ```json
 {
   "path_filter": "^/api/"
 }
 ```
+
 Setting this filter will make mirrord only steal requests to URIs starting with "/api/".
 
+This can be useful for filtering out Kubernetes liveness, readiness and startup probes. For example, for avoiding stealing any probe sent by kubernetes, you can set this filter:
 
-This can be useful for filtering out Kubernetes liveness, readiness and startup probes.
-For example, for avoiding stealing any probe sent by kubernetes, you can set this filter:
 ```json
 {
   "header_filter": "^User-Agent: (?!kube-probe)"
 }
 ```
-Setting this filter will make mirrord only steal requests that **do** have a user agent that
-**does not** begin with "kube-probe".
+
+Setting this filter will make mirrord only steal requests that **do** have a user agent that **does not** begin with "kube-probe".
 
 Similarly, you can exclude certain paths using a negative look-ahead:
+
 ```json
 {
   "path_filter": "^(?!/health/)"
 }
 ```
-Setting this filter will make mirrord only steal requests to URIs that do not start with
-"/health/".
+
+Setting this filter will make mirrord only steal requests to URIs that do not start with "/health/".
 
 With `all_of` and `any_of`, you can use multiple HTTP filters at the same time.
 
-If you want to steal HTTP requests that match **every** pattern specified, use `all_of`.
-For example, this filter steals only HTTP requests to endpoint `/api/my-endpoint` that contain
-header `x-debug-session` with value `121212`.
+If you want to steal HTTP requests that match **every** pattern specified, use `all_of`. For example, this filter steals only HTTP requests to endpoint `/api/my-endpoint` that contain header `x-debug-session` with value `121212`.
+
 ```json
 {
   "all_of": [
@@ -1212,9 +1109,8 @@ header `x-debug-session` with value `121212`.
 }
 ```
 
-If you want to steal HTTP requests that match **any** of the patterns specified, use `any_of`.
-For example, this filter steals HTTP requests to endpoint `/api/my-endpoint`
-**and** HTTP requests that contain header `x-debug-session` with value `121212`.
+If you want to steal HTTP requests that match **any** of the patterns specified, use `any_of`. For example, this filter steals HTTP requests to endpoint `/api/my-endpoint` **and** HTTP requests that contain header `x-debug-session` with value `121212`.
+
 ```json
 {
  "any_of": [
@@ -1224,16 +1120,16 @@ For example, this filter steals HTTP requests to endpoint `/api/my-endpoint`
 }
 ```
 
-##### feature.network.incoming.http_filter.all_of 
+**feature.network.incoming.http\_filter.all\_of**
 
 An array of HTTP filters.
 
-Each inner filter specifies either header or path regex.
-Requests must match all of the filters to be stolen.
+Each inner filter specifies either header or path regex. Requests must match all of the filters to be stolen.
 
 Cannot be an empty list.
 
 Example:
+
 ```json
 {
   "all_of": [
@@ -1243,16 +1139,16 @@ Example:
 }
 ```
 
-##### feature.network.incoming.http_filter.any_of 
+**feature.network.incoming.http\_filter.any\_of**
 
 An array of HTTP filters.
 
-Each inner filter specifies either header or path regex.
-Requests must match at least one of the filters to be stolen.
+Each inner filter specifies either header or path regex. Requests must match at least one of the filters to be stolen.
 
 Cannot be an empty list.
 
 Example:
+
 ```json
 {
   "any_of": [
@@ -1262,39 +1158,31 @@ Example:
 }
 ```
 
-##### feature.network.incoming.http_filter.header_filter 
+**feature.network.incoming.http\_filter.header\_filter**
 
+Supports regexes validated by the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
 
-Supports regexes validated by the
-[`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
+The HTTP traffic feature converts the HTTP headers to `HeaderKey: HeaderValue`, case-insensitive.
 
-The HTTP traffic feature converts the HTTP headers to `HeaderKey: HeaderValue`,
-case-insensitive.
+**feature.network.incoming.http\_filter.path\_filter**
 
-##### feature.network.incoming.http_filter.path_filter 
+Supports regexes validated by the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
 
+Case-insensitive. Tries to find match in the path (without query) and path+query. If any of the two matches, the request is stolen.
 
-Supports regexes validated by the
-[`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
+**feature.network.incoming.http\_filter.ports**
 
-Case-insensitive. Tries to find match in the path (without query) and path+query.
-If any of the two matches, the request is stolen.
-
-##### feature.network.incoming.http_filter.ports 
 Activate the HTTP traffic filter only for these ports.
 
-Other ports will *not* be stolen, unless listed in
-[`feature.network.incoming.ports`](#feature-network-incoming-ports).
+Other ports will _not_ be stolen, unless listed in [`feature.network.incoming.ports`](configuration.md#feature-network-incoming-ports).
 
-Set to [80, 8080] by default.
+Set to \[80, 8080] by default.
 
-#### feature.network.incoming.https_delivery 
+**feature.network.incoming.https\_delivery**
 
-(Operator Only): configures how mirrord delivers stolen HTTPS requests
-to the local application.
+(Operator Only): configures how mirrord delivers stolen HTTPS requests to the local application.
 
-Stolen HTTPS requests can be delivered to the local application either as HTTPS or as plain HTTP
-requests. Note that stealing HTTPS requests requires mirrord Operator support.
+Stolen HTTPS requests can be delivered to the local application either as HTTPS or as plain HTTP requests. Note that stealing HTTPS requests requires mirrord Operator support.
 
 To have the stolen HTTPS requests delivered with plain HTTP, use:
 
@@ -1305,20 +1193,20 @@ To have the stolen HTTPS requests delivered with plain HTTP, use:
 ```
 
 To have the requests delivered with HTTPS, use:
+
 ```json
 {
   "protocol": "tls"
 }
 ```
 
-By default, the local mirrord TLS client will trust any certificate presented by the local
-application's HTTP server. To override this behavior, you can either:
+By default, the local mirrord TLS client will trust any certificate presented by the local application's HTTP server. To override this behavior, you can either:
 
-1. Specify a list of paths to trust roots. These paths can lead either to PEM files or PEM file
-   directories. Each found certificate will be used as a trust anchor.
+1. Specify a list of paths to trust roots. These paths can lead either to PEM files or PEM file directories. Each found certificate will be used as a trust anchor.
 2. Specify a path to the cartificate chain used by the server.
 
 Example with trust roots:
+
 ```json
 {
   "protocol": "tls",
@@ -1327,6 +1215,7 @@ Example with trust roots:
 ```
 
 Example with certificate chain:
+
 ```json
 {
   "protocol": "tls",
@@ -1334,8 +1223,8 @@ Example with certificate chain:
 }
 ```
 
-To make a TLS connection to the local application's HTTPS server,
-mirrord's TLS client needs a server name. You can supply it manually like this:
+To make a TLS connection to the local application's HTTPS server, mirrord's TLS client needs a server name. You can supply it manually like this:
+
 ```json
 {
   "protocol": "tls",
@@ -1345,122 +1234,92 @@ mirrord's TLS client needs a server name. You can supply it manually like this:
 
 If you don't supply the server name:
 
-1. If `server_cert` is given, and the found end-entity certificate contains a valid server name,
-   this server name will be used;
-2. Otherwise, if the original client supplied an SNI extension, the server name from that
-   extension will be used;
-3. Otherwise, if the stolen request's URL contains a valid server name, that server name will be
-   used;
+1. If `server_cert` is given, and the found end-entity certificate contains a valid server name, this server name will be used;
+2. Otherwise, if the original client supplied an SNI extension, the server name from that extension will be used;
+3. Otherwise, if the stolen request's URL contains a valid server name, that server name will be used;
 4. Otherwise, `localhost` will be used.
 
-##### feature.network.incoming.https_delivery.protocol 
+**feature.network.incoming.https\_delivery.protocol**
 
 Protocol to use when delivering the HTTPS requests locally.
 
+Path to a PEM file containing the certificate chain used by the local application's HTTPS server.
 
-Path to a PEM file containing the certificate chain used by the local application's HTTPS
-server.
+This file must contain at least one certificate. It can contain entries of other types, e.g private keys, which are ignored.
 
-This file must contain at least one certificate.
-It can contain entries of other types, e.g private keys, which are ignored.
-
-##### feature.network.incoming.https_delivery.server_name 
+**feature.network.incoming.https\_delivery.server\_name**
 
 Server name to use when making a connection.
 
 Must be a valid DNS name or an IP address.
 
-##### feature.network.incoming.https_delivery.trust_roots 
+**feature.network.incoming.https\_delivery.trust\_roots**
 
 Paths to PEM files and directories with PEM files containing allowed root certificates.
 
 Directories are not traversed recursively.
 
-Each certificate found in the files is treated as an allowed root.
-The files can contain entries of other types, e.g private keys, which are ignored.
+Each certificate found in the files is treated as an allowed root. The files can contain entries of other types, e.g private keys, which are ignored.
 
-#### feature.network.incoming.ignore_localhost 
+**feature.network.incoming.ignore\_localhost**
 
-#### feature.network.incoming.ignore_ports 
+**feature.network.incoming.ignore\_ports**
 
 Ports to ignore when mirroring/stealing traffic, these ports will remain local.
 
-Can be especially useful when
-[`feature.network.incoming.mode`](#feature-network-incoming-mode) is set to `"steal"`,
-and you want to avoid redirecting traffic from some ports (for example, traffic from
-a health probe, or other heartbeat-like traffic).
+Can be especially useful when [`feature.network.incoming.mode`](configuration.md#feature-network-incoming-mode) is set to `"steal"`, and you want to avoid redirecting traffic from some ports (for example, traffic from a health probe, or other heartbeat-like traffic).
 
-Mutually exclusive with [`feature.network.incoming.ports`](#feature-network-ports).
+Mutually exclusive with [`feature.network.incoming.ports`](configuration.md#feature-network-ports).
 
-#### feature.network.incoming.listen_ports 
+**feature.network.incoming.listen\_ports**
 
-Mapping for local ports to actually used local ports.
-When application listens on a port while steal/mirror is active
-we fallback to random ports to avoid port conflicts.
-Using this configuration will always use the specified port.
-If this configuration doesn't exist, mirrord will try to listen on the original port
-and if it fails it will assign a random port
+Mapping for local ports to actually used local ports. When application listens on a port while steal/mirror is active we fallback to random ports to avoid port conflicts. Using this configuration will always use the specified port. If this configuration doesn't exist, mirrord will try to listen on the original port and if it fails it will assign a random port
 
-This is useful when you want to access ports exposed by your service locally
-For example, if you have a service that listens on port `80` and you want to access it,
-you probably can't listen on `80` without sudo, so you can use `[[80, 4480]]`
-then access it on `4480` while getting traffic from remote `80`.
-The value of `port_mapping` doesn't affect this.
+This is useful when you want to access ports exposed by your service locally For example, if you have a service that listens on port `80` and you want to access it, you probably can't listen on `80` without sudo, so you can use `[[80, 4480]]` then access it on `4480` while getting traffic from remote `80`. The value of `port_mapping` doesn't affect this.
 
-#### feature.network.incoming.mode 
+**feature.network.incoming.mode**
 
 Allows selecting between mirrorring or stealing traffic.
 
 Can be set to either `"mirror"` (default), `"steal"` or `"off"`.
 
-- `"mirror"`: Sniffs on TCP port, and send a copy of the data to listeners.
-- `"off"`: Disables the incoming network feature.
-- `"steal"`: Supports 2 modes of operation:
+* `"mirror"`: Sniffs on TCP port, and send a copy of the data to listeners.
+* `"off"`: Disables the incoming network feature.
+* `"steal"`: Supports 2 modes of operation:
 
-1. Port traffic stealing: Steals all TCP data from a port, which is selected whenever the user
-   listens in a TCP socket (enabling the feature is enough to make this work, no additional
-   configuration is needed);
+1. Port traffic stealing: Steals all TCP data from a port, which is selected whenever the user listens in a TCP socket (enabling the feature is enough to make this work, no additional configuration is needed);
+2. HTTP traffic stealing: Steals only HTTP traffic, mirrord tries to detect if the incoming data on a port is HTTP (in a best-effort kind of way, not guaranteed to be HTTP), and steals the traffic on the port if it is HTTP;
 
-2. HTTP traffic stealing: Steals only HTTP traffic, mirrord tries to detect if the incoming data
-   on a port is HTTP (in a best-effort kind of way, not guaranteed to be HTTP), and steals the
-   traffic on the port if it is HTTP;
-
-#### feature.network.incoming.on_concurrent_steal 
+**feature.network.incoming.on\_concurrent\_steal**
 
 (Operator Only): Allows overriding port locks
 
 Can be set to either `"continue"` or `"override"`.
 
-- `"continue"`: Continue with normal execution
-- `"override"`: If port lock detected then override it with new lock and force close the
-  original locking connection.
+* `"continue"`: Continue with normal execution
+* `"override"`: If port lock detected then override it with new lock and force close the original locking connection.
 
-#### feature.network.incoming.port_mapping 
+**feature.network.incoming.port\_mapping**
 
 Mapping for local ports to remote ports.
 
-This is useful when you want to mirror/steal a port to a different port on the remote
-machine. For example, your local process listens on port `9333` and the container listens
-on port `80`. You'd use `[[9333, 80]]`
+This is useful when you want to mirror/steal a port to a different port on the remote machine. For example, your local process listens on port `9333` and the container listens on port `80`. You'd use `[[9333, 80]]`
 
-#### feature.network.incoming.ports 
+**feature.network.incoming.ports**
 
 List of ports to mirror/steal traffic from. Other ports will remain local.
 
-Mutually exclusive with
-[`feature.network.incoming.ignore_ports`](#feature-network-ignore_ports).
+Mutually exclusive with [`feature.network.incoming.ignore_ports`](configuration.md#feature-network-ignore_ports).
 
-### feature.network.ipv6 
+#### feature.network.ipv6
 
-Enable ipv6 support. Turn on if your application listens to incoming traffic over IPv6,
-or connects to other services over IPv6.
+Enable ipv6 support. Turn on if your application listens to incoming traffic over IPv6, or connects to other services over IPv6.
 
-### feature.network.outgoing 
+#### feature.network.outgoing
 
 Tunnel outgoing network operations through mirrord.
 
-See the outgoing [reference](/reference/traffic/#outgoing) for more
-details.
+See the outgoing [reference](traffic/#outgoing) for more details.
 
 The `remote` and `local` config for this feature are **mutually** exclusive.
 
@@ -1482,20 +1341,17 @@ The `remote` and `local` config for this feature are **mutually** exclusive.
 }
 ```
 
-#### feature.network.outgoing.filter 
+**feature.network.outgoing.filter**
 
 Filters that are used to send specific traffic from either the remote pod or the local app
 
-List of addresses/ports/subnets that should be sent through either the remote pod or local app,
-depending how you set this up with either `remote` or `local`.
+List of addresses/ports/subnets that should be sent through either the remote pod or local app, depending how you set this up with either `remote` or `local`.
 
-You may use this option to specify when outgoing traffic is sent from the remote pod (which
-is the default behavior when you enable outgoing traffic), or from the local app (default when
-you have outgoing traffic disabled).
+You may use this option to specify when outgoing traffic is sent from the remote pod (which is the default behavior when you enable outgoing traffic), or from the local app (default when you have outgoing traffic disabled).
 
 Takes a list of values, such as:
 
-- Only UDP traffic on subnet `1.1.1.0/24` on port 1337 will go through the remote pod.
+* Only UDP traffic on subnet `1.1.1.0/24` on port 1337 will go through the remote pod.
 
 ```json
 {
@@ -1503,16 +1359,15 @@ Takes a list of values, such as:
 }
 ```
 
-- Only UDP and TCP traffic on resolved address of `google.com` on port `1337` and `7331` will go
-  through the remote pod.
+* Only UDP and TCP traffic on resolved address of `google.com` on port `1337` and `7331` will go through the remote pod.
+
 ```json
 {
   "remote": ["google.com:1337", "google.com:7331"]
 }
 ```
 
-- Only TCP traffic on `localhost` on port 1337 will go through the local app, the rest will be
-  emmited remotely in the cluster.
+* Only TCP traffic on `localhost` on port 1337 will go through the local app, the rest will be emmited remotely in the cluster.
 
 ```json
 {
@@ -1520,7 +1375,8 @@ Takes a list of values, such as:
 }
 ```
 
-- Only outgoing traffic on port `1337` and `7331` will go through the local app.
+* Only outgoing traffic on port `1337` and `7331` will go through the local app.
+
 ```json
 {
   "local": [":1337", ":7331"]
@@ -1529,39 +1385,29 @@ Takes a list of values, such as:
 
 Valid values follow this pattern: `[protocol]://[name|address|subnet/mask]:[port]`.
 
-#### feature.network.outgoing.ignore_localhost 
+**feature.network.outgoing.ignore\_localhost**
 
 Defaults to `false`.
 
-#### feature.network.outgoing.tcp 
+**feature.network.outgoing.tcp**
 
 Defaults to `true`.
 
-#### feature.network.outgoing.udp 
+**feature.network.outgoing.udp**
 
 Defaults to `true`.
 
-#### feature.network.outgoing.unix_streams 
+**feature.network.outgoing.unix\_streams**
 
 Connect to these unix streams remotely (and to all other paths locally).
 
-You can either specify a single value or an array of values.
-Each value is interpreted as a regular expression
-([Supported Syntax](https://docs.rs/regex/1.7.1/regex/index.html#syntax)).
+You can either specify a single value or an array of values. Each value is interpreted as a regular expression ([Supported Syntax](https://docs.rs/regex/1.7.1/regex/index.html#syntax)).
 
-When your application connects to a unix socket, the target address will be converted to a
-string (non-utf8 bytes are replaced by a placeholder character) and matched against the set
-of regexes specified here. If there is a match, mirrord will connect your application with
-the target unix socket address on the target pod. Otherwise, it will leave the connection
-to happen locally on your machine.
+When your application connects to a unix socket, the target address will be converted to a string (non-utf8 bytes are replaced by a placeholder character) and matched against the set of regexes specified here. If there is a match, mirrord will connect your application with the target unix socket address on the target pod. Otherwise, it will leave the connection to happen locally on your machine.
 
-## feature.split_queues 
+### feature.split\_queues
 
-Define filters to split queues by, and make your local application consume only messages
-that match those filters.
-If you don't specify any filter for a queue that is however declared in the
-`MirrordWorkloadQueueRegistry` of the target you're using, a match-nothing filter
-will be used, and your local application will not receive any messages from that queue.
+Define filters to split queues by, and make your local application consume only messages that match those filters. If you don't specify any filter for a queue that is however declared in the `MirrordWorkloadQueueRegistry` of the target you're using, a match-nothing filter will be used, and your local application will not receive any messages from that queue.
 
 ```json
 {
@@ -1598,13 +1444,11 @@ will be used, and your local application will not receive any messages from that
 }
 ```
 
-## internal_proxy 
+### internal\_proxy
 
-Configuration for the internal proxy mirrord spawns for each local mirrord session
-that local layers use to connect to the remote agent
+Configuration for the internal proxy mirrord spawns for each local mirrord session that local layers use to connect to the remote agent
 
-This is seldom used, but if you get `ConnectionRefused` errors, you might
-want to increase the timeouts a bit.
+This is seldom used, but if you get `ConnectionRefused` errors, you might want to increase the timeouts a bit.
 
 ```json
 {
@@ -1615,12 +1459,11 @@ want to increase the timeouts a bit.
 }
 ```
 
-### internal_proxy.idle_timeout 
+#### internal\_proxy.idle\_timeout
 
 How much time to wait while we don't have any active connections before exiting.
 
-Common cases would be running a chain of processes that skip using the layer
-and don't connect to the proxy.
+Common cases would be running a chain of processes that skip using the layer and don't connect to the proxy.
 
 ```json
 {
@@ -1630,33 +1473,31 @@ and don't connect to the proxy.
 }
 ```
 
-### internal_proxy.json_log 
+#### internal\_proxy.json\_log
 
-Whether the proxy should output logs in JSON format. If false, logs are output in
-human-readable format.
+Whether the proxy should output logs in JSON format. If false, logs are output in human-readable format.
 
 Defaults to true.
 
-### internal_proxy.log_destination 
+#### internal\_proxy.log\_destination
 
 Set the log file destination for the internal proxy.
 
 Defaults to a randomized path inside the temporary directory.
 
-### internal_proxy.log_level 
+#### internal\_proxy.log\_level
 
 Set the log level for the internal proxy.
 
-The value should follow the RUST_LOG convention (i.e `mirrord=trace`).
+The value should follow the RUST\_LOG convention (i.e `mirrord=trace`).
 
 Defaults to `mirrord=info,warn`.
 
-### internal_proxy.start_idle_timeout 
+#### internal\_proxy.start\_idle\_timeout
 
 How much time to wait for the first connection to the proxy in seconds.
 
-Common cases would be running with dlv or any other debugger, which sets a breakpoint
-on process execution, delaying the layer startup and connection to proxy.
+Common cases would be running with dlv or any other debugger, which sets a breakpoint on process execution, delaying the layer startup and connection to proxy.
 
 ```json
 {
@@ -1666,10 +1507,9 @@ on process execution, delaying the layer startup and connection to proxy.
 }
 ```
 
-## kube_context 
+### kube\_context
 
-Kube context to use from the kubeconfig file.
-Will use current context if not specified.
+Kube context to use from the kubeconfig file. Will use current context if not specified.
 
 ```json
 {
@@ -1677,10 +1517,9 @@ Will use current context if not specified.
 }
 ```
 
-## kubeconfig 
+### kubeconfig
 
-Path to a kubeconfig file, if not specified, will use `KUBECONFIG`, or `~/.kube/config`, or
-the in-cluster config.
+Path to a kubeconfig file, if not specified, will use `KUBECONFIG`, or `~/.kube/config`, or the in-cluster config.
 
 ```json
 {
@@ -1688,25 +1527,21 @@ the in-cluster config.
 }
 ```
 
-## operator
+### operator
 
-Whether mirrord should use the operator.
-If not set, mirrord will first attempt to use the operator, but continue without it in case
-of failure.
+Whether mirrord should use the operator. If not set, mirrord will first attempt to use the operator, but continue without it in case of failure.
 
-## profile 
+### profile
 
 Name of the mirrord profile to use.
 
-## sip_binaries 
+### sip\_binaries
 
 Binaries to patch (macOS SIP).
 
-Use this when mirrord isn't loaded to protected binaries that weren't automatically
-patched.
+Use this when mirrord isn't loaded to protected binaries that weren't automatically patched.
 
-Runs `endswith` on the binary path (so `bash` would apply to any binary ending with `bash`
-while `/usr/bin/bash` would apply only for that binary).
+Runs `endswith` on the binary path (so `bash` would apply to any binary ending with `bash` while `/usr/bin/bash` would apply only for that binary).
 
 ```json
 {
@@ -1714,26 +1549,21 @@ while `/usr/bin/bash` would apply only for that binary).
 }
 ```
 
-## skip_build_tools 
+### skip\_build\_tools
 
-Allows mirrord to skip build tools. Useful when running command lines that build and run
-the application in a single command.
+Allows mirrord to skip build tools. Useful when running command lines that build and run the application in a single command.
 
 Defaults to `true`.
 
-Build-Tools: `["as", "cc", "ld", "go", "air", "asm", "cc1", "cgo", "dlv", "gcc", "git",
-"link", "math", "cargo", "hpack", "rustc", "compile", "collect2", "cargo-watch",
-"debugserver"]`
+Build-Tools: `["as", "cc", "ld", "go", "air", "asm", "cc1", "cgo", "dlv", "gcc", "git", "link", "math", "cargo", "hpack", "rustc", "compile", "collect2", "cargo-watch", "debugserver"]`
 
-## skip_extra_build_tools 
+### skip\_extra\_build\_tools
 
-Allows mirrord to skip the specified build tools. Useful when running command lines that
-build and run the application in a single command.
+Allows mirrord to skip the specified build tools. Useful when running command lines that build and run the application in a single command.
 
-Must also enable [`skip_build_tools`](#root-skip_build_tools) for this to take an effect.
+Must also enable [`skip_build_tools`](configuration.md#root-skip_build_tools) for this to take an effect.
 
-It's similar to [`skip_processes`](#root-skip_processes), except that here it also skips
-SIP patching.
+It's similar to [`skip_processes`](configuration.md#root-skip_processes), except that here it also skips SIP patching.
 
 Accepts a single value, or an array of values.
 
@@ -1743,13 +1573,11 @@ Accepts a single value, or an array of values.
 }
 ```
 
-## skip_processes 
+### skip\_processes
 
 Allows mirrord to skip unwanted processes.
 
-Useful when process A spawns process B, and the user wants mirrord to operate only on
-process B.
-Accepts a single value, or an array of values.
+Useful when process A spawns process B, and the user wants mirrord to operate only on process B. Accepts a single value, or an array of values.
 
 ```json
 {
@@ -1757,32 +1585,31 @@ Accepts a single value, or an array of values.
 }
 ```
 
-## skip_sip 
+### skip\_sip
 
 Allows mirrord to skip patching (macOS SIP) unwanted processes.
 
-When patching is skipped, mirrord will no longer be able to load into
-the process and its child processes.
+When patching is skipped, mirrord will no longer be able to load into the process and its child processes.
 
-## target 
+### target
 
 Specifies the target and namespace to target.
 
 The simplified configuration supports:
 
-- `targetless`
-- `pod/{pod-name}[/container/{container-name}]`;
-- `deployment/{deployment-name}[/container/{container-name}]`;
-- `rollout/{rollout-name}[/container/{container-name}]`;
-- `job/{job-name}[/container/{container-name}]`;
-- `cronjob/{cronjob-name}[/container/{container-name}]`;
-- `statefulset/{statefulset-name}[/container/{container-name}]`;
-- `service/{service-name}[/container/{container-name}]`;
+* `targetless`
+* `pod/{pod-name}[/container/{container-name}]`;
+* `deployment/{deployment-name}[/container/{container-name}]`;
+* `rollout/{rollout-name}[/container/{container-name}]`;
+* `job/{job-name}[/container/{container-name}]`;
+* `cronjob/{cronjob-name}[/container/{container-name}]`;
+* `statefulset/{statefulset-name}[/container/{container-name}]`;
+* `service/{service-name}[/container/{container-name}]`;
 
 Please note that:
 
-- `job`, `cronjob`, `statefulset` and `service` targets require the mirrord Operator
-- `job` and `cronjob` targets require the [`copy_target`](#feature-copy_target) feature
+* `job`, `cronjob`, `statefulset` and `service` targets require the mirrord Operator
+* `job` and `cronjob` targets require the [`copy_target`](configuration.md#feature-copy_target) feature
 
 Shortened setup with a target:
 
@@ -1792,8 +1619,7 @@ Shortened setup with a target:
 }
 ```
 
-The setup above will result in a session targeting the `bear-pod` Kubernetes pod
-in the user's default namespace. A target container will be chosen by mirrord.
+The setup above will result in a session targeting the `bear-pod` Kubernetes pod in the user's default namespace. A target container will be chosen by mirrord.
 
 Shortened setup with a target container:
 
@@ -1803,8 +1629,7 @@ Shortened setup with a target container:
 }
 ```
 
-The setup above will result in a session targeting the `bear-pod-container` container
-in the `bear-pod` Kubernetes pod in the user's default namespace.
+The setup above will result in a session targeting the `bear-pod-container` container in the `bear-pod` Kubernetes pod in the user's default namespace.
 
 Complete setup with a target container:
 
@@ -1820,8 +1645,7 @@ Complete setup with a target container:
 }
 ```
 
-The setup above will result in a session targeting the `bear-pod-container` container
-in the `bear-pod` Kubernetes pod in the `bear-pod-namespace` namespace.
+The setup above will result in a session targeting the `bear-pod-container` container in the `bear-pod` Kubernetes pod in the `bear-pod-namespace` namespace.
 
 Setup with a namespace for a targetless run:
 
@@ -1834,10 +1658,9 @@ Setup with a namespace for a targetless run:
 }
 ```
 
-The setup above will result in a session without any target.
-Remote outgoing traffic and DNS will be done from the `bear-namespace` namespace.
+The setup above will result in a session without any target. Remote outgoing traffic and DNS will be done from the `bear-namespace` namespace.
 
-### target.namespace 
+#### target.namespace
 
 Namespace where the target lives.
 
@@ -1845,40 +1668,30 @@ For targetless runs, this the namespace in which remote networking is done.
 
 Defaults to the Kubernetes user's default namespace (defined in Kubernetes context).
 
-### target.path
+#### target.path
 
 Specifies the Kubernetes resource to target.
 
 If not given, defaults to `targetless`.
 
-Note: targeting services and whole workloads is available only in mirrord for Teams.
-If you target a workload without the mirrord Operator, it will choose a random pod replica
-to work with.
+Note: targeting services and whole workloads is available only in mirrord for Teams. If you target a workload without the mirrord Operator, it will choose a random pod replica to work with.
 
 Supports:
-- `targetless`
-- `pod/{pod-name}[/container/{container-name}]`;
-- `deployment/{deployment-name}[/container/{container-name}]`;
-- `rollout/{rollout-name}[/container/{container-name}]`;
-- `job/{job-name}[/container/{container-name}]`; (requires mirrord Operator and the
-  [`copy_target`](#feature-copy_target) feature)
-- `cronjob/{cronjob-name}[/container/{container-name}]`; (requires mirrord Operator and the
-  [`copy_target`](#feature-copy_target) feature)
-- `statefulset/{statefulset-name}[/container/{container-name}]`; (requires mirrord
-  Operator)
-- `service/{service-name}[/container/{container-name}]`; (requires mirrord Operator)
-- `replicaset/{replicaset-name}[/container/{container-name}]`; (requires mirrord Operator)
 
-## telemetry 
-Controls whether or not mirrord sends telemetry data to MetalBear cloud.
-Telemetry sent doesn't contain personal identifiers or any data that
-should be considered sensitive. It is used to improve the product.
-[For more information](https://github.com/metalbear-co/mirrord/blob/main/TELEMETRY.md)
+* `targetless`
+* `pod/{pod-name}[/container/{container-name}]`;
+* `deployment/{deployment-name}[/container/{container-name}]`;
+* `rollout/{rollout-name}[/container/{container-name}]`;
+* `job/{job-name}[/container/{container-name}]`; (requires mirrord Operator and the [`copy_target`](configuration.md#feature-copy_target) feature)
+* `cronjob/{cronjob-name}[/container/{container-name}]`; (requires mirrord Operator and the [`copy_target`](configuration.md#feature-copy_target) feature)
+* `statefulset/{statefulset-name}[/container/{container-name}]`; (requires mirrord Operator)
+* `service/{service-name}[/container/{container-name}]`; (requires mirrord Operator)
+* `replicaset/{replicaset-name}[/container/{container-name}]`; (requires mirrord Operator)
 
-## use_proxy 
+### telemetry
 
-When disabled, mirrord will remove `HTTP[S]_PROXY` env variables before
-doing any network requests. This is useful when the system sets a proxy
-but you don't want mirrord to use it.
-This also applies to the mirrord process (as it just removes the env).
-If the remote pod sets this env, the mirrord process will still use it.
+Controls whether or not mirrord sends telemetry data to MetalBear cloud. Telemetry sent doesn't contain personal identifiers or any data that should be considered sensitive. It is used to improve the product. [For more information](https://github.com/metalbear-co/mirrord/blob/main/TELEMETRY.md)
+
+### use\_proxy
+
+When disabled, mirrord will remove `HTTP[S]_PROXY` env variables before doing any network requests. This is useful when the system sets a proxy but you don't want mirrord to use it. This also applies to the mirrord process (as it just removes the env). If the remote pod sets this env, the mirrord process will still use it.

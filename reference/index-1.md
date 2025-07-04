@@ -1,46 +1,46 @@
 ---
-title: "Environment Variables"
-description: "Reference to including remote environment variables "
-date: 2022-06-15T08:48:45+00:00
-lastmod: 2022-06-15T08:48:45+00:00
+title: Environment Variables
+date: 2022-06-15T08:48:45.000Z
+lastmod: 2022-06-15T08:48:45.000Z
 draft: false
 images: []
 menu:
   docs:
-    parent: "reference"
+    parent: reference
 weight: 150
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags:
+  - open source
+  - team
+  - enterprise
+description: Reference to including remote environment variables
 ---
 
-## Overview
+# Environment Variables
 
-mirrord lets you run a local process in the context of remote environment i.e. environment variables present in the
-remote pod will be loaded into the local process.
+### Overview
+
+mirrord lets you run a local process in the context of remote environment i.e. environment variables present in the remote pod will be loaded into the local process.
 
 For example, if you want your local process to access a remote database, the connection string configured in the remote pod's environment variable can be used by your local process.
 
-## How does it work?
+### How does it work?
 
-![mirrord - fileops](/reference/env/mirrord-env-vars.png)
+![mirrord - fileops](env/mirrord-env-vars.png)
 
 mirrord-layer sends a message to mirrord-agent requesting remote environment variables, which are then set before the local process starts.
 
-## Usage
+### Usage
 
 To include/exclude environment variables selectively, use the `--override-env-vars-include` flag to include and `--override-env-vars-exclude` to exclude with environment variables specified in a `semicolon` separated list.
 
-> **Note:** These flags are mutually exclusive. For example, if one chooses to exclude using the
-> `--override-env-vars-exclude` flag, then there is no need to use `--override-env-vars-include="*"` to include all
-> other environment variables.
+> **Note:** These flags are mutually exclusive. For example, if one chooses to exclude using the `--override-env-vars-exclude` flag, then there is no need to use `--override-env-vars-include="*"` to include all other environment variables.
 
 By default, all environment variables are included.
 
-##### Example
+**Example**
 
-If on our target pod, we have the environment variable `ENV_VAR1` with the value `remote-value` and on our local
-machine we have `ENV_VAR1` with value `local-value`, then Running the python interpreter with mirrord would look like
-this:
+If on our target pod, we have the environment variable `ENV_VAR1` with the value `remote-value` and on our local machine we have `ENV_VAR1` with value `local-value`, then Running the python interpreter with mirrord would look like this:
 
 ```bash
 MIRRORD_AGENT_IMAGE=test MIRRORD_AGENT_RUST_LOG=trace RUST_LOG=debug target/debug/mirrord exec -c --target pod/py-serv-deployment-ff89b5974-x9tjx python3

@@ -1,28 +1,30 @@
 ---
-title: "Network Traffic"
-description: "Reference to working with network traffic with mirrord"
-date: 2022-08-08T08:48:45+00:00
-lastmod: 2022-08-08T08:48:45+00:00
+title: Network Traffic
+date: 2022-08-08T08:48:45.000Z
+lastmod: 2022-08-08T08:48:45.000Z
 draft: false
 images: []
 menu:
   docs:
-    parent: "reference"
+    parent: reference
 weight: 140
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags:
+  - open source
+  - team
+  - enterprise
+description: Reference to working with network traffic with mirrord
 ---
 
-## Incoming
+# Network Traffic
+
+### Incoming
 
 mirrord lets users debug incoming network traffic by mirroring or stealing the traffic sent to the remote pod.
 
-### Mirroring
+#### Mirroring
 
-mirrord's default configuration is to mirror incoming TCP traffic from the remote pod, i.e.
-run the local process in the context of cloud environment without disrupting incoming traffic for the remote pod.
-Any responses by the local process to the mirrored requests are dropped, and so whatever application is running on the
-remote pod continues to operate normally while the traffic is mirrored to the local process.
+mirrord's default configuration is to mirror incoming TCP traffic from the remote pod, i.e. run the local process in the context of cloud environment without disrupting incoming traffic for the remote pod. Any responses by the local process to the mirrored requests are dropped, and so whatever application is running on the remote pod continues to operate normally while the traffic is mirrored to the local process.
 
 Example - `user-service` a simple Kubernetes deployment and service that stores registered users.
 
@@ -52,15 +54,9 @@ metalbear-deployment-85c754c75f-6k7mg       1/1     Running   1 (15h ago)   16h
 
 To mirror traffic from remote services to the local development environment, run the services locally with mirrord
 
-<table>
-<tr>
-</tr>
-<tr>
-<td>
-<center>Window 1</center> 
-
-```bash
-bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
 --no-outgoing --target pod/metalbear-deployment-85c754c75f-6k7mg python3
 user-service/service.py 
  * Serving Flask app 'service' (lazy loading)
@@ -74,40 +70,20 @@ user-service/service.py
  * Running on http://172.16.0.4:33695 (Press CTRL+C to quit)
  127.0.0.1 - - [08/Sep/2022 15:34:34] "GET /users HTTP/1.1" 200
 // ^ Received mirrored traffic from the remote pod
-```
-
-</td>
-<tr>
-<td>
-<center>Window 2</center>
-
-```bash
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+</code></pre> |
+| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
-```
+</code></pre>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-</td>
-</tr>
+#### Stealing
 
-</tr>
-</table>
-
-### Stealing
-
-mirrord can steal network traffic, i.e. intercept it and send it to the local process instead of the remote pod.
-This means that all incoming traffic is only handled by the local process.
+mirrord can steal network traffic, i.e. intercept it and send it to the local process instead of the remote pod. This means that all incoming traffic is only handled by the local process.
 
 Example - running `user-service` with mirrord and `--tcp-steal` on:
 
-<table>
-<tr>
-</tr>
-<tr>
-<td>
-<center>Window 1</center>
-
-```bash
-bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
 --tcp-steal --target pod/metalbear-deployment-85c754c75f-6k7mg 
 python3 user-service/service.py 
  * Serving Flask app 'service' (lazy loading)
@@ -125,15 +101,8 @@ python3 user-service/service.py
  127.0.0.1 - - [08/Sep/2022 16:57:51] "POST /user HTTP/1.1" 200 -
  127.0.0.1 - - [08/Sep/2022 16:57:54] "GET /users HTTP/1.1" 200 -
  ^Cbigbear@metalbear:~/mirrord-demo$ 
-```
-
-</td>
-<tr>
-<td>
-<center>Window 2</center>
-
-```bash
-// Before running mirrord with `--tcp-steal`
+</code></pre>                                                                                                                     |
+| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">// Before running mirrord with `--tcp-steal`
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
 
@@ -158,57 +127,29 @@ bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 // After sending SIGINT to the local process
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
-```
+</code></pre> |
 
-</td>
-</tr>
+**Filtering Incoming Traffic by HTTP Headers**
 
-</tr>
-</table>
+Currently only supported in `steal` mode: mirrord lets you specify a regular expression to filter HTTP requests with. When specified, all the headers of each HTTP request that arrives at the remote target are checked against the regular expression. If any of the headers match, the request will be stolen, otherwise, it will be sent to the remote target. For each `Header-Name`, `Header-Value` pair, your regular expression will be matched against `Header-Name: Header-Value`. For example, the filter `MyHeader` would match requests with `MyHeader` in any of their header names or header values. The filter `^X-MyFilter:` would match only requests that have a header with the header name `X-MyFilter` (or `x-myfilter` or with any other capitalization). The regular expression is evaluated with the [fancy\_regex](https://docs.rs/fancy-regex/0.10.0/fancy_regex/index.html) rust crate.
 
-#### Filtering Incoming Traffic by HTTP Headers
+**Specifying a Filter**
 
-Currently only supported in `steal` mode: mirrord lets you specify a regular expression to filter HTTP requests with.
-When specified, all the headers of each HTTP request that arrives at the remote target are checked against
-the regular expression. If any of the headers match, the request will be stolen, otherwise, it will be sent to the
-remote target.
-For each `Header-Name`, `Header-Value` pair, your regular expression will be matched against `Header-Name:
-Header-Value`. For example, the filter `MyHeader` would match requests with `MyHeader` in any of their header names
-or header values. The filter `^X-MyFilter:` would match only requests that have a header with the header name
-`X-MyFilter` (or `x-myfilter` or with any other capitalization).
-The regular expression is evaluated with the [fancy_regex](https://docs.rs/fancy-regex/0.10.0/fancy_regex/index.html)
-rust crate.
+An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](configuration/#feature-network-incoming-http-header-filter) or [`feature.network.incoming.http_filter.path_filter`](configuration/#feature-network-incoming-http-path-filter).
 
-##### Specifying a Filter
-An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to
-`steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](/reference/configuration/#feature-network-incoming-http-header-filter) or [`feature.network.incoming.http_filter.path_filter`](/reference/configuration/#feature-network-incoming-http-path-filter).
+**Setting Custom HTTP Ports**
 
-##### Setting Custom HTTP Ports
-The configuration also allows specifying custom HTTP ports under `feature.network.incoming.http_filter.ports`.
-By default, ports 80 and 8080 are used as HTTP ports if a filter is specified, which means that the mirrord agent
-checks each new connection on those ports for HTTP, and if the connection has valid HTTP messages, they are filtered
-with the header filter.
+The configuration also allows specifying custom HTTP ports under `feature.network.incoming.http_filter.ports`. By default, ports 80 and 8080 are used as HTTP ports if a filter is specified, which means that the mirrord agent checks each new connection on those ports for HTTP, and if the connection has valid HTTP messages, they are filtered with the header filter.
 
-## Outgoing
+### Outgoing
 
-mirrord's outgoing traffic feature intercepts outgoing requests from the local process and 
-sends them through the remote pod instead. Responses are then routed back to the local process.
-A simple use case of this feature is enabling the local process to make an API call to another service in the k8s
-cluster, for example, a database read/write.
+mirrord's outgoing traffic feature intercepts outgoing requests from the local process and sends them through the remote pod instead. Responses are then routed back to the local process. A simple use case of this feature is enabling the local process to make an API call to another service in the k8s cluster, for example, a database read/write.
 
-For UDP, outgoing traffic is currently only intercepted and forwarded by mirrord if the application binds a non-0 port
-and makes a `connect` call on the socket before sending out messages. Outgoing TCP and UDP forwarding are both enabled
-by default. It can be controlled individually for TCP and UDP or disabled altogether (see `mirrord exec --help`).
+For UDP, outgoing traffic is currently only intercepted and forwarded by mirrord if the application binds a non-0 port and makes a `connect` call on the socket before sending out messages. Outgoing TCP and UDP forwarding are both enabled by default. It can be controlled individually for TCP and UDP or disabled altogether (see `mirrord exec --help`).
 
-> **Note:** If the handling of incoming requests by your app involves outgoing API calls to other services, and mirrord is configured to mirror incoming traffic, then it
-> might be the case that both the remote pod and the local process (which
-> receives mirrored requests) make an outgoing API call to another service for the same incoming request. If that call
-> is a write operation to a database, this could lead e.g. to duplicate lines in the database. You can avoid such an
-> effect by switching from [traffic mirroring](#mirroring) to [traffic stealing](#stealing) mode. Alternatively, if the
-> service your application makes an API call to is only reachable from within the Kubernetes cluster, you can disable
-> outgoing traffic forwarding, which would make it impossible for your local process to reach that service.
+> **Note:** If the handling of incoming requests by your app involves outgoing API calls to other services, and mirrord is configured to mirror incoming traffic, then it might be the case that both the remote pod and the local process (which receives mirrored requests) make an outgoing API call to another service for the same incoming request. If that call is a write operation to a database, this could lead e.g. to duplicate lines in the database. You can avoid such an effect by switching from [traffic mirroring](traffic.md#mirroring) to [traffic stealing](traffic.md#stealing) mode. Alternatively, if the service your application makes an API call to is only reachable from within the Kubernetes cluster, you can disable outgoing traffic forwarding, which would make it impossible for your local process to reach that service.
 
-## DNS Resolution
+### DNS Resolution
 
 mirrord can resolve DNS queries in the context of the remote pod
 
@@ -231,5 +172,3 @@ Type "help", "copyright", "credits" or "license" for more information.
 [(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('10.106.158.180', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_DGRAM: 2>, 17, '', ('10.106.158.180', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_RAW: 3>, 0, '', ('10.106.158.180', 0))]
 >>> 
 ```
-
-
