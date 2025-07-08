@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Getting Started](overview/introduction.md)
+* [Getting Started](overview/overview.md)
   * [mirrord for Teams](overview/teams.md)
   * [Quick Start](overview/quick-start.md)
   * [Contributing](overview/contributing.md)
