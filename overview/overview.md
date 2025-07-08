@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "mirrord 101"
+description: "Learn about mirrord and how it works"
 date: 2022-05-26T08:48:57+00:00
 lastmod: 2022-05-26T08:48:57+00:00
 draft: false
