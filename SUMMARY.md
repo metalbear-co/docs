@@ -1,7 +1,7 @@
 # Table of contents
 
-* [Getting Started](overview/index.md)
-  * [mirrord for Teams](overview/index-1.md)
+* [Getting Started](overview/introduction.md)
+  * [mirrord for Teams](overview/teams.md)
   * [Quick Start](overview/quick-start.md)
   * [Contributing](overview/contributing.md)
 * [Using mirrord](using-mirrord/README.md)
