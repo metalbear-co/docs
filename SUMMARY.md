@@ -38,8 +38,3 @@
   * [Comparisons](faq/comparisons.md)
   * [General](faq/general.md)
   * [Limitations](faq/limitations.md)
-
-## Somegroup
-
-* [Page 1](somegroup/page-1.md)
-* [Page 2](somegroup/page-2.md)
