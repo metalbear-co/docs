@@ -1,7 +1,6 @@
 ---
 description: >-
   Accelerate your Kubernetes development workflow with mirrord. mirrord lets developers run and test their code in a real Kubernetes environment instantly, without needing to rebuild or redeploy.
-icon: cloud
 layout:
   title:
     visible: true
