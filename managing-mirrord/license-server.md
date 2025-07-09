@@ -1,22 +1,25 @@
 ---
-title: "License Server"
-description: "License Server"
-date: 2025-04-07T00:00:00+00:00
-lastmod: 2025-04-07T00:00:00+00:00
+title: License Server
+date: 2025-04-07T00:00:00.000Z
+lastmod: 2025-04-07T00:00:00.000Z
 draft: false
 images: []
-linktitle: "License Server"
+linktitle: License Server
 menu:
   docs:
-    teams:
+    teams: null
 weight: 540
 toc: true
-tags: ["enterprise"]
+tags:
+  - enterprise
+description: License Server
 ---
-The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization.
-<Info>This feature is only relevant for users on the Team and Enterprise pricing plans.</Info>
 
-## Basic Setup
+# License Server
+
+The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization. This feature is only relevant for users on the Team and Enterprise pricing plans.
+
+### Basic Setup
 
 The license server is installable via Helm. First, add the MetalBear Helm repository:
 
@@ -24,7 +27,7 @@ The license server is installable via Helm. First, add the MetalBear Helm reposi
 helm repo add metalbear-co https://metalbear-co.github.io/charts
 ```
 
-Next, save the following yaml as `values.yaml` on your machine. 
+Next, save the following yaml as `values.yaml` on your machine.
 
 ```yaml
 # ./values.yaml
@@ -50,7 +53,7 @@ Fill in the license.key and license.pem fields according to the following guidel
 
 You can customize the license server deployment further - all values.yaml configuration options can found [here](https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-license-server/values.yaml)
 
-*NOTE: The license server needs to be accessible to any mirrord operators you want to track. To that end, the default value for `service.type` is `ClusterIP`, but can be changed to `NodePort` or `LoadBalancer`, according to your requirements.*
+_NOTE: The license server needs to be accessible to any mirrord operators you want to track. To that end, the default value for `service.type` is `ClusterIP`, but can be changed to `NodePort` or `LoadBalancer`, according to your requirements._
 
 Next, install the license server on your cluster:
 
@@ -66,18 +69,21 @@ kubectl get deployment -n mirrord mirrord-license-server
 
 If your operator(s) are running at on a different cluster, make sure the `mirrord-operator-license-server` service is exposed to them via ingress.
 
-### Connecting Operators to the License Server
+#### Connecting Operators to the License Server
 
-First update your operator [`values.yaml`](/overview/quick-start/#helm) for quickstart helm setup for operator) file:
+First update your operator [`values.yaml`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/overview/quick-start/README.md#helm) for quickstart helm setup for operator) file:
+
 ```yaml
 # ./values.yaml
 license:
   key: secret
   licenseServer: http://<license-server-addr>
 ```
-*NOTE: The server value must contain the protocol and the prefix for any ingress that the the license server can be behind.*
+
+_NOTE: The server value must contain the protocol and the prefix for any ingress that the the license server can be behind._
 
 Then run:
+
 ```bash
 helm install metalbear-co/mirrord-operator -f ./values.yaml --generate-name --wait
 ```

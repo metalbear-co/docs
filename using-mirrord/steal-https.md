@@ -1,28 +1,30 @@
 ---
-title: "HTTPS Stealing"
-description: "How to steal HTTPS traffic with a filter using mirrord"
-date: 2025-02-24T00:00:00+00:00
-lastmod: 2025-02-24T00:00:00+00:00
+title: HTTPS Stealing
+date: 2025-02-24T00:00:00.000Z
+lastmod: 2025-02-24T00:00:00.000Z
 draft: false
 menu:
   docs:
-    parent: "using-mirrord"
+    parent: using-mirrord
 weight: 166
 toc: true
-tags: ["team", "enterprise"]
+tags:
+  - team
+  - enterprise
+description: How to steal HTTPS traffic with a filter using mirrord
 ---
+
+# HTTPS Stealing
 
 With mirrord for Teams, you can steal a subset of HTTP requests coming to your target, even if the deployed application receives the traffic encrypted with TLS.
 
-<Info>This feature is only relevant for users on the Team and Enterprise pricing plans.</Info>
+This feature is only relevant for users on the Team and Enterprise pricing plans.
 
 **Important:** stealing HTTPS with a filter requires mirrord-operator version at least `3.106.0` and mirrord-agent version at least `1.134.0`.
 
-## Configuring HTTPS stealing in the cluster
+### Configuring HTTPS stealing in the cluster
 
-To enable mirrord users to steal HTTPS requests with a filter, you must provide the mirrord Operator with some insight into your TLS configuration.
-This can be done with dedicated custom resources: `MirrordTlsStealConfig` and `MirrordClusterTlsStealConfig`. These two resources look and work almost the same.
-The only exception is that `MirrordTlsStealConfig` is scoped to the namespace in which you create it, while `MirrordClusterTlsStealConfig` scopes the whole Kubernetes cluster.
+To enable mirrord users to steal HTTPS requests with a filter, you must provide the mirrord Operator with some insight into your TLS configuration. This can be done with dedicated custom resources: `MirrordTlsStealConfig` and `MirrordClusterTlsStealConfig`. These two resources look and work almost the same. The only exception is that `MirrordTlsStealConfig` is scoped to the namespace in which you create it, while `MirrordClusterTlsStealConfig` scopes the whole Kubernetes cluster.
 
 An example `MirrordTlsStealConfig` resource that configures HTTPS stealing from an `example-deploy` deployment living in namespace `example-deploy-namespace`:
 
@@ -150,17 +152,14 @@ spec:
         - /path/to/trusted/server/root/cert.pem
 ```
 
-Each `MirrordTlsStealConfig`/`MirrordClusterTlsStealConfig` resource configures HTTPS stealing for some set of available mirrord targets.
-With the use of `spec.targetPath` and `spec.selector`, you can link one configuration resource to multiple pods, deployments, rollouts, etc.
+Each `MirrordTlsStealConfig`/`MirrordClusterTlsStealConfig` resource configures HTTPS stealing for some set of available mirrord targets. With the use of `spec.targetPath` and `spec.selector`, you can link one configuration resource to multiple pods, deployments, rollouts, etc.
 
-When the mirrord Operator finds multiple configuration resources matching the session target path and labels, it merges their `ports` lists.
-The same port cannot be configured multiple times (extra entries are discarded).
+When the mirrord Operator finds multiple configuration resources matching the session target path and labels, it merges their `ports` lists. The same port cannot be configured multiple times (extra entries are discarded).
 
 **Important:** mirrord-agent will search for all files and directories referenced by the config resources in the target container filesystem.
 
-## Configuring delivery of stolen HTTPS to your local application 
+### Configuring delivery of stolen HTTPS to your local application
 
-By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS.
-The connection is be made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
+By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is be made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
 
-This behavior can be configured in your mirrord config with [`feature.network.incoming.https_delivery`](/reference/configuration#feature-network-incoming-https_delivery).
+This behavior can be configured in your mirrord config with [`feature.network.incoming.https_delivery`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-https_delivery).

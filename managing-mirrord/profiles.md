@@ -1,25 +1,28 @@
 ---
-title: "Profiles"
-description: "Reusable mirrord config templates"
-date: 2024-03-25T00:00:00+00:00
-lastmod: 2024-03-25T00:00:00+00:00
+title: Profiles
+date: 2024-03-25T00:00:00.000Z
+lastmod: 2024-03-25T00:00:00.000Z
 draft: false
 images: []
-linktitle: "Profiles"
-menu:
-docs:
-teams:
+linktitle: Profiles
+menu: null
+docs: null
+teams: null
 weight: 530
 toc: true
-tags: ["team", "enterprise"]
+tags:
+  - team
+  - enterprise
+description: Reusable mirrord config templates
 ---
-The installation of the mirrord operator defines a new clusterwide [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
-in your cluster, called `MirrordProfile`.
 
-<Info>This feature is only relevant for users on the Team and Enterprise pricing plans.</Info>
+# Profiles
 
-This resource can be used to provide mirrord users with a unified base for their mirrord configs.
-Users can reference an available profile in their configs, and they will be modified accordingly.
+The installation of the mirrord operator defines a new clusterwide [custom resource](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster, called `MirrordProfile`.
+
+This feature is only relevant for users on the Team and Enterprise pricing plans.
+
+This resource can be used to provide mirrord users with a unified base for their mirrord configs. Users can reference an available profile in their configs, and they will be modified accordingly.
 
 ```yaml
 apiVersion: profiles.mirrord.metalbear.co/v1alpha
@@ -41,6 +44,7 @@ spec:
 ```
 
 The complete list of allowed values for the `featureAdjustments.[].change` field is as follows:
+
 1. `incoming-mirror` - incoming traffic will be mirrored
 2. `incoming-steal` - incoming traffic will be stolen
 3. `incoming-off` - incoming traffic will not be intercepted
@@ -49,10 +53,9 @@ The complete list of allowed values for the `featureAdjustments.[].change` field
 6. `outgoing-remote` - all outgoing traffic will be remote
 7. `outgoing-off` - all outgoing traffic will be local
 
-### Selecting a profile
+#### Selecting a profile
 
-Starting from mirrord version 3.136.0, the user can select a mirrord profile in their mirrord config.
-The profile is referenced by its name.
+Starting from mirrord version 3.136.0, the user can select a mirrord profile in their mirrord config. The profile is referenced by its name.
 
 ```json
 {
@@ -60,8 +63,8 @@ The profile is referenced by its name.
 }
 ```
 
-### Enforcing profiles
+#### Enforcing profiles
 
-Use of mirrord profiles can be enforced with [mirrord policies](/managing-mirrord/policies/#profile-policy).
+Use of mirrord profiles can be enforced with [mirrord policies](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/managing-mirrord/policies/README.md#profile-policy).
 
 **Important:** mirrord profiles are applied to the session on the user machine, and should not be used as security features.

@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Getting Started](overview/overview.md)
+* [Getting Started](README.md)
   * [mirrord for Teams](overview/teams.md)
   * [Quick Start](overview/quick-start.md)
   * [Contributing](overview/contributing.md)
@@ -38,3 +38,8 @@
   * [Comparisons](faq/comparisons.md)
   * [General](faq/general.md)
   * [Limitations](faq/limitations.md)
+
+## Somegroup
+
+* [Page 1](somegroup/page-1.md)
+* [Page 2](somegroup/page-2.md)

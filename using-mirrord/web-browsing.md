@@ -1,26 +1,30 @@
 ---
-title: "Web Browsing"
-description: "Using mirrord & browser to set your IP address"
-date: 2024-01-30T17:03:00+00:00
-lastmod: 2024-01-30T17:03:00+00:00
+title: Web Browsing
+date: 2024-01-30T17:03:00.000Z
+lastmod: 2024-01-30T17:03:00.000Z
 draft: false
 menu:
   docs:
-    parent: "using-mirrord"
+    parent: using-mirrord
 weight: 135
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags:
+  - open source
+  - team
+  - enterprise
+description: Using mirrord & browser to set your IP address
 ---
 
-One way to use mirrord's [targetless mode](/using-mirrord/targetless) is to set up your browser to use the IP address of the remote target. This way, you can browse the web as if you were in the same location as the remote target. Below is a guide on how to do this with Google Chrome.
+# Web Browsing
 
-#### Prerequisites
+One way to use mirrord's [targetless mode](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/targetless/README.md) is to set up your browser to use the IP address of the remote target. This way, you can browse the web as if you were in the same location as the remote target. Below is a guide on how to do this with Google Chrome.
+
+**Prerequisites**
 
 1. [Install microsocks](https://github.com/rofl0r/microsocks) (via brew or apt)
-2. [Install "Socks5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb) 
+2. [Install "Socks5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb)
 
-
-#### Steps
+**Steps**
 
 1. In a terminal session, trigger `microsocks` using `mirrord`.
    * If you want to use a specific target's network: `mirrord exec -t deployment/my_deployment microsocks`
@@ -31,9 +35,10 @@ One way to use mirrord's [targetless mode](/using-mirrord/targetless) is to set 
    2. Make sure the "Socks5 Proxy" is enabled
    3. Type in its respective textbox `127.0.0.1:1080`
    4. Hit the save button
-3. That's it! You can verify your IP address has changed via a quick "what is my ip address" search in Google 
-  
-## What's next?
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](/using-mirrord/steal). Note that you can even filter which traffic you intercept!
-2. If your local process reads from a queue, you might want to test out the [copy target feature](/using-mirrord/copy-target), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
-3. If you just want to learn more about mirrord, why not check out our [architecture](/reference/architecture) or [configuration](/reference/configuration) sections?
+3. That's it! You can verify your IP address has changed via a quick "what is my ip address" search in Google
+
+### What's next?
+
+1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal/README.md). Note that you can even filter which traffic you intercept!
+2. If your local process reads from a queue, you might want to test out the [copy target feature](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/copy-target/README.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
+3. If you just want to learn more about mirrord, why not check out our [architecture](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/architecture/README.md) or [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md) sections?

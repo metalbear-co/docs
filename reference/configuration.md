@@ -591,7 +591,7 @@ Common cases would be running with dlv or any other debugger, which sets a break
 
 Controls mirrord features.
 
-See the [technical reference](./) to learn more about what each feature does.
+See the [technical reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/README.md) to learn more about what each feature does.
 
 The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) and [`network`](configuration.md#feature-network) options have support for a shortened version, that you can see [here](configuration.md#root-shortened).
 
@@ -641,7 +641,7 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
 
 ### feature.copy\_target
 
-Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../overview/teams).
+Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/overview/teams/?utm_source=copytarget/README.md).
 
 This feature is not compatible with rollout targets and running without a target (`targetless` mode).
 
@@ -689,7 +689,7 @@ Can be set to one of the options:
 
 Which environment variables to load from the remote pod are controlled by setting either [`include`](configuration.md#feature-env-include) or [`exclude`](configuration.md#feature-env-exclude).
 
-See the environment variables [reference](env/) for more details.
+See the environment variables [reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/env/README.md) for more details.
 
 ```json
 {
@@ -807,7 +807,7 @@ The logic for choosing the behavior is as follows:
     In order to override that default setting for a path, or a pattern, include it the appropriate pattern set from above. E.g. in order to read files under `/etc/` remotely even though it is covered by [the set of patterns that are read locally by default](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs), add `"^/etc/."` to the `read_only` set.
 4. If none of the above match, use the default behavior (mode).
 
-For more information, check the file operations [technical reference](fileops/).
+For more information, check the file operations [technical reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/fileops/README.md).
 
 ```json
 {
@@ -884,7 +884,7 @@ Should mirrord return the hostname of the target pod when calling `gethostname`
 
 Controls mirrord network operations.
 
-See the network traffic [reference](traffic/) for more details.
+See the network traffic [reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/traffic/README.md) for more details.
 
 ```json
 {
@@ -986,7 +986,7 @@ Valid values follow this pattern: `[name|address|subnet/mask][:port]`.
 
 Controls the incoming TCP traffic feature.
 
-See the incoming [reference](traffic/#incoming) for more details.
+See the incoming [reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/traffic/README.md#incoming) for more details.
 
 Incoming traffic supports 3 [modes](configuration.md#feature-network-incoming-mode) of operation:
 
@@ -1319,7 +1319,7 @@ Enable ipv6 support. Turn on if your application listens to incoming traffic ove
 
 Tunnel outgoing network operations through mirrord.
 
-See the outgoing [reference](traffic/#outgoing) for more details.
+See the outgoing [reference](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/traffic/README.md#outgoing) for more details.
 
 The `remote` and `local` config for this feature are **mutually** exclusive.
 

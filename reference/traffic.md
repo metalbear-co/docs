@@ -135,7 +135,7 @@ Currently only supported in `steal` mode: mirrord lets you specify a regular exp
 
 **Specifying a Filter**
 
-An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](configuration/#feature-network-incoming-http-header-filter) or [`feature.network.incoming.http_filter.path_filter`](configuration/#feature-network-incoming-http-path-filter).
+An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-http-header-filter) or [`feature.network.incoming.http_filter.path_filter`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-http-path-filter).
 
 **Setting Custom HTTP Ports**
 

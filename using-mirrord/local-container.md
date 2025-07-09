@@ -1,16 +1,21 @@
 ---
-title: "Local Container"
-description: "How to run mirrord on a local container instead of a local process"
-date: 2020-11-16T13:59:39+01:00
-lastmod: 2020-11-16T13:59:39+01:00
+title: Local Container
+date: 2020-11-16T12:59:39.000Z
+lastmod: 2020-11-16T12:59:39.000Z
 draft: false
 menu:
   docs:
-    parent: "using-mirrord"
+    parent: using-mirrord
 weight: 133
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags:
+  - open source
+  - team
+  - enterprise
+description: How to run mirrord on a local container instead of a local process
 ---
+
+# Local Container
 
 The common way to use mirrord is on a locally running process. This way you can easily debug it in your IDE, as well as make quick changes and test them out without going through the additional layer of containerization.
 
@@ -21,6 +26,7 @@ mirrord container --target <target-path> -- <command used to run the local conta
 ```
 
 For example:
+
 ```bash
 mirrord container -- docker run nginx
 ```
@@ -29,7 +35,8 @@ In addition to Docker, Podman and nerdctl are also supported.
 
 Local container execution is currently only supported in the mirrord CLI tool. IDE extension support will be added in the future.
 
-## What's next?
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](/using-mirrord/steal/). Note that you can even filter which traffic you intercept!
-2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](/using-mirrord/targetless/).
-3. If you just want to learn more about mirrord, why not check out our [architecture](/reference/architecture) or [configuration](/reference/configuration) sections?
+### What's next?
+
+1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal/README.md). Note that you can even filter which traffic you intercept!
+2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/targetless/README.md).
+3. If you just want to learn more about mirrord, why not check out our [architecture](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/architecture/README.md) or [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md) sections?
