@@ -49,7 +49,7 @@ When you start your local process with mirrord, it creates a pod in your cloud e
 
 The remote part of this logic is handled by the agent, which runs in the network namespace of the remote pod, and can access its file system and environment variables.
 
-For further details, see the [architecture](../../reference/architecture/) section.
+For further details, see the [architecture](../reference/architecture.md) section.
 
 
 ## How it's different from other remocal solutions
