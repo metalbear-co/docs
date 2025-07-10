@@ -32,7 +32,7 @@ Yes, mirrord works exactly the same way with and without a service mesh installe
 
 #### Does mirrord support OpenShift?
 
-Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](overview/teams.md).
+Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](../overview/teams.md).
 
 #### Does mirrord support binaries that are statically compiled? (Linux)
 
