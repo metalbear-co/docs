@@ -91,13 +91,13 @@ If the user doesn't have `get` access to the targets, then they won't be able to
 
 ### How can I prevent users in my team from stealing or mirroring traffic from a target?
 
-You can define [policies](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/managing-mirrord/policies/README.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
+You can define [policies](../managing-mirrord/policies.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
 
 ### How can I prevent users from using mirrord without going through the Operator?
 
 When the mirrord CLI starts, it checks if an Operator is installed in the cluster and uses it if it's available. However, if the user lacks access to the Operator or if the Operator doesn't exist, mirrord attempts to create an agent directly.
 
-To prevent clients from attempting to create an agent without the Operator, you can add the [following key](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#root-operator) to the mirrord configuration file:
+To prevent clients from attempting to create an agent without the Operator, you can add the [following key](../reference/configuration.md#operator) to the mirrord configuration file:
 
 ```json
 {
@@ -133,4 +133,4 @@ _NB: If you are using a certificate manager, make sure you set up reminders for 
 
 #### Set up network policies for communication
 
-Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#agent-ephemeral)).
+Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](../reference/configuration.md#agent.ephemeral)).

@@ -90,7 +90,7 @@ When the `local` mode is set, all files will be opened locally. This might preve
 
 If an agent pod's status is `Running`, it means mirrord is probably still running locally as well. Once you terminate the local process, the agent pod's status should change to `Completed`.
 
-On clusters with Kubernetes version v1.23 or higher, agent pods are [automatically cleaned up](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) immediately (or after a [configurable TTL](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#agent-ttl)). If your cluster is v1.23 or higher and mirrord agent pods are not being cleaned up automatically, [please open an issue on GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=\&labels=bug\&projects=\&template=bug_report.yml\&title=Agent%20pods%20lingering%20after%20completion). As a temporary solution for cleaning up completed agent pods manually, you can run:
+On clusters with Kubernetes version v1.23 or higher, agent pods are [automatically cleaned up](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) immediately (or after a [configurable TTL](../reference/configuration.md#agent.ttl)). If your cluster is v1.23 or higher and mirrord agent pods are not being cleaned up automatically, [please open an issue on GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=\&labels=bug\&projects=\&template=bug_report.yml\&title=Agent%20pods%20lingering%20after%20completion). As a temporary solution for cleaning up completed agent pods manually, you can run:
 
 ```shell
 kubectl delete jobs --selector=app=mirrord --field-selector=status.successful=1
@@ -132,7 +132,7 @@ Other alternatives are to either disable certificate validation in your applicat
 
 #### Agent connection fails or drops when using an ephemeral agent with a service mesh
 
-When running the agent as an [ephemeral container](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#agent-ephemeral), the agent shares the network stack with the target pod. This means that incoming connections to the agent are handled by the service mesh, which might drop it for various reasons (lack of TLS, not HTTP, etc.) To work around that, set the agent.port to be static using `agent.port` in values.yaml when installing the operator, then add a port exclusion for the agent port in your service mesh's configuration. For example, if you use Istio and have set the agent port to 5000, you can add the following annotation for exclusion:
+When running the agent as an [ephemeral container](../reference/configuration.md#agent.ephemeral), the agent shares the network stack with the target pod. This means that incoming connections to the agent are handled by the service mesh, which might drop it for various reasons (lack of TLS, not HTTP, etc.) To work around that, set the agent.port to be static using `agent.port` in values.yaml when installing the operator, then add a port exclusion for the agent port in your service mesh's configuration. For example, if you use Istio and have set the agent port to 5000, you can add the following annotation for exclusion:
 
 ```
 traffic.sidecar.istio.io/excludeInboundPorts: '50000'

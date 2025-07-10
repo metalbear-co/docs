@@ -71,7 +71,7 @@ If your operator(s) are running at on a different cluster, make sure the `mirror
 
 #### Connecting Operators to the License Server
 
-First update your operator [`values.yaml`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/overview/quick-start/README.md#helm) for quickstart helm setup for operator) file:
+First update your operator [`values.yaml`](../overview/quick-start.md#helm) for quickstart helm setup for operator) file:
 
 ```yaml
 # ./values.yaml

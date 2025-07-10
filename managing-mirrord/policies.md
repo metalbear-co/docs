@@ -26,7 +26,7 @@ The installation of the mirrord operator defines two [custom resources](https://
 
 This feature is only relevant for users on the Team and Enterprise pricing plans.
 
-#### Blockable features
+## Blockable features
 
 Currently the set of blockable features contains:
 
@@ -40,13 +40,13 @@ If you are not using the latest operator version, the set of supported blockable
 kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spec.versions[-1].schema.openAPIV3Schema.properties.spec.properties.block.items.enum}'
 ```
 
-#### Controllable features
+## Controllable features
 
 Some policies are not for outright blocking features, instead they change behaviour, overriding what the user has set in their mirrord config file.
 
 You may use these features to change which files may be accessed in the target, or which environment variables may be retrieved. These policies should not be relied upon for security, and should instead be considered convenience policies.
 
-**env policy**
+### env policy
 
 _Added in mirrord Operator version 3.103.0_
 
@@ -68,7 +68,7 @@ If you are not using the latest operator version, the env policy options might b
 kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spec.versions[-1].schema.openAPIV3Schema.properties.spec.properties.env}'
 ```
 
-**fs policy**
+### fs policy
 
 _Added in mirrord Operator version 3.103.0_
 
@@ -90,11 +90,11 @@ If the policy is set with `readOnly: [".+\\.json"]`, and the user tries to open 
 kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spec.versions[-1].schema.openAPIV3Schema.properties.spec.properties.fs}'
 ```
 
-**network policy**
+### network policy
 
 _Added in mirrord Operator version 3.105.0_
 
-Allows the operator to control which patterns may be used as [HTTP header filters](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal/README.md#stealing-only-a-subset-of-the-remote-targets-traffic). Header filters specified by the user must match the regex specified in the network policy.
+Allows the operator to control which patterns may be used as [HTTP header filters](../using-mirrord/steal.md#stealing-only-a-subset-of-the-remote-targets-traffic). Header filters specified by the user must match the regex specified in the network policy.
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
@@ -132,11 +132,11 @@ this also works _any of_ or _all of_ patterns
 
 **Important:** `steal-without-filter` will be automatically enabled once any http filter is specified.
 
-**profile policy**
+### profile policy
 
 _Added in mirrord Operator version 3.108.0_
 
-Allows the operator to enforce using a [mirrord profile](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/managing-mirrord/profiles/README.md) and to specify a set of allowed profiles.
+Allows the operator to enforce using a [mirrord profile](../managing-mirrord/profiles.md) and to specify a set of allowed profiles.
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
@@ -166,7 +166,7 @@ The example above will enforce that the user selects either `my-profile-1` or `m
 
 **Important:** mirrord profiles are applied to the session on the user machine, and should not be used as security features.
 
-#### Restricting targets affected by mirrord policies
+## Restricting targets affected by mirrord policies
 
 By default, mirrord policies apply to all targets in the namespace or cluster. You can use a target path pattern (`.spec.targetPath`) and/or a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#resources-that-support-set-based-requirements) (`.spec.selector`) in order to limit the targets to which a policy applies.
 

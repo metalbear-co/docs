@@ -97,7 +97,7 @@ To use extension, click the 'Enable mirrord' button in the status bar at the bot
 
 #### Configuration
 
-The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
+The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
 
 ### IntelliJ Plugin
 
@@ -111,7 +111,7 @@ To use extension, click the mirrord icon in the Navigation Toolbar at the top ri
 
 #### Configuration
 
-The IntelliJ plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md).
+The IntelliJ plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md).
 
 ### Operator
 
@@ -179,7 +179,7 @@ After installing the Operator, you can verify it works by running `mirrord opera
 
 ### Test it out!
 
-Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-mode)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-port_mapping)).
+Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](../reference/configuration.md#feature.network.incoming.mode)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](../reference/configuration.md#feature.network.incoming.port_mapping)).
 
 To test this out, enable mirrord in your IDE plugin and start debugging your process (or execute your process with the mirrord CLI). Send a request to your remote target, and you should see that request arriving at your local process as well!
 
@@ -190,13 +190,13 @@ Note that, by default, the following features are also enabled:
 3. DNS resolution for your local process will happen on the remote target
 4. Outgoing traffic sent by your local process will be sent out from the remote target instead, and the response will be sent back to your local process
 
-We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md).
+We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](../reference/configuration.md).
 
 ### What's next?
 
 Now that you've tried out mirrord, it's time to get acquainted with its different configuration options and tailor it to your needs:
 
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal/README.md). Note that you can even filter which traffic you intercept!
-2. If your local process reads from a queue, you might want to test out the [copy target feature](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/copy-target/README.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
-3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/targetless/README.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/architecture/README.md) or [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md) sections?
+1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
+2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
+3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
+4. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](../reference/configuration.md) sections?

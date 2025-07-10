@@ -47,7 +47,7 @@ Fields:
 | session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirrored` `Port Released` `Session Started` `Session Ended` |
 | session\_duration | the session's duration in seconds                                                                                                                                            | `Session Ended`                                                                |
 | port              | port number                                                                                                                                                                  | `Port Stolen` `Port Mirrored` `Port Released`                                  |
-| http\_filter      | the client's configured [HTTP Filter](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-http-filter) | `Port Stolen`                                                                  |
+| http\_filter      | the client's configured [HTTP Filter](../reference/configuration.md#feature.network) | `Port Stolen`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Target Copied`                                                                |
 
 ### Prometheus
@@ -83,13 +83,13 @@ operator:
 
 We offer a DataDog dashboard you can import to track statistics.
 
-Download it [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/mirrord/datadog/Mirrord_Operator_Dashboard.json)
+Download it [here](https://metalbear.co/mirrord/datadog/Mirrord_Operator_Dashboard.json)
 
 ### Grafana Dashboard
 
 Alternatively there is a Grafana dashboard you can import to track statistics.
 
-Download it [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/mirrord/grafana/Mirrord_Operator_Dashboard.json)
+Download it [here](https://metalbear.co/mirrord/grafana/Mirrord_Operator_Dashboard.json)
 
 ### fluentd
 
@@ -113,4 +113,4 @@ This will expand all the extra fields stored in "log" field.
 
 Assuming you are using `logstash_format true` and the connected mapping will store the extra fields in a `keyword` type, we have a ready made dashboard you can simply import.
 
-Download it [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/mirrord/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
+Download it [here](https://metalbear.co/mirrord/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
