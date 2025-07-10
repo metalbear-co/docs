@@ -639,7 +639,7 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
 }
 ```
 
-## feature.copy\_target
+### feature.copy\_target
 
 Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../overview/teams.md).
 
@@ -665,7 +665,7 @@ Allows the user to target a pod created dynamically from the orignal [`target`](
 }
 ```
 
-### feature.copy\_target.scale\_down
+#### feature.copy\_target.scale\_down
 
 If this option is set, mirrord will scale down the target deployment to 0 for the time the copied pod is alive.
 
@@ -677,7 +677,7 @@ This option is compatible only with deployment targets.
     }
 ```
 
-## feature.env
+### feature.env
 
 Allows the user to set or override the local process' environment variables with the ones from the remote pod.
 
@@ -709,13 +709,13 @@ See the environment variables [reference](env.md) for more details.
 }
 ```
 
-### feature.env\_file
+#### feature.env\_file
 
 Allows for passing environment variables from an env file.
 
 These variables will override environment fetched from the remote target.
 
-### feature.env.exclude
+#### feature.env.exclude
 
 Include the remote environment variables in the local process that are **NOT** specified by this option. Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of any character and `*` matches arbitrary many (including zero) occurrences of any character.
 
@@ -723,7 +723,7 @@ Some of the variables that are excluded by default: `PATH`, `HOME`, `HOMEPATH`, 
 
 Can be passed as a list or as a semicolon-delimited string (e.g. `"VAR;OTHER_VAR"`).
 
-### feature.env.include
+#### feature.env.include
 
 Include only these remote environment variables in the local process. Variable names can be matched using `*` and `?` where `?` matches exactly one occurrence of any character and `*` matches arbitrary many (including zero) occurrences of any character.
 
@@ -731,13 +731,13 @@ Can be passed as a list or as a semicolon-delimited string (e.g. `"VAR;OTHER_VAR
 
 Some environment variables are excluded by default (`PATH` for example), including these requires specifying them with `include`
 
-### feature.env.load\_from\_process
+#### feature.env.load\_from\_process
 
 Allows for changing the way mirrord loads remote environment variables. If set, the variables are fetched after the user application is started.
 
 This setting is meant to resolve issues when using mirrord via the IntelliJ plugin on WSL and the remote environment contains a lot of variables.
 
-### feature.env.mapping
+#### feature.env.mapping
 
 Specify map of patterns that if matched will replace the value according to specification.
 
@@ -759,7 +759,7 @@ Will do the next replacements for environment variables that match:
 * `LOG_FILE_VERBOSITY: info` => `LOG_FILE_VERBOSITY: debug`
 * `DATA_1234: common-value` => `DATA_1234: magic-value`
 
-### feature.env.override
+#### feature.env.override
 
 Allows setting or overriding environment variables (locally) with a custom value.
 
@@ -767,13 +767,13 @@ For example, if the remote pod has an environment variable `REGION=1`, but this 
 
 Environment specified here will also override variables passed via the env file.
 
-### feature.env.unset
+#### feature.env.unset
 
 Allows unsetting environment variables in the executed process.
 
 This is useful for when some system/user-defined environment like `AWS_PROFILE` make the application behave as if it's running locally, instead of using the remote settings. The unsetting happens from extension (if possible)/CLI and when process initializes. In some cases, such as Go the env might not be able to be modified from the process itself. This is case insensitive, meaning if you'd put `AWS_PROFILE` it'd unset both `AWS_PROFILE` and `Aws_Profile` and other variations.
 
-## feature.fs
+### feature.fs
 
 Allows the user to specify the default behavior for file operations:
 
@@ -823,11 +823,11 @@ For more information, check the file operations [technical reference](fileops.md
 }
 ```
 
-### feature.fs.local
+#### feature.fs.local
 
 Specify file path patterns that if matched will be opened locally.
 
-### feature.fs.mapping
+#### feature.fs.mapping
 
 Specify map of patterns that if matched will replace the path according to specification.
 
@@ -848,7 +848,7 @@ Will do the next replacements for any io operaton
 
 * Relative paths: this feature (currently) does not apply mappings to relative paths, e.g. `../dev`.
 
-### feature.fs.mode
+#### feature.fs.mode
 
 Configuration for enabling read-only or read-write file operations.
 
@@ -858,29 +858,29 @@ If you set [`"localwithoverrides"`](configuration.md#feature-fs-mode-localwithov
 
 The accepted values are: `"local"`, `"localwithoverrides`, `"read"`, or `"write`.
 
-### feature.fs.not\_found
+#### feature.fs.not\_found
 
 Specify file path patterns that if matched will be treated as non-existent.
 
-### feature.fs.read\_only
+#### feature.fs.read\_only
 
 Specify file path patterns that if matched will be read from the remote. if file matching the pattern is opened for writing or read/write it will be opened locally.
 
-### feature.fs.read\_write
+#### feature.fs.read\_write
 
 Specify file path patterns that if matched will be read and written to the remote.
 
-### feature.fs.readonly\_file\_buffer
+#### feature.fs.readonly\_file\_buffer
 
 Sets buffer size for read-only remote files in bytes. By default, the value is 128000 bytes, or 128 kB.
 
 Setting the value to 0 disables file buffering. Otherwise, read-only remote files will be read in chunks and buffered locally. This improves performance when the user application reads data in small portions.
 
-## feature.hostname
+### feature.hostname
 
 Should mirrord return the hostname of the target pod when calling `gethostname`
 
-## feature.network
+### feature.network
 
 Controls mirrord network operations.
 
@@ -919,7 +919,7 @@ See the network traffic [reference](traffic.md) for more details.
 }
 ```
 
-### feature.network.dns
+#### feature.network.dns
 
 Resolve DNS via the remote pod.
 
@@ -930,7 +930,7 @@ Mind that:
 * DNS resolving can be done in multiple ways. Some frameworks use `getaddrinfo`/`gethostbyname` functions, while others communicate directly with the DNS server at port `53` and perform a sort of manual resolution. Just enabling the `dns` feature in mirrord might not be enough. If you see an address resolution error, try enabling the [`fs`](configuration.md#feature-fs) feature, and setting `read_only: ["/etc/resolv.conf"]`.
 * DNS filter currently works only with frameworks that use `getaddrinfo`/`gethostbyname` functions.
 
-#### feature.network.dns.filter
+##### feature.network.dns.filter
 
 Unstable: the precise syntax of this config is subject to change.
 
@@ -982,7 +982,7 @@ Takes a list of values, such as:
 
 Valid values follow this pattern: `[name|address|subnet/mask][:port]`.
 
-### feature.network.incoming
+#### feature.network.incoming
 
 Controls the incoming TCP traffic feature.
 
@@ -1048,7 +1048,7 @@ Steal only traffic that matches the [`http_filter`](configuration.md#feature-net
 }
 ```
 
-#### feature.network.incoming.http\_filter
+##### feature.network.incoming.http\_filter
 
 Filter configuration for the HTTP traffic stealer feature.
 
@@ -1120,7 +1120,7 @@ If you want to steal HTTP requests that match **any** of the patterns specified,
 }
 ```
 
-#### feature.network.incoming.http\_filter.all\_of
+##### feature.network.incoming.http\_filter.all\_of
 
 An array of HTTP filters.
 
@@ -1139,7 +1139,7 @@ Example:
 }
 ```
 
-#### feature.network.incoming.http\_filter.any\_of
+##### feature.network.incoming.http\_filter.any\_of
 
 An array of HTTP filters.
 
@@ -1158,19 +1158,19 @@ Example:
 }
 ```
 
-#### feature.network.incoming.http\_filter.header\_filter
+##### feature.network.incoming.http\_filter.header\_filter
 
 Supports regexes validated by the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
 
 The HTTP traffic feature converts the HTTP headers to `HeaderKey: HeaderValue`, case-insensitive.
 
-#### feature.network.incoming.http\_filter.path\_filter
+##### feature.network.incoming.http\_filter.path\_filter
 
 Supports regexes validated by the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/) crate.
 
 Case-insensitive. Tries to find match in the path (without query) and path+query. If any of the two matches, the request is stolen.
 
-#### feature.network.incoming.http\_filter.ports
+##### feature.network.incoming.http\_filter.ports
 
 Activate the HTTP traffic filter only for these ports.
 
@@ -1178,7 +1178,7 @@ Other ports will _not_ be stolen, unless listed in [`feature.network.incoming.po
 
 Set to \[80, 8080] by default.
 
-#### feature.network.incoming.https\_delivery
+##### feature.network.incoming.https\_delivery
 
 (Operator Only): configures how mirrord delivers stolen HTTPS requests to the local application.
 
@@ -1239,7 +1239,7 @@ If you don't supply the server name:
 3. Otherwise, if the stolen request's URL contains a valid server name, that server name will be used;
 4. Otherwise, `localhost` will be used.
 
-#### feature.network.incoming.https\_delivery.protocol
+##### feature.network.incoming.https\_delivery.protocol
 
 Protocol to use when delivering the HTTPS requests locally.
 
@@ -1247,13 +1247,13 @@ Path to a PEM file containing the certificate chain used by the local applicatio
 
 This file must contain at least one certificate. It can contain entries of other types, e.g private keys, which are ignored.
 
-#### feature.network.incoming.https\_delivery.server\_name
+##### feature.network.incoming.https\_delivery.server\_name
 
 Server name to use when making a connection.
 
 Must be a valid DNS name or an IP address.
 
-#### feature.network.incoming.https\_delivery.trust\_roots
+##### feature.network.incoming.https\_delivery.trust\_roots
 
 Paths to PEM files and directories with PEM files containing allowed root certificates.
 
@@ -1261,9 +1261,9 @@ Directories are not traversed recursively.
 
 Each certificate found in the files is treated as an allowed root. The files can contain entries of other types, e.g private keys, which are ignored.
 
-#### feature.network.incoming.ignore\_localhost
+##### feature.network.incoming.ignore\_localhost
 
-#### feature.network.incoming.ignore\_ports
+##### feature.network.incoming.ignore\_ports
 
 Ports to ignore when mirroring/stealing traffic, these ports will remain local.
 
@@ -1271,13 +1271,13 @@ Can be especially useful when [`feature.network.incoming.mode`](configuration.md
 
 Mutually exclusive with [`feature.network.incoming.ports`](configuration.md#feature-network-ports).
 
-#### feature.network.incoming.listen\_ports
+##### feature.network.incoming.listen\_ports
 
 Mapping for local ports to actually used local ports. When application listens on a port while steal/mirror is active we fallback to random ports to avoid port conflicts. Using this configuration will always use the specified port. If this configuration doesn't exist, mirrord will try to listen on the original port and if it fails it will assign a random port
 
 This is useful when you want to access ports exposed by your service locally For example, if you have a service that listens on port `80` and you want to access it, you probably can't listen on `80` without sudo, so you can use `[[80, 4480]]` then access it on `4480` while getting traffic from remote `80`. The value of `port_mapping` doesn't affect this.
 
-#### feature.network.incoming.mode
+##### feature.network.incoming.mode
 
 Allows selecting between mirrorring or stealing traffic.
 
@@ -1290,7 +1290,7 @@ Can be set to either `"mirror"` (default), `"steal"` or `"off"`.
 1. Port traffic stealing: Steals all TCP data from a port, which is selected whenever the user listens in a TCP socket (enabling the feature is enough to make this work, no additional configuration is needed);
 2. HTTP traffic stealing: Steals only HTTP traffic, mirrord tries to detect if the incoming data on a port is HTTP (in a best-effort kind of way, not guaranteed to be HTTP), and steals the traffic on the port if it is HTTP;
 
-#### feature.network.incoming.on\_concurrent\_steal
+##### feature.network.incoming.on\_concurrent\_steal
 
 (Operator Only): Allows overriding port locks
 
@@ -1299,23 +1299,23 @@ Can be set to either `"continue"` or `"override"`.
 * `"continue"`: Continue with normal execution
 * `"override"`: If port lock detected then override it with new lock and force close the original locking connection.
 
-#### feature.network.incoming.port\_mapping
+##### feature.network.incoming.port\_mapping
 
 Mapping for local ports to remote ports.
 
 This is useful when you want to mirror/steal a port to a different port on the remote machine. For example, your local process listens on port `9333` and the container listens on port `80`. You'd use `[[9333, 80]]`
 
-#### feature.network.incoming.ports
+##### feature.network.incoming.ports
 
 List of ports to mirror/steal traffic from. Other ports will remain local.
 
 Mutually exclusive with [`feature.network.incoming.ignore_ports`](configuration.md#feature-network-ignore_ports).
 
-### feature.network.ipv6
+#### feature.network.ipv6
 
 Enable ipv6 support. Turn on if your application listens to incoming traffic over IPv6, or connects to other services over IPv6.
 
-### feature.network.outgoing
+#### feature.network.outgoing
 
 Tunnel outgoing network operations through mirrord.
 
@@ -1341,7 +1341,7 @@ The `remote` and `local` config for this feature are **mutually** exclusive.
 }
 ```
 
-**feature.network.outgoing.filter**
+##### feature.network.outgoing.filter
 
 Filters that are used to send specific traffic from either the remote pod or the local app
 
@@ -1385,19 +1385,19 @@ Takes a list of values, such as:
 
 Valid values follow this pattern: `[protocol]://[name|address|subnet/mask]:[port]`.
 
-**feature.network.outgoing.ignore\_localhost**
+##### feature.network.outgoing.ignore\_localhost
 
 Defaults to `false`.
 
-**feature.network.outgoing.tcp**
+##### feature.network.outgoing.tcp
 
 Defaults to `true`.
 
-**feature.network.outgoing.udp**
+##### feature.network.outgoing.udp
 
 Defaults to `true`.
 
-**feature.network.outgoing.unix\_streams**
+##### feature.network.outgoing.unix\_streams
 
 Connect to these unix streams remotely (and to all other paths locally).
 
@@ -1405,7 +1405,7 @@ You can either specify a single value or an array of values. Each value is inter
 
 When your application connects to a unix socket, the target address will be converted to a string (non-utf8 bytes are replaced by a placeholder character) and matched against the set of regexes specified here. If there is a match, mirrord will connect your application with the target unix socket address on the target pod. Otherwise, it will leave the connection to happen locally on your machine.
 
-## feature.split\_queues
+### feature.split\_queues
 
 Define filters to split queues by, and make your local application consume only messages that match those filters. If you don't specify any filter for a queue that is however declared in the `MirrordWorkloadQueueRegistry` of the target you're using, a match-nothing filter will be used, and your local application will not receive any messages from that queue.
 
