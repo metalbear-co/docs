@@ -31,7 +31,7 @@ There are currently two known cases where mirrord cannot load into the applicati
 
     Please let us know if you're having trouble with SIP by opening an issue on [GitHub](https://github.com/metalbear-co/mirrord) or talking to us on [Discord](https://discord.gg/metalbear).
 
-Another reason that mirrord might seem not to work is if your remote pod has more than one container. mirrord works at the level of the container, not the whole pod. If your pod runs multiple containers, you need to make sure mirrord targets the correct one by by specifying it explicitly in the [target configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#root-target). Note that we filter out the proxy containers added by popular service meshes automatically.
+Another reason that mirrord might seem not to work is if your remote pod has more than one container. mirrord works at the level of the container, not the whole pod. If your pod runs multiple containers, you need to make sure mirrord targets the correct one by by specifying it explicitly in the [target configuration](../reference/configuration.md#root-target). Note that we filter out the proxy containers added by popular service meshes automatically.
 
 #### When running a Go program on Linux, DNS and outgoing traffic filters seem to have no effect
 
@@ -53,7 +53,7 @@ When executing a task Turbo strips most of the existing process environment, inc
 
 #### Incoming traffic to the remote target doesn't reach my local process
 
-This could happen because the local process is listening on a different port than the remote target. You can either change the local process to listen on the same port as the remote target (don't worry about the port being used locally by other processes), or use the [`port_mapping` configuration ](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-port_mapping)to map the local port to a remote port.
+This could happen because the local process is listening on a different port than the remote target. You can either change the local process to listen on the same port as the remote target (don't worry about the port being used locally by other processes), or use the [`port_mapping` configuration ](../reference/configuration.md#feature.network.incoming)to map the local port to a remote port.
 
 #### The remote target stops receiving remote traffic, but it doesn't reach my local process either
 
