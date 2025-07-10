@@ -52,4 +52,4 @@ marvin@heart-of-gold:~/MetalBear$ file some_static_binary
 some_static_binary: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=2e1eda62d5f755377435c009e856cd7b9836734e, for GNU/Linux 3.2.0, not stripped
 ```
 
-Sometimes Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](faq/common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.
+Sometimes Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.
