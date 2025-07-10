@@ -19,7 +19,7 @@ description: Sharing queues by splitting messages between multiple clients and t
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
 1. Running your application with mirrord without any special configuration will result in your local application competing with the remote target (and potentially other mirrord runs by teammates) for queue messages.
-2. Running your application with [`copy_target` + `scale_down`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/copy-target/README.md#replacing-a-whole-deployment-using-scale_down) will result in the deployed application not consuming any messages, and your local application being the exclusive consumer of queue messages.
+2. Running your application with [`copy_target` + `scale_down`](copy-target.md#replacing-a-whole-deployment-using-scale_down) will result in the deployed application not consuming any messages, and your local application being the exclusive consumer of queue messages.
 3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 This feature is only relevant for users on the Team and Enterprise pricing plans.
@@ -421,7 +421,7 @@ Once everything else is set, you can start using message filters in your mirrord
 }
 ```
 
-* [`feature.split_queues`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-split_queues) is the configuration field you need to specify in order to filter queue messages. Directly under it, we have a mapping from a queue or topic ID to a queue filter definition.
+* [`feature.split_queues`](../reference/configuration.md#feature.split_queues) is the configuration field you need to specify in order to filter queue messages. Directly under it, we have a mapping from a queue or topic ID to a queue filter definition.
   * Queue or topic ID is the ID that was set in the [SQS queue registry resource](queue-splitting.md#creating-a-queue-registry) or [Kafka topics consumer resource](queue-splitting.md#creating-a-topics-registry).
   *   `message_filter` is a mapping from message attribute (SQS) or header (Kafka) names to message attribute or header value regexes. Your local application will only see queue messages that have **all** of the specified message attributes or headers.
 

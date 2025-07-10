@@ -119,10 +119,10 @@ To avoid stealing requests sent to URIs starting with "/health/", you can set th
 
 `feature.network.incoming.http_filter` allows you to steal a subset of HTTP requests. To apply the filter, the mirrord-agent needs to be able to parse the requests stolen from the target. Most commonly, the incluster traffic is encrypted with TLS, but it is decrypted by a service mesh before it gets to the target service. In this case, mirrord is able to parse the requests out of the box.
 
-However, in some cases the traffic is only decrypted by the target service itself. Using an HTTP filter in this case requires some additional setup. Check out the [HTTPS stealing guide](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal-https/README.md) for more information. Note that this HTTPS stealing requires mirrord Operator, which is part of mirrord for Teams.
+However, in some cases the traffic is only decrypted by the target service itself. Using an HTTP filter in this case requires some additional setup. Check out the [HTTPS stealing guide](steal-https.md) for more information. Note that this HTTPS stealing requires mirrord Operator, which is part of mirrord for Teams.
 
 ### What's next?
 
-1. If your local process reads from a queue, you might want to test out the [copy target feature](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/copy-target/README.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
-2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/targetless/README.md).
-3. If you just want to learn more about mirrord, why not check out our [architecture](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/architecture/README.md) or [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md) sections?
+1. If your local process reads from a queue, you might want to test out the [copy target feature](copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
+2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](targetless.md).
+3. If you just want to learn more about mirrord, why not check out our [architecture](architecture.md) or [configuration](../reference/configuration.md) sections?

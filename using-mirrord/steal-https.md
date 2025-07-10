@@ -162,4 +162,4 @@ When the mirrord Operator finds multiple configuration resources matching the se
 
 By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is be made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
 
-This behavior can be configured in your mirrord config with [`feature.network.incoming.https_delivery`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#feature-network-incoming-https_delivery).
+This behavior can be configured in your mirrord config with [`feature.network.incoming.https_delivery`](../reference/configuration.md#feature.network.incoming.https_delivery).

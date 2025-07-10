@@ -47,13 +47,13 @@ mirrord's target can be specified in two ways:
 
 1. with the target selection dialog
    * The dialog will only appear if the mirrord config does not specify the target.
-   * The dialog will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#target-namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
+   * The dialog will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](../reference/configuration.md#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
    * If you want to see targets in a different namespace, there is a dropdown to choose between namespaces.
-2. in the mirrord config's [target section](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#root-target)
+2. in the mirrord config's [target section](../reference/configuration.md#target)
 
 ### Using the mirrord config
 
-The plugin allows for using the [mirrord config](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
+The plugin allows for using the [mirrord config](../reference/configuration.md). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
 
 #### Active config
 
@@ -89,4 +89,4 @@ You can also pin the binary version in the plugin settings (`Settings -> Tools -
 
 ### WSL
 
-The guide on how to use the plugin with remote development on WSL can be found [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/wsl/README.md#root-project-intellij).
+The guide on how to use the plugin with remote development on WSL can be found [here](wsl.md#root-project-intellij).

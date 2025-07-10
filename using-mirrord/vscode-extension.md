@@ -57,13 +57,13 @@ mirrord's target can be specified in two ways:
 
 1. with the target selection quick pick
    * The quick pick will only appear if the mirrord config does not specify the target.
-   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#target-namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
+   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](../reference/configuration.md#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
    * If you want to see targets in a different namespace, there is an option to "Select Another Namespace".
-2. in the mirrord config's [target section](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#root-target)
+2. in the mirrord config's [target section](../reference/configuration.md#target)
 
 ### Using the mirrord config
 
-The extension allows for using the [mirrord config](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
+The extension allows for using the [mirrord config](../reference/configuration.md). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
 
 #### Active config
 
@@ -119,4 +119,4 @@ To use a specific mirrord binary from your filesystem:
 
 ### WSL
 
-The guide on how to use the extension with remote development on WSL can be found [here](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/wsl/README.md#root-project-vscode).
+The guide on how to use the extension with remote development on WSL can be found [here](wsl.md#using-mirrord-in-vs-code).

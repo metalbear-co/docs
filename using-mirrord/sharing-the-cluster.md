@@ -35,25 +35,25 @@ These conflicts and more are resolved by the mirrord Operator, available in the 
 
 #### 1. Concurrently debug the same HTTP server with HTTP filters
 
-mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/steal/README.md#stealing-only-a-subset-of-the-remote-targets-traffic).
+mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](steal.md#stealing-only-a-subset-of-the-remote-targets-traffic).
 
 > _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise versions.
 
 #### 2. Concurrently debug the same queue-based service with queue splitting
 
-mirrord's queue splitting feature lets users only steal a subset of the messages from a queue. By configuring mirrord to only steal messages with specific properties, users can debug the same queue-based service concurrently without affecting each other. [Learn more about queue splitting](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/queue-splitting/README.md).
+mirrord's queue splitting feature lets users only steal a subset of the messages from a queue. By configuring mirrord to only steal messages with specific properties, users can debug the same queue-based service concurrently without affecting each other. [Learn more about queue splitting](queue-splitting.md).
 
 #### 3. Prevent unwanted behavior with mirrord Policies
 
-mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/managing-mirrord/policies/README.md).
+mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](../managing-mirrord/policies.md).
 
 #### 4. Communicate with local components using the outgoing traffic filter
 
-Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the outgoing traffic filter to send traffic to a locally running component instead of the one that's running in the cluster. Your local process will still communicate with all of its other dependencies remotely in the cluster. [Learn more about the outgoing traffic filter](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/outgoing-filter/README.md).
+Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the outgoing traffic filter to send traffic to a locally running component instead of the one that's running in the cluster. Your local process will still communicate with all of its other dependencies remotely in the cluster. [Learn more about the outgoing traffic filter](outgoing-filter.md).
 
 #### 5. View other sessions running in the cluster (and kill them if necessary)
 
-Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/using-mirrord/sessions/README.md).
+Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](sessions.md).
 
 ### Conclusion
 

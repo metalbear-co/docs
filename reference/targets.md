@@ -20,7 +20,7 @@ description: Possible targets for mirrord and how to set them
 
 ### Overview
 
-You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md). When a target is specified, a [mirrord-agent](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/architecture/README.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.
+You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](configuration.md). When a target is specified, a [mirrord-agent](architecture.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.
 
 ### Possible targets
 
@@ -64,9 +64,9 @@ e.g. `pod/lolz-64698df9b7-6plq8`,
 
 And for also specifying a container, you just add `/container/<CONTAINER-NAME>` at the end, e.g. `pod/lolz-64698df9b7-6plq8/container/main-container`.
 
-#### Using a [configuration file](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md)
+#### Using a [configuration file](configuration.md)
 
-The target path from the last section is set under the [`target.path`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#target-path) field. The target's namespace can be set under [`target.namespace`](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#target-namespace). By default, the namespace currently specified in the local `kubeconfig` is used.
+The target path from the last section is set under the [`target.path`](configuration.md#target.path) field. The target's namespace can be set under [`target.namespace`](configuration.md#target.namespace). By default, the namespace currently specified in the local `kubeconfig` is used.
 
 ```json
 {
@@ -103,4 +103,4 @@ If you're using a mirrord configuration file and want to run targetless, you can
 
 In your IDE you can pick the `No Target ("targetless")` option in the target selection dialog (or just not make a selection). Moreover, you should make sure [the environment variable used to specify a target](targets.md#using-an-environment-variable) isn't set (or is set to an empty value).
 
-> **Note:** In order to set the namespace the agent is going to be created in, set the agent namespace, not the target namespace. That value can be set via the [`agent.namespace` configuration file field](https://github.com/RinkiyaKeDad/gitbook-mirrord-docs/blob/main/reference/configuration/README.md#agent-namespace), the `-a` CLI argument, or the `MIRRORD_AGENT_NAMESPACE` environment variable.
+> **Note:** In order to set the namespace the agent is going to be created in, set the agent namespace, not the target namespace. That value can be set via the [`agent.namespace` configuration file field](configuration.md#agent.namespace), the `-a` CLI argument, or the `MIRRORD_AGENT_NAMESPACE` environment variable.
