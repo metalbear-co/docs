@@ -48,7 +48,7 @@ For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports stea
         "http_filter": {
           "header_filter": "X-My-Header: my-header-value",
           "ports": [80, 8080]
-        },
+        }
       }
     }
   }
@@ -68,7 +68,7 @@ To specify a filter on a path, use the `feature.network.incoming.http_filter.pat
         "http_filter": {
           "path_filter": "my/path",
           "ports": [80, 8080]
-        },
+        }
       }
     }
   }
@@ -90,7 +90,7 @@ For filtering out any probes sent to the application by kubernetes, you can use 
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "header_filter": "^User-Agent: (?!kube-probe)",
+          "header_filter": "^User-Agent: (?!kube-probe)"
         }
       }
     }
@@ -107,7 +107,7 @@ To avoid stealing requests sent to URIs starting with "/health/", you can set th
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "path_filter": "^(?!/health/)",
+          "path_filter": "^(?!/health/)"
         }
       }
     }
@@ -125,4 +125,4 @@ However, in some cases the traffic is only decrypted by the target service itsel
 
 1. If your local process reads from a queue, you might want to test out the [copy target feature](copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](targetless.md).
-3. If you just want to learn more about mirrord, why not check out our [architecture](architecture.md) or [configuration](../reference/configuration.md) sections?
+3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](../reference/configuration.md) sections?
