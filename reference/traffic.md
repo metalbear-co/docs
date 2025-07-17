@@ -54,9 +54,10 @@ metalbear-deployment-85c754c75f-6k7mg       1/1     Running   1 (15h ago)   16h
 
 To mirror traffic from remote services to the local development environment, run the services locally with mirrord
 
-|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
+##### Window 1
+
+```bash
+bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
 --no-outgoing --target pod/metalbear-deployment-85c754c75f-6k7mg python3
 user-service/service.py 
  * Serving Flask app 'service' (lazy loading)
@@ -70,10 +71,14 @@ user-service/service.py
  * Running on http://172.16.0.4:33695 (Press CTRL+C to quit)
  127.0.0.1 - - [08/Sep/2022 15:34:34] "GET /users HTTP/1.1" 200
 // ^ Received mirrored traffic from the remote pod
-</code></pre> |
-| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+```
+
+##### Window 2
+
+```bash
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
-</code></pre>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+```                                                                                                                                             
 
 #### Stealing
 
@@ -81,9 +86,11 @@ mirrord can steal network traffic, i.e. intercept it and send it to the local pr
 
 Example - running `user-service` with mirrord and `--tcp-steal` on:
 
-|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
+
+##### Window 1
+
+```bash
+bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
 --tcp-steal --target pod/metalbear-deployment-85c754c75f-6k7mg 
 python3 user-service/service.py 
  * Serving Flask app 'service' (lazy loading)
@@ -101,8 +108,12 @@ python3 user-service/service.py
  127.0.0.1 - - [08/Sep/2022 16:57:51] "POST /user HTTP/1.1" 200 -
  127.0.0.1 - - [08/Sep/2022 16:57:54] "GET /users HTTP/1.1" 200 -
  ^Cbigbear@metalbear:~/mirrord-demo$ 
-</code></pre>                                                                                                                     |
-| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">// Before running mirrord with `--tcp-steal`
+```
+
+##### Window 2
+
+```bash
+// Before running mirrord with `--tcp-steal`
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
 
@@ -127,7 +138,7 @@ bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 // After sending SIGINT to the local process
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
-</code></pre> |
+```
 
 **Filtering Incoming Traffic by HTTP Headers**
 
