@@ -54,28 +54,26 @@ metalbear-deployment-85c754c75f-6k7mg       1/1     Running   1 (15h ago)   16h
 
 To mirror traffic from remote services to the local development environment, run the services locally with mirrord
 
-|                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
+--no-outgoing --target pod/metalbear-deployment-85c754c75f-6k7mg python3
+user-service/service.py 
+ * Serving Flask app 'service' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on all addresses (0.0.0.0)
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://127.0.0.1:33695
+ * Running on http://172.16.0.4:33695 (Press CTRL+C to quit)
+ 127.0.0.1 - - [08/Sep/2022 15:34:34] "GET /users HTTP/1.1" 200
+// ^ Received mirrored traffic from the remote pod
 </code></pre> |
-| --no-outgoing --target pod/metalbear-deployment-85c754c75f-6k7mg python3                                                                                  |
-| user-service/service.py                                                                                                                                   |
-
-* Serving Flask app 'service' (lazy loading)
-* Environment: production WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
-* Debug mode: off
-* Running on all addresses (0.0.0.0) WARNING: This is a development server. Do not use it in a production deployment.
-* Running on http://127.0.0.1:33695
-*   Running on http://172.16.0.4:33695 (Press CTRL+C to quit) 127.0.0.1 - - \[08/Sep/2022 15:34:34] "GET /users HTTP/1.1" 200 // ^ Received mirrored traffic from the remote pod | |
-
-    Window 2
-
-    ```bash
-    bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-    [{"Last":"Bear","Name":"Metal"}]
-    ```
-
-    |
+| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[{"Last":"Bear","Name":"Metal"}]
+</code></pre>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 #### Stealing
 
@@ -83,23 +81,53 @@ mirrord can steal network traffic, i.e. intercept it and send it to the local pr
 
 Example - running `user-service` with mirrord and `--tcp-steal` on:
 
-|                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <p>Window 1</p><pre class="language-bash"><code class="lang-bash">bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
+--tcp-steal --target pod/metalbear-deployment-85c754c75f-6k7mg 
+python3 user-service/service.py 
+ * Serving Flask app 'service' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on all addresses (0.0.0.0)
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://127.0.0.1:35215
+ * Running on http://172.16.0.4:35215 (Press CTRL+C to quit) 
+ 127.0.0.1 - - [08/Sep/2022 15:48:40] "GET /users HTTP/1.1" 200 -
+ 127.0.0.1 - - [08/Sep/2022 15:50:40] "POST /user HTTP/1.1" 200 -
+ 127.0.0.1 - - [08/Sep/2022 15:50:55] "GET /users HTTP/1.1" 200 -
+ 127.0.0.1 - - [08/Sep/2022 16:57:51] "POST /user HTTP/1.1" 200 -
+ 127.0.0.1 - - [08/Sep/2022 16:57:54] "GET /users HTTP/1.1" 200 -
+ ^Cbigbear@metalbear:~/mirrord-demo$ 
+</code></pre>                                                                                                                     |
+| <p>Window 2</p><pre class="language-bash"><code class="lang-bash">// Before running mirrord with `--tcp-steal`
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[{"Last":"Bear","Name":"Metal"}]
+
+// After running with mirrord and `--tcp-steal` - local process responds
+ instead of the remote
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[]
+bigbear@metalbear:~/mirrord-demo$ curl -X POST -H 
+"Content-type: application/json" 
+-d "{\"Name\" : \"Mehul\", \"Last\" : \"Arora\"}" http://192.168.49.2:32000/user
+
+{"Last":"Arora","Name":"Mehul"}
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[{"Last":"Arora","Name":"Mehul"}]
+bigbear@metalbear:~/mirrord-demo$ curl -X POST -H 
+"Content-type: application/json" 
+-d "{\"Name\" : \"Alex\", \"Last\" : \"C\"}" http://192.168.49.2:32000/user
+{"Last":"C","Name":"Alex"}
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[{"Last":"Arora","Name":"Mehul"},{"Last":"C","Name":"Alex"}]
+
+// After sending SIGINT to the local process
+bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
+[{"Last":"Bear","Name":"Metal"}]
 </code></pre> |
-| --tcp-steal --target pod/metalbear-deployment-85c754c75f-6k7mg                                                                                            |
-| python3 user-service/service.py                                                                                                                           |
-
-* Serving Flask app 'service' (lazy loading)
-* Environment: production WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
-* Debug mode: off
-* Running on all addresses (0.0.0.0) WARNING: This is a development server. Do not use it in a production deployment.
-* Running on http://127.0.0.1:35215
-* Running on http://172.16.0.4:35215 (Press CTRL+C to quit) 127.0.0.1 - - \[08/Sep/2022 15:48:40] "GET /users HTTP/1.1" 200 - 127.0.0.1 - - \[08/Sep/2022 15:50:40] "POST /user HTTP/1.1" 200 - 127.0.0.1 - - \[08/Sep/2022 15:50:55] "GET /users HTTP/1.1" 200 - 127.0.0.1 - - \[08/Sep/2022 16:57:51] "POST /user HTTP/1.1" 200 - 127.0.0.1 - - \[08/Sep/2022 16:57:54] "GET /users HTTP/1.1" 200 - ^Cbigbear@metalbear:~~/mirrord-demo$ | |Window 2~~// Before running mirrord with --tcp-stealbigbear@metalbear:/mirrord-demo$ curl http://192.168.49.2:32000/users\[{"Last":"Bear","Name":"Metal"}]
-
-`// After running with mirrord and --tcp-steal - local process responds instead of the remote bigbear@metalbear:`~~`/mirrord-demo$ curl http://192.168.49.2:32000/users [] bigbear@metalbear:`~~`/mirrord-demo$ curl -X POST -H "Content-type: application/json" -d "{"Name" : "Mehul", "Last" : "Arora"}" http://192.168.49.2:32000/user{"Last":"Arora","Name":"Mehul"} bigbear@metalbear:`~~`/mirrord-demo$ curl http://192.168.49.2:32000/users [{"Last":"Arora","Name":"Mehul"}] bigbear@metalbear:`~~`/mirrord-demo$ curl -X POST -H "Content-type: application/json" -d "{"Name" : "Alex", "Last" : "C"}" http://192.168.49.2:32000/user {"Last":"C","Name":"Alex"} bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users [{"Last":"Arora","Name":"Mehul"},{"Last":"C","Name":"Alex"}]`
-
-`// After sending SIGINT to the local process bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users [{"Last":"Bear","Name":"Metal"}]` |
 
 **Filtering Incoming Traffic by HTTP Headers**
 
