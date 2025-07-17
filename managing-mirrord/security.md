@@ -27,7 +27,7 @@ Love using mirrord but need help getting your security team on board? Talk to on
 ### I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
 * mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
-* The mirrord client does not require root permissions on the user's machine.
+* mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * The Kubernetes operator installed in the cluster as part of mirrord for Teams is licensed as Source Available (but not yet public) and we'll be happy to share the code if needed for review.
 * mirrord for Teams defines a new CRD that can be used to limit access and use of mirrord, with plans of more fine-grained permissions in the future.
