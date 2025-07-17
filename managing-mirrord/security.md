@@ -27,6 +27,7 @@ Love using mirrord but need help getting your security team on board? Talk to on
 ### I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
 * mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
+* The mirrord client does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * The Kubernetes operator installed in the cluster as part of mirrord for Teams is licensed as Source Available (but not yet public) and we'll be happy to share the code if needed for review.
 * mirrord for Teams defines a new CRD that can be used to limit access and use of mirrord, with plans of more fine-grained permissions in the future.
@@ -95,7 +96,7 @@ If the user doesn't have `get` access to the targets, then they won't be able to
 
 ### How can I prevent users in my team from stealing or mirroring traffic from a target?
 
-You can define [policies](../managing-mirrord/policies.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
+You can define [policies](policies.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
 
 ### How can I prevent users from using mirrord without going through the Operator?
 
