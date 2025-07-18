@@ -176,7 +176,7 @@ chmod 755 regctl
 
 Note - you might need to login to the registry (it automatically uses docker login if available)
 
-```
+```sh
 regctl registry login REGISTRY
 ```
 
