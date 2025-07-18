@@ -18,7 +18,7 @@ description: Some common issues and workarounds.
 
 # Common Issues
 
-#### I've run my program with mirrord, but it seems to have no effect
+## I've run my program with mirrord, but it seems to have no effect
 
 There are currently two known cases where mirrord cannot load into the application's process:
 
@@ -33,11 +33,11 @@ There are currently two known cases where mirrord cannot load into the applicati
 
 Another reason that mirrord might seem not to work is if your remote pod has more than one container. mirrord works at the level of the container, not the whole pod. If your pod runs multiple containers, you need to make sure mirrord targets the correct one by by specifying it explicitly in the [target configuration](../reference/configuration.md#root-target). Note that we filter out the proxy containers added by popular service meshes automatically.
 
-#### When running a Go program on Linux, DNS and outgoing traffic filters seem to have no effect
+## When running a Go program on Linux, DNS and outgoing traffic filters seem to have no effect
 
 This can be caused when Go resolves DNS without going through libc. Build your Go binary with the following environment variable: `GODEBUG=netdns=cgo`
 
-#### I've run my [Turbo](https://turbo.build/) task with mirrord, but it seems to have no effect
+## I've run my [Turbo](https://turbo.build/) task with mirrord, but it seems to have no effect
 
 When executing a task Turbo strips most of the existing process environment, including internal mirrord variables required during libc call interception setup. There are two alternative ways to solve this problem:
 
@@ -51,11 +51,11 @@ When executing a task Turbo strips most of the existing process environment, inc
 
 2. Invoke mirrord inside the Turbo task command line itself.
 
-#### Incoming traffic to the remote target doesn't reach my local process
+## Incoming traffic to the remote target doesn't reach my local process
 
 This could happen because the local process is listening on a different port than the remote target. You can either change the local process to listen on the same port as the remote target (don't worry about the port being used locally by other processes), or use the [`port_mapping` configuration ](../reference/configuration.md#feature.network.incoming)to map the local port to a remote port.
 
-#### The remote target stops receiving remote traffic, but it doesn't reach my local process either
+## The remote target stops receiving remote traffic, but it doesn't reach my local process either
 
 This can happen in some clusters using a service mesh when stealing incoming traffic. You can use this configuration to fix it:
 
@@ -63,7 +63,7 @@ This can happen in some clusters using a service mesh when stealing incoming tra
 {"agent": {"flush_connections": false}}
 ```
 
-#### My application is trying to read a file locally instead of from the cluster
+## My application is trying to read a file locally instead of from the cluster
 
 mirrord has a list of path patterns that are read locally by default regardless of the configured fs mode. You can override this behavior in the configuration.
 
@@ -80,13 +80,13 @@ In order to override that settings for a path or a pattern, add it to the approp
 3. `feature.fs.local` if you want read and write operations to that path to happen locally.
 4. `feature.fs.not_found` if you want the application to "think" that file does not exist.
 
-#### My local process fails to resolve the domain name of a Kubernetes service in the same cluster
+## My local process fails to resolve the domain name of a Kubernetes service in the same cluster
 
 If you've set `feature.fs.mode` to `local`, try changing it to `localwithoverrides`.
 
 When the `local` mode is set, all files will be opened locally. This might prevent your process from resolving cluster-internal domain names correctly, because it can no longer read Kubelet-generated configuration files like `/etc/resolv.conf`. With `localwithoverrides`, such files are read from the remote pod instead.
 
-#### Old mirrord agent pods are not getting deleted after the mirrord run is completed
+## Old mirrord agent pods are not getting deleted after the mirrord run is completed
 
 If an agent pod's status is `Running`, it means mirrord is probably still running locally as well. Once you terminate the local process, the agent pod's status should change to `Completed`.
 
@@ -96,7 +96,7 @@ On clusters with Kubernetes version v1.23 or higher, agent pods are [automatical
 kubectl delete jobs --selector=app=mirrord --field-selector=status.successful=1
 ```
 
-#### My local process gets permission (EACCESS) error on file access or DNS can't resolve
+## My local process gets permission (EACCESS) error on file access or DNS can't resolve
 
 If your cluster is running on Bottlerocket or has SELinux enabled, please try enabling the `privileged` flag in the agent configuration:
 
@@ -108,11 +108,11 @@ If your cluster is running on Bottlerocket or has SELinux enabled, please try en
 }
 ```
 
-#### `mirrord operator status` fails with `503 Service Unavailable` on GKE
+## `mirrord operator status` fails with `503 Service Unavailable` on GKE
 
 If private networking is enabled, it is likely due to firewall rules blocking the mirrord operator's API service from the API server. To fix this, add a firewall rule that allows your cluster's master nodes to access TCP port 443 in your cluster's pods. Please refer to the [GCP docs](https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters#add_firewall_rules) for information.
 
-#### My local process encounters unexpected certificate validation errors
+## My local process encounters unexpected certificate validation errors
 
 When running processes locally versus in a container within Kubernetes, some languages handle certificate validation differently. For instance, a Go application on macOS will use the macOS Keychain for certificate validation, whereas the same application in a container will use different API calls. This discrepancy can lead to unexpected certificate validation errors when using tools like mirrord.
 
@@ -130,10 +130,22 @@ This configuration would make any certificate trusted for the process.
 
 Other alternatives are to either disable certificate validation in your application or import the problematic certificate (or its root CA) into your macOS Keychain. For guidance on how to do this, refer to this [Apple support article](https://support.apple.com/guide/keychain-access/change-the-trust-settings-of-a-certificate-kyca11871/mac).
 
-#### Agent connection fails or drops when using an ephemeral agent with a service mesh
+## Agent connection fails or drops when using an ephemeral agent with a service mesh
 
 When running the agent as an [ephemeral container](../reference/configuration.md#agent.ephemeral), the agent shares the network stack with the target pod. This means that incoming connections to the agent are handled by the service mesh, which might drop it for various reasons (lack of TLS, not HTTP, etc.) To work around that, set the agent.port to be static using `agent.port` in values.yaml when installing the operator, then add a port exclusion for the agent port in your service mesh's configuration. For example, if you use Istio and have set the agent port to 5000, you can add the following annotation for exclusion:
 
 ```
 traffic.sidecar.istio.io/excludeInboundPorts: '50000'
 ```
+
+## IntelliJ/VSCode errors with auth exec
+
+If you encounter the error `“auth error: unable to run auth exec: No such file or directory”` in your IDE, but the mirrord CLI or kubectl work correctly in your terminal, this usually means your IDE is using a different `PATH` environment variable than your terminal.
+
+The Kubernetes client relies on external executables for authentication with certain providers. If these executables are referenced by relative paths, they may not be found if the `PATH` is not set up properly in your IDE environment.
+
+To resolve this issue, you can try one of the following solutions:
+1. Launch your IDE from the same terminal where kubectl works, so it inherits the correct `PATH`.
+2. Update your `~/.kube/config` file to use absolute paths for any referenced executables (for example, change `cmd: aws` to `cmd: /usr/bin/aws` if that is the full path).
+
+This should help your IDE locate the necessary authentication executables.
