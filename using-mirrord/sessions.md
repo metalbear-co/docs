@@ -16,7 +16,9 @@ Whenever a user starts mirrord on a cluster where mirrord for Teams is installed
 session to this user, until they stop running mirrord, at which point the session is closed
 in the Operator automatically.
 
-<Info>This feature is only relevant for users on the Team and Enterprise pricing plans.</Info>
+{% hint style="info" %}
+This feature is only relevant for users on the Team and Enterprise pricing plans.
+{% endhint %}
 
 ### See active Operator sessions
 

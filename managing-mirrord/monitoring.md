@@ -20,7 +20,9 @@ description: Monitoring with mirrord for Teams
 
 The mirrord Operator can produce logs in JSON format that can be digested by most popular logging solutions (DataDog, Dynatrace, etc). To enable JSON logging, set `operator.jsonLog` to `true` in the Operator Helm chart values. The log level is `INFO` by default, and can be changed using the `RUST_LOG` environment variable in the Operator container, which takes values in the following format: `mirrord={log_level}` (e.g. `mirrord=debug`).
 
+{% hint style="info" %}
 This feature is only relevant for users on the Team and Enterprise pricing plans.
+{% endhint %}
 
 ### Functional Logs
 
