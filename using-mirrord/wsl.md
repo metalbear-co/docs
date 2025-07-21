@@ -328,3 +328,12 @@ And issuing the following command:
 ```sh
 keytool -importcert -trustcacerts -alias <alias-name> -file <path/to/file.crt> -keystore cacerts
 ```
+
+### IntelliJ mirrord does not launch and settings `Select Active` does not work
+
+If you don't see the mirrord UI for selecting the active configuration when clicking `Select Active`,
+this usually means that the mirrord plugin has been installed only on one side (host or client). This
+issue might also prevent mirrord from running inside WSL.
+
+To fix it, make sure that the mirrord plugin is installed on both the host and the client (WSL) IDE.
+Open the host IDE (or client IDE), navigate to the Plugins section, and install mirrord.

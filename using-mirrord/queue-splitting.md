@@ -207,7 +207,11 @@ spec:
 * `spec.queues` holds queues that should be split when running mirrord with this target. It is a mapping from a queue ID to the details of the queue.
   * The queue ID is chosen by you, and will be used by every teammate who wishes to filter messages from this queue. You can choose any string for that, it does not have to be the same as the name of the queue. In the example above the first queue has the queue id `meme-queue` and the second one `ad-queue`.
   * `nameSource` tells mirrord where the app finds the name of this queue.
-    * Currently `envVar` is the only supported source for the queue name, but in the future we will also support other sources, such as config maps. The value of `envVar` is the name of the environment variable the app reads the queue name from. It is crucial that both the local and the deployed app use the queue name they find in that environment variable. mirrord changes the value of that environment variable in order to make the application read from a temporary queue it creates.
+    * Currently `envVar` is the only supported source for the queue name. The value of `envVar` is the name of the
+      environment variable the app reads the queue name from. That environment variable could be one that has a value
+      directly in the spec, or it could get its value from a ConfigMap via `valueFrom` or `envFrom`. It is crucial that
+      both the local and the deployed app use the queue name they find in that environment variable. mirrord changes the
+      value of that environment variable in order to make the application read from a temporary queue it creates.
   * `tags` is an optional field where you can specify queue tags that should be added to all temporary queues mirrord creates for splitting this queue.
 * `spec.consumer` is the workload that consumes these queues. The queues specified above will be split whenever that workload is targeted.
   * `container` is optional, when set - this queue registry only applies to runs that target that container.
