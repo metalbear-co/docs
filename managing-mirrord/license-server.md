@@ -17,7 +17,11 @@ description: License Server
 
 # License Server
 
-The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization. This feature is only relevant for users on the Team and Enterprise pricing plans.
+The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization. 
+
+{% hint style="info" %}
+This feature is only relevant for users on the Team and Enterprise pricing plans.
+{% endhint %}
 
 ### Basic Setup
 

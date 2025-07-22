@@ -18,7 +18,9 @@ description: How to steal HTTPS traffic with a filter using mirrord
 
 With mirrord for Teams, you can steal a subset of HTTP requests coming to your target, even if the deployed application receives the traffic encrypted with TLS.
 
+{% hint style="info" %}
 This feature is only relevant for users on the Team and Enterprise pricing plans.
+{% endhint %}
 
 **Important:** stealing HTTPS with a filter requires mirrord-operator version at least `3.106.0` and mirrord-agent version at least `1.134.0`.
 

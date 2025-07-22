@@ -18,7 +18,11 @@ description: Making mirrord copy a target and use the copy instead of the origin
 
 # Copy Target
 
-When you set the [`copy_target`](../reference/configuration.md#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target. This feature is only relevant for users on the Team and Enterprise pricing plans.
+When you set the [`copy_target`](../reference/configuration.md#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target. 
+
+{% hint style="info" %}
+This feature is only relevant for users on the Team and Enterprise pricing plans.
+{% endhint %}
 
 This can be useful when you want to run your application with access to the resources and I/O of a target that isn't reliable, for example because the target pod keeps crashing, or because it is managed by a [Job](https://kubernetes.io/docs/concepts/workloads/controllers/job/) and might terminate before you are done debugging your application with mirrord.
 
