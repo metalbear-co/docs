@@ -62,7 +62,7 @@ _NOTE: The license server needs to be accessible to any mirrord operators you wa
 Next, install the license server on your cluster:
 
 ```bash
-helm install metalbear-co/mirrord-operator-license-server -f ./values.yaml --generate-name --wait
+helm install metalbear-co/mirrord-operator-license-server -f ./values.yaml --wait
 ```
 
 To make sure it's been installed successfully and is running:
@@ -89,5 +89,5 @@ _NOTE: The server value must contain the protocol and the prefix for any ingress
 Then run:
 
 ```bash
-helm install metalbear-co/mirrord-operator -f ./values.yaml --generate-name --wait
+helm install metalbear-co/mirrord-operator -f ./values.yaml --wait
 ```
