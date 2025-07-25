@@ -12,7 +12,7 @@ tags:
   - open source
   - team
   - enterprise
-description: Using mirrord & browser to set your IP address
+description: Using mirrord to browse using cluster networking
 ---
 
 # Web Browsing
