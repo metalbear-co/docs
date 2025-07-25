@@ -24,7 +24,7 @@ The mirrord Operator can produce logs in JSON format that can be digested by mos
 This feature is only relevant for users on the Team and Enterprise pricing plans.
 {% endhint %}
 
-### Functional Logs
+## Functional Logs
 
 The following logs are written with log level `INFO`, and can be used for dashboards within monitoring solutions in order to monitor mirrord usage within your organization:
 
@@ -52,11 +52,11 @@ Fields:
 | http\_filter      | the client's configured [HTTP Filter](../reference/configuration.md#feature.network) | `Port Stolen`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Target Copied`                                                                |
 
-### Prometheus
+## Prometheus
 
 mirrord Operator can expose prometheus metrics if enabled. (default endpoint is `:9000/metrics`)
 
-#### Helm
+### Helm
 
 ```yaml
 # values.yaml for mirrord-operator helm chart
@@ -66,14 +66,14 @@ operator:
   ...
 ```
 
-#### Manual
+### Manual
 
 | env                        | description              | type              | default        |
 | -------------------------- | ------------------------ | ----------------- | -------------- |
 | OPERATOR\_METRICS\_ENABLED | enable metrics endpoint  | "true" \| "false" | "false"        |
 | OPERATOR\_METRICS\_ADDR    | metrics http server addr | SocketAddr        | "0.0.0.0:9000" |
 
-#### Exposed metrics
+### Exposed metrics
 
 | metric                           | description                                          | labels                                                  |
 | -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- |
@@ -85,15 +85,15 @@ operator:
 
 We offer a DataDog dashboard you can import to track statistics.
 
-Download it [here](https://metalbear.co/mirrord/datadog/Mirrord_Operator_Dashboard.json)
+Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/Mirrord_datadog_Operator_Dashboard.json)
 
-### Grafana Dashboard
+## Grafana Dashboard
 
 Alternatively there is a Grafana dashboard you can import to track statistics.
 
-Download it [here](https://metalbear.co/mirrord/grafana/Mirrord_Operator_Dashboard.json)
+Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/Mirrord_grafana_Operator_Dashboard.json)
 
-### fluentd
+## fluentd
 
 If you are using fluentd you can add a filter to unpack some values from the "log" message
 
@@ -111,8 +111,8 @@ If you are using fluentd you can add a filter to unpack some values from the "lo
 
 This will expand all the extra fields stored in "log" field.
 
-#### fluentd + Elasticsearch
+### fluentd + Elasticsearch
 
 Assuming you are using `logstash_format true` and the connected mapping will store the extra fields in a `keyword` type, we have a ready made dashboard you can simply import.
 
-Download it [here](https://metalbear.co/mirrord/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
+Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
