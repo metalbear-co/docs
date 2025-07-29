@@ -10,6 +10,7 @@
   * [Outgoing Filter](using-mirrord/outgoing-filter.md)
   * [Targetless](using-mirrord/targetless.md)
   * [Local Container](using-mirrord/local-container.md)
+  * [Browser Extension](using-mirrord/browser-extension.md)
   * [Web Browsing](using-mirrord/web-browsing.md)
   * [Port Forwarding](using-mirrord/port-forwarding.md)
   * [WSL](using-mirrord/wsl.md)
