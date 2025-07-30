@@ -34,7 +34,6 @@
   * [Comparisons](faq/comparisons.md)
   * [Common Issues](faq/common-issues.md)
 * [Reference](reference/README.md)
-  * [Configuration](reference/configuration.md)
   * [Architecture](reference/architecture.md)
   * [Targets](reference/targets.md)
   * [Network Traffic](reference/traffic.md)
