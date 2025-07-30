@@ -1,6 +1,6 @@
 ---
 title: "Browser Extension"
-description: "How to use Browser extenstion for automatic header injection"
+description: "How to use the mirrord Browser Extension for automatic header injection"
 date: 2024-07-07T09:39:44+01:00
 lastmod: 2024-07-07T09:39:44+01:00
 draft: false
