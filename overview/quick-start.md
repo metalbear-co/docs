@@ -266,7 +266,7 @@ Note that, by default, the following features are also enabled:
 3. DNS resolution for your local process will happen on the remote target
 4. Outgoing traffic sent by your local process will be sent out from the remote target instead, and the response will be sent back to your local process
 
-We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](broken-reference).
+We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options).
 
 ### What's next?
 
@@ -275,4 +275,4 @@ Now that you've tried out mirrord, it's time to get acquainted with its differen
 1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
 2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](broken-reference) sections?
+4. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4) sections?

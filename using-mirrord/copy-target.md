@@ -18,7 +18,7 @@ description: Making mirrord copy a target and use the copy instead of the origin
 
 # Copy Target
 
-When you set the [`copy_target`](../reference/configuration.md#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target. 
+When you set the [`copy_target`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target. 
 
 {% hint style="info" %}
 This feature is only relevant for users on the Team and Enterprise pricing plans.
@@ -28,11 +28,11 @@ This can be useful when you want to run your application with access to the reso
 
 ### Health Checks
 
-The new, copied pod will not have any [liveness, readiness or startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) even if the original pod spec does define them. This means you can [steal](../reference/configuration.md#feature.network.incoming.mode) traffic without having to also answer those probes. This might come in handy when debugging with breakpoints with stolen traffic. Without `copy_target`, if you linger too long on a breakpoint, the application might miss some probes, which could cause a target pod to restart.
+The new, copied pod will not have any [liveness, readiness or startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) even if the original pod spec does define them. This means you can [steal](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming.mode) traffic without having to also answer those probes. This might come in handy when debugging with breakpoints with stolen traffic. Without `copy_target`, if you linger too long on a breakpoint, the application might miss some probes, which could cause a target pod to restart.
 
 ### Replacing a Whole Workload Using `scale_down`
 
-When the [`scale_down`](../reference/configuration.md#feature.copy_target.scale_down) option is set, mirrord will [scale](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment) the target workload down to zero, effectively replacing all existing pods of that workload by the one new copied pod, that is then used as the target for the mirrord run. This feature is supported with Deployment, Argo Rollout, StatefulSet, and ReplicaSet (owned by either a Deployment or an Argo Rollout) targets.
+When the [`scale_down`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.scale_down) option is set, mirrord will [scale](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment) the target workload down to zero, effectively replacing all existing pods of that workload by the one new copied pod, that is then used as the target for the mirrord run. This feature is supported with Deployment, Argo Rollout, StatefulSet, and ReplicaSet (owned by either a Deployment or an Argo Rollout) targets.
 
 The scale down feature can be useful e.g. when a workload reads from a queue. By scaling it down to zero, the application you run with mirrord does not have to compete with the workload's pods for queue items.
 
