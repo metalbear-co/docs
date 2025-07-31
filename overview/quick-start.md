@@ -97,7 +97,7 @@ To use extension, click the 'Enable mirrord' button in the status bar at the bot
 
 #### Configuration
 
-The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
+The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
 
 ### IntelliJ Plugin
 
@@ -111,7 +111,7 @@ To use extension, click the mirrord icon in the Navigation Toolbar at the top ri
 
 #### Configuration
 
-The IntelliJ plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md).
+The IntelliJ plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/).
 
 ### Operator
 
@@ -151,24 +151,26 @@ Finally, install the chart:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator 
 ```
 
-
 ### Using Internal Registry (Optional)
 
 The use of an internal registry for storing mirrord images is useful for:
+
 1. Reducing startup time of agent and operator.
 2. Reducing cost of ingress traffic needed to download the images.
 3. Ensuring that even if our registry goes down (we use GitHub) your use of mirrord isn't interrupted.
 
 #### Copying images
 
-The first step would be to copy the needed images to your internal registry.
-We recommend using [regctl](https://regclient.org/) because it has a built in copy command, that supports copying multi-arch images so you can use mirrord on a mixed arm/x64 fleet at ease.
+The first step would be to copy the needed images to your internal registry. We recommend using [regctl](https://regclient.org/) because it has a built in copy command, that supports copying multi-arch images so you can use mirrord on a mixed arm/x64 fleet at ease.
 
 Install `regctl`:
+
 ```sh
 go install github.com/regclient/regclient/cmd/regctl@latest
 ```
+
 or using script:
+
 ```sh
 curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 >regctl
 chmod 755 regctl
@@ -193,6 +195,7 @@ regctl image copy ghcr.io/metalbear-co/operator:$IMAGE_VERSION your-registry/ope
 ```
 
 Extract agent version that is used with specific operator version:
+
 ```sh
 AGENT_IMAGE_VERSION=$(regctl image config ghcr.io/metalbear-co/operator:$IMAGE_VERSION | jq -r '.config.Labels."metalbear.mirrord.version"')
 ```
@@ -203,10 +206,10 @@ Copy agent image to your registry
 regctl image copy ghcr.io/metalbear-co/mirrord:$AGENT_IMAGE_VERSION your-registry/mirrord:$AGENT_IMAGE_VERSION
 ```
 
-
 #### Setting chart to use internal registry
 
 In the operator chart, set the following values:
+
 ```yaml
 operator:
   image: ghcr.io/metalbear-co/operator # REPLACE TO YOUR REGISTRY.
@@ -214,13 +217,15 @@ agent:
   image:
     registry: ghcr.io/metalbear-co/mirrord # REPLACE TO YOUR REGISTRY.
 ```
+
 In the license server chart (if used), set the following values:
+
 ```yaml
 server:
   image: ghcr.io/metalbear-co/operator # REPLACE TO YOUR REGISTRY
 ```
-Note: License server uses same image as operator for simplicity in deployment.
 
+Note: License server uses same image as operator for simplicity in deployment.
 
 #### OpenShift
 
@@ -250,7 +255,7 @@ After installing the Operator, you can verify it works by running `mirrord opera
 
 ### Test it out!
 
-Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](../reference/configuration.md#feature.network.incoming.mode)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](../reference/configuration.md#feature.network.incoming.port_mapping)).
+Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)).
 
 To test this out, enable mirrord in your IDE plugin and start debugging your process (or execute your process with the mirrord CLI). Send a request to your remote target, and you should see that request arriving at your local process as well!
 
@@ -261,7 +266,7 @@ Note that, by default, the following features are also enabled:
 3. DNS resolution for your local process will happen on the remote target
 4. Outgoing traffic sent by your local process will be sent out from the remote target instead, and the response will be sent back to your local process
 
-We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](../reference/configuration.md).
+We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](broken-reference).
 
 ### What's next?
 
@@ -270,4 +275,4 @@ Now that you've tried out mirrord, it's time to get acquainted with its differen
 1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
 2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](../reference/configuration.md) sections?
+4. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](broken-reference) sections?
