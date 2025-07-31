@@ -40,7 +40,7 @@ mirrord overrides that `openat` call and opens `/tmp/test` on the remote pod.
 
 ## How does it work?
 
-![mirrord - fileops](/reference/fileops/mirrord-fileops.png)
+![mirrord - fileops](/ref/fileops/mirrord-fileops.png)
 
 Once a request to open a new file is received by `mirrord-agent` from `mirrord-layer`, the agent forwards the request
 to the container in the remote pod in context of the provided path for the open system call, prefixed with path to the
