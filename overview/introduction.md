@@ -38,7 +38,7 @@ However, the point of mirrord is not just to make that final step in the dev loo
 
 mirrord runs in two places - in the memory of your local process (`mirrord-layer`), and as a pod in your cloud environment (`mirrord-agent`).
 
-![mirrord - Basic Architecture](/reference/architecture/architecture.svg)
+![mirrord - Basic Architecture](/ref/architecture/architecture.svg)
 
 When you start your local process with mirrord, it creates a pod in your cloud environment, which listens in on the pod you've passed as an argument. `mirrord-layer` then does the following:
 * Override the process' syscalls to:
@@ -49,7 +49,7 @@ When you start your local process with mirrord, it creates a pod in your cloud e
 
 The remote part of this logic is handled by the agent, which runs in the network namespace of the remote pod, and can access its file system and environment variables.
 
-For further details, see the [architecture](../reference/architecture.md) section.
+For further details, see the [architecture](../ref/architecture.md) section.
 
 
 ## How it's different from other remocal solutions

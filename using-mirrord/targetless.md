@@ -43,4 +43,4 @@ to your mirrord configuration file.
 
 1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](steal.md). Note that you can even filter which traffic you intercept!
 2. Want to use Targetless mode to run a web browser in the context of your cluster? Check out this [guide](web-browsing.md).
-3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/) sections?
+3. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/) sections?
