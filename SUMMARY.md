@@ -1,6 +1,5 @@
 # Table of contents
 
-* [README](README.md)
 * [Overview](overview/README.md)
   * [Introduction](overview/introduction.md)
   * [mirrord for Teams](overview/teams.md)

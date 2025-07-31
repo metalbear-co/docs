@@ -49,7 +49,7 @@ Fields:
 | session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirrored` `Port Released` `Session Started` `Session Ended` |
 | session\_duration | the session's duration in seconds                                                                                                                                            | `Session Ended`                                                                |
 | port              | port number                                                                                                                                                                  | `Port Stolen` `Port Mirrored` `Port Released`                                  |
-| http\_filter      | the client's configured [HTTP Filter](../reference/configuration.md#feature.network) | `Port Stolen`                                                                  |
+| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Stolen`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Target Copied`                                                                |
 
 ## Prometheus
