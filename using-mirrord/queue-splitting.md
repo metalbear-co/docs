@@ -371,6 +371,23 @@ spec:
   properties: []
 ```
 
+For additional authentication configuration, here is an example of a `MirrordKafkaClientConfig` resource that supports IAM/OAUTHBEARER authentication with Amazon Managed Streaming for Apache Kafka:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordKafkaClientConfig
+metadata:
+  name: base-config
+  namespace: mirrord
+spec:
+  authenticationExtra:
+    awsRegion: eu-south-1
+    kind: MSK_IAM
+  properties: []
+```
+
+Currently, only `MSK_IAM` is the only supported value for `spec.authenticationExtra.kind`.
+
 > _**NOTE:**_ By default, the operator will only have access to secrets in its own namespace (`mirrord` by default).
 
 #### Customizing mirrord created Kafka Topic Names
