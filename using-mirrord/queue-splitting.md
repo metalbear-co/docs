@@ -386,7 +386,10 @@ spec:
   properties: []
 ```
 
-Currently, only `MSK_IAM` is the only supported value for `spec.authenticationExtra.kind`.
+Currently, `MSK_IAM` is the only supported value for `spec.authenticationExtra.kind`.
+When this kind is specified, additional properties are automatically merged into the configuration:
+1. `sasl.mechanism=OAUTHBEARER`
+2. `security.protocol=SASL_SSL`
 
 > _**NOTE:**_ By default, the operator will only have access to secrets in its own namespace (`mirrord` by default).
 
