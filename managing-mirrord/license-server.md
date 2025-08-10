@@ -28,7 +28,7 @@ This feature is only relevant for users on the Team and Enterprise pricing plans
 The license server is installable via Helm. First, add the MetalBear Helm repository:
 
 ```bash
-helm repo add metalbear-co https://metalbear-co.github.io/charts
+helm repo add metalbear https://metalbear-co.github.io/charts
 ```
 
 Next, save the following yaml as `values.yaml` on your machine.
