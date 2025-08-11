@@ -25,13 +25,13 @@ mirrord runs on your local machine and in your Kubernetes cluster.
 
 #### Local Requirements
 
-* MacOS (Intel, Apple Silicon) and Linux (x86\_64) are supported for the local machine. Windows users can use mirrord using WSL (IDE plugins supported as well).
-* kubectl needs to be configured on the local machine.
+- MacOS (Intel, Apple Silicon) and Linux (x86_64) are supported for the local machine. Windows users can use mirrord using WSL (IDE plugins supported as well).
+- kubectl needs to be configured on the local machine.
 
 #### Remote Requirements
 
-* Docker or containerd runtime (containerd is the most common). If you'd like support for other runtimes to be added, please let us know by [opening an issue on GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=\&labels=enhancement\&template=feature_request.md).
-* Linux Kernel version 4.20+
+- Docker or containerd runtime (containerd is the most common). If you'd like support for other runtimes to be added, please let us know by [opening an issue on GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=&labels=enhancement&template=feature_request.md).
+- Linux Kernel version 4.20+
 
 mirrord can be used in three ways:
 
@@ -122,10 +122,10 @@ To install and use the Operator, you'll need a mirrord for Teams license. You ca
 1. Install the [mirrord CLI](quick-start.md#cli-tool).
 2. Run the `mirrord operator setup` command. The base of the command is: ​ `mirrord operator setup [OPTIONS] | kubectl apply -f -` ​ Options:
 
-* `--accept-tos` You accept terms of service for mirrord-operator
-* `--license-key` The license key for the operator
-* (Optional) `-f, --file` Output Kubernetes definitions to file and not to stdout (instead of piping to `kubectl apply -f -`)
-* (Optional) `--namespace` Set namespace of mirrord operator (default: mirrord) ​ So the final command should look like ​ `mirrord operator setup --accept-tos --license-key <license-key> | kubectl apply -f -`
+- `--accept-tos` You accept terms of service for mirrord-operator
+- `--license-key` The license key for the operator
+- (Optional) `-f, --file` Output Kubernetes definitions to file and not to stdout (instead of piping to `kubectl apply -f -`)
+- (Optional) `--namespace` Set namespace of mirrord operator (default: mirrord) ​ So the final command should look like ​ `mirrord operator setup --accept-tos --license-key <license-key> | kubectl apply -f -`
 
 You should now be able to see the `mirrord-operator` deployment when running `kubectl get deployments -n mirrord`. Also, when you run mirrord, you'll see the `connected to operator` step in its progress reports.
 
@@ -148,7 +148,7 @@ Set `license.key` to your key.
 Finally, install the chart:
 
 ```bash
-helm install -f values.yaml mirrord-operator metalbear/mirrord-operator 
+helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
 ### Using Internal Registry (Optional)
@@ -245,8 +245,8 @@ runAsUser:
 seLinuxContext:
   type: MustRunAs
 users:
-- system:serviceaccount:mirrord:mirrord-operator
-- system:serviceaccount:mirrord:default
+  - system:serviceaccount:mirrord:mirrord-operator
+  - system:serviceaccount:mirrord:default
 ```
 
 #### Verifying the Installation
@@ -275,4 +275,4 @@ Now that you've tried out mirrord, it's time to get acquainted with its differen
 1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
 2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4) sections?
+4. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4) sections?
