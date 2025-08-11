@@ -125,4 +125,4 @@ However, in some cases the traffic is only decrypted by the target service itsel
 
 1. If your local process reads from a queue, you might want to test out the [copy target feature](copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](targetless.md).
-3. If you just want to learn more about mirrord, why not check out our [architecture](../ref/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/) sections?
+3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/) sections?

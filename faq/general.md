@@ -22,14 +22,14 @@ description: General questions about mirrord.
 
 First and most important, mirrord _doesn't just mirror traffic_. It does that, but also a lot more.
 
-mirrord lets you connect a process on your development machine to your Kubernetes cluster. It does this by injecting itself into the local process (no code changes needed!), intercepting all of the input and output points of the process - network traffic, file access, and environment variables - and proxying them to the cluster. This mechanism is discussed in more detail [here](../ref/architecture.md#mirrord-layer).
+mirrord lets you connect a process on your development machine to your Kubernetes cluster. It does this by injecting itself into the local process (no code changes needed!), intercepting all of the input and output points of the process - network traffic, file access, and environment variables - and proxying them to the cluster. This mechanism is discussed in more detail [here](../reference/architecture.md#mirrord-layer).
 
 When you run mirrord, you select a Target - this is the Kubernetes Pod or Deployment whose context you want your local code to run in. For example, if you have a staging cluster running the latest stable version of all of your microservices, and you're now coding the next version of one of these microservices, you'd select as your Target the Pod or Deployment running the stable version of that microservice in staging. The following things will then happen:
 
-* The Target's environment variables will be made available to the local process.
-* When the local process tries to read a file, it will be read from the Target's filesystem instead.
-* Traffic reaching the remote Target will reach your locally running process (this incoming traffic can either be mirrored, intercepted entirely, or intercepted based on a filter you define).
-* Traffic sent out from your local process will be sent out from the Target instead, letting it reach any endpoint that's accessible to the Target, and the response will be sent back to your local process.
+- The Target's environment variables will be made available to the local process.
+- When the local process tries to read a file, it will be read from the Target's filesystem instead.
+- Traffic reaching the remote Target will reach your locally running process (this incoming traffic can either be mirrored, intercepted entirely, or intercepted based on a filter you define).
+- Traffic sent out from your local process will be sent out from the Target instead, letting it reach any endpoint that's accessible to the Target, and the response will be sent back to your local process.
 
 By proxying all of your local process' input and output points in this way, mirrord makes it "think" it's running in the cloud, which lets you test it in cloud conditions:
 
@@ -53,8 +53,8 @@ If you have any restrictions for pulling external images inside your cluster, yo
 
 #### How does mirrord protect against disrupting my shared environment with my local code?
 
-* By letting you mirror traffic rather than intercept it, the stable version of the code can still run in the cluster and handle requests.
-* By letting you control which functionality runs locally and which runs in the cloud, you can configure mirrord in the way that's safest for your architecture. For example, you can configure mirrord to read files and receive incoming traffic from the cloud, but write files and send outgoing traffic locally. Our main goal in future versions of mirrord is to reduce the risk of disruption of the shared environment when using mirrord. This will be achieved by providing more granular configuration options (for example, filtering traffic by hostname or protocol), and advanced functionality like copy-on-write for databases.
+- By letting you mirror traffic rather than intercept it, the stable version of the code can still run in the cluster and handle requests.
+- By letting you control which functionality runs locally and which runs in the cloud, you can configure mirrord in the way that's safest for your architecture. For example, you can configure mirrord to read files and receive incoming traffic from the cloud, but write files and send outgoing traffic locally. Our main goal in future versions of mirrord is to reduce the risk of disruption of the shared environment when using mirrord. This will be achieved by providing more granular configuration options (for example, filtering traffic by hostname or protocol), and advanced functionality like copy-on-write for databases.
 
 #### Can I use mirrord to run a local container, rather than a local process, in the context of the remote Kubernetes cluster?
 
@@ -68,17 +68,17 @@ mirrord works by creating an agent on a privileged pod in the remote cluster tha
 
 mirrord OSS supports the following Kubernetes objects as targets:
 
-* Pods
-* Deployments
-* Argo Rollouts
+- Pods
+- Deployments
+- Argo Rollouts
 
 In mirrord OSS, mirrord will always target a random pod when a workload with multiple pods is used as the remote target.
 
 mirrord for Teams adds support for the following workloads:
 
-* Jobs
-* CronJobs
-* StatefulSets
+- Jobs
+- CronJobs
+- StatefulSets
 
 In mirrord for Teams, mirrord will always target all pods when a workload with multiple pods is used as the remote target.
 

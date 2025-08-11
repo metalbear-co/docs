@@ -15,11 +15,9 @@ tags: ["open source", "team", "enterprise"]
 
 ## Overview
 
-mirrord will relay file access (except for [some exceptions](
-https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs)) to the
+mirrord will relay file access (except for [some exceptions](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs)) to the
 target pod by default. (this functionality can be disabled using `--fs-mode local` flag on the command line or by
 setting `mode` in the configuration file in the IDE plugin.)
-
 
 For example, the following python script calls the built-in `open` function which translate to something like
 `openat(AT_FDCWD, "/tmp/test", O_RDWR|O_CLOEXEC)` at a lower level:
@@ -40,7 +38,7 @@ mirrord overrides that `openat` call and opens `/tmp/test` on the remote pod.
 
 ## How does it work?
 
-![mirrord - fileops](/ref/fileops/mirrord-fileops.png)
+![mirrord - fileops](/reference/fileops/mirrord-fileops.png)
 
 Once a request to open a new file is received by `mirrord-agent` from `mirrord-layer`, the agent forwards the request
 to the container in the remote pod in context of the provided path for the open system call, prefixed with path to the
@@ -48,7 +46,6 @@ root directory of the container.
 
 `mirrord-agent` uses APIs provided by docker and containerd runtimes to get the PID of the remote container, and
 refers to the root directory of the remote container through `/proc/container_pid/root`
-
 
 ## Syscalls
 

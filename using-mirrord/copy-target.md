@@ -18,7 +18,7 @@ description: Making mirrord copy a target and use the copy instead of the origin
 
 # Copy Target
 
-When you set the [`copy_target`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target) configuration field, instead of using the [target](../ref/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target. 
+When you set the [`copy_target`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target.
 
 {% hint style="info" %}
 This feature is only relevant for users on the Team and Enterprise pricing plans.
