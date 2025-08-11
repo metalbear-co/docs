@@ -129,7 +129,9 @@ Don't use this example as a starting point, it's just here to show you all the a
       }
     },
     "copy_target": {
-      "scale_down": false
+      "scale_down": true,
+      "exclude_init_containers": ["spectacled-init-container"],
+      "exclude_containers": ["grizzly-container, polar-container"]
     }
   },
   "operator": true,
@@ -667,7 +669,11 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
       },
       "dns": false
     },
-    "copy_target": false,
+    "copy_target": {
+      "scale_down": true,
+      "exclude_init_containers": ["spectacled-init-container"],
+      "exclude_containers": ["grizzly-container, polar-container"]
+    },
     "hostname": true
   }
 }
@@ -685,7 +691,9 @@ Allows the user to target a pod created dynamically from the orignal [`target`](
 {
   "feature": {
     "copy_target": {
-      "scale_down": true
+      "scale_down": true,
+      "exclude_init_containers": ["spectacled-init-container"],
+      "exclude_containers": ["grizzly-container, polar-container"]
     }
   }
 }
@@ -710,6 +718,14 @@ This option is compatible only with deployment targets.
       "scale_down": true
     }
 ```
+
+### feature.copy\_target.exclude\_containers 
+
+Set a list of containers to be ignored by `copy_target`. If the target container is configured to be excluded, it will remain as the target container.
+
+### feature.copy\_target.exclude\_init\_containers 
+
+Set a list of init containers to be ignored by `copy_target`.
 
 ### feature.env
 

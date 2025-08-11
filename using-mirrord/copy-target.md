@@ -54,3 +54,7 @@ Active Copy Targets:
 With an asterisk marking copy targets that are also scaling down their original target.
 
 Please note however that you don't necessarily have to check if a target is already being scaled down, as trying to scale it down again will not interrupt the ongoing session, it will just result in your new run exiting with an error.
+
+### Ignoring Specific Containers
+
+By setting [`exclude_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_containers) and/ or [`exclude_init_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_init_containers), you have to option to ignore certain containers and init containers when creating the copy target.
