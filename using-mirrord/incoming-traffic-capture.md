@@ -15,7 +15,7 @@ tags: ["open source", "team", "enterprise"]
 
 When this can be useful?
 1. When Debugging incoming traffic: If your service is erroring and you’re not sure why, `mirrord dump` lets you see what's actually hitting the service, including headers like user-id, X-Session-ID, tenant-id so you can mirror only the traffic relevant to you 
-2. When Verifying mirroring works: If you suspect mirrord exec isn’t working, you can run mirrord dump. If traffic shows up, mirroring works—so you can rule out that part 
+2. When Verifying mirroring works: If you suspect mirrord exec isn’t working, you can run mirrord dump. If traffic shows up, mirroring works, so you can rule out that part 
 
 
 ## Prerequisites
