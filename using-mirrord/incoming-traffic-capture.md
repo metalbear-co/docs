@@ -1,6 +1,6 @@
 ---
 title: "Incoming Traffic Capture"
-description: "How to use mirrord dump to inspect incoming traffic on Kubernetes resource"
+description: "How to use mirrord dump to inspect incoming traffic to a Kubernetes resource"
 date: 2025-08-11T00:00:00+03:00
 lastmod: 2025-08-11T00:00:00+03:00
 draft: false
