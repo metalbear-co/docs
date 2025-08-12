@@ -15,17 +15,20 @@ The `mirrord dump` command lets you inspect incoming traffic to a Kubernetes res
 
 When is this useful?
 1. Debugging incoming traffic
-If your service is returning errors and you’re not sure why, `mirrord dump` lets you see exactly what’s hitting the service - including headers like user-id, X-Session-ID, and tenant-id - so you can identify and mirror only the traffic relevant to you.
+If your service is returning errors and you’re not sure why, `mirrord dump` lets you see exactly what’s hitting the service - so you can determine whether traffic is reaching the service at all, or if it is arriving malformed, to quickly identify the source of errors.
 2. Verifying mirroring
 If you suspect `mirrord exec` isn’t working, you can run `mirrord dump`. If you see traffic appear, mirroring is functioning correctly, so you can rule that part out.
+3. Onboaring mirrord in your organization
+ Inspect real traffic to easily find the right filter for isolating each developer’s requests in shared environments.
+
 
 
 ## Prerequisites
 
 Before you start, make sure you have:
 1. `kubectl` configured to access your target cluster.
-2. mirrord installed and working (OSS or Teams operator, depending on your setup).
-3. The details of your target resource (for example, the Deployment name and port).
+2. mirrord installed and working.
+3. The details of your target resource (for example, the Deployment name and the port you want to inspect).
 
 ## Using `mirrord dump`
 
