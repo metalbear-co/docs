@@ -57,4 +57,6 @@ Please note however that you don't necessarily have to check if a target is alre
 
 ### Ignoring Specific Containers
 
-By setting [`exclude_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_containers) and/ or [`exclude_init_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_init_containers), you have to option to ignore certain containers and init containers when creating the copy target.
+You can use [`exclude_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_containers) and/or [`exclude_init_containers`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target.exclude_init_containers) settings to ignore certain containers when creating the copy target. The containers will not be present in the copied pod's spec.
+
+Please note that excluding the target container does not have any effect.
