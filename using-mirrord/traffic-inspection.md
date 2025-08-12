@@ -18,7 +18,7 @@ When is this useful?
 If your service is returning errors and you’re not sure why, `mirrord dump` lets you see exactly what’s hitting the service - so you can determine whether traffic is reaching the service at all, or if it is arriving malformed, to quickly identify the source of errors.
 2. Verifying mirroring: 
 If you suspect `mirrord exec` isn’t working, you can run `mirrord dump`. If you see traffic appear, mirroring is functioning correctly, so you can rule that part out.
-3. Onboaring mirrord in your organization:
+3. Onboarding mirrord in your organization:
 Inspect real traffic to easily find the right filter for isolating each developer’s requests in shared environments.
 
 
