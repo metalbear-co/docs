@@ -153,3 +153,21 @@ mirrord, by design, extracts a temporary dynamic library at runtime — the `mir
 Carbon Black typically does not trust binaries or dynamic libraries residing in ephemeral directories like /tmp. As a result, Carbon Black treats the loading attempt as potentially suspicious and blocks it, which prevents the library from being injected and disrupts mirrord’s operation.
 
 To resolve this problem, you can create an explicit exclusion policy in Carbon Black to permit loading of the `mirrord-layer` dynamic library. Your policy should permit loading dynamic libraries from a specific predictable directory, such as `/private/tmp/mirrord/**`.
+
+## I can't mirrord to work with Remix/Vite
+
+Remix and Vite use the `NODE_ENV` environment variable to determine the runtime configuration. Typically, your remote workload will have `NODE_ENV` set to `staging` or `production`, while locally you might run `npm run dev`, resulting in a mix of production, staging, and development settings across your Node, Vite, or Remix code. 
+
+To ensure consistent behavior, you can override the remote `NODE_ENV` value by adding the following to your mirrord configuration:
+
+```json
+{
+  "feature": {
+    "env": {
+      "override": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}
+```
