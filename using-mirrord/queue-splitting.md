@@ -206,7 +206,7 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 {% endstep %}
 {% step %}
 
-### Create the queue registry
+### Provide application context
 
 On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
 Before you can run sessions with SQS splitting, you must create a queue registry for the desired target.
@@ -312,7 +312,7 @@ Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart
 {% endstep %}
 {% step %}
 
-### Create the topics consumer resource
+### Provide application context
 
 {% endstep %}
 {% endstepper %}
@@ -518,7 +518,7 @@ Filter definition contains two fields:
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
 
 {% hint style="info" %}
-Empty `message_filter` is treated as a match-none directive.
+An empty `message_filter` is treated as a match-none directive.
 {% endhint %}
 
 See example configurations below:
