@@ -16,67 +16,92 @@ description: Sharing queues by splitting messages between multiple clients and t
 
 # Queue Splitting
 
-If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
+If your application consumes messages from a message broker (e.g. Kafka cluster), you should choose a configuration that matches your intention:
 
-1. Running your application with mirrord without any special configuration will result in your local application competing with the remote target (and potentially other mirrord runs by teammates) for queue messages.
-2. Running your application with [`copy_target` + `scale_down`](copy-target.md#replacing-a-whole-deployment-using-scale_down) will result in the deployed application not consuming any messages, and your local application being the exclusive consumer of queue messages.
-3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
+1. If you're ok with your local application competing for queue messages with the remote target, and with your teammates' mirrord sessions — run the application with mirrord without any special configuration.
+2. If you want your local application to be an exclusive consumer of queue messages — run the application with [`copy_target` + `scale_down`](copy-target.md#replacing-a-whole-deployment-using-scale_down) features.
+3. If you want to precisely control which messages will be consumed by your local application — run the application with the queue splitting feature. The allows you define a message filter in your mirrord configuration. All messages matching that filter will be redirected by the mirrord operator to your local application. Other messages will **not** reach your local application. 
 
 {% hint style="info" %}
 This feature is only relevant for users on the Team and Enterprise pricing plans.
 {% endhint %}
 
-**NOTE:** So far queue splitting is available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
+{% hint style="info" %}
+So far queue splitting is available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
+{% endhint %}
 
-### How It Works
+## How It Works
 
-#### SQS Splitting
+When a Kafka splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue or topic.
+That temporary queue/topic is *exclusive* to the target workload, and its name is randomized.
+Similarly, the local application is redirected to consume messages from its own *exclusive* temporary queue or topic.
 
-When an SQS splitting session starts, the operator changes the target workload to consume messages from a different, temporary queue created by the operator. The operator also creates a temporary queue that the local application reads from.
+{% hint style="warning" %}
+In both cases, the redirections are done by manipulating environment variables.
+For this reason, queue splitting always requires that the application reads queue or topic name from environment variables.
+This is a prerequisite.
+{% endhint %}
 
-So if we have a consumer app reading messages from a queue:
+Once all temporary topics or queues are prepared, the mirrord operator starts consuming messages from the original queue or topic, and publishing them to the correct temporary one.
+This routing is based on message filters provided by the users in their mirrord configs.
+
+{% tabs %}
+
+{% tab title="Amazon SQS" %}
+
+First, we have a consumer app reading messages from an SQS queue:
 
 ![A K8s application that consumes messages from an SQS queue](queue-splitting/before-splitting-sqs.svg)
 
-After a mirrord SQS splitting session starts, the setup will change to this:
+Then, the first mirrord SQS splitting session starts. Two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
+and the mirrord operator routes messages according to the user's filter (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
 
 ![One SQS splitting session](queue-splitting/1-user-sqs.svg)
 
-The operator will consume messages from the original queue, and try to match their attributes with filter defined by the user in the mirrord configuration file (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)). A message that matches the filter will be sent to the queue consumed by the local application. Other messages will be sent to the queue consumed by the remote application.
-
-And as soon as a second mirrord SQS splitting session starts, the operator will create another temporary queue for the new local app:
+Then, another mirrord SQS splitting session starts. The third temporary queue is created (for the second user's local application).
+The mirrord operator includes the new queue and the second user's filter in the routing logic.
 
 ![Two SQS splitting sessions](queue-splitting/2-users-sqs.svg)
 
-The users' filters will be matched in the order of the start of their sessions. If filters defined by two users both match a message, the message will go to whichever user started their session first.
+If the filters defined by the two users both match some message, it is not defined which one of the users will receive that message.
 
-After a mirrord session ends, the operator will delete the temporary queue that was created for that session. When all sessions that split a certain queue end, the mirrord Operator will wait for the deployed application to consume the remaining messages in its temporary queue, and then delete that temporary queue as well, and change the deployed application to consume messages back from the original queue.
+{% endtab %}
 
-#### Kafka Splitting
+{% tab title="Kafka" %}
 
-When a Kafka splitting session starts, the operator changes the target workload to consume messages from a different, temporary topic created by the operator in the same Kafka cluster. The operator also creates a temporary topic that the local application reads from.
-
-So if we have a consumer app reading messages from a topic:
+First, we have a consumer app reading messages from a Kafka topic:
 
 ![A K8s application that consumes messages from a Kafka topic](queue-splitting/before-splitting-kafka.svg)
 
-After a mirrord Kafka splitting session starts, the setup will change to this:
+Then, the first mirrord Kafka splitting session starts. Two temporary topics are created (one for the target deployed in the cluster, one for the user's local application),
+and the mirrord operator routes messages according to the user's filter (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
 
 ![One Kafka splitting session](queue-splitting/1-user-kafka.svg)
 
-The operator will consume messages from the original topic (using the same consumer group id as the target workload), and try to match their headers with filter defined by the user in the mirrord configuration file (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)). A message that matches the filter will be sent to the topic consumed by the local application. Other messages will be sent to the topic consumed by the remote application.
-
-And as soon as a second mirrord Kafka splitting session starts, the operator will create another temporary queue for the new local app:
+Then, another mirrord Kafka splitting session starts. The third temporary topic is created (for the second user's local application).
+The mirrord operator includes the new topic and the second user's filter in the routing logic.
 
 ![Two Kafka splitting sessions](queue-splitting/2-users-kafka.svg)
 
-The users' filters will be matched in the order of the start of their sessions. If filters defined by two users both match a message, the message will go to whichever user started their session first.
+If the filters defined by the two users both match some message, it is not defined which one of the users will receive that message.
 
-After a mirrord session ends, the operator will delete the temporary topic that was created for that session. When all sessions that split a certain topic end, the mirrord Operator will change the deployed application to consume messages back from the original topic and delete the temporary topic as well.
+{% endtab %}
 
-### Getting Started with SQS Splitting
+{% endtabs %}
 
-#### Enabling SQS Splitting in Your Cluster
+Temporary queues and topics are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
+
+Plese note that:
+1. Temporary queues and topics created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
+2. In case of SQS splitting, deployed targets will remain redirected as long as their temporary queues have unconsumed messages.
+
+
+## Enabling SQS Splitting in Your Cluster
+
+{% stepper %}
+{% step %}
+
+### Preparing mirrord Operator's IAM Role
 
 In order to use the SQS splitting feature, some extra values need be provided during the installation of the mirrord Operator.
 
@@ -175,7 +200,16 @@ Any temporary queues created by mirrord are created with the same policy as the 
 
 However, if the workload gets its access to the queue by an IAM policy (and not an SQS policy, see [SQS docs](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-using-identity-based-policies.html#sqs-using-sqs-and-iam-policies)) that grants access to that specific queue by its exact name, you would have to add a policy that would allow that workload to also read from new temporary queues created by mirrord on the run.
 
-#### Creating a Queue Registry
+{% endstep %}
+{% step %}
+
+### Configuring SQS Splitting in the Helm Chart
+Step 2 text
+
+{% endstep %}
+{% step %}
+
+### Creating the Queue Registry
 
 On operator installation, a new [`CustomResources`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type was created on your cluster: `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs, can verify its existence with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`. After an SQS-enabled operator is installed, and before you can start splitting queues, a resource of that type must be created for the target you want to run against, in the target's namespace.
 
@@ -218,9 +252,10 @@ spec:
 * `spec.consumer` is the workload that consumes these queues. The queues specified above will be split whenever that workload is targeted.
   * `container` is optional, when set - this queue registry only applies to runs that target that container.
 
-### Getting Started with Kafka Splitting
+{% endstep %}
+{% endstepper %}
 
-#### Enabling Kafka Splitting in Your Cluster
+## Enabling Kafka Splitting in Your Cluster
 
 In order to use the Kafka splitting feature, some extra values need be provided during the installation of the mirrord Operator.
 
@@ -414,7 +449,7 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 * `{{FALLBACK}}` will resolve either to `-fallback-` or `-` literal.
 * `{{ORIGINAL_TOPIC}}` will resolve to the name of the original topic that is being split.
 
-### Setting a Filter for a mirrord Run
+## Setting a Filter for a mirrord Run
 
 Once everything else is set, you can start using message filters in your mirrord configuration file. Below is an example for what such a configuration might look like:
 
