@@ -208,16 +208,24 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 
 ### Create the queue registry
 
-On operator installation, a new [`CustomResources`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type was created on your cluster: `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs, can verify its existence with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`. After an SQS-enabled operator is installed, and before you can start splitting queues, a resource of that type must be created for the target you want to run against, in the target's namespace.
+On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
+Before you can run sessions with SQS splitting, you must create a queue registry for the desired target.
+This is because the queue registry contains additional application context required by the mirrord operator.
+For example, the operator needs to know which environment variables contain the names of the SQS queues to split. 
 
-Below we have an example for such a resource, for a meme app that consumes messages from two queues:
+See an example queue registry defined for a deployment `meme-app` living in namespace `meme`:
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1alpha
 kind: MirrordWorkloadQueueRegistry
 metadata:
   name: meme-app-q-registry
+  namespace: meme
 spec:
+  consumer:
+    name: meme-app
+    workloadType: Deployment
+    container: main
   queues:
     meme-queue:
       queueType: SQS
@@ -231,23 +239,53 @@ spec:
         envVar: AD_QUEUE_NAME
       tags:
         tool: mirrord
-  consumer:
-    name: meme-app
-    container: main
-    workloadType: Deployment
 ```
 
-* `spec.queues` holds queues that should be split when running mirrord with this target. It is a mapping from a queue ID to the details of the queue.
-  * The queue ID is chosen by you, and will be used by every teammate who wishes to filter messages from this queue. You can choose any string for that, it does not have to be the same as the name of the queue. In the example above the first queue has the queue id `meme-queue` and the second one `ad-queue`.
-  * `nameSource` tells mirrord where the app finds the name of this queue.
-    * Currently `envVar` is the only supported source for the queue name. The value of `envVar` is the name of the
-      environment variable the app reads the queue name from. That environment variable could be one that has a value
-      directly in the spec, or it could get its value from a ConfigMap via `valueFrom` or `envFrom`. It is crucial that
-      both the local and the deployed app use the queue name they find in that environment variable. mirrord changes the
-      value of that environment variable in order to make the application read from a temporary queue it creates.
-  * `tags` is an optional field where you can specify queue tags that should be added to all temporary queues mirrord creates for splitting this queue.
-* `spec.consumer` is the workload that consumes these queues. The queues specified above will be split whenever that workload is targeted.
-  * `container` is optional, when set - this queue registry only applies to runs that target that container.
+The registry above says that:
+1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
+2. The container consumes two SQS queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
+3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
+4. When creating a temporary queue derived from either of the two queues, mirrord operator should add the tag `tool=mirrord`.
+
+#### Link the registry to the deployed consumer
+
+The queue registry is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
+The reference is specified with `spec.consumer`:
+* `name` — name of the Kubernetes workload of the deployed consumer.
+* `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
+* `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
+
+#### Desribe consumed queues in the registry
+
+The queue registry describes SQS queues consumed by the referenced consumer.
+The queues are described in entries of the `spec.queues` object.
+
+The entry's key can be arbitrary, as it will only be referenced from the user's mirrord config
+(compare with the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)).
+
+The entry's value is an object describing single or multiple SQS queues consumed by the workload:
+
+* `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
+  * `envVar` stores a name of a single environment variables.
+  * `regexPattern` selects multiple environment variables based on a regular expression.
+* `fallbackName` stores an optional fallback name/URL, in case `nameSource` is not found in the workload spec.
+  `nameSource` will still be used to inject the name/URL of the temporary queue.
+* `namesFromJsonMap` specifies how to process the values of environment variables that contain queue names/URLs.
+  If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
+  If set to `false`, values of all variables will be treated directly as queue names/URLs.
+  Defaults to `false`.
+* `tags` specifies additional tags to be set on all created temporary queues.
+* `sns` specifies whether the queues contains SQS messages created from SNS notifications.
+  If set to `true`, message bodies will be parsed and matched against users' filters,
+  as SNS notification attributes are found in the SQS message body.
+  If set to `false`, message attributes will be used matched against users' filters.
+  Defaults to `false`.
+
+{% hint style="warning" %}
+The mirrord operator can only read consumer's environment variables if they are either:
+1. defined directly in the workload's pod template, with value defined in `value` or in `valueFrom` with a config map reference; or
+2. loaded from config maps using `envFrom`.
+{% endhint %}
 
 {% endstep %}
 {% endstepper %}
