@@ -302,7 +302,7 @@ Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart
 {% endstep %}
 {% step %}
 
-### Create the Kafka client configuration
+### Configure the operator's Kafka client
 
 {% endstep %}
 {% step %}
