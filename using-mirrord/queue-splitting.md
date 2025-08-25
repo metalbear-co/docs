@@ -283,7 +283,7 @@ The entry's value is an object describing single or multiple SQS queues consumed
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
-1. defined directly in the workload's pod template, with value defined in `value` or in `valueFrom` with a config map reference; or
+1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
 2. loaded from config maps using `envFrom`.
 {% endhint %}
 
