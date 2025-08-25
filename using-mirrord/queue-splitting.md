@@ -147,33 +147,33 @@ This is an example for a policy that gives the operator's roles the minimal perm
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "sqs:GetQueueUrl",
-                "sqs:GetQueueAttributes",
-                "sqs:ListQueueTags",
-                "sqs:ReceiveMessage",
-                "sqs:DeleteMessage"
-            ],
-            "Resource": [
-                "arn:aws:sqs:eu-north-1:314159265359:ClientUploads"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "sqs:CreateQueue",
-                "sqs:TagQueue",
-                "sqs:SendMessage",
-                "sqs:GetQueueAttributes",
-                "sqs:DeleteQueue"
-            ],
-            "Resource": "arn:aws:sqs:eu-north-1:314159265359:mirrord-*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sqs:GetQueueUrl",
+        "sqs:GetQueueAttributes",
+        "sqs:ListQueueTags",
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage"
+      ],
+      "Resource": [
+        "arn:aws:sqs:eu-north-1:314159265359:ClientUploads"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sqs:CreateQueue",
+        "sqs:TagQueue",
+        "sqs:SendMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:DeleteQueue"
+      ],
+      "Resource": "arn:aws:sqs:eu-north-1:314159265359:mirrord-*"
+    }
+  ]
 }
 ```
 
@@ -486,47 +486,86 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 
 ## Setting a Filter for a mirrord Run
 
-Once everything else is set, you can start using message filters in your mirrord configuration file. Below is an example for what such a configuration might look like:
+Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
+[`feature.split_queues`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.split_queues) is the configuration field they need to specify in order to filter queue messages.
+Directly under it, mirrord expects a mapping from a queue or topic ID to a queue filter definition.
+
+Filter definition contains two fields:
+* `queue_type` — `SQS` or `Kafka`
+* `message_filter` — mapping from message attribute (SQS) or header (Kafka) name to a regex for its value.
+  The local application will only see queue messages that have **all** of the specified message attributes/headers.
+
+{% hint style="info" %}
+Empty `message_filter` is treated as a match-none directive.
+{% endhint %}
+
+See example configurations below:
+
+{% tabs %}
+
+{% tab title="SQS and Kafka" %}
 
 ```json
 {
-    "operator": true,
-    "target": "deployment/meme-app/main",
-    "feature": {
-        "split_queues": {
-            "meme-queue": {
-                "queue_type": "SQS",
-                "message_filter": {
-                    "author": "^me$",
-                    "level": "^(beginner|intermediate)$"
-                }
-            },
-            "ad-queue": {
-                "queue_type": "SQS",
-                "message_filter": {}
-            },
-            "views-topic": {
-                "queue_type": "Kafka",
-                "message_filter": {
-                    "author": "^me$",
-                    "source": "^my-session-"
-                }
-            }
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "meme-queue": {
+        "queue_type": "SQS",
+        "message_filter": {
+          "author": "^me$",
+          "level": "^(beginner|intermediate)$"
         }
+      },
+      "ad-queue": {
+        "queue_type": "SQS",
+        "message_filter": {}
+      },
+      "views-topic": {
+        "queue_type": "Kafka",
+        "message_filter": {
+          "author": "^me$",
+          "source": "^my-session-"
+        }
+      }
     }
+  }
 }
 ```
 
-* [`feature.split_queues`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.split_queues) is the configuration field you need to specify in order to filter queue messages. Directly under it, we have a mapping from a queue or topic ID to a queue filter definition.
-  * Queue or topic ID is the ID that was set in the [SQS queue registry resource](queue-splitting.md#creating-a-queue-registry) or [Kafka topics consumer resource](queue-splitting.md#creating-a-topics-registry).
-  *   `message_filter` is a mapping from message attribute (SQS) or header (Kafka) names to message attribute or header value regexes. Your local application will only see queue messages that have **all** of the specified message attributes or headers.
-
-      Empty `message_filter` is treated as a match-none directive.
-
 In the example above, the local application:
 
-* Will receive a subset of messages from SQS queue with ID `meme-queue`. All received messages will have an attribute `author` with the value `me`, AND an attribute `level` with value either `beginner` or `intermediate`.
-* Will receive a subset of messages from Kafka topic with ID `views-topic`. All received messages will have an attribute `author` with the value `me`, AND an attribute `source` with value starting with `my-session-` (e.g `my-session-844cb78789-2fmsw`).
-* Will receive no messages from SQS queue with id `ad-queue`.
+* Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
+  All received messages will have an attribute `author` with the value `me`, AND an attribute `level` with value either `beginner` or `intermediate`.
+* Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
+* Will receive a subset of messages from Kafka topic with ID `views-topic`.
+  All received messages will have an attribute `author` with the value `me`, AND an attribute `source` with value starting with `my-session-` (e.g `my-session-844cb78789-2fmsw`).
 
-Once all users stop filtering a queue (i.e. end their mirrord sessions), the temporary queues (SQS) and topics (Kafka) that mirrord operator created will be deleted.
+
+{% endtab %}
+{% tab title="SQS with wildcard" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "*": {
+        "queue_type": "SQS",
+        "message_filter": {
+          "author": "^me$",
+        }
+      },
+    }
+  }
+}
+```
+
+In the example above, the local application will receive a subset of message from **all** SQS queues described in the registry.
+All received messages will have an attribute `author` with the value `me`.
+`*` is a special queue ID for SQS queues, and resolves to all queues described in the registry.
+
+{% endtab %}
+{% endtabs %}
