@@ -208,10 +208,12 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 
 ### Provide application context
 
-On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
+On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence
+with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
 Before you can run sessions with SQS splitting, you must create a queue registry for the desired target.
 This is because the queue registry contains additional application context required by the mirrord operator.
-For example, the operator needs to know which environment variables contain the names of the SQS queues to split. 
+For example, the operator needs to know which environment variables contain the names of the SQS queues to split.
 
 See an example queue registry defined for a deployment `meme-app` living in namespace `meme`:
 
@@ -304,15 +306,128 @@ Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart
 
 ### Configure the operator's Kafka client
 
+The mirrord operator will need to be able to do some operations on the Kafka cluster on your behalf.
+To allow for properly configuring the operator's Kafka client, on operator installation with `operator.kafkaSplitting` enabled,
+a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster
+— `MirrordKafkaClientConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordkafkaclientconfigs.queues.mirrord.metalbear.co`.
+
+The resource allows for specifying a list of properties for the Kafka client, like this:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordKafkaClientConfig
+metadata:
+  name: base-config
+  namespace: mirrord
+spec:
+  properties:
+  - name: bootstrap.servers
+    value: kafka.default.svc.cluster.local:9092
+  - name: client.id
+    value: mirrord-operator
+```
+
+When used by the mirrord Operator for Kafka splitting, the example below will be resolved to following `.properties` file:
+
+```properties
+bootstrap.servers=kafka.default.svc.cluster.local:9092
+client.id=mirrord-operator
+```
+
+This file will be used when creating a Kafka client for managing temporary topics, consuming messages from the original topic and producing messages to the temporary topics. Full list of available properties can be found [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+
+{% hint style="info" %}
+`group.id` property will always be overwritten by mirrord Operator when resolving the `.properties` file.
+{% endhint %}
+
+{% hint style="warning" %}
+`MirrordKafkaClientConfig` resources must always be created in the operator's namespace.
+{% endhint %}
+
+See [additional options](queue-splitting.md#additional-options) section for more Kafka configuration info.
+
 {% endstep %}
 {% step %}
 
 ### Authorize deployed consumers
 
+In order to be targeted with Kafka splitting, a deployed consumer must be able to use the temporary topics created by mirrord.
+E.g. if the consumer application describes the topic or reads messages from it — it must be able to do the same on a temporary topic.
+This might require extra actions on your side to adjust the authorization, for example based on topic name prefix. See [topic names](queue-splitting.md#customizing-temporary-kafka-topic-names) section for more info.
+
 {% endstep %}
 {% step %}
 
 ### Provide application context
+
+On operator installation with `operator.kafkaSplitting` enabled,
+a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster
+— `MirrordKafkaTopicsConsumer`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordkafkatopicsconsumers.queues.mirrord.metalbear.co`.
+Before you can run sessions with Kafka splitting, you must create a topics consumer resource for the desired target.
+This is because the topics consumer resource contains additional application context required by the mirrord operator.
+For example, the operator needs to know which environment variables contain the names of the Kafka topics to split.
+
+See an example topics consumer resource, for a meme app that consumes messages from a Kafka topic:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordKafkaTopicsConsumer
+metadata:
+  name: meme-app-topics-consumer
+  namespace: meme
+spec:
+  consumerApiVersion: apps/v1
+  consumerKind: Deployment
+  consumerName: meme-app
+  topics:
+  - id: views-topic
+    clientConfig: base-config
+    groupIdSources:
+    - directEnvVar:
+        container: consumer
+        variable: KAFKA_GROUP_ID
+    nameSources:
+    - directEnvVar:
+        container: consumer
+        variable: KAFKA_TOPIC_NAME
+```
+
+The topics consumer resource above says that:
+1. It provides context for deployment `meme-app` in namespace `meme`.
+2. The deployment consumes one topic. Its name is read from environment variable `KAFKA_TOPIC_NAME` in container `consumer`.
+The Kafka consumer group id is read from environment variable `KAFKA_GROUP_ID` in container `consumer`.
+3. The Kafka topic can be referenced in a mirrord config under ID `views-topic`.
+
+#### Link the topics consumer resource to the deployed consumer
+
+The topics consumer resource is namespaced, so it can only reference a Kafka consumer deployed in the same namespace.
+The reference is specified with `spec.consumer*` fields, which cover api version, kind, and name of the Kubernetes workload.
+For instance to configure Kafka splitting of a consumer deployed in a stateful set `kafka-notifications-worker`, you would set:
+
+```yaml
+consumerApiVersion: apps/v1
+consumerKind: StatefulSet
+consumerName: kafka-notifications-worker
+```
+
+The operator supports Kafka splitting on deployments, stateful sets, and Argo rollouts.
+
+#### Desribe consumed topics in the topics consumer resource
+
+The topics consumer resource describes Kafka topics consumed by the referenced consumer.
+The topics are described in entries of the `spec.topics` list:
+* `id` can be arbitrary, as it will only be referenced from the user's mirrord config
+(compare with the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)).
+* `clientConfig` stores the name of the `MirrordKafkaClientConfig` to use when making connections to the Kafka cluster.
+* `nameSources` stores a list of all occurences of the topic name in the consumer workload's pod template.
+* `groupIdSources` stores a list of all occurences of the consumer Kafka group ID in the consumer workload's pod template.
+The operator will use the same group ID when consuming messages from the topic.
+
+{% hint style="warning" %}
+The mirrord operator can only read consumer's environment variables if they are either:
+1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
+2. loaded from config maps using `envFrom`.
+{% endhint %}
 
 {% endstep %}
 {% endstepper %}
@@ -344,85 +459,16 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 * `{{FALLBACK}}` will resolve either to `-fallback-` or `-` literal.
 * `{{ORIGINAL_TOPIC}}` will resolve to the name of the original topic that is being split.
 
-#### Configuring Kafka Splitting with Custom Resources
+#### Reusing Kafka Client Configs
 
-On operator installation, new [`CustomResources`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) types were created on your cluster: `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig`. Users with permissions to get CRDs, can verify their existence with `kubectl get crd mirrordkafkatopicsconsumers.queues.mirrord.metalbear.co` and `kubectl get crd mirrordkafkaclientconfigs.queues.mirrord.metalbear.co`.
+`MirrordKafkaClientConfig` resource supports property inheritance via `spec.parent` field. When resolving a resource `config-A` that has a parent `config-B`:
 
-After a Kafka-enabled operator is installed, and before you can start splitting queues, resources of these types must be created.
-
-1. `MirrordKafkaTopicsConsumer` is a resource that must be created in the same namespace as the target workload. It describes Kafka topics that this workload consumes and contains instructions for the mirrord Operator on how to execture splitting. Each `MirrordKafkaTopicsConsumer` is linked to a single workload that can be targeted with a Kafka splitting session.
-2. `MirrordKafkaClientConfig` is a resource that must be created in the namespace where mirrord operator is installed. It contains properties that the operator will use when creating a Kafka client used for all Kafka operations during the split. This resource is referenced by `MirrordKafkaTopicsConsumer`.
-
-**`MirrordKafkaTopicsConsumer`**
-
-Below we have an example for `MirrordKafkaTopicsConsumer` resource, for a meme app that consumes messages from a Kafka topic:
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaTopicsConsumer
-metadata:
-  name: meme-app-topics-consumer
-spec:
-  consumerApiVersion: apps/v1
-  consumerKind: Deployment
-  consumerName: meme-app
-  topics:
-  - id: views-topic
-    clientConfig: base-config
-    groupIdSources:
-    - directEnvVar:
-        container: consumer
-        variable: KAFKA_GROUP_ID
-    nameSources:
-    - directEnvVar:
-        container: consumer
-        variable: KAFKA_TOPIC_NAME
-```
-
-* `spec.topics` is a list of topics that can be split when running mirrord with this target.
-  * The topic ID is chosen by you, and will be used by every teammate who wishes to filter messages from this topic. You can choose any string for that, it does not have to be the same as the name of the queue. In the example above the topic has id `views-topic`.
-  * `clientConfig` is the name of the `MirrordKafkaClientConfig` resource living in the mirrord Operator's namespace that will be used when interacting with the Kafka cluster.
-  *   `groupIdSources` holds a list of all occurences of Kafka consumer group id in the workload's pod spec. mirrord Operator will use this group id when consuming messages from the topic.
-
-      Currently the only supported source type is an environment variable with value defined directly in the pod spec.
-  *   `nameSources` holds a list of all occurences of topic name in the workload's pod spec. mirrord Operator will use this name when consuming messages. It is crucial that both the local and deployed app take topic name from these sources, as mirrord Operator will use them to inject the names of temporary topics.
-
-      Currently the only supported source type is an environment variable with value defined directly in the pod spec.
-
-**`MirrordKafkaClientConfig`**
-
-Below we have an example for `MirrordKafkaClientConfig` resource:
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaClientConfig
-metadata:
-  name: base-config
-  namespace: mirrord
-spec:
-  properties:
-  - name: bootstrap.servers
-    value: kafka.default.svc.cluster.local:9092
-```
-
-When used by the mirrord Operator for Kafka splitting, the example below will be resolved to following `.properties` file:
-
-```properties
-bootstrap.servers=kafka.default.svc.cluster.local:9092
-```
-
-This file will be used when creating a Kafka client for managing temporary topics, consuming messages from the original topic and producing messages to the temporary topics. Full list of available properties can be found [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
-
-> _**NOTE:**_ `group.id` property will always be overwritten by mirrord Operator when resolving the `.properties` file.
-
-`MirrordKafkaClientConfig` resource supports property inheritance via `spec.parent` field. When resolving a resource `X` that has parent `Y`:
-
-1. `Y` is resolved into a `.properties` file.
-2. For each property defined in `X`:
+1. `config-B` is resolved into a `.properties` file.
+2. For each property defined in `config-A`:
    * If `value` is provided, it overrides any previous value of that property
    * If `value` is not provided (`null`), that property is removed
 
-Below we have an example of two `MirrordKafkaClientConfig`s with inheritance relation:
+Below we have an example of two `MirrordKafkaClientConfig`s with an inheritance relation:
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1alpha
@@ -453,23 +499,27 @@ spec:
     value: null
 ```
 
-When used by the mirrord Operator for Kafka splitting, the `with-client-id` below will be resolved to following `.properties` file:
+When used by the mirrord operator for Kafka splitting, the `with-client-id` below will be resolved to following `.properties` file:
 
 ```properties
 bootstrap.servers=kafka.default.svc.cluster.local:9092
 client.id=mirrord-operator
 ```
 
-`MirrordKafkaClientConfig` also supports setting properties from a Kubernetes [`Secret`](https://kubernetes.io/docs/concepts/configuration/secret/) with the `spec.loadFromSecret` field. The value for `loadFromSecret` is given in the form: `<secret-namespace>/<secret-name>`.
+#### Configuring Kafka Clients with Secrets
 
-Each key-value entry defined in secret's data will be included in the resulting `.properties` file. Property inheritance from the parent still occurs, and within each `MirrordKafkaClientConfig` properties loaded from the secret are overwritten by those in `properties`.
+`MirrordKafkaClientConfig` also supports loading properties from a Kubernetes [`Secret`](https://kubernetes.io/docs/concepts/configuration/secret/), with the `spec.loadFromSecret` field.
+The value for `spec.loadFromSecret` is given in the form: `<secret-namespace>/<secret-name>`.
+
+Each key-value entry defined in the secret's data will be included in the resulting `.properties` file.
+Property inheritance from the parent still occurs, and within each `MirrordKafkaClientConfig` properties loaded from the secret are overwritten by those in `properties`.
 
 This means the priority of setting properties (from highest to lowest) is like so:
 
-* `childProperty`
-* `childSecret`
-* `parentProperty`
-* `parentSecret`
+* child `spec.properties`
+* child `spec.loadFromSecret`
+* parent `spec.properties`
+* parent `spec.loadFromSecret`
 
 Below is an example for a `MirrordKafkaClientConfig` resource that references a secret:
 
@@ -484,7 +534,17 @@ spec:
   properties: []
 ```
 
-For additional authentication configuration, here is an example of a `MirrordKafkaClientConfig` resource that supports IAM/OAUTHBEARER authentication with Amazon Managed Streaming for Apache Kafka:
+{% hint style="info" %}
+Note that by default, mirrord operator has read access only to the secrets in the operator's namespace.
+{% endhint %}
+
+#### Configuring Custom Kafka Authentication
+
+For authentication methods that cannot be handled just by setting [client properties](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md),
+we provide a separate field `spec.authenticationExtra`. The field allows for specifying custom authentication methods:
+
+{% tabs %}
+{% tab title="MSK IAM/OAUTHBEARER" %}
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1alpha
@@ -499,12 +559,35 @@ spec:
   properties: []
 ```
 
-Currently, `MSK_IAM` is the only supported value for `spec.authenticationExtra.kind`.
-When this kind is specified, additional properties are automatically merged into the configuration:
+The example above configures IAM/OAUTHBEARER authentication with Amazon Managed Streaming for Apache Kafka.
+When the `MSK_IAM` kind is used, two additional properties are automatically merged into the configuration:
 1. `sasl.mechanism=OAUTHBEARER`
 2. `security.protocol=SASL_SSL`
 
-> _**NOTE:**_ By default, the operator will only have access to secrets in its own namespace (`mirrord` by default).
+To produce the authentication tokens, the operator will use the default credentials provider chain.
+The easiest way to provide the crendentials for the operator is with IAM role assumption.
+For that, an IAM role with an appropriate policy has to be assigned to the operator's service account.
+Please follow [AWS's documentation on how to do that](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html).
+Note that operator's service account can be annotated with the IAM role's ARN with the `sa.roleArn` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
+
+{% endtab %}
+{% endtabs %}
+
+#### Configuring Workload Restart
+
+To inject the names of the temporary topics into the consumer workload, 
+the operator always requires the workload to be restarted.
+Depending on cluster conditions, and the workload itself, this might take some time.
+
+`MirrordKafkaTopicsConsumer` allows for specifying two more options for this:
+1. `spec.consumerRestartTimeout` — specifies how long the operator should wait,
+before a new pod becomes ready, and after the workload restart is triggered.
+This allows for silencing timeout errors when the workload pods take a long time to start.
+Specified in seconds, defaults to 60s.
+2. `spec.splitTtl` — specifies how long the consumer workload should remain patched,
+after the last Kafka splitting session against it have finished.
+This allows for skipping the subsequent restart in case the next Kafka splitting session
+is started before the TTL elapses. Specified in seconds.
 
 ## Setting a Filter for a mirrord Run
 
@@ -591,3 +674,90 @@ All received messages will have an attribute `author` with the value `me`.
 
 {% endtab %}
 {% endtabs %}
+
+## FAQ
+
+#### How do I authenticate operator's Kafka client with an SSL certificate?
+
+An example `MirrordKafkaClientConfig` would look as follows:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordKafkaClientConfig
+metadata:
+  name: ssl-auth
+  namespace: mirrord
+spec:
+  properties:
+  # Contents of the PEM file with client certificate.
+  - name: ssl.certificate.pem
+    value: "..."
+  # Contents of the PEM file with client private key.
+  - name: ssl.key.pem
+    value: "..."
+  # Contents of the PEM file with CA.
+  - name: ssl.ca.pem
+    value: "..."
+  # Password for the client private key (if password protected).
+  - name: ssl.key.password
+    value: "..."
+```
+
+Alternatively, you can store the credentials in a secret, and have them loaded to the config automatically:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mirrord-kafka-ssl
+  namespace: mirrord
+type: Opaque
+data:
+  ssl.certificate.pem: "..."
+  ssl.key.pem: "..."
+  ssl.ca.pem: "..."
+  ssl.key.password: "..."
+
+---
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordKafkaClientConfig
+metadata:
+  name: ssl-auth
+  namespace: mirrord
+spec:
+  loadFromSecret: mirrord/mirrord-kafka-ssl
+  properties: []
+```
+
+#### How do I authenticate operator's Kafka client with a Java KeyStore?
+
+The mirrord operator does not support direct use of JKS files.
+In order to use JKS files with Kafka splitting, first extract all necessary certificates and key to PEM files.
+You can do it like this:
+
+```sh
+# Convert keystore.jks to PKCS12 format.
+keytool -importkeystore \
+  -srckeystore keystore.jks \
+  -srcstoretype JKS \
+  -destkeystore keystore.p12 \
+  -deststoretype PKCS12
+
+# Extract client certificate PEM from the converted keystore
+openssl pkcs12 -in keystore.p12 -clcerts -nokeys -out client-cert.pem
+
+# Extract client private key PEM from the converted keystore.
+openssl pkcs12 -in keystore.p12 -nocerts -nodes -out client-key.pem
+
+# Convert truststore.jks to PKCS12 format.
+keytool -importkeystore \
+  -srckeystore truststore.jks \
+  -srcstoretype JKS \
+  -destkeystore truststore.p12 \
+  -deststoretype PKCS12
+
+# Extract CA PEM from the converted truststore.
+openssl pkcs12 -in truststore.p12 -nokeys -out ca-cert.pem
+```
+
+Then, follow the guide for [authenticating with an SSL certificate](queue-splitting.md#how-do-i-authenticate-operators-kafka-client-with-an-ssl-certificate).
