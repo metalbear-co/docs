@@ -80,8 +80,8 @@ operator:
 | mirrord\_license\_valid\_seconds | Seconds left for current license validity            |                                                         |
 | mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` |
 | mirrord\_sessions\_duration      | Histogram for session durations after they are ended | `client_hostname` `client_name` `client_user` `user_id` |
-| mirrord\_operator\_ping\_latency | Histogram for round trip latency between CLI and Operator  | `session_id` `k8s_user` `target`                        |
-| mirrord\_stolen\_connections\_count     | Count of stolen incoming connections, This helps identify latency issues in customer infrastructure that may affect mirrord performance but are not caused by mirrord itself | `session_id` `port` `namespace` `target` `user_id` |
+| mirrord\_operator\_ping\_latency | Histogram for round trip latency between CLI and Operator  | `client_hostname` `client_name` `client_user` `user_id`                        |
+| mirrord\_stolen\_connections\_count     | Count of stolen incoming connections, This helps identify latency issues in the infrastructure that may affect mirrord performance but are not caused by mirrord itself | `session_id` `port` `namespace` `target` `user_id` |
 | mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `session_id` `port` `namespace` `target` `user_id`|
 
 ### DataDog Dashboard
