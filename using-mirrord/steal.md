@@ -115,6 +115,27 @@ To avoid stealing requests sent to URIs starting with "/health/", you can set th
 }
 ```
 
+This is common in APIs where different methods on the same endpoint serve different purposes (e.g., GET /api/items vs. POST /api/items).
+If you filter only by path, you might capture a large amount of traffic unintentionally. For example, if your goal is to intercept only `POST` and `PUT` requests while excluding `GET` requests that use the same path, you can apply a method filter like this:
+
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "method_filter": ["POST","PUT"]
+        }
+      }
+    }
+  }
+}
+
+The `method_filter` is case-sensitive and supports all standard HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`) as well as non-standard methods.
+
+
 #### Stealing HTTPS traffic with a filter
 
 `feature.network.incoming.http_filter` allows you to steal a subset of HTTP requests. To apply the filter, the mirrord-agent needs to be able to parse the requests stolen from the target. Most commonly, the incluster traffic is encrypted with TLS, but it is decrypted by a service mesh before it gets to the target service. In this case, mirrord is able to parse the requests out of the box.
