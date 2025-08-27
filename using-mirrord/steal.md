@@ -132,6 +132,8 @@ If you filter only by path, you might capture a large amount of traffic unintent
     }
   }
 }
+```
+
 
 The `method_filter` is case-sensitive and supports all standard HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`) as well as non-standard methods.
 
