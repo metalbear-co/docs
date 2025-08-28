@@ -81,8 +81,8 @@ operator:
 | mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` |
 | mirrord\_sessions\_duration      | Histogram for finished sessions duration | `client_hostname` `client_name` `client_user` `user_id` |
 | mirrord\_operator\_ping\_latency | Histogram for round trip latency between the mirrord users and the Operator, helps identify infrastructure issues that may affect mirrord performance | `client_hostname` `client_name` `client_user` `user_id`                        |
-| mirrord\_stolen\_connections\_count     | Count of stolen TCP connections | `session_id` `port` `namespace` `target` `user_id` |
-| mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `session_id` `port` `namespace` `target` `user_id`|
+| mirrord\_stolen\_connections\_count     | Count of stolen TCP connections | `port` `namespace` `target` `user_id` |
+| mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `port` `namespace` `target` `user_id`|
 
 ### DataDog Dashboard
 
