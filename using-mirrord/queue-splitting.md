@@ -80,10 +80,7 @@ After a mirrord session ends, the operator will delete the temporary topic that 
 
 In order to use the SQS splitting feature, some extra values need be provided during the installation of the mirrord Operator.
 
-First of all, the SQS splitting feature needs to be enabled:
-
-* When installing with the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/tree/main/mirrord-operator) it is enabled by setting the [`operator.sqsSplitting`](https://github.com/metalbear-co/charts/blob/06efc8666bd26ff7f3a0863333ea4a109aaa6b62/mirrord-operator/values.yaml#L22) [value](https://helm.sh/docs/chart_template_guide/values_files/) to `true`.
-* When installing via the `mirrord operator setup` command, set the `--sqs-splitting` flag.
+First of all, the SQS splitting feature needs to be enabled by setting the [`operator.sqsSplitting`](https://github.com/metalbear-co/charts/blob/06efc8666bd26ff7f3a0863333ea4a109aaa6b62/mirrord-operator/values.yaml#L22) [value](https://helm.sh/docs/chart_template_guide/values_files/) to `true` in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/tree/main/mirrord-operator).
 
 When SQS splitting is enabled during installation, some additional resources are created, and the SQS component of the mirrord Operator is started.
 
@@ -162,10 +159,7 @@ If the queue messages are encrypted, the operator's IAM role should also have th
 * `kms:Decrypt`
 * `kms:GenerateDataKey`
 
-The ARN of the IAM role has to be passed when installing the operator.
-
-* When installing with Helm, the ARN is passed via the `sa.roleArn` value
-* When installing via the `mirrord operator setup` command, use the `--aws-role-arn` flag.
+The ARN of the IAM role has to be passed when installing the operator. The ARN is passed via the `sa.roleArn` value in the Helm chart.
 
 #### Permissions for Target Workloads
 
@@ -224,10 +218,7 @@ spec:
 
 In order to use the Kafka splitting feature, some extra values need be provided during the installation of the mirrord Operator.
 
-First of all, the Kafka splitting feature needs to be enabled:
-
-* When installing with the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/tree/main/mirrord-operator) it is enabled by setting the [`operator.kafkaSplitting`](https://github.com/metalbear-co/charts/blob/06efc8666bd26ff7f3a0863333ea4a109aaa6b62/mirrord-operator/values.yaml#L24) [value](https://helm.sh/docs/chart_template_guide/values_files/) to `true`.
-* When installing via the `mirrord operator setup` command, set the `--kafka-splitting` flag.
+First of all, the Kafka splitting feature needs to be enabled by setting the [`operator.kafkaSplitting`](https://github.com/metalbear-co/charts/blob/06efc8666bd26ff7f3a0863333ea4a109aaa6b62/mirrord-operator/values.yaml#L24) [value](https://helm.sh/docs/chart_template_guide/values_files/) to `true` in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/tree/main/mirrord-operator).
 
 When Kafka splitting is enabled during installation, some additional resources are created, and the Kafka component of the mirrord Operator is started.
 

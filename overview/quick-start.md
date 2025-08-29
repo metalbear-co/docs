@@ -115,19 +115,7 @@ The IntelliJ plugin reads its configuration from the following file: `<project-p
 
 ### Operator
 
-To install and use the Operator, you'll need a mirrord for Teams license. You can get one [here](https://app.metalbear.co/). The Operator can be installed using the [mirrord CLI](quick-start.md#mirrord-cli) or [Helm](quick-start.md#helm). This has to be performed by a user with elevated permissions to the cluster.
-
-#### mirrord CLI
-
-1. Install the [mirrord CLI](quick-start.md#cli-tool).
-2. Run the `mirrord operator setup` command. The base of the command is: ​ `mirrord operator setup [OPTIONS] | kubectl apply -f -` ​ Options:
-
-- `--accept-tos` You accept terms of service for mirrord-operator
-- `--license-key` The license key for the operator
-- (Optional) `-f, --file` Output Kubernetes definitions to file and not to stdout (instead of piping to `kubectl apply -f -`)
-- (Optional) `--namespace` Set namespace of mirrord operator (default: mirrord) ​ So the final command should look like ​ `mirrord operator setup --accept-tos --license-key <license-key> | kubectl apply -f -`
-
-You should now be able to see the `mirrord-operator` deployment when running `kubectl get deployments -n mirrord`. Also, when you run mirrord, you'll see the `connected to operator` step in its progress reports.
+To install and use the Operator, you'll need a mirrord for Teams license. You can get one [here](https://app.metalbear.co/). The Operator is installed using the [Helm chart](quick-start.md#helm). This has to be performed by a user with elevated permissions to the cluster.
 
 #### Helm
 
