@@ -176,14 +176,9 @@ If the query parameters `to` and `from` are not specified, the data will be for 
 To get a report:
 
 * Ensure that the license server is accessible - by default it is installed as a `ClusterIP` so either expose it outside the cluster or access it from inside the cluster (for example, you can use `mirrord exec -- curl`).
-* Get the IP of the license server - e.g. if it is a `ClusterIP`, you can run this:
+
+* Run `curl` by referencing the license server service by its domain name and ensuring that you use the correct API license key, for example with the service name `mirrord-operator-license-server` in the namespace `mirrord` with cluster domain `cluster.local`:
 
 ```bash
-MIRRORD_LIC_SERV_IP=$(kubectl get svc mirrord-operator-license-server -n mirrord -o jsonpath='{.spec.clusterIP}')
-```
-
-* Run `curl`, ensuring that you use the correct API license key, for example:
-
-```bash
-mirrord exec -- curl --get --location "${MIRRORD_LIC_SERV_IP}/api/v1/reports/usage?format=xlsx" --header 'x-license-key: <operator API license key>' --output report.xlsx
+mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/reports/usage?format=xlsx" --header 'x-license-key: <operator API license key>' --output report.xlsx
 ```
