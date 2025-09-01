@@ -33,7 +33,7 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 ## How It Works
 
 When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue or topic.
-That temporary queue/topic is *exclusive* to the target workload, and its name is randomized.
+That temporary queue/topic is *exclusive* to the target workload.
 Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue or topic.
 
 {% hint style="warning" %}
