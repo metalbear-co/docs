@@ -95,7 +95,11 @@ Plese note that:
 2. In case of SQS splitting, deployed targets will remain redirected as long as their temporary queues have unconsumed messages.
 
 
-## Enabling SQS Splitting in Your Cluster
+## Enabling Queue Splitting in Your Cluster
+
+{% tabs %}
+
+{% tab title="Amazon SQS" %}
 
 {% stepper %}
 {% step %}
@@ -290,7 +294,8 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-## Enabling Kafka Splitting in Your Cluster
+{% endtab %}
+{% tab title="Kafka" %}
 
 {% stepper %}
 {% step %}
@@ -585,6 +590,9 @@ Specified in seconds, defaults to 60s.
 after the last Kafka splitting session against it have finished.
 This allows for skipping the subsequent restart in case the next Kafka splitting session
 is started before the TTL elapses. Specified in seconds.
+
+{% endtab %}
+{% endtabs %}
 
 ## Setting a Filter for a mirrord Run
 
