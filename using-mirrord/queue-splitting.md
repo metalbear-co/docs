@@ -41,7 +41,7 @@ In both cases, the redirections are done by manipulating environment variables.
 For this reason, queue splitting always requires that the application reads the queue or topic name from environment variables.
 {% endhint %}
 
-Once all temporary topics or queues are prepared, the mirrord operator starts consuming messages from the original queue or topic, and publishing them to the correct temporary one.
+Once all temporary topics or queues are prepared, the mirrord operator starts consuming messages from the original queue or topic, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
 This routing is based on message filters provided by the users in their mirrord configs.
 
 {% tabs %}
