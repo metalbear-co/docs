@@ -53,7 +53,7 @@ First, we have a consumer app reading messages from an SQS queue:
 ![A K8s application that consumes messages from an SQS queue](queue-splitting/before-splitting-sqs.svg)
 
 When the first mirrord SQS splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
-and the mirrord operator routes messages according to the user's filter (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
+and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
 
 ![One SQS splitting session](queue-splitting/1-user-sqs.svg)
 
@@ -73,7 +73,7 @@ First, we have a consumer app reading messages from a Kafka topic:
 ![A K8s application that consumes messages from a Kafka topic](queue-splitting/before-splitting-kafka.svg)
 
 Then, the first mirrord Kafka splitting session starts. Two temporary topics are created (one for the target deployed in the cluster, one for the user's local application),
-and the mirrord operator routes messages according to the user's filter (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
+and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
 
 ![One Kafka splitting session](queue-splitting/1-user-kafka.svg)
 
@@ -261,8 +261,7 @@ The reference is specified with `spec.consumer`:
 The queue registry describes SQS queues consumed by the referenced consumer.
 The queues are described in entries of the `spec.queues` object.
 
-The entry's key can be arbitrary, as it will only be referenced from the user's mirrord config
-(compare with the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)).
+The entry's key can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 
 The entry's value is an object describing single or multiple SQS queues consumed by the workload:
 
@@ -415,8 +414,7 @@ The operator supports Kafka splitting on deployments, stateful sets, and Argo ro
 
 The topics consumer resource describes Kafka topics consumed by the referenced consumer.
 The topics are described in entries of the `spec.topics` list:
-* `id` can be arbitrary, as it will only be referenced from the user's mirrord config
-(compare with the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)).
+* `id` can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 * `clientConfig` stores the name of the `MirrordKafkaClientConfig` to use when making connections to the Kafka cluster.
 * `nameSources` stores a list of all occurences of the topic name in the consumer workload's pod template.
 * `groupIdSources` stores a list of all occurences of the consumer Kafka group ID in the consumer workload's pod template.
