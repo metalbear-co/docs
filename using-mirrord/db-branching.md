@@ -8,7 +8,7 @@ menu:
   docs:
     parent: "using-mirrord"
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["team", "enterprise"]
 ---
 
 
@@ -31,7 +31,7 @@ When is this useful?
 ## Prerequisites
 
 Before you start, make sure you have:  
-1. A MySQL database configured in your cluster (production or staging).  
+1. A MySQL database configured in your cluster (staging environment).  
 2. Your local application is using **environment variables** to store DB connection strings.  
 3. mirrord installed and working.  
 
@@ -44,7 +44,8 @@ Developers define branches in their `mirrord.json`:
     {
       "id": "users-mysql-db", // optional
       "type": "mysql",
-      "name": "users-database-name",
+      "version": "8.0",
+      "name": "users-database-name",   // Optional: included in the override url
       "ttl_secs": 60,                 // Optional: override default TTL
       "version": "8.0",
       "connection": {
@@ -60,7 +61,9 @@ Developers define branches in their `mirrord.json`:
 Key Fields
 id: Optional identifier. If reused, mirrord reattaches to the same branch.
 type: Currently only "mysql" is supported.
-name: Remote database to clone.
+version: Database engine version
+name: Optional remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
+If name is dropped, override URL points just to MySQL cluster; app must select DB manually.
 ttl_secs: Optional override for branch TTL (default is 30 minutes).
 connection.url: Required. The environment variable that contains your DB connection string.
 
