@@ -52,17 +52,17 @@ First, we have a consumer app reading messages from an SQS queue:
 
 ![A K8s application that consumes messages from an SQS queue](queue-splitting/before-splitting-sqs.svg)
 
-Then, the first mirrord SQS splitting session starts. Two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
+When the first mirrord SQS splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
 and the mirrord operator routes messages according to the user's filter (read more in the [last section](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
 
 ![One SQS splitting session](queue-splitting/1-user-sqs.svg)
 
-Then, another mirrord SQS splitting session starts. The third temporary queue is created (for the second user's local application).
+If a second user then starts a mirrord SQS splitting session on the same queue, a the third temporary queue is created (for the second user's local application).
 The mirrord operator includes the new queue and the second user's filter in the routing logic.
 
 ![Two SQS splitting sessions](queue-splitting/2-users-sqs.svg)
 
-If the filters defined by the two users both match some message, it is not defined which one of the users will receive that message.
+If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
 {% endtab %}
 
