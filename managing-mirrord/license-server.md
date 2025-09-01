@@ -23,6 +23,12 @@ The license server enables you to manage your organization’s seats without sen
 This feature is only relevant for users on the Team and Enterprise pricing plans.
 {% endhint %}
 
+### Architecture
+
+The license server exposes an API that the operator uses to obtain a license, which the operator requires to run. It also allows the operator to keep track of active users, check and enforce seat counts, and store telemetry data.
+
+Authentication between the operator and license server is done using a license key (chosen by the person setting up the license server) and is not to be confused with the license certificate file provided by MetalBear.
+
 ### Basic Setup
 
 The license server is installable via Helm. First, add the MetalBear Helm repository:
@@ -55,7 +61,7 @@ Fill in the license.key and license.pem fields according to the following guidel
 * License key - Can be any string of your choosing. We recommend using random characters or a UUID.
 * License file - Must be a valid operator license. This can also be a secret under the `license.pem` key.
 
-You can customize the license server deployment further - all values.yaml configuration options can found [here](https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-license-server/values.yaml)
+You can customize the license server deployment further - all values.yaml configuration options can found [here](https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-license-server/values.yaml) (or, see [Using a Cluster Secret](license-server.md#using-a-cluster-secret) and [Using Google Secrets Manager](license-server.md#using-google-secrets-manager) below).
 
 _NOTE: The license server needs to be accessible to any mirrord operators you want to track. To that end, the default value for `service.type` is `ClusterIP`, but can be changed to `NodePort` or `LoadBalancer`, according to your requirements._
 
@@ -71,7 +77,59 @@ To make sure it's been installed successfully and is running:
 kubectl get deployment -n mirrord mirrord-license-server
 ```
 
-If your operator(s) are running at on a different cluster, make sure the `mirrord-operator-license-server` service is exposed to them via ingress.
+If your operator(s) are running in a different cluster, make sure the `mirrord-operator-license-server` service is exposed to them via ingress.
+
+#### Using a Cluster Secret
+
+You can set the license key in a cluster secret within the operator's namespace (`mirrord` by default), and reference it in the license server helm chart via `license.keyRef`. For example, with the following `values.yaml`:
+
+```yaml
+# ./values.yaml
+createNamespace: true
+
+service:
+  type: ClusterIP
+
+license:
+  keyRef: my-cluster-secret
+  file:
+    data:
+      license.pem: |
+        ----- ... 
+        MIRRORD-LICENSE 
+        ... -----
+```
+
+The secret itself, which must use the key `OPERATOR_LICENSE_KEY`, can be created like so:
+
+```bash
+kubectl create secret generic my-cluster-secret -n mirrord --from-literal OPERATOR_LICENSE_KEY=my-very-secret-string
+```
+
+#### Using Google Secrets Manager
+
+You can fetch the license file from GSM by providing the secret path and service account credentials as follows:
+
+```yaml
+# ./values.yaml
+createNamespace: true
+
+service:
+  type: ClusterIP
+
+license:
+  ## To access the secret, the license server will use Application Default Credentials.
+  ## The easiest way to provide credentials is by allowing the license server's
+  ## Kubernetes ServiceAccount to impersonate a GCP service account.
+  ## This is done with the `.sa.gcpSa` setting below.
+  gsmRef: "projects/<PROJECT_ID>/secrets/<SECRET_NAME>/versions/<SECRET_VERSION>"
+  key: "my-very-secret-string"
+
+sa:
+  name: mirrord-operator-license-server
+  ## GCP service account to impersonate.
+  gcpSa: <IAM_SA_NAME>@<IAM_SA_PROJECT_ID>.iam.gserviceaccount.com
+```
 
 #### Connecting Operators to the License Server
 
