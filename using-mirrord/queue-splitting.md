@@ -16,30 +16,29 @@ description: Sharing queues by splitting messages between multiple clients and t
 
 # Queue Splitting
 
-If your application consumes messages from a message broker (e.g. Kafka cluster), you should choose a configuration that matches your intention:
+If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
-1. If you're ok with your local application competing for queue messages with the remote target, and with your teammates' mirrord sessions — run the application with mirrord without any special configuration.
-2. If you want your local application to be an exclusive consumer of queue messages — run the application with [`copy_target` + `scale_down`](copy-target.md#replacing-a-whole-deployment-using-scale_down) features.
-3. If you want to precisely control which messages will be consumed by your local application — run the application with the queue splitting feature. The allows you define a message filter in your mirrord configuration. All messages matching that filter will be redirected by the mirrord operator to your local application. Other messages will **not** reach your local application. 
+1. Running your application with mirrord without any special configuration will result in your local application competing with the deployed application (and potentially other mirrord runs by teammates) for queue messages.
+2. Running your application with [`copy_target` + `scale_down`](copy-target.md#replacing-a-whole-deployment-using-scale_down) will result in the deployed application not consuming any messages, and your local application being the exclusive consumer of queue messages.
+3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 {% hint style="info" %}
-This feature is only relevant for users on the Team and Enterprise pricing plans.
+This feature is only available for users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-So far queue splitting is available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
 {% endhint %}
 
 ## How It Works
 
-When a Kafka splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue or topic.
+When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue or topic.
 That temporary queue/topic is *exclusive* to the target workload, and its name is randomized.
-Similarly, the local application is redirected to consume messages from its own *exclusive* temporary queue or topic.
+Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue or topic.
 
 {% hint style="warning" %}
 In both cases, the redirections are done by manipulating environment variables.
-For this reason, queue splitting always requires that the application reads queue or topic name from environment variables.
-This is a prerequisite.
+For this reason, queue splitting always requires that the application reads the queue or topic name from environment variables.
 {% endhint %}
 
 Once all temporary topics or queues are prepared, the mirrord operator starts consuming messages from the original queue or topic, and publishing them to the correct temporary one.
