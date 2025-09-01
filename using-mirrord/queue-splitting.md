@@ -72,17 +72,17 @@ First, we have a consumer app reading messages from a Kafka topic:
 
 ![A K8s application that consumes messages from a Kafka topic](queue-splitting/before-splitting-kafka.svg)
 
-Then, the first mirrord Kafka splitting session starts. Two temporary topics are created (one for the target deployed in the cluster, one for the user's local application),
-and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run)):
+When the first mirrord Kafka splitting session starts, two temporary topics are created (one for the target deployed in the cluster, one for the user's local application),
+and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
 
 ![One Kafka splitting session](queue-splitting/1-user-kafka.svg)
 
-Then, another mirrord Kafka splitting session starts. The third temporary topic is created (for the second user's local application).
+If a second user then starts a mirrord Kafka splitting session on the same topic, a third temporary topic is created (for the second user's local application).
 The mirrord operator includes the new topic and the second user's filter in the routing logic.
 
 ![Two Kafka splitting sessions](queue-splitting/2-users-kafka.svg)
 
-If the filters defined by the two users both match some message, it is not defined which one of the users will receive that message.
+If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
 {% endtab %}
 
@@ -309,7 +309,7 @@ Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart
 
 ### Configure the operator's Kafka client
 
-The mirrord operator will need to be able to do some operations on the Kafka cluster on your behalf.
+The mirrord operator will need to be able to perform some operations on the Kafka cluster.
 To allow for properly configuring the operator's Kafka client, on operator installation with `operator.kafkaSplitting` enabled,
 a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster
 — `MirrordKafkaClientConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordkafkaclientconfigs.queues.mirrord.metalbear.co`.
