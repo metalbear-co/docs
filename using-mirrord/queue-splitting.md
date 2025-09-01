@@ -109,7 +109,7 @@ Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](
 
 ### Authenticate and authorize the mirrord operator
 
-The mirrord operator will need to be able to do some operations on the SQS queues on your behalf.
+The mirrord operator will need to be able to perform operations on the SQS queues.
 To do this, it will build an SQS client, using the default credentials provider chain.
 
 The easiest way to provide the crendentials for the operator is with IAM role assumption.
