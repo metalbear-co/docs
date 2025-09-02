@@ -43,11 +43,11 @@ Developers define branches in their `mirrord.json`:
 {
   "db_branches": [
     {
-      "id": "users-mysql-db", // optional
+      "id": "users-mysql-db", // Optional
       "type": "mysql",
       "version": "8.0",
-      "name": "users-database-name",   // Optional: included in the override url
-      "ttl_secs": 60,                 // Optional: override default TTL
+      "name": "users-database-name",   // Optional
+      "ttl_secs": 60,                 // Optional
       "connection": {
         "url": { 
             "type": "env", 
@@ -59,12 +59,12 @@ Developers define branches in their `mirrord.json`:
 }
 ```
 Key Fields
-1. id: Optional identifier. If reused, mirrord reattaches to the same branch.
+1. id: If reused, mirrord reattaches to the same branch. Can be used sharing database branch.
 2. type: Currently only "mysql" is supported.
-3. version: Database engine version
-4. name: Optional remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
-If name is dropped, override URL points just to MySQL cluster; app must select DB manually.
-5. ttl_secs: Optional override for branch TTL (default is 30 minutes).
+3. version: Database engine version.
+4. name: Remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
+If name is dropped, override URL points just to the MySQL server; app must select DB manually.
+5. ttl_secs: Override for branch TTL (default is 30 minutes).
 6. connection.url: Required. The environment variable that contains your DB connection string.
 
 ## Running With DB Branches
