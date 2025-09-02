@@ -133,7 +133,7 @@ sa:
 
 #### Connecting Operators to the License Server
 
-First update your operator [`values.yaml`](../overview/quick-start.md#helm) for quickstart helm setup for operator) file:
+First update your operator `values.yaml` file ([see this page](../overview/quick-start.md#helm) for quickstart helm setup for operator):
 
 ```yaml
 # ./values.yaml
@@ -148,4 +148,37 @@ Then run:
 
 ```bash
 helm install metalbear-co/mirrord-operator -f ./values.yaml --wait
+```
+
+## Getting a Utilisation Report from the License Server
+
+The license server has an endpoint that can be used to get a spreadsheet report with stats about mirrord usage. It has general metrics as well as specific per-user metrics. The reports include:
+
+* **General stats** for the timeframe specified in query parameters
+  * Number of licenses acquired
+  * Number of unique machines used OR unique kubernetes users, depending on the type of license being used
+* **Per-user stats**
+  * Oldest and most recent activity date
+  * Total mirrord session time and number
+  * Average (mean) session duration and average (mean) number of daily sessions over the timeframe specified in query parameters
+
+**Query params**
+
+* `format` (required): 
+  * `"xlsx"`: produces an Excel spreadsheet with two tabs: general stats and per-user stats (_As curl will warn you, this produces binary data, and should be directed into a file rather that printed out raw_).
+* `from` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the beginning of the period for relevant stats.
+* `to` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the end of the period for relevant stats.
+
+{% hint style="info" %}
+If the query parameters `to` and `from` are not specified, the data will be for all time.
+{% endhint %}
+
+To get a report:
+
+* Ensure that the license server is accessible - by default it is installed as a `ClusterIP` so either expose it outside the cluster or access it from inside the cluster (for example, you can use `mirrord exec -- curl`).
+
+* Run `curl` by referencing the license server service by its domain name and ensuring that you use the correct API license key, for example with the service name `mirrord-operator-license-server` in the namespace `mirrord` with cluster domain `cluster.local`:
+
+```bash
+mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/reports/usage?format=xlsx" --header 'x-license-key: <operator API license key>' --output report.xlsx
 ```
