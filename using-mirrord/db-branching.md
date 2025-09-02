@@ -69,10 +69,8 @@ If name is dropped, override URL points just to the MySQL server; app must selec
 
 ## Running With DB Branches
 
-1. Run your app with mirrord.json configured as defined above:
-```
-mirrord exec mirrord.json
-```
+1. Run your app 'mirrord exec' with mirrord.json configured as defined above:
+
 2. mirrord will spin up a new MySQL branch (or reuse an existing one if id matches).
     mirrord doesn’t use the original DB data. It creates a new, empty DB.
 
@@ -81,7 +79,7 @@ mirrord exec mirrord.json
 
 4. Destroy the branch automatically when TTL expires or after inactivity.
 
-* If an existing branch is reused, mirrord notifies you:
+5. If an existing branch is reused, mirrord notifies you:
 ```
 A branch with this ID already exists for the target database.
 You’re about to use it! Change the ID if you prefer to start with a clean branch.
