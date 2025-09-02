@@ -1,6 +1,6 @@
 ---
 title: "DB Branching"
-description: "How to use mirrord to spin up isolated DB branche for safe development and testing DB migrations"
+description: "How to use mirrord to spin up isolated DB branch for safe development and testing DB migrations"
 date: 2025-08-31T00:00:00+03:00
 lastmod: 2025-08-31T00:00:00+03:00
 draft: false
@@ -12,16 +12,17 @@ tags: ["team", "enterprise"]
 ---
 
 
-The `db_branches` feature in mirrord lets developers spin up isolated DB branches that mirror the production DB, while running safely in isolation.  
-This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-* This is an experimental feature, currently it only supports MySQL DB and does not support schema or data replication. 
+The `db_branches` feature in mirrord lets developers spin up isolated DB branch that mirror the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
+Currently, the feature is limited to MySQL databases and does not support schema or data replication.
 
-When is this useful?
+
+**When is this useful?**
+
 1. **Running schema migrations safely**  
-   Developers can test migrations and schema changes without risking corruption of the production or staging databases.
+   Developers can test migrations and schema changes without risking corruption of the remote databases.
 
 2. **Experimenting locally**  
-   Developers get a branch of the production DB connected to their local app automatically - no admin setup required.
+   Developers get a branch of the remote DB connected to their local app automatically - no admin setup required.
 
 3. **Collaborating with teammates**  
    If a branch already exists (with the same ID), mirrord reuses it. Developers can share branches as needed.
@@ -31,8 +32,8 @@ When is this useful?
 ## Prerequisites
 
 Before you start, make sure you have:  
-1. A MySQL database configured in your cluster (staging environment).  
-2. Your local application is using **environment variables** to store DB connection strings.  
+1. A MySQL database configured in your remote environment.  
+2. Your local application is using environment variables to store DB connection strings.  
 3. mirrord installed and working.  
 
 ---
@@ -47,7 +48,6 @@ Developers define branches in their `mirrord.json`:
       "version": "8.0",
       "name": "users-database-name",   // Optional: included in the override url
       "ttl_secs": 60,                 // Optional: override default TTL
-      "version": "8.0",
       "connection": {
         "url": { 
             "type": "env", 
@@ -59,13 +59,13 @@ Developers define branches in their `mirrord.json`:
 }
 ```
 Key Fields
-id: Optional identifier. If reused, mirrord reattaches to the same branch.
-type: Currently only "mysql" is supported.
-version: Database engine version
-name: Optional remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
+1. id: Optional identifier. If reused, mirrord reattaches to the same branch.
+2. type: Currently only "mysql" is supported.
+3. version: Database engine version
+4. name: Optional remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
 If name is dropped, override URL points just to MySQL cluster; app must select DB manually.
-ttl_secs: Optional override for branch TTL (default is 30 minutes).
-connection.url: Required. The environment variable that contains your DB connection string.
+5. ttl_secs: Optional override for branch TTL (default is 30 minutes).
+6. connection.url: Required. The environment variable that contains your DB connection string.
 
 ## Running With DB Branches
 
@@ -74,10 +74,10 @@ connection.url: Required. The environment variable that contains your DB connect
 mirrord exec mirrord.json
 ```
 2. mirrord will spin up a new MySQL branch (or reuse an existing one if id matches).
-    Technical note: mirrord doesn’t use the original DB data. It creates a new, empty DB and overrides the application’s DB connection environment variables with the branch’s connection URL.
-    This design is a safety feature - by always pointing your app to a fresh branch, it ensures that no accidental writes can ever reach the production database.
+    mirrord doesn’t use the original DB data. It creates a new, empty DB.
 
-3. Override your DB environment variable so the app connects to the branch, not production.
+3. Override your DB environment variable with the branch's connection URL, so the app connects to the branch, not the source db.
+    This design is a safety feature - by always pointing your app to a fresh branch, it ensures that no accidental writes can ever reach the source database.
 
 4. Destroy the branch automatically when TTL expires or after inactivity.
 
