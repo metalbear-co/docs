@@ -77,7 +77,7 @@ operator:
 
 | metric                           | description                                          | labels                                                  |minimum version                   |
 | -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------- | 
-| mirrord\_license\_valid\_seconds | Seconds until license expiration            |                                                         |
+| mirrord\_license\_valid\_seconds | Seconds until license expiration            |                                                         |                             | operator 3.101.0 (helm chart 1.15.0)|
 | mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) |
 | mirrord\_sessions\_duration      | Histogram for finished sessions duration | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) | 
 | mirrord\_operator\_ping\_latency | Histogram for round trip latency between the mirrord users and the Operator, helps identify infrastructure issues that may affect mirrord performance | `client_hostname` `client_name` `client_user` `user_id`                        | operator 3.122.0 (helm chart 1.35.0) |
