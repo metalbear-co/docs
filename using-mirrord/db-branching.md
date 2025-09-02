@@ -27,7 +27,7 @@ Currently, the feature is limited to MySQL databases and does not support schema
 3. **Collaborating with teammates**  
    If a branch already exists (with the same ID), mirrord reuses it. Developers can share branches as needed.
 
-
+   --- 
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Before you start, make sure you have:
 2. Your local application is using environment variables to store DB connection strings.  
 3. mirrord installed and working.  
 
----
+
 ## Configuring `mirrord db branches`
 Developers define branches in their `mirrord.json`:
 ```json
