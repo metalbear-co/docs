@@ -83,4 +83,6 @@ If name is dropped, override URL points just to the MySQL server; app must selec
 ```
 A branch with this ID already exists for the target database.
 You’re about to use it! Change the ID if you prefer to start with a clean branch.
-```
+
+
+The DB branches feature requires the following minimum versions: mirrord 3.160.0, operator 3.124.0, and operator Helm chart 1.37.0.
