@@ -65,7 +65,7 @@ Key Fields
 4. name: Remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the MySQL server; the application must select the DB manually in that case.
 5. ttl_secs: Override for branch time-to-live (TTL) (default is 5 minutes, maximum is 15 min).
-6. connection.url: Required. The environment variable that contains your DB connection string.
+6. connection.url: The environment variable that contains your DB connection string.
 
 ## Running With DB Branches
 
