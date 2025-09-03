@@ -32,7 +32,7 @@ Currently, the feature is limited to MySQL databases and does not support schema
 ## Prerequisites
 
 Before you start, make sure you have:  
-1. Minimum versions installed: Operator '3.12.0', mirrord CLI '3.160.0' and operator Helm chart 1.37.0 with 'operator.mysqlBranching' value set to 'true'.
+1. Minimum versions installed: Operator `3.12.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
 2. Your local application is using environment variables to store DB connection strings.  
 3. mirrord installed and working.  
 
@@ -59,9 +59,7 @@ Developers define branches in their `mirrord.json`:
 }
 ```
 Key Fields
-1. id: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch.
-
-To prevent accidental reuse of another user’s branch, it is recommended to assign a unique value (for example, a UUID) as the identifier.
+1. id: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user’s branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
 2. type: Currently only "mysql" is supported.
 3. version: Database engine version.
 4. name: Remote database name to clone, the override URL uses 'name' so the connection URL looks like .../dbname.
@@ -80,7 +78,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
     A branch with this ID already exists for the target database.
     You’re about to use it! Change the ID if you prefer to start with a clean branch.
     ```
-3. mirrord will override your DB environment variable with the branch's connection URL, so the app connects to the branch, not the source db.
+3. mirrord will override your DB environment variable with the branch's connection URL, so the app connects to the branch, not to the source db.
     This design is a safety feature - by always pointing your app to a fresh branch, it ensures that no accidental writes can ever reach the source database.
 
 4. The branch will be destroyed automatically when the TTL is reached and the branch is not in use (reconnecting to the same branch again extends its lifetime).
