@@ -152,6 +152,10 @@ helm install metalbear-co/mirrord-operator -f ./values.yaml --wait
 
 ## Getting a Utilisation Report from the License Server
 
+{% hint style="info" %}
+This feature requires at least mirrord-operator-license-server Helm chart version **1.4.0**.
+{% endhint %}
+
 The license server has an endpoint that can be used to get a spreadsheet report with stats about mirrord usage. It has general metrics as well as specific per-user metrics. The reports include:
 
 * **General stats** for the timeframe specified in query parameters
