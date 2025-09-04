@@ -84,6 +84,6 @@ If name is ommited, the override URL just points to the MySQL server; the applic
     If no ID is specified, or if you choose a new, non-existing ID, mirrord will create a fresh, empty database branch.
 
 3. mirrord will override your DB environment variable with the branch's connection URL, so the app connects to the branch, not to the source db.
-    This design is a safety feature - by always pointing your app to a fresh branch, it ensures that no accidental writes can ever reach the source database.
+    This setup reduces the risk of accidental writes reaching the source database by directing activity toward an isolated branch.
 
 4. The branch will be destroyed automatically when the TTL is reached and the branch is not in use (reconnecting to the same branch again extends its lifetime).
