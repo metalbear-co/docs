@@ -22,6 +22,7 @@
   * [Copy Target](using-mirrord/copy-target.md)
   * [Sharing the Cluster](using-mirrord/sharing-the-cluster.md)
   * [Traffic Inspection](using-mirrord/traffic-inspection.md)
+  * [DB Branching](using-mirrord/db-branching.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
   * [Security](managing-mirrord/security.md)
