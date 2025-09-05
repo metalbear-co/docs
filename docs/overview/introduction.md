@@ -8,7 +8,7 @@ draft: false
 images: []
 menu:
   docs:
-    parent: "introduction"
+    parent: overview
 weight: 100
 toc: true
 tags: ["open source", "team", "enterprise"]
