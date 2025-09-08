@@ -69,7 +69,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 
 ## Running With DB Branches
 
-1. Run your app 'mirrord exec' with mirrord.json configured as defined above:
+1. Run your app with mirrord and set the `db_branches` field in [the mirrord configuration file](https://metalbear.com/mirrord/docs/config).
 
 2. mirrord will spin up a MySQL branch according to the following rules:
  - Reusing an existing branch:
