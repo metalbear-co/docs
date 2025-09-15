@@ -2,7 +2,7 @@
 
 This repo contains the source for the [mirrord docs site](https://metalbear.com/mirrord/docs) Documentation tab. It uses [GitBook](https://gitbook.com/) to generate documentation from markdown.
 
-> **NOTE** that the mirrord docs' Configuration tab is not governed by this repo, but by [its own separate repo](https://github.com/metalbear-co/docs-configuration). Changes made to `./docs/reference/configuration.md` are ignored. The Changelog tab also has [a separate repo](https://github.com/metalbear-co/docs-changelog), and is update automatically by CI.
+> **NOTE** that the mirrord docs' Configuration tab is not governed by this repo, but by [its own separate repo](https://github.com/metalbear-co/docs-configuration). Changes made to `./docs/reference/configuration.md` are ignored. The Changelog tab also has [a separate repo](https://github.com/metalbear-co/docs-changelog), and is updated automatically by CI.
 
 ### Structure
 
