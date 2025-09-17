@@ -23,7 +23,7 @@ There are several features underlying mirrord's ability to let your local app se
 2. By intercepting DNS resolution, mirrord will resolve the remote hostnames to the remote pod's IP address.
 3. Finally, by intercepting outgoing network requests, mirrord will send the request from the remote pod, allowing it to access resources that are only available from within the cluster.
 
-However, sometimes you might have a resource in the cluster that you don't want to access from your local process - perhaps a shared database. This is what the outgoing filter is for. It allows you to specify a list of hostnames that should be resolved accessed remotely, or a list of hostnames that should be resolved and accessed locally. That way, you can run a local instance of your database and have your local process read and write to it, while still running all other operations against the cluster.
+However, sometimes you might have a resource in the cluster that you don't want to access from your local process - perhaps a shared database. This is what the outgoing filter is for. It allows you to specify a list of hostnames that should be resolved and accessed remotely, or a list of hostnames that should be resolved and accessed locally. That way, you can run a local instance of your database and have your local process read and write to it, while still running all other operations against the cluster.
 
 For example, if you want your app to access the hostname `example-hostname.svc` locally, and everything else remotely, you can do it with the following configuration:
 
