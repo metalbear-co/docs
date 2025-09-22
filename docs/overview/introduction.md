@@ -22,7 +22,7 @@ Want to see mirrord in action? Check out our <a target="_blank" href="https://ww
 
 Traditionally, software development happens in loops. Developers write and test their code locally, then deploy it to a staging/pre-production environment in the cloud, where they perform additional tests. These tests often fail, because the code is meeting a production-like environment for the first time, and encounters new conditions. The code must then be fixed/rewritten, tested locally again, deployed to staging again, and so on, until the tests on staging pass.
 
-![The Traditional Dev Loop](/overview/introduction/loop.png)
+![The Traditional Dev Loop](/docs/overview/introduction/loop.png)
 
 Deployment to staging can be costly for several reasons:
 

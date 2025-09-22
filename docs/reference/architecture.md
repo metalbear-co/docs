@@ -24,7 +24,9 @@ mirrord is composed of the following components:
 * `mirrord-layer` - Rust dynamic library (so/dylib) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
 * `mirrord-cli` - Rust binary that wraps the behavior of mirrord-layer in a user friendly CLI.
 * `VS Code extension` - Exposes the same functionality as - mirrord-cli within the VS Code IDE.
-* `IntelliJ plugin` - Exposes the same functionality as - mirrord-cli within the IntelliJ IDEs. ![mirrord - Architecture](architecture/architecture.svg)
+* `IntelliJ plugin` - Exposes the same functionality as - mirrord-cli within the IntelliJ IDEs. 
+
+![mirrord - Architecture](architecture/architecture.svg)
 
 ## mirrord-agent
 
