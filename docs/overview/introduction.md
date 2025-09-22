@@ -37,7 +37,7 @@ However, the point of mirrord is not just to make that final step in the dev loo
 
 mirrord runs in two places - in the memory of your local process (`mirrord-layer`), and as a pod in your cloud environment (`mirrord-agent`).
 
-![mirrord - Basic Architecture](/reference/architecture/architecture.svg)
+![mirrord - Basic Architecture](/docs/reference/architecture/architecture.svg)
 
 When you start your local process with mirrord, it creates a pod in your cloud environment, which listens in on the pod you've passed as an argument. `mirrord-layer` then does the following:
 
