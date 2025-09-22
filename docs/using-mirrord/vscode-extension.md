@@ -21,7 +21,9 @@ If you develop your application in Visual Studio Code, you can debug it with mir
 
 1. Download the extension
 2. Enable mirrord using the "mirrord" button on the bottom toolbar 
+
 ![mirrord button](vscode-extension/images/enabler.png)
+
 3. Run or debug your application as you usually do
 
 When you start a debugging session with mirrord enabled, you'll be prompted with a target selection quick pick. This quick pick will allow you to select the target in your Kubernetes cluster that you want to impersonate.
