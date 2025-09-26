@@ -85,7 +85,7 @@ operator:
 | mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `port` `namespace` `target` `user_id`| operator 3.122.0 (helm chart 1.35.0) |
 | mirrord\_read\_sqs\_messages\_count | Count of SQS messages read from `original_queue`  | `original_queue`                                        | operator 3.125.0 (helm chart 1.38.0) |
 | mirrord\_sqs\_messages\_forwarded\_to\_user\_count | Count of SQS messages read from `original_queue`, forwarded to the local service of `k8s_user`, `local_username`.  | `k8s_user`, `local_username`, `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
-| mirrord\_unmatched\_sqs\_messages\_count | Count of SQS messages read from `original\_queue`, that weren't matched by any user's filter and were sent to the main output queue, for the deployed application. | `original\_queue` | operator 3.125.0 (helm chart 1.38.0) |
+| mirrord\_unmatched\_sqs\_messages\_count | Count of SQS messages read from `original_queue` that weren't matched by any user's filter and were sent to the main output queue for the deployed application. | `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
 
 ### DataDog Dashboard
 
