@@ -13,7 +13,7 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-Ready to start using mirrord for Teams? Register [here](https://app.metalbear.co) to get started.
+Ready to start using mirrord for Teams? Register [here](https://app.metalbear.com) to get started.
 
 ## Why mirrord for Teams?
 
@@ -39,4 +39,4 @@ The following functionality is currently available in mirrord for Teams that isn
 - **Better security and RBAC** - with the mirrord Operator, users no longer need permissions to create privileged pods - only the Operator does. In addition, permissions can be managed within Kubernetes to allow or prevent users from impersonating specific targets.
 - **Advanced features** - support for new resource types like Jobs and StatefulSets, multi-pod deployments, and more.
 
-For the full list of features, see the mirrord for Teams [pricing page](https://metalbear.co/mirrord/pricing).
+For the full list of features, see the mirrord for Teams [pricing page](https://metalbear.com/mirrord/pricing).
