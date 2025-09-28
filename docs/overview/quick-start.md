@@ -39,7 +39,7 @@ mirrord can be used in three ways:
 2. [VS Code Extension](quick-start.md#vs-code-extension)
 3. [IntelliJ Plugin](quick-start.md#intellij-plugin)
 
-If you're planning to use [mirrord for Teams](https://app.metalbear.co), you'll also need to install the mirrord [Operator](quick-start.md#operator).
+If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord [Operator](quick-start.md#operator).
 
 ### CLI Tool
 
@@ -115,7 +115,7 @@ The IntelliJ plugin reads its configuration from the following file: `<project-p
 
 ### Operator
 
-To install and use the Operator, you'll need a mirrord for Teams license. You can get one [here](https://app.metalbear.co/). The Operator is installed using the [Helm chart](quick-start.md#helm). This has to be performed by a user with elevated permissions to the cluster.
+To install and use the Operator, you'll need a mirrord for Teams license. You can get one [here](https://app.metalbear.com/). The Operator is installed using the [Helm chart](quick-start.md#helm). This has to be performed by a user with elevated permissions to the cluster.
 
 #### Helm
 

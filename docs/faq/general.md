@@ -62,7 +62,7 @@ Yes! You can use the `mirrord container` command to run a local container in the
 
 #### What if I can't create containers with the capabilities mirrord requires in my cluster?
 
-mirrord works by creating an agent on a privileged pod in the remote cluster that accesses another pod's namespaces (read more about it [here](https://metalbear.co/blog/getting-started-with-ephemeral-containers/)). If you can't give your end users permissions to create pods with the capabilities mirrord needs, we suggest trying out [mirrord for Teams](../overview/teams.md). It adds a Kubernetes operator that acts as a control plane for mirrord clients, and lets them work with mirrord without creating pods themselves. If mirrord for Teams doesn't work for you either, [let us know](mailto:hello@metalbear.co) and we'll try to figure a solution that matches your security policies.
+mirrord works by creating an agent on a privileged pod in the remote cluster that accesses another pod's namespaces (read more about it [here](https://metalbear.com/blog/getting-started-with-ephemeral-containers/)). If you can't give your end users permissions to create pods with the capabilities mirrord needs, we suggest trying out [mirrord for Teams](../overview/teams.md). It adds a Kubernetes operator that acts as a control plane for mirrord clients, and lets them work with mirrord without creating pods themselves. If mirrord for Teams doesn't work for you either, [let us know](mailto:hello@metalbear.com) and we'll try to figure a solution that matches your security policies.
 
 #### What kinds of Kubernetes objects can I use as a remote target?
 
