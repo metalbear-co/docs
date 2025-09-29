@@ -27,7 +27,7 @@ Filtering is the same idea whether you’re mirroring or stealing. Declare which
 
 `steal` mode: all requests are redirected to your local process. Your local code is the one answering everything, and the remote target does not see the requests. This is useful when you want to test how your code responds to real traffic, or when handling all requests locally avoids issues like duplicate database writes.
 
-`steal` + `http_filter`: only the filtered subset of requests are redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
+`steal` + `http_filter`: only the filtered subset of requests is redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
 
 ### Stealing all of the remote target's traffic
 
