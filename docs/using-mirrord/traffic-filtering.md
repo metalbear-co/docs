@@ -21,13 +21,13 @@ By default, mirrord mirrors all incoming traffic into the remote target, and sen
 
 Filtering is the same idea whether you’re mirroring or stealing. Declare which HTTP requests you care about, and only those will be delivered to your local process. The difference is what happens to the original request:
 
-'mirror' mode: the remote target still receives and handles the request. A copy is delivered to your local process for testing or inspection.
+`mirror` mode: the remote target still receives and handles the request. A copy is delivered to your local process for testing or inspection.
 
-'mirror' + 'http_filter': the remote target still handles all requests, but only the filtered subset is copied to your local process. Use this when you want to observe a specific subset of endpoints while keeping production behavior untouched.
+`mirror` + `http_filter`: the remote target still handles all requests, but only the filtered subset is copied to your local process. Use this when you want to observe a specific subset of endpoints while keeping production behavior untouched.
 
-'steal' mode: all requests are redirected to your local process. Your local code is the one answering everything, and the remote target does not see the requests. This is useful when you want to test how your code responds to real traffic, or when handling all requests locally avoids issues like duplicate database writes.
+`steal` mode: all requests are redirected to your local process. Your local code is the one answering everything, and the remote target does not see the requests. This is useful when you want to test how your code responds to real traffic, or when handling all requests locally avoids issues like duplicate database writes.
 
-'steal' + 'http_filter': only the filtered subset of requests are redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
+`steal` + `http_filter`: only the filtered subset of requests are redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
 
 ### Stealing all of the remote target's traffic
 
@@ -45,11 +45,11 @@ If you want all traffic arriving at the remote target to be redirected to your l
 
 Run your process with mirrord using the steal configuration, then send a request to the remote target. The response you receive will have been sent by the local process. If you're using one of our IDE extensions, set a breakpoint in the function handling the request - your request should hang when the breakpoint is hit and until you continue the process.
 
-### Filtering a subset of traffic with 'mirror' or 'steal' mode
+### Filtering a subset of traffic with `mirror` or `steal` mode
 
 For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports filtering a subset of the remote target's traffic. You can do this by specifying a filter on either an HTTP header or path. To control whether traffic is duplicated (mirror) or redirected (steal), set the mode field:
-'mirror': the remote target still handles the request, and your local process gets a copy.
-'steal': the request is redirected to your local process, and the remote target does not handle it.
+`mirror`: the remote target still handles the request, and your local process gets a copy.
+`steal`: the request is redirected to your local process, and the remote target does not handle it.
 To specify a filter on a header, use the `feature.network.incoming.http_filter.header_filter` configuration:
 
 ```json
