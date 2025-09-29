@@ -150,6 +150,32 @@ If you filter only by path, you might capture a large amount of traffic unintent
 
 The `method_filter` is case-insensitive and supports all standard HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`) as well as non-standard methods.
 
+#### Grouping Filters: Match All or Any
+
+You can group multiple simple filters together using the `all_of` or `any_of` fields:
+`all_of`: the request must match all nested filters.
+`any_of`: the request must match at least one nested filter.
+It has the following rules:
+1. Exactly one top-level filter, `http_filter` must contain exactly one of these fields: `header_filter`, `path_filter`, `method_filter`,`all_of`, `any_of`.
+2. Combinators must contain a non-empty array of nested filters, example:
+```json
+"http_filter": {
+  "all_of": [ // or "any_of"
+    { "header": "..." },
+    { "method": "..." }
+  ]
+}
+```
+3. Each nested filter (`header`, `path`, `method`) must contain exactly one value, example:
+```json
+"http_filter": {
+  "all_of": [
+    { "method": "POST" }
+    { "method": "GET" }
+    { "path": "/api/v1/orders" }
+  ]
+}
+```
 
 #### Stealing HTTPS traffic with a filter
 
