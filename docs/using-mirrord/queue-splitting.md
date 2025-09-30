@@ -451,3 +451,35 @@ In the example above, the local application:
 * Will receive no messages from SQS queue with id `ad-queue`.
 
 Once all users stop filtering a queue (i.e. end their mirrord sessions), the temporary queues (SQS) and topics (Kafka) that mirrord operator created will be deleted.
+
+### Troubleshooting SQS splitting
+
+If you're trying to use SQS-splitting and are facing difficulties, here are some steps you can go through to identify
+and hopefully solve the problem.
+
+First, some generally applicable steps:
+
+1. Make sure a [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) exists for the workload you're targeting:
+   ```shell
+   kubectl describe mirrordworkloadqueueregistries.queues.mirrord.metalbear.co -n <target-namespace>
+   ```
+2. Note [the queue-ids in the mirrord configuration](#setting-a-filter-for-a-mirrord-run) have to match the queue-ids in
+   the [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) of the used target.
+3. If you have permissions, download logs from the mirrord-operator, in case it becomes necessary for the mirrord team
+   to look into your issue. To get especially helpful logs, you can change the log level for SQS-splitting, then
+   reproduce the issue to get the relevant logs. This can be achieved by reinstalling the helm chart and setting the
+   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace` or by setting
+   the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
+   e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
+4. Some operations, like e.g. changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
+   that target, are not yet supported, and can lead to a bad state for mirrord. If you've reached such a state, you
+   should delete all the mirrord SQS session resources of the affected target, and then restart the operator. Those
+   resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
+   ```shell
+   kubectl delete --all mirrordsqssessions.queues.mirrord.metalbear.co -n <target-namespace>
+   ```
+   
+#### If just some of the messages that should arrive at the local service arrive at the remote service:
+
+#### If all SQS sessions are over but the remote service still didn't change back to read from the original queue:
+
