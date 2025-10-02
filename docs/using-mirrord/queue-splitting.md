@@ -471,7 +471,7 @@ First, some generally applicable steps:
    `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace` or by setting
    the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
    e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
-4. Some operations, like e.g. changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
+4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
    that target, are not yet supported, and can lead to a bad state for mirrord. If you've reached such a state, you
    should delete all the mirrord SQS session resources of the affected target, and then restart the operator. Those
    resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
