@@ -487,7 +487,7 @@ It's possible the target workload's restart is not complete yet, and there are s
 original queue. You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary
 queue created by mirrord, or you can delete them.
 
-#### If all SQS sessions are over but the remote service still didn't change back to read from the original queue:
+#### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
 
 When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read
 directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no
