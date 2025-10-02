@@ -476,10 +476,31 @@ First, some generally applicable steps:
    should delete all the mirrord SQS session resources of the affected target, and then restart the operator. Those
    resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
    ```shell
-   kubectl delete --all mirrordsqssessions.queues.mirrord.metalbear.co -n <target-namespace>
+   kubectl get mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> -o json \
+   | jq -r '.items[] | select(.spec.queueConsumer.name=="<TARGET-WORKLOAD-NAME>" and .spec.queueConsumer.workloadType=="<TARGET-WORKLOAD-TYPE>") | .metadata.name' \     
+   | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
    ```
    
-#### If just some of the messages that should arrive at the local service arrive at the remote service:
+#### If some (but not all) of the messages that should arrive at the local service arrive at the remote service:
+
+It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the
+original queue. You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary
+queue created by mirrord, or you can delete them.
 
 #### If all SQS sessions are over but the remote service still didn't change back to read from the original queue:
 
+When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read
+directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no
+messages intended for the remote service are lost.
+
+If the target workload doesn't change back within the expected time, check its logs and make sure it is consuming queue
+messages.
+
+If you don't want to wait for the remote service to drain the temporary queue, and you don't care about losing those
+messages, you can set the
+[`operator.sqsSplittingLingerTimeout`](https://github.com/metalbear-co/charts/blob/752892998a1145b826e29c6d812b7a08a312c4f5/mirrord-operator/values.yaml#L102-L108)
+value in the operator's helm chart, to set a timeout for the draining of the temporary queue.
+
+If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
+application still doesn't get restored to its original state, please try restarting the application, deleting any
+lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
