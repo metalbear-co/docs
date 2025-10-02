@@ -480,7 +480,7 @@ First, some generally applicable steps:
    | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
    ```
    
-#### If some (but not all) of the messages that should arrive at the local service arrive at the remote service:
+#### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the
 original queue. You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary
