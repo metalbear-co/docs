@@ -499,8 +499,9 @@ First, some generally applicable steps:
 #### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the
-original queue. You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary
-queue created by mirrord, or you can delete them.
+original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for
+them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can
+delete them.
 
 #### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
 
