@@ -465,8 +465,14 @@ First, some generally applicable steps:
    ```
 2. Note [the queue-ids in the mirrord configuration](#setting-a-filter-for-a-mirrord-run) have to match the queue-ids in
    the [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) of the used target.
-3. If you have permissions, download logs from the mirrord-operator, in case it becomes necessary for the mirrord team
-   to look into your issue. To get especially helpful logs, you can change the log level for SQS-splitting, then
+3. Get the logs from the mirrord-operator, in case it becomes necessary for the mirrord team
+   to look into your issue, e.g. like this:
+   ```shell
+   kubectl logs -n mirrord -l app==mirrord-operator --tail -1 > /tmp/mirrord-operator-$(date +"%Y-%m-%d_%H-%M-%S").log
+   ```
+   If that fails, you might not have permissions to the operator's logs.
+
+   To get especially helpful logs, you can change the log level for SQS-splitting, then
    reproduce the issue to get the relevant logs. This can be achieved by reinstalling the helm chart and setting the
    `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`:
    ```shell
