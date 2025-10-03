@@ -468,7 +468,11 @@ First, some generally applicable steps:
 3. If you have permissions, download logs from the mirrord-operator, in case it becomes necessary for the mirrord team
    to look into your issue. To get especially helpful logs, you can change the log level for SQS-splitting, then
    reproduce the issue to get the relevant logs. This can be achieved by reinstalling the helm chart and setting the
-   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace` or by setting
+   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`:
+   ```shell
+   helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace" metalbear/mirrord-operator
+   ```
+   or by setting
    the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
    e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
 4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
