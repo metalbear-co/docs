@@ -466,7 +466,7 @@ First, some generally applicable steps:
 2. Note [the queue-ids in the mirrord configuration](#setting-a-filter-for-a-mirrord-run) have to match the queue-ids in
    the [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) of the used target.
 3. Get the logs from the mirrord-operator, in case it becomes necessary for the mirrord team
-   to look into your issue, e.g. like this:
+   to look into your issue, like this:
    ```shell
    kubectl logs -n mirrord -l app==mirrord-operator --tail -1 > /tmp/mirrord-operator-$(date +"%Y-%m-%d_%H-%M-%S").log
    ```
