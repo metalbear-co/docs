@@ -482,13 +482,19 @@ First, some generally applicable steps:
    the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
    e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
 4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
-   that target, are not yet supported, and can lead to a bad state for mirrord. If you've reached such a state, delete all the mirrord SQS session resources of the affected target, and then restart the operator. Those
-   resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
-   ```shell
-   kubectl get mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> -o json \
-   | jq -r '.items[] | select(.spec.queueConsumer.name=="<TARGET-WORKLOAD-NAME>" and .spec.queueConsumer.workloadType=="<TARGET-WORKLOAD-TYPE>") | .metadata.name' \     
-   | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
-   ```
+   that target, are not yet supported, and can lead to a bad state for mirrord. 
+   If you've reached such a state:
+   a. Delete all the mirrord SQS session resources of the affected target. Those
+      resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
+      ```shell
+      kubectl get mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> -o json \
+      | jq -r '.items[] | select(.spec.queueConsumer.name=="<TARGET-WORKLOAD-NAME>" and .spec.queueConsumer.workloadType=="<TARGET-WORKLOAD-TYPE>") | .metadata.name' \     
+      | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
+      ```
+   b. Restart the mirrord operator, e.g.:
+      ```shell
+      kubectl rollout restart deployment mirrord-operator -n mirrord
+      ```
    
 #### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
 
