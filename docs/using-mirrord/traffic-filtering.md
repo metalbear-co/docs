@@ -153,8 +153,8 @@ The `method_filter` is case-insensitive and supports all standard HTTP methods (
 #### Grouping Filters: Match All or Any
 
 You can group multiple simple filters together using the `all_of` or `any_of` fields:
-`all_of`: the request must match all nested filters.
-`any_of`: the request must match at least one nested filter.
+* `all_of`: the request must match all nested filters.
+* `any_of`: the request must match at least one nested filter.
 It has the following rules:
 1. Exactly one top-level filter, `http_filter` must contain exactly one of these fields: `header_filter`, `path_filter`, `method_filter`,`all_of`, `any_of`.
 2. Combinators must contain a non-empty array of nested filters, example:
