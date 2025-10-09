@@ -83,6 +83,7 @@ Don't use this example as a starting point, it's just here to show you all the a
     "network_interface": "eth0",
     "flush_connections": true,
     "metrics": "0.0.0.0:9000",
+    "inject_headers": true
   },
   "feature": {
     "env": {

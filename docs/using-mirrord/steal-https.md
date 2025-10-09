@@ -11,7 +11,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: How to steal HTTPS traffic with a filter using mirrord
+description: How to use HTTPS stealing when TLS is terminated inside the target pod
 ---
 
 # HTTPS Stealing
