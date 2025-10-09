@@ -31,7 +31,7 @@ When enabled, the mirrord agent automatically adds a `airrord-agent` header to H
 - `forwarded-to-client`: The request was intercepted and forwarded to the local process (mirrord handled it).
 - `passed-through`: The request was not sent to the local process (for example, it didn’t match active filters, so it was passed through).
 
-Header injection is disabled by default until further notice
+Header injection is disabled by default until further notice.
 You can enable header injection with the following configuration:
 
 ```json
