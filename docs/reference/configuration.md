@@ -174,7 +174,8 @@ We provide sane defaults for this option, so you don't have to set up anything h
     "startup_timeout": 360,
     "network_interface": "eth0",
     "flush_connections": false,
-    "exclude_from_mesh": false
+    "exclude_from_mesh": false,
+    "inject_headers": true
   }
 }
 ```
