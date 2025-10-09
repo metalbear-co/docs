@@ -25,15 +25,12 @@ When debugging, it’s often useful to know whether a response went through mirr
 This option helps to verify mirrord’s routing decisions and confirm whether traffic went through an agent or bypassed it during debugging.
 
 # Header behavior 
-When enabled, the mirrord agent automatically adds a `Mirrord-Agent` header to HTTP responses handled by mirrord.
+When enabled, the mirrord agent automatically adds a `airrord-agent` header to HTTP responses handled by mirrord.
 
-Possible values for the header:
-
-`forwarded-to-client`: The request was intercepted and forwarded to the local process (mirrord handled it).
-
-`passed-through`: The request was not sent to the local process (for example, it didn’t match active filters, so it was passed through).
-
-Header injection is disabled by default until further notice
+###Possible values for the header:
+`forwarded-to-client`: The request was intercepted and forwarded to the local process (mirrord handled it).`/n`
+`passed-through`: The request was not sent to the local process (for example, it didn’t match active filters, so it was passed through).`/n`
+Header injection is disabled by default until further notice`/n`
 
 You can enable header injection with the following configuration:
 
