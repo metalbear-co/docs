@@ -28,20 +28,21 @@ This feature is only available for users on the Team and Enterprise pricing plan
 
 {% hint style="info" %}
 Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka.
 {% endhint %}
 
 ## How It Works
 
-When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue or topic.
-That temporary queue/topic is *exclusive* to the target workload.
-Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue or topic.
+When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue.
+That temporary queue is *exclusive* to the target workload.
+Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue.
 
 {% hint style="warning" %}
-In both cases, the redirections are done by manipulating environment variables.
-For this reason, queue splitting always requires that the application reads the queue or topic name from environment variables.
+Queue splitting requires that the application read the queue name from an environment variable.
+This lets the operator override the environment variable to change the queue that the application reads from.
 {% endhint %}
 
-Once all temporary topics or queues are prepared, the mirrord operator starts consuming messages from the original queue or topic, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
+Once all temporary queues are prepared, the mirrord operator starts consuming messages from the original queue, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
 This routing is based on message filters provided by the users in their mirrord configs.
 
 {% tabs %}
@@ -68,17 +69,17 @@ If the filters defined by the two users both match some message, one of the user
 
 {% tab title="Kafka" %}
 
-First, we have a consumer app reading messages from a Kafka topic:
+First, we have a consumer app reading messages from a Kafka queue:
 
-![A K8s application that consumes messages from a Kafka topic](queue-splitting/before-splitting-kafka.svg)
+![A K8s application that consumes messages from a Kafka queue](queue-splitting/before-splitting-kafka.svg)
 
-When the first mirrord Kafka splitting session starts, two temporary topics are created (one for the target deployed in the cluster, one for the user's local application),
+When the first mirrord Kafka splitting session starts, two temporary quques are created (one for the target deployed in the cluster, one for the user's local application),
 and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
 
 ![One Kafka splitting session](queue-splitting/1-user-kafka.svg)
 
-If a second user then starts a mirrord Kafka splitting session on the same topic, a third temporary topic is created (for the second user's local application).
-The mirrord operator includes the new topic and the second user's filter in the routing logic.
+If a second user then starts a mirrord Kafka splitting session on the same queue, a third temporary queue is created (for the second user's local application).
+The mirrord operator includes the new queue and the second user's filter in the routing logic.
 
 ![Two Kafka splitting sessions](queue-splitting/2-users-kafka.svg)
 
@@ -88,11 +89,11 @@ If the filters defined by the two users both match some message, one of the user
 
 {% endtabs %}
 
-Temporary queues and topics are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
+Temporary queues are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
 
 Plese note that:
-1. Temporary queues and topics created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
-2. In case of SQS splitting, deployed targets will remain redirected as long as their temporary queues have unconsumed messages.
+1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
+2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 
 
 ## Enabling Queue Splitting in Your Cluster
@@ -337,7 +338,7 @@ bootstrap.servers=kafka.default.svc.cluster.local:9092
 client.id=mirrord-operator
 ```
 
-This file will be used when creating a Kafka client for managing temporary topics, consuming messages from the original topic and producing messages to the temporary topics. Full list of available properties can be found [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
+This file will be used when creating a Kafka client for managing temporary queues, consuming messages from the original queue and producing messages to the temporary queues. Full list of available properties can be found [here](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md).
 
 {% hint style="info" %}
 `group.id` property will always be overwritten by mirrord Operator when resolving the `.properties` file.
@@ -354,9 +355,9 @@ See [additional options](queue-splitting.md#additional-options) section for more
 
 ### Authorize deployed consumers
 
-In order to be targeted with Kafka splitting, a deployed consumer must be able to use the temporary topics created by mirrord.
-E.g. if the consumer application describes the topic or reads messages from it — it must be able to do the same on a temporary topic.
-This might require extra actions on your side to adjust the authorization, for example based on topic name prefix. See [topic names](queue-splitting.md#customizing-temporary-kafka-topic-names) section for more info.
+In order to be targeted with Kafka splitting, a deployed consumer must be able to use the temporary queues created by mirrord.
+E.g. if the consumer application describes the queue or reads messages from it — it must be able to do the same on a temporary queue.
+This might require extra actions on your side to adjust the authorization, for example based on queue name prefix. See [queue names](queue-splitting.md#customizing-temporary-kafka-queue-names) section for more info.
 
 {% endstep %}
 {% step %}
@@ -368,9 +369,9 @@ a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/a
 — `MirrordKafkaTopicsConsumer`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordkafkatopicsconsumers.queues.mirrord.metalbear.co`.
 Before you can run sessions with Kafka splitting, you must create a topics consumer resource for the desired target.
 This is because the topics consumer resource contains additional application context required by the mirrord operator.
-For example, the operator needs to know which environment variables contain the names of the Kafka topics to split.
+For example, the operator needs to know which environment variables contain the names of the Kafka queues to split.
 
-See an example topics consumer resource, for a meme app that consumes messages from a Kafka topic:
+See an example topics consumer resource, for a meme app that consumes messages from a Kafka queue:
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1alpha
@@ -397,9 +398,9 @@ spec:
 
 The topics consumer resource above says that:
 1. It provides context for deployment `meme-app` in namespace `meme`.
-2. The deployment consumes one topic. Its name is read from environment variable `KAFKA_TOPIC_NAME` in container `consumer`.
+2. The deployment consumes one queue. Its name is read from environment variable `KAFKA_TOPIC_NAME` in container `consumer`.
 The Kafka consumer group id is read from environment variable `KAFKA_GROUP_ID` in container `consumer`.
-3. The Kafka topic can be referenced in a mirrord config under ID `views-topic`.
+3. The Kafka queue can be referenced in a mirrord config under ID `views-topic`.
 
 #### Link the topics consumer resource to the deployed consumer
 
@@ -415,15 +416,15 @@ consumerName: kafka-notifications-worker
 
 The operator supports Kafka splitting on deployments, stateful sets, and Argo rollouts.
 
-#### Desribe consumed topics in the topics consumer resource
+#### Desribe consumed queues in the topics consumer resource
 
-The topics consumer resource describes Kafka topics consumed by the referenced consumer.
-The topics are described in entries of the `spec.topics` list:
+The topics consumer resource describes Kafka queues consumed by the referenced consumer.
+The queues are described in entries of the `spec.topics` list:
 * `id` can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 * `clientConfig` stores the name of the `MirrordKafkaClientConfig` to use when making connections to the Kafka cluster.
-* `nameSources` stores a list of all occurences of the topic name in the consumer workload's pod template.
+* `nameSources` stores a list of all occurences of the queue name in the consumer workload's pod template.
 * `groupIdSources` stores a list of all occurences of the consumer Kafka group ID in the consumer workload's pod template.
-The operator will use the same group ID when consuming messages from the topic.
+The operator will use the same group ID when consuming messages from the queue.
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
@@ -436,20 +437,20 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ### Additional Options
 
-#### Customizing Temporary Kafka Topic Names
+#### Customizing Temporary Kafka Queue Names
 
 {% hint style="info" %}
 Available since chart version `1.27` and operator version `3.114.0`.
 {% endhint %}
 
-To serve Kafka splitting sessions, mirrord operator creates temporary topics in the Kafka cluster. The default format for their names is as follows:
+To serve Kafka splitting sessions, mirrord operator creates temporary queues in the Kafka cluster. The default format for their names is as follows:
 
-* `mirrord-tmp-1234567890-fallback-topic-original-topic` - for the fallback topic (unfiltered messages, consumed by the deployed workload).
-* `mirrord-tmp-0987654321-original-topic` - for the user topics (filtered messages, consumed by local applications running with mirrord).
+* `mirrord-tmp-1234567890-fallback-topic-original-topic` - for the fallback queue (unfiltered messages, consumed by the deployed workload).
+* `mirrord-tmp-0987654321-original-topic` - for the user queues (filtered messages, consumed by local applications running with mirrord).
 
-Note that the random digits will be unique for each temporary topic created by the operator.
+Note that the random digits will be unique for each temporary queue created by the operator.
 
-You can adjust the format of the created topic names to suit your needs (RBAC, Security, Policies, etc.),
+You can adjust the format of the created queues names to suit your needs (RBAC, Security, Policies, etc.),
 using the `OPERATOR_KAFKA_SPLITTING_TOPIC_FORMAT` environment variable of the mirrord operator,
 or `operator.kafkaSplittingTopicFormat` helm chart value. The default value is:
 
@@ -577,7 +578,7 @@ Note that operator's service account can be annotated with the IAM role's ARN wi
 
 #### Configuring Workload Restart
 
-To inject the names of the temporary topics into the consumer workload, 
+To inject the names of the temporary queues into the consumer workload, 
 the operator always requires the workload to be restarted.
 Depending on cluster conditions, and the workload itself, this might take some time.
 
@@ -598,7 +599,7 @@ is started before the TTL elapses. Specified in seconds.
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.split_queues) is the configuration field they need to specify in order to filter queue messages.
-Directly under it, mirrord expects a mapping from a queue or topic ID to a queue filter definition.
+Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains two fields:
 * `queue_type` — `SQS` or `Kafka`
@@ -649,7 +650,7 @@ In the example above, the local application:
 * Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
   All received messages will have an attribute `author` with the value `me`, AND an attribute `level` with value either `beginner` or `intermediate`.
 * Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
-* Will receive a subset of messages from Kafka topic with ID `views-topic`.
+* Will receive a subset of messages from Kafka queue with ID `views-topic`.
   All received messages will have an attribute `author` with the value `me`, AND an attribute `source` with value starting with `my-session-` (e.g `my-session-844cb78789-2fmsw`).
 
 
