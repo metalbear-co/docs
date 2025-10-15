@@ -835,4 +835,3 @@ value in the operator's helm chart, to set a timeout for the draining of the tem
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
 lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
->>>>>>> main:docs/using-mirrord/queue-splitting.md
