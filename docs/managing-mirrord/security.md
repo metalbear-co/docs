@@ -24,7 +24,7 @@ This discussion is only relevant for users on the Team and Enterprise pricing pl
 
 Love using mirrord but need help getting your security team on board? Talk to one of our technical experts!
 
-<a href="https://metalbear.co/mirrord/demo/" class="button primary">Get Security Support</a>
+<a href="https://metalbear.com/mirrord/demo/" class="button primary">Get Security Support</a>
 
 ### I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
@@ -41,7 +41,7 @@ Love using mirrord but need help getting your security team on board? Talk to on
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
 * mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
-* Missing anything? Feel free to ask us on Discord or hi@metalbear.co
+* Missing anything? Feel free to ask us on Discord or hi@metalbear.com
 
 ### Are you SOC2/GDPR compliant?
 

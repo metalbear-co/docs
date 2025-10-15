@@ -653,7 +653,6 @@ In the example above, the local application:
 * Will receive a subset of messages from Kafka queue with ID `views-topic`.
   All received messages will have an attribute `author` with the value `me`, AND an attribute `source` with value starting with `my-session-` (e.g `my-session-844cb78789-2fmsw`).
 
-
 {% endtab %}
 {% tab title="SQS with wildcard" %}
 
@@ -767,3 +766,73 @@ openssl pkcs12 -in truststore.p12 -nokeys -out ca-cert.pem
 ```
 
 Then, follow the guide for [authenticating with an SSL certificate](queue-splitting.md#how-do-i-authenticate-operators-kafka-client-with-an-ssl-certificate).
+
+## Troubleshooting SQS splitting
+
+If you're trying to use SQS-splitting and are facing difficulties, here are some steps you can go through to identify
+and hopefully solve the problem.
+
+First, some generally applicable steps:
+
+1. Make sure a [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) exists for the workload you're targeting:
+   ```shell
+   kubectl describe mirrordworkloadqueueregistries.queues.mirrord.metalbear.co -n <target-namespace>
+   ```
+2. Note [the queue-ids in the mirrord configuration](#setting-a-filter-for-a-mirrord-run) have to match the queue-ids in
+   the [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) of the used target.
+3. Get the logs from the mirrord-operator, in case it becomes necessary for the mirrord team
+   to look into your issue, like this:
+   ```shell
+   kubectl logs -n mirrord -l app==mirrord-operator --tail -1 > /tmp/mirrord-operator-$(date +"%Y-%m-%d_%H-%M-%S").log
+   ```
+   If that fails, you might not have permissions to the operator's logs.
+
+   To get especially helpful logs, you can change the log level for SQS-splitting, then
+   reproduce the issue to get the relevant logs. This can be achieved by reinstalling the helm chart and setting the
+   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`:
+   ```shell
+   helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace" metalbear/mirrord-operator
+   ```
+   or by setting
+   the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
+   e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
+4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
+   that target, are not yet supported, and can lead to a bad state for mirrord. 
+   If you've reached such a state:
+   1. Delete all the mirrord SQS session resources of the affected target. Those
+      resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
+      ```shell
+      kubectl get mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> -o json \
+      | jq -r '.items[] | select(.spec.queueConsumer.name=="<TARGET-WORKLOAD-NAME>" and .spec.queueConsumer.workloadType=="<TARGET-WORKLOAD-TYPE>") | .metadata.name' \     
+      | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
+      ```
+   2. Restart the mirrord operator, e.g.:
+      ```shell
+      kubectl rollout restart deployment mirrord-operator -n mirrord
+      ```
+   
+#### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
+
+It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the
+original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for
+them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can
+delete them.
+
+#### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
+
+When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read
+directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no
+messages intended for the remote service are lost.
+
+If the target workload doesn't change back within the expected time, check its logs and make sure it is consuming queue
+messages.
+
+If you don't want to wait for the remote service to drain the temporary queue, and you don't care about losing those
+messages, you can set the
+[`operator.sqsSplittingLingerTimeout`](https://github.com/metalbear-co/charts/blob/752892998a1145b826e29c6d812b7a08a312c4f5/mirrord-operator/values.yaml#L102-L108)
+value in the operator's helm chart, to set a timeout for the draining of the temporary queue.
+
+If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
+application still doesn't get restored to its original state, please try restarting the application, deleting any
+lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
+>>>>>>> main:docs/using-mirrord/queue-splitting.md

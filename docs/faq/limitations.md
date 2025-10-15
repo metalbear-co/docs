@@ -20,11 +20,11 @@ description: What are the limitations to using mirrord?
 
 #### What frameworks/languages does mirrord support?
 
-mirrord works by [hooking libc](https://metalbear.co/blog/mirrord-internals-hooking-libc-functions-in-rust-and-fixing-bugs/), so it should work with any language/framework that uses libc (vast majority).
+mirrord works by [hooking libc](https://metalbear.com/blog/mirrord-internals-hooking-libc-functions-in-rust-and-fixing-bugs/), so it should work with any language/framework that uses libc (vast majority).
 
 This includes: Rust, Node, Python, Java, Kotlin, Ruby, and others (most languages use libc).
 
-mirrord also supports for [Go](https://metalbear.co/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
+mirrord also supports for [Go](https://metalbear.com/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
 
 #### Does mirrord support clusters with a service mesh like Istio or Linkerd?
 
