@@ -16,9 +16,9 @@ tags:
 
 mirrord can be used to greatly speed up CI runs by avoiding the need to deploy the app you're trying to test.
 Instead of setting up a whole kubernetes environment for every CI run, you can just use mirrord to redirect
-the traffic from the service you want to test, that is already running in some cluster (e.g. a staging environment).
+the traffic from the service you want to test, which is already running in some cluster (e.g. a staging environment).
 
-While running regular `mirrord exec` can be made to work for this purpose, it requires some finangling to get right.
+While running regular `mirrord exec` can be made to work for this purpose, it requires some finagling to get right.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to run tests and whatever else you want while mirrord is running.
 
@@ -32,7 +32,7 @@ tests, then run `mirrord ci stop`, before you're able to run `mirrord ci start` 
 
 ## For mirrord Operator users
 
-To use the `mirrord ci` with a mirrord Operator, you'll need to generate a CI API key, and store it
+To use the `mirrord ci` with a mirrord Operator, you'll need to generate a CI API key and store it
 as a **secret** environment variable.
 
 You can get this key by running the command:
@@ -70,5 +70,5 @@ that's running. You can do this with the `mirrord ci stop` command.
 mirrord ci stop
 ```
 
-After you're done with the tests, just run this command (no args needed) and mirrord will stop running
+After you're done with the tests, just run this command (no args needed), and mirrord will stop running
 itself, and the local app.
