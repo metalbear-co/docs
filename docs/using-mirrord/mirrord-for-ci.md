@@ -18,7 +18,9 @@ mirrord can be used to greatly speed up CI runs by avoiding the need to deploy t
 Instead of setting up a whole kubernetes environment for every CI run, you can just use mirrord to redirect
 the traffic from the service you want to test, which is already running in some cluster (e.g. a staging environment).
 
-While running regular `mirrord exec` can be made to work for this purpose, it requires some finagling to get right.
+While running regular `mirrord exec` can be made to work for this purpose, it requires some
+finagling to get right, such as wrapping `mirrord exec` in some other command that would start
+it as a background process (or some other approach to keep it running in the background).
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to run tests and whatever else you want while mirrord is running.
 
