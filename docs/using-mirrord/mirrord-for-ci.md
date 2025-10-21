@@ -1,6 +1,6 @@
 ---
 title: "mirrord for CI"
-description: "How to use the mirrord in a CI environment, with the mirrord ci commands."
+description: "How to use mirrord in a CI environment with `mirrord ci` commands."
 date: 2025-10-21T00:00:00+03:00
 lastmod: 2025-10-21T00:00:00+03:00
 draft: false
@@ -23,8 +23,9 @@ The `mirrord ci start` command is more appropriate for this use case, since it s
 background processes, allowing you to run tests and whatever else you want while mirrord is running.
 
 Note that you can only have **one** mirrord CI session per service during a CI run, this means that
-we (currently) don't support executing multiple `mirrord ci start`, you must do one `mirrord ci start`, run your
-tests, then run `mirrord ci stop`, before you're able to run `mirrord ci start` again in the same CI run.
+we (currently) don't support executing multiple `mirrord ci start` commands. You must do one
+`mirrord ci start`, run your tests, then run `mirrord ci stop`, before you're able to run
+`mirrord ci start` again in the same CI run.
 
 ## Prerequisites
 
@@ -32,7 +33,7 @@ tests, then run `mirrord ci stop`, before you're able to run `mirrord ci start` 
 
 ## For mirrord Operator users
 
-To use the `mirrord ci` with a mirrord Operator, you'll need to generate a CI API key and store it
+To use mirrord ci with mirrord Operator, you'll need to generate a CI API key and store it
 as a **secret** environment variable.
 
 You can get this key by running the command:
