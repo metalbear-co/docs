@@ -67,6 +67,10 @@ Copy it and save it as the **secret** environment variable `MIRRORD_CI_API_KEY` 
 The `mirrord ci start` command functions very much like the `mirrord exec` command, meaning that it can take
 the same arguments, such as using a configuration file with `--config-file`, setting a target with `--target`, etc.
 
+{% hint style="info" %}
+To view the entire list of arguments, run `mirrord ci start --help`.
+{% endhint %}
+
 - An example of starting a mirrord for CI session with `npm run` (you can run anything, it's **not** limited to `npm`):
 
 ```sh
