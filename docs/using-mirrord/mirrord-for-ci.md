@@ -22,7 +22,7 @@ it's running in the cluster.
 
 While running regular `mirrord exec` can be made to work for this purpose, it requires some
 finagling to get right, such as wrapping `mirrord exec` in some other command that would start
-it as a background process (or some other approach to keep it running in the background).
+it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to run tests and whatever else you want while mirrord is running.
 
