@@ -36,8 +36,7 @@ we (currently) don't support executing multiple `mirrord ci start` commands. You
 ## Prerequisites
 
 1. Minimum mirrord CLI version `3.166.0`.
-2. The CI runner must be able to access the Kubernetes cluster (Kubernetes API access to
-   the staging cluster, for example).
+2. The CI runner must be able to access the Kubernetes cluster in which you want to test.
 
 ## Kubernetes requirements
 
