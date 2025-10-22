@@ -28,10 +28,9 @@ The `mirrord ci start` command is more appropriate for this use case, since it s
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
 {% hint style="info" %}
-You can only have **one** mirrord CI session per service during a CI run, this means that
-we (currently) don't support executing multiple `mirrord ci start` commands. You must do one
-`mirrord ci start`, run your tests, then run `mirrord ci stop`, before you're able to run
-`mirrord ci start` again in the same CI run.
+You can only have **one** mirrord CI session per service during a CI run. You must do one
+`mirrord ci start`, run your tests, then run `mirrord ci stop` when they're done, before you're
+able to run `mirrord ci start` again in the same CI run.
 {% endhint %}
 
 ## Prerequisites
