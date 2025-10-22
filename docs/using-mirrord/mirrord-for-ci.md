@@ -48,7 +48,7 @@ CI runner that points to the target's cluster, and has the appropriate
 It's recommended that you create a Kubernetes
 [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
 
-## For mirrord Operator users
+## For mirrord for Teams users
 
 To use mirrord ci with mirrord Operator, you'll need to generate a CI API key and store it
 as a **secret** environment variable.
