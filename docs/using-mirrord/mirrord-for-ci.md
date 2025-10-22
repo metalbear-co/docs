@@ -29,15 +29,22 @@ we (currently) don't support executing multiple `mirrord ci start` commands. You
 `mirrord ci start`, run your tests, then run `mirrord ci stop`, before you're able to run
 `mirrord ci start` again in the same CI run.
 
-The CI runner must be able to access the kubernetes cluster where the service you want to target is deployed,
-otherwise mirrord won't work. It's recommended that you create a kubernetes
-[service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
-
 ## Prerequisites
 
 1. Minimum mirrord CLI version `3.166.0`.
-2. The CI runner must be able to access the kubernetes cluster (kubernetes api access to
+2. The CI runner must be able to access the Kubernetes cluster (Kubernetes API access to
    the staging cluster, for example).
+
+## Kubernetes requirements
+
+The CI runner must be able to access the Kubernetes cluster where the service you want to target is deployed,
+otherwise mirrord won't work. You'll need a
+[kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) in the
+CI runner that points to the target's cluster, and has the appropriate
+[authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/).
+
+It's recommended that you create a Kubernetes
+[service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
 
 ## For mirrord Operator users
 
