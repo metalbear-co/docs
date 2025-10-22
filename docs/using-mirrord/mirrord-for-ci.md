@@ -84,8 +84,8 @@ with mirrord).
 
 ## Stopping a mirrord CI session
 
-As previously mentioned, to start another mirrord CI session in the same CI run, you must first stop the one
-that's running. You can do this with the `mirrord ci stop` command.
+After the tests are done, you should stop the mirrord CI session using `mirrord ci stop`. It's recommended that you do it,
+even if you won't be running mirrord for another service in this CI runner.
 
 - Stopping a mirrord CI session:
 
@@ -93,5 +93,4 @@ that's running. You can do this with the `mirrord ci stop` command.
 mirrord ci stop
 ```
 
-After you're done with the tests, just run this command (no args needed), and mirrord will stop running
-itself, and the local app.
+mirrord will stop running itself, and the local app.
