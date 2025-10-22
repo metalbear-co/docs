@@ -51,7 +51,7 @@ It's recommended that you create a Kubernetes
 ## For mirrord for Teams users
 
 To use mirrord ci with mirrord Operator, you'll need to generate a CI API key and store it
-as a **secret** environment variable.
+as a **secret** environment variable. This will prevent your usage of mirrord in CI from expending your seats, which are counted using a machine-based ID.
 
 You can get this key by running the command:
 
