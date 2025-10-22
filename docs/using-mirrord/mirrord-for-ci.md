@@ -24,7 +24,7 @@ While running regular `mirrord exec` can be made to work for this purpose, it re
 finagling to get right, such as wrapping `mirrord exec` in some other command that would start
 it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
-background processes, allowing you to run tests and whatever else you want while mirrord is running.
+background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
 Note that you can only have **one** mirrord CI session per service during a CI run, this means that
 we (currently) don't support executing multiple `mirrord ci start` commands. You must do one
