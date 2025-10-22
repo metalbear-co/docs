@@ -76,7 +76,7 @@ mirrord ci start --target deployment/ip-visit-counter npm run
 
 The mirrord for CI session should now be running in the background, and you can run the tests.
 These tests should target the deployed service (the app running in your staging cluster, for example),
-and mirrord will intercept the traffic and redirect it to the local app (the one running in the background
+and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
 with mirrord).
 
 ## Stopping a mirrord CI session
