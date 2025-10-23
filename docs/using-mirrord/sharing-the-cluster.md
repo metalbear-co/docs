@@ -35,7 +35,7 @@ These conflicts and more are resolved by the mirrord Operator, available in the 
 
 #### 1. Concurrently debug the same HTTP server with HTTP filters
 
-mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](steal.md#stealing-only-a-subset-of-the-remote-targets-traffic).
+mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](traffic-filtering.md#filtering-a-subset-of-traffic-with-mirror-or-steal-mode).
 
 > _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise versions.
 
