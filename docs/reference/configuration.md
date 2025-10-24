@@ -83,6 +83,7 @@ Don't use this example as a starting point, it's just here to show you all the a
     "network_interface": "eth0",
     "flush_connections": true,
     "metrics": "0.0.0.0:9000",
+    "inject_headers": true
   },
   "feature": {
     "env": {
@@ -173,7 +174,8 @@ We provide sane defaults for this option, so you don't have to set up anything h
     "startup_timeout": 360,
     "network_interface": "eth0",
     "flush_connections": false,
-    "exclude_from_mesh": false
+    "exclude_from_mesh": false,
+    "inject_headers": true
   }
 }
 ```
