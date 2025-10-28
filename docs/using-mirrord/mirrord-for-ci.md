@@ -82,6 +82,37 @@ These tests should target the deployed service (the app running in your staging 
 and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
 with mirrord).
 
+### Application logs
+
+By default, `stdout` and `stderr` outputs from your application are saved to a file in
+the OS' temporary directory (e.g. `/tmp/mirrord`). A directory is created based on the name
+of the binary you're running with mirrord, for example:
+
+```
+mirrord ci start --target deployment/ip-visit-counter npm run
+
+# /tmp/mirrord/npm-{unique run identifier}
+```
+
+You can change this directory with the config `ci.output_dir`:
+
+```json
+{
+  "ci": {
+    "output_dir": "/var/opt/mirrord"
+  }
+}
+```
+
+When running `mirrord ci start --config-file mirrord.json`, `stdout` and `stderr` outputs
+will be saved in the specified directory, e.g.:
+
+```
+mirrord ci start --config-file mirrord.json npm run
+
+# /var/opt/mirrord/npm-{unique run identifier}
+```
+
 ## Stopping a mirrord CI session
 
 After the tests are done, you should stop the mirrord CI session using `mirrord ci stop`. It's recommended that you do it,
