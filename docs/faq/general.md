@@ -84,4 +84,4 @@ Both in mirrord OSS and mirrord for Teams, if you don't name any specific contai
 
 ## If the target deployment restarts or is recreated in Kubernetes, will mirrord’s traffic stealing stop working?
 
-No, everything will continue working as expected. When the target deployment is redeployed or scaled, mirrord reconnects to the new pods, so you don’t need to restart anything.
+No, everything will continue working as expected if you’re using the [mirrord Operator](../overview/teams.md#operator). When the target deployment is redeployed or scaled, mirrord reconnects to the new pods, so you don’t need to restart anything. If you’re not using the Operator in your cluster, you’ll need to restart your local app with mirrord to reconnect to the new pods.
