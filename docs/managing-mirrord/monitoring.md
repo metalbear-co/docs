@@ -30,12 +30,12 @@ The following logs are written with log level `INFO`, and can be used for dashbo
 
 Log messages:
 
-* Target Copied
-* Port Stolen
-* Port Mirrored
-* Port Released
-* Session Started
-* Session Ended
+* Copy Target
+* Port Steal
+* Port Mirror
+* Port Release
+* Session Start
+* Session End
 
 Fields:
 
@@ -46,11 +46,11 @@ Fields:
 | client\_name      | `whoami::realname` of client                                                                                                                                                 | `All`                                                                          |
 | client\_user      | Kubernetes user of client (via k8s RBAC)                                                                                                                                     | `All`                                                                          |
 | client\_id        | unique client id produced from client's certificate                                                                                                                          | `All`                                                                          |
-| session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirrored` `Port Released` `Session Started` `Session Ended` |
-| session\_duration | the session's duration in seconds                                                                                                                                            | `Session Ended`                                                                |
-| port              | port number                                                                                                                                                                  | `Port Stolen` `Port Mirrored` `Port Released`                                  |
-| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Stolen`                                                                  |
-| scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Target Copied`                                                                |
+| session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirror` `Port Release` `Session Start` `Session End` |
+| session\_duration | the session's duration in seconds                                                                                                                                            | `Session End`                                                                |
+| port              | port number                                                                                                                                                                  | `Port Steal` `Port Mirror` `Port Release`                                  |
+| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Steal`                                                                  |
+| scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
 ## Prometheus
 
