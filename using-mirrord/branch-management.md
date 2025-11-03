@@ -16,7 +16,7 @@ tags: ["team", "enterprise"]
 mirrord provides CLI commands to inspect and manage database branches.
 1. View Branch Status using: 
   ```
-  `mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]`
+  mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
   ```
 
     Shows the status of running database branches.
@@ -26,7 +26,7 @@ mirrord provides CLI commands to inspect and manage database branches.
 
 2. Destroy Branches using: 
 ```
-`mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy [--all] [name...]`
+mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy [--all] [name...]
 ```
 
     Destroys one or more running database branches.
