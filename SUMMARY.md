@@ -23,7 +23,7 @@
   * [Sharing the Cluster](using-mirrord/sharing-the-cluster.md)
   * [Traffic Inspection](using-mirrord/traffic-inspection.md)
   * [DB Branching](using-mirrord/db-branching.md)
-      * [Branch Management](using-mirrord/db-branching.md)
+      * [Branch Management](using-mirrord/branch-management.md)
       * [Advanced Configuration](using-mirrord/db-branching.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
