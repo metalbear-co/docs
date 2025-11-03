@@ -18,7 +18,7 @@ mirrord provides CLI commands to inspect and manage database branches.
 ```bash
   mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
 ```
-Shows the status of running database branches.
+- Shows the status of running database branches.
 - If specific branch names are provided, mirrord shows their statuses.
 - If no names are given, all active branches in the selected namespace (or all namespaces, if --all-namespaces is used) are listed.
 - If no branches are active, mirrord returns:`No active DB branch found`
