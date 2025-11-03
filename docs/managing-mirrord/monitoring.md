@@ -30,12 +30,12 @@ The following logs are written with log level `INFO`, and can be used for dashbo
 
 Log messages:
 
-* Target Copied
-* Port Stolen
-* Port Mirrored
-* Port Released
-* Session Started
-* Session Ended
+* Copy Target
+* Port Steal
+* Port Mirror
+* Port Release
+* Session Start
+* Session End
 
 Fields:
 
@@ -46,11 +46,11 @@ Fields:
 | client\_name      | `whoami::realname` of client                                                                                                                                                 | `All`                                                                          |
 | client\_user      | Kubernetes user of client (via k8s RBAC)                                                                                                                                     | `All`                                                                          |
 | client\_id        | unique client id produced from client's certificate                                                                                                                          | `All`                                                                          |
-| session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirrored` `Port Released` `Session Started` `Session Ended` |
-| session\_duration | the session's duration in seconds                                                                                                                                            | `Session Ended`                                                                |
-| port              | port number                                                                                                                                                                  | `Port Stolen` `Port Mirrored` `Port Released`                                  |
-| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Stolen`                                                                  |
-| scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Target Copied`                                                                |
+| session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirror` `Port Release` `Session Start` `Session End` |
+| session\_duration | the session's duration in seconds                                                                                                                                            | `Session End`                                                                |
+| port              | port number                                                                                                                                                                  | `Port Steal` `Port Mirror` `Port Release`                                  |
+| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Steal`                                                                  |
+| scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
 ## Prometheus
 
@@ -75,11 +75,17 @@ operator:
 
 ### Exposed metrics
 
-| metric                           | description                                          | labels                                                  |
-| -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- |
-| mirrord\_license\_valid\_seconds | Seconds left for current license validity            |                                                         |
-| mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` |
-| mirrord\_sessions\_duration      | Histogram for session durations after they are ended | `client_hostname` `client_name` `client_user` `user_id` |
+| metric                           | description                                          | labels                                                  | minimum version                  |
+| -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------- | 
+| mirrord\_license\_valid\_seconds | Seconds until license expiration            |                                                         | operator 3.101.0 (helm chart 1.15.0)|                            
+| mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) |
+| mirrord\_sessions\_duration      | Histogram for finished sessions duration | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) | 
+| mirrord\_operator\_ping\_latency | Histogram for round trip latency between the mirrord users and the Operator, helps identify infrastructure issues that may affect mirrord performance | `client_hostname` `client_name` `client_user` `user_id`                        | operator 3.122.0 (helm chart 1.35.0) |
+| mirrord\_stolen\_connections\_count     | Count of stolen TCP connections | `port` `namespace` `target` `user_id` | operator 3.122.0 (helm chart 1.35.0) |
+| mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `port` `namespace` `target` `user_id`| operator 3.122.0 (helm chart 1.35.0) |
+| mirrord\_read\_sqs\_messages\_count | Count of SQS messages read from `original_queue`  | `original_queue`                                        | operator 3.125.0 (helm chart 1.38.0) |
+| mirrord\_sqs\_messages\_forwarded\_to\_user\_count | Count of SQS messages read from `original_queue`, forwarded to the local service of `k8s_user`, `local_username`.  | `k8s_user`, `local_username`, `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
+| mirrord\_unmatched\_sqs\_messages\_count | Count of SQS messages read from `original_queue` that weren't matched by any user's filter and were sent to the main output queue for the deployed application. | `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
 
 ### DataDog Dashboard
 
