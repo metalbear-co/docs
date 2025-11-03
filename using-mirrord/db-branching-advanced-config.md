@@ -41,20 +41,20 @@ tags: ["team", "enterprise"]
 
 ## Available Modes
 
-### `"mode": "empty"`
+1. ### `"mode": "empty"`
 Creates an empty database with no schema or data, this is the default value when `copy` attribute is not specified.
 Best for workflows where your application initializes the schema or runs migrations as part of startup.
 
-### `"mode": "schema"`
+2. ### `"mode": "schema"`
 Copies only the table structures (schemas) from the source database, without any data.
 Useful for testing schema changes or local development where structure is needed but data is not.
 
-### `"mode": "all"`
+3. ### `"mode": "all"`
 Copies everything from the source database - both schema and data.
 This is helpful when you want a full clone of your environment data for debugging or reproducing production-like scenarios.
 Note that this can increase branch creation time and storage usage, especially for large databases.
 
-### `Filter Data Clone`
+3. ### `Filter Data Clone`
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
 
 ```Json
