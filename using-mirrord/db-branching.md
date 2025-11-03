@@ -13,7 +13,7 @@ tags: ["team", "enterprise"]
 
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to MySQL databases and does not support schema or data replication.
+Currently, the feature is limited to MySQL databases.
 
 
 **When is this useful?**
@@ -61,7 +61,7 @@ Developers define branches in their `mirrord.json`:
   ]
 }
 ```
-Key Fields
+### Key Fields
 1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user’s branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
 2. `type`: Currently only "mysql" is supported.
 3. `version`: Database engine version.
@@ -94,7 +94,10 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 ## Managing DB Branches
 
 mirrord provides CLI commands to inspect and manage database branches.
-1. View Branch Status using: `mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]`
+1. View Branch Status using: 
+  ```
+  `mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]`
+  ```
     Shows the status of running database branches.
     If specific branch names are provided, mirrord shows their statuses.
     If no names are given, all active branches in the selected namespace (or all namespaces, if --all-namespaces is used) are listed.
@@ -116,14 +119,15 @@ The `copy` field in the `db_branches` configuration allows developers to control
 ### Available Modes
 
 `"mode": "empty"`
-Creates an empty database with no schema or data, this is the default valuw when `copy.mode` is not specified 
+Creates an empty database with no schema or data, this is the default value when `copy` attribute is not specified.
 Best for workflows where your application initializes the schema or runs migrations as part of startup.
 
 `"mode": "schema"`
 Copies only the table structures (schemas) from the source database, without any data.
 Useful for testing schema changes or local development where structure is needed but data is not.
-
+```
 `"mode": "all"`
+```
 Copies everything from the source database - both schema and data.
 This is helpful when you want a full clone of your environment data for debugging or reproducing production-like scenarios.
 Note that this can increase branch creation time and storage usage, especially for large databases.
@@ -148,9 +152,12 @@ Developers can customize what gets copied per table. This allows copying only sp
 }
 ```
 
-# In this example:
+### In this example:
 The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.
 The `orders` table copy includes only rows created after a certain timestamp.
 
 Filtering can also be combined with `"mode": "empty"`, in which case only the specified tables (and their filtered data) are copied, while all others are excluded.
+
+# Future enhancements 
+Won't take long we are actively working on having these feature available for Postgress 
