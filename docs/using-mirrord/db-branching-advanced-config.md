@@ -66,7 +66,7 @@ This is helpful when you want a full clone of your environment data for debuggin
 It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 ```
-3. ### Filtered Data Clone
+4. ### Filtered Data Clone
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
 
 ```Json
@@ -91,5 +91,6 @@ The `users` table copy includes only rows for `alice` and `bob`.
 The `orders` table copy includes only rows created after a certain timestamp.
 
 Filtering can also be combined with `"mode": "empty"`, in which case only the specified tables (and their filtered data) are copied, while all others are excluded.
+
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the tables configuration.
