@@ -1,6 +1,6 @@
 ---
 title: "DB Branchimg Management"
-description: "How to manage mirrord isolated DB branch for visiblity and control"
+description: "How to manage isolated mirrord DB branches for visibility and control"
 date: 2025-08-31T00:00:00+03:00
 lastmod: 2025-08-31T00:00:00+03:00
 draft: false
@@ -25,12 +25,12 @@ mirrord provides CLI commands to inspect and manage database branches.
 
 2. ### Destroy Branches using: 
 ```bash
-mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy [--all] [name...]
+mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy (--all | name...)
 ```
 - Destroys one or more running database branches.
 - Use `--all` to destroy every active branch.
 - Use one or more branch names to target specific branches.
-- mirrord uses the current namespace by default, or the namespace specified with `--namespace`.
+- mirrord uses the default namespace, or the namespace specified with `--namespace`.
 - To destroy branches across all namespaces, use `--all-namespaces`.
 - If no active branches are found, mirrord returns:
 `Error: No active DB branch found`
