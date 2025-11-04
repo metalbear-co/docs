@@ -1,6 +1,6 @@
 ---
 title: "DB Branching"
-description: "How to use mirrord DB branching advanced configuration"
+description: "Learn how to use mirrord’s advanced configuration options for database branching"
 date: 2025-08-31T00:00:00+03:00
 lastmod: 2025-08-31T00:00:00+03:00
 draft: false
@@ -12,7 +12,7 @@ tags: ["team", "enterprise"]
 ---
 
 
-The following options provide control over how mirrord creates and manages database branches.
+These settings give additional flexibility in how mirrord handles database branches.
 
 ```json
 {
@@ -48,8 +48,6 @@ Default value is 60 seconds.
 ## Copy Modes 
 The `copy` field controls what data gets cloned when creating a database branch.
 
-### Available Modes
-
 1. ### Empty Databae
 `"mode": "empty"` Creates an empty database with no schema or data, this is the default value when the `copy` attribute is not specified.
 Best for workflows where your application initializes the schema or runs migrations as part of startup.
@@ -65,7 +63,7 @@ This is helpful when you want a full clone of your environment data for debuggin
 Use this option with caution.
 It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
-{% endhint %}```
+{% endhint %}
 
 4. ### Filtered Data Clone
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
