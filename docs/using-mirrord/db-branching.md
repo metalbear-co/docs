@@ -15,7 +15,7 @@ This feature is only relevant for users on the Team and Enterprise pricing plans
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to MySQL databases and does not support schema or data replication.
+Currently, the feature is limited to MySQL databases.
 
 
 **When is this useful?**
@@ -45,22 +45,26 @@ Developers define branches in their `mirrord.json`:
 {
   "db_branches": [
     {
-      "id": "users-mysql-db", // Optional
+      "id": "users-mysql-db",            // Optional
       "type": "mysql",
       "version": "8.0",
-      "name": "users-database-name",   // Optional
-      "ttl_secs": 60,                 // Optional
+      "name": "users-database-name",      // Optional
+      "ttl_secs": 60,                     // Optional
+      "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
       "connection": {
-        "url": { 
-            "type": "env", 
-            "variable": "DB_CONNECTION_URL"  // Required
+        "url": {
+          "type": "env",
+          "variable": "DB_CONNECTION_URL" // Required
         }
+      },
+      "copy": {
+        "mode": "empty"                   // Defaults to "empty" if not specified
       }
     }
   ]
 }
 ```
-Key Fields
+### Key Fields
 1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user’s branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
 2. `type`: Currently only "mysql" is supported.
 3. `version`: Database engine version.
@@ -68,6 +72,9 @@ Key Fields
 If name is ommited, the override URL just points to the MySQL server; the application must select the DB manually in that case.
 5. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
 6. `connection.url`: The environment variable that contains your DB connection string.
+7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](//using-mirrord/db-branching-advanced-config)
+8. `creation_timeout_secs`: Override for branch creation timout. The default is 60 seconds.
+
 
 ## Running With DB Branches
 
@@ -89,3 +96,6 @@ If name is ommited, the override URL just points to the MySQL server; the applic
     This setup reduces the risk of accidental writes reaching the source database by directing activity toward an isolated branch.
 
 4. The branch will be destroyed automatically when the TTL is reached and the branch is not in use (reconnecting to the same branch again extends its lifetime).
+
+## What's next?
+Next, check out the [Advanced Configuration](//using-mirrord/db-branching-advanced-config) and [DB Branch Management](//using-mirrord/db-branch-management.md) sections to learn more about customization and command options.
