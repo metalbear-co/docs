@@ -57,7 +57,7 @@ Sometimes, all you need to avoid clashes is just to see what other users are doi
 
 #### 6. Guardrails for Destructive Actions in mirrord
 
-To prevent destructive operations (like DB resets during integration tests) from running against remote environments, mirrord supports `MIRRORD_DONT_LOAD` environment variable. When set, mirrord will immediately abort and refuse to start, regardless of IDE settings. This makes it easy to mark specific scripts or run configurations (e.g. integration tests) as “safe” from mirrord.
+To prevent destructive operations (like DB resets during integration tests) from running against remote environments, mirrord supports `MIRRORD_DONT_LOAD` environment variable. When set to `true`, mirrord will immediately abort and refuse to start, regardless of IDE settings. This makes it easy to mark specific scripts or run configurations (e.g. integration tests) as “safe” from mirrord.
 
 ### Conclusion
 
