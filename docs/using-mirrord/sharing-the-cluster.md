@@ -55,6 +55,10 @@ Sometimes a database is just too sensitive to write to remotely. Or maybe you wa
 
 Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](sessions.md).
 
+#### 6. Guardrails for Destructive Actions in mirrord
+
+To prevent destructive operations (like DB resets during integration tests) from running against remote environments, mirrord supports `MIRRORD_DONT_LOAD` environment variable. When set to `true`, mirrord will immediately abort and refuse to start, regardless of IDE settings. This makes it easy to mark specific scripts or run configurations (e.g. integration tests) as “safe” from mirrord.
+
 ### Conclusion
 
 Even though using mirrord with a shared cluster is already safer than actually deploying your code to it, we're constantly working to make it even safer and more seamless for multiple users to use mirrord concurrently on the same environment. If you have any questions or suggestions, please don't hesitate to reach out to us [here](mailto:hello@metalbear.com) or on our [Discord](https://discord.gg/metalbear). Happy mirroring!
