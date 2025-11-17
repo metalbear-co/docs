@@ -141,3 +141,14 @@ _NB: If you are using a certificate manager, make sure you set up reminders for 
 #### Set up network policies for communication
 
 Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#agent.ephemeral)).
+
+#### Data sent from mirrord Operator to MetalBear cloud
+
+mirrord Operator communciates with MetalBear servers over an encrypted TLS connection to obtain licenses for use and share metrics. The fields shared are:
+1. User ID (randomly generated hash, stored on user machine)
+2. Duration of session
+3. Organization name
+4. mirrord License Hash (of organization)
+5. instance_id (generated on runtime per Operator pod)
+6. subscription_id (generated uuid)
+7. organization_id (generated uuid)
