@@ -144,7 +144,7 @@ Access to the operator can be further restricted by setting up [network policies
 
 #### Data sent from mirrord Operator to MetalBear cloud
 
-mirrord Operator communciates with MetalBear servers over an encrypted TLS connection to obtain licenses for use and share metrics. The fields shared are:
+mirrord Operator communicates with MetalBear servers over an encrypted TLS connection to obtain licenses for use and share metrics. The fields shared are:
 1. User ID (randomly generated hash, stored on user machine)
 2. Duration of session
 3. Organization name
