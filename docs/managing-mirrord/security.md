@@ -152,3 +152,5 @@ mirrord Operator communciates with MetalBear servers over an encrypted TLS conne
 5. instance_id (generated on runtime per Operator pod)
 6. subscription_id (generated uuid)
 7. organization_id (generated uuid)
+
+In enterprise offering, this communication can be disabled.
