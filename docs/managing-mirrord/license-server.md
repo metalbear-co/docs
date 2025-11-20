@@ -172,7 +172,7 @@ The license server has an endpoint that can be used to get a spreadsheet report 
   * `"xlsx"`: produces an Excel spreadsheet with two tabs: general stats and per-user stats (_As curl will warn you, this produces binary data, and should be directed into a file rather that printed out raw_).
 * `from` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the beginning of the period for relevant stats.
 * `to` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the end of the period for relevant stats.
-* `primary_key` (optional, v3.130.0+): The primary key used to aggregate the data in the report. Can be one of: `machine_id` (default), `username` (the kubernetes username) , `client_username` (the user machine's username), `client_hostname` (the user machine's hostname)
+* `primary_key` (optional, operator v3.130.0+): The primary key used to aggregate the data in the report. Can be one of: `machine_id` (default), `username` (the kubernetes username) , `client_username` (the user machine's username), `client_hostname` (the user machine's hostname)
 
 {% hint style="info" %}
 If the query parameters `to` and `from` are not specified, the data will be for all time.
