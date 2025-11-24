@@ -91,13 +91,13 @@ operator:
 
 We offer a DataDog dashboard you can import to track statistics.
 
-Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/Mirrord_datadog_Operator_Dashboard.json)
+Download it [here](https://github.com/metalbear-co/docs/tree/main/docs/managing-mirrord/assets/Mirrord_datadog_Operator_Dashboard.json)
 
 ## Grafana Dashboard
 
 Alternatively there is a Grafana dashboard you can import to track statistics.
 
-Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/Mirrord_grafana_Operator_Dashboard.json)
+Download it [here](https://github.com/metalbear-co/docs/tree/main/docs/managing-mirrord/assets/Mirrord_grafana_Operator_Dashboard.json)
 
 ## fluentd
 
@@ -121,4 +121,4 @@ This will expand all the extra fields stored in "log" field.
 
 Assuming you are using `logstash_format true` and the connected mapping will store the extra fields in a `keyword` type, we have a ready made dashboard you can simply import.
 
-Download it [here](https://github.com/metalbear-co/docs/tree/main/managing-mirrord/assets/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
+Download it [here](https://github.com/metalbear-co/docs/tree/main/docs/managing-mirrord/assets/operator-fluentd-kibana.ndjson) (use Saved Objects to import).
