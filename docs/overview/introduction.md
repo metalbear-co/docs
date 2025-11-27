@@ -16,6 +16,8 @@ tags: ["open source", "team", "enterprise"]
 
 mirrord is a tool that lets developers run local processes in the context of their cloud environment. It makes it incredibly easy to test your code on a cloud environment (e.g. staging) without actually going through the hassle of Dockerization, CI, or deployment, and without disrupting the environment by deploying untested code. Instead of saving it for the last step, now you can shift-left on cloud testing and test your code in the cloud from the very beginning of your development process.
 
+We call this new approach to cloud development “remocal” (remote + local), since it’s not completely local or completely remote, but a hybrid of the two. It’s local in the sense that you’re running your code on your local machine, but remote in the sense that you’re running it in the context of your cloud environment.
+
 Want to see mirrord in action? Check out our <a target="_blank" href="https://www.youtube.com/watch?v=ZR7A7cqQcFM)">demo</a>.
 
 ## Why?
@@ -45,7 +47,7 @@ When you start your local process with mirrord, it creates a pod in your cloud e
   - Listen to incoming traffic from the agent, instead of local sockets.
   - Intercept outgoing traffic and send it out from the remote pod, instead of locally.
   - Read and write files to the remote file system.
-- Merge the process' environment variables with those of the remote pod.
+  - Merge the process' environment variables with those of the remote pod.
 
 The remote part of this logic is handled by the agent, which runs in the network namespace of the remote pod, and can access its file system and environment variables.
 
