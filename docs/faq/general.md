@@ -85,3 +85,11 @@ Both in mirrord OSS and mirrord for Teams, if you don't name any specific contai
 ## If the target deployment restarts or is recreated in Kubernetes, will mirrord’s traffic stealing stop working?
 
 No, everything will continue working as expected if you’re using the [mirrord Operator](../overview/teams.md#operator). When the target deployment is redeployed or scaled, mirrord reconnects to the new pods, so you don’t need to restart anything. If you’re not using the Operator in your cluster, you’ll need to restart your local app with mirrord to reconnect to the new pods.
+
+### How mirrord Handles Secrets and In-Memory Application State
+
+mirrord mirrors environmental inputs of your Kubernetes workload, such as environment variables, mounted files, and network access, but it does not copy or replicate the in-memory state of a running pod. This means any data your application loads and caches during runtime (including secrets fetched from external providers like AWS) is not transferred to your local process.
+
+When you run your service locally with mirrord, your application starts from the same inputs as the in-cluster version. If your application’s startup logic fetches secrets from AWS and then caches them in memory, the local version will run that same logic and fetch the secrets again. mirrord’s job is to provide your local process with the same environment and the same access paths, not to copy running state from the remote process.
+
+If you prefer to avoid calling external secret providers during local development, you will need to mock or override that behavior within your application. mirrord does not intercept or alter application logic related to secret retrieval, and it does not supply cached in-memory data from remote pods.
