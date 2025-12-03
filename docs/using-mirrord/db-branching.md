@@ -72,7 +72,7 @@ Developers define branches in their `mirrord.json`:
 If name is ommited, the override URL just points to the MySQL server; the application must select the DB manually in that case.
 5. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
 6. `connection.url`: The environment variable that contains your DB connection string.
-7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](//using-mirrord/db-branching-advanced-config)
+7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 8. `creation_timeout_secs`: Override for branch creation timout. The default is 60 seconds.
 
 
@@ -98,4 +98,4 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 4. The branch will be destroyed automatically when the TTL is reached and the branch is not in use (reconnecting to the same branch again extends its lifetime).
 
 ## What's next?
-Next, check out the [Advanced Configuration](//using-mirrord/db-branching-advanced-config) and [DB Branch Management](//using-mirrord/db-branch-management.md) sections to learn more about customization and command options.
+Next, check out the [Advanced Configuration](./db-branching-advanced-config.md) and [DB Branch Management](./db-branch-management.md) sections to learn more about customization and command options.
