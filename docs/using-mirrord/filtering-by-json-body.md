@@ -51,29 +51,31 @@ Each JSON body filter entry looks like this:
 }
 ```
 `type`: must be "json" for JSON body filtering.
+
 `query`: JSONPath [(RFC 9535)](https://www.rfc-editor.org/rfc/rfc9535.html#name-jsonpath-examples) used to extract values from the parsed JSON.
+
 `matches`: regex applied to each extracted value (after converting to string).
 
 ### Overview
 When enabled, mirrord:
 1. Check that the request is JSON
-mirrord inspects the Content-Type header. if it contains  `(application/json)`, mirrord continues. Otherwise, the filter does not match.
+    mirrord inspects the Content-Type header. if it contains  `(application/json)`, mirrord continues. Otherwise, the filter does not match.
 2. Read and parse the request body
-mirrord reads the full request body into memory and attempts to parse it as JSON.
-- mirrord waits up to the configured timeout (default ~10s).
-- If the body cannot be fully read or is not valid JSON, the filter does not match.
-- This ensures mirrord only applies JSONPath to a complete and valid JSON document
+    mirrord reads the full request body into memory and attempts to parse it as JSON.
+    - mirrord waits up to the configured timeout (default ~10s).
+    - If the body cannot be fully read or is not valid JSON, the filter does not match.
+    - This ensures mirrord only applies JSONPath to a complete and valid JSON document
 3. Extract values with the JSONPath query
-mirrord applies the user’s JSONPath expression in `query` field to the parsed JSON.
-- The query may return zero, one, or multiple values.
-- All extracted values are converted to strings before matching.
-- If the query returns zero values, the filter does not match.
+    mirrord applies the user’s JSONPath expression in `query` field to the parsed JSON.
+    - The query may return zero, one, or multiple values.
+    - All extracted values are converted to strings before matching.
+    - If the query returns zero values, the filter does not match.
 4. Apply the regex from `matches` field
-mirrord tests each extracted value against the regex.
-*The filter matches if at least one value matches.*
+    mirrord tests each extracted value against the regex.
+    *The filter matches if at least one value matches.*
 5. Final decision
-If the JSONPath extraction and regex match conditions succeed, the filter matches and mirrord steals the request.
-If any step fails, the filter simply does not match.
+    If the JSONPath extraction and regex match conditions succeed, the filter matches and mirrord steals the request.
+    If any step fails, the filter simply does not match.
 
 
 ### Configuration Example
