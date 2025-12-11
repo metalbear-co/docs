@@ -45,13 +45,27 @@ This filter is available in the following mirrord.json configuration:
 
 `matches`: regex applied to each extracted value (after converting to string).
 
+*Type Handling and the typeof Extension*
+
+mirrord stringifies all JSONPath query results before applying the regex in matches.
+To filter values by JSON type, mirrord provides a custom typeof function extension to RFC 9535
+
+typeof returns one of:
+```
+"null" | "bool" | "number" | "string" | "array" | "object"
+```
+
+This allows writing queries like:
+```json
+"query": "$.items[?(typeof(@.price) == 'number')].price"
+```
+
+If the queried nodes do not share a single type, typeof returns nothing, and the filter does not match.
+
 ### Overview
 When enabled, mirrord:
 1. Read and parse the request body
     mirrord reads the full request body into memory and attempts to parse it as JSON.
-    - mirrord waits up to the configured timeout (default ~1s).
-    - If the body cannot be fully read or is not valid JSON, the filter does not match.
-    - This ensures mirrord only applies JSONPath to a complete and valid JSON document
 2. Extract values with the JSONPath query
     mirrord applies the user’s JSONPath expression in `query` field to the parsed JSON.
     - The query may return zero, one, or multiple values.
@@ -63,6 +77,22 @@ When enabled, mirrord:
     If the JSONPath extraction and regex match conditions succeed, the filter matches and mirrord may steal the request based on the overall filtering rules.
     If any step fails, the filter simply does not match.
 
+#### Processing Limits
+mirrord applies two safeguards when reading request bodies for JSON filtering:
+
+1. *Maximum body size*
+  mirrord reads up to a configurable limit (default 65535 bytes, or 64 kb).
+  The value is configured in bytes.
+  Configure with `agent.max_body_buffer_size`.
+  If the body exceeds this size, it is not fully read and the filter does not match.
+2. *Read timeout*
+  mirrord waits up to a configurable timeout (default 1000 ms, or 1 second) to read the full body.
+  The value is configured in milliseconds.
+  Configure with `agent.max_body_buffer_timeout`.
+  If the body is not fully received in time, the filter does not match.
+
+Both settings follow the same configuration mechanism as other agent parameters and can be set through the operator or in the [mirrord.json configuration](https://metalbear.com/mirrord/docs/config#:~:text=%22-,agent,-%22%3A%20%7B) file.
+These limits ensure predictable performance and prevent excessive memory usage.
 
 ### Configuration Example
 Configuartion below applies to only steal requests with path `/orders` and have a JSON body with at least one numeric `price` value ending in "99".
@@ -140,6 +170,3 @@ Content-Type: application/json
   ]
 }
 ```
-
-
-
