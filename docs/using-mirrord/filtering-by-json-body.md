@@ -45,12 +45,13 @@ This filter is available in the following mirrord.json configuration:
 
 `matches`: regex applied to each extracted value (after converting to string).
 
-*Type Handling and the typeof Extension*
 
-mirrord stringifies all JSONPath query results before applying the regex in matches.
-To filter values by JSON type, mirrord provides a custom typeof function extension to RFC 9535
+####Type Handling and the typeof Extension
 
-typeof returns one of:
+mirrord stringifies all JSONPath query results before applying the regex.
+To filter values by JSON type, mirrord provides a custom `typeof` function extension to RFC 9535
+
+`typeof` returns one of:
 ```
 "null" | "bool" | "number" | "string" | "array" | "object"
 ```
@@ -62,30 +63,34 @@ This allows writing queries like:
 
 If the queried nodes do not share a single type, typeof returns nothing, and the filter does not match.
 
+
 ### Overview
 When enabled, mirrord:
-1. Read and parse the request body
+1. **Read and parse the request body**
+
     mirrord reads the full request body into memory and attempts to parse it as JSON.
-2. Extract values with the JSONPath query
+2. **Extract values with the JSONPath query**
+
     mirrord applies the user’s JSONPath expression in `query` field to the parsed JSON.
     - The query may return zero, one, or multiple values.
     - All extracted values are converted to strings before matching.
-3. Apply the regex from `matches` field
+3. **Apply the regex from `matches` field**
     mirrord tests each extracted value against the regex.
     *The filter matches if at least one value matches.*
-4. Final decision
+4. **Final decision**
+
     If the JSONPath extraction and regex match conditions succeed, the filter matches and mirrord may steal the request based on the overall filtering rules.
     If any step fails, the filter simply does not match.
 
 #### Processing Limits
 mirrord applies two safeguards when reading request bodies for JSON filtering:
 
-1. *Maximum body size*
+1. **Maximum body size**
   mirrord reads up to a configurable limit (default 65535 bytes, or 64 kb).
   The value is configured in bytes.
   Configure with `agent.max_body_buffer_size`.
   If the body exceeds this size, it is not fully read and the filter does not match.
-2. *Read timeout*
+2. **Read timeout**
   mirrord waits up to a configurable timeout (default 1000 ms, or 1 second) to read the full body.
   The value is configured in milliseconds.
   Configure with `agent.max_body_buffer_timeout`.
@@ -126,7 +131,7 @@ Configuartion below applies to only steal requests with path `/orders` and have 
 
 ### Examples and Results
 
-#### Request A matches and stolen
+#### Request A matches and stolen:
 ```bash
 POST /orders
 Content-Type: application/json
@@ -141,7 +146,8 @@ Content-Type: application/json
 }
 ```
 
-#### Request B does not match and not stolen
+
+#### Request B does not match and not stolen:
 ```bash
 POST /orders
 Content-Type: application/json
@@ -157,7 +163,7 @@ Content-Type: application/json
 ```
 
 
-#### Request C does not match and not stolen
+#### Request C does not match and not stolen:
 ```bash
 POST /payments
 Content-Type: application/json
