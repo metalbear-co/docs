@@ -88,16 +88,16 @@ mirrord applies two safeguards when reading request bodies for JSON filtering:
 
 1. **Maximum body size**
 
-  mirrord reads up to a configurable limit (default 65535 bytes, or 64 kb).
-  The value is configured in bytes.
-  Configure with `agent.max_body_buffer_size`.
-  If the body exceeds this size, it is not fully read and the filter does not match.
+    mirrord reads up to a configurable limit (default 65535 bytes, or 64 kb).
+    The value is configured in bytes.
+    Configure with `agent.max_body_buffer_size`.
+    If the body exceeds this size, it is not fully read and the filter does not match.
 2. **Read timeout**
 
-  mirrord waits up to a configurable timeout (default 1000 ms, or 1 second) to read the full body.
-  The value is configured in milliseconds.
-  Configure with `agent.max_body_buffer_timeout`.
-  If the body is not fully received in time, the filter does not match.
+    mirrord waits up to a configurable timeout (default 1000 ms, or 1 second) to read the full body.
+    The value is configured in milliseconds.
+    Configure with `agent.max_body_buffer_timeout`.
+    If the body is not fully received in time, the filter does not match.
 
 Both settings follow the same configuration mechanism as other agent parameters and can be set through the operator or in the [mirrord.json configuration](https://metalbear.com/mirrord/docs/config#:~:text=%22-,agent,-%22%3A%20%7B) file.
 These limits ensure predictable performance and prevent excessive memory usage.
