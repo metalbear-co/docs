@@ -61,7 +61,7 @@ This allows writing queries like:
 "query": "$.items[?(typeof(@.price) == 'number')].price"
 ```
 
-If the queried nodes do not share a single type, typeof returns nothing, and the filter does not match.
+If the queried nodes do not share a single type, typeof returns 'nothing'.
 
 
 ### Overview
