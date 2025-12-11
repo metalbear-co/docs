@@ -46,10 +46,10 @@ This filter is available in the following mirrord.json configuration:
 `matches`: regex applied to each extracted value (after converting to string).
 
 
-####Type Handling and the typeof Extension
+#### Type Handling and the `typeof` Extension
 
 mirrord stringifies all JSONPath query results before applying the regex.
-To filter values by JSON type, mirrord provides a custom `typeof` function extension to RFC 9535
+To filter values by JSON type, mirrord provides a custom `typeof` function extension to `RFC 9535`
 
 `typeof` returns one of:
 ```
@@ -75,6 +75,7 @@ When enabled, mirrord:
     - The query may return zero, one, or multiple values.
     - All extracted values are converted to strings before matching.
 3. **Apply the regex from `matches` field**
+
     mirrord tests each extracted value against the regex.
     *The filter matches if at least one value matches.*
 4. **Final decision**
@@ -86,11 +87,13 @@ When enabled, mirrord:
 mirrord applies two safeguards when reading request bodies for JSON filtering:
 
 1. **Maximum body size**
+
   mirrord reads up to a configurable limit (default 65535 bytes, or 64 kb).
   The value is configured in bytes.
   Configure with `agent.max_body_buffer_size`.
   If the body exceeds this size, it is not fully read and the filter does not match.
 2. **Read timeout**
+
   mirrord waits up to a configurable timeout (default 1000 ms, or 1 second) to read the full body.
   The value is configured in milliseconds.
   Configure with `agent.max_body_buffer_timeout`.
