@@ -83,7 +83,9 @@ Don't use this example as a starting point, it's just here to show you all the a
     "network_interface": "eth0",
     "flush_connections": true,
     "metrics": "0.0.0.0:9000",
-    "inject_headers": true
+    "inject_headers": true,
+    "max_body_buffer_timeout": 1000,
+    "max_body_buffer_size": 65535
   },
   "feature": {
     "env": {

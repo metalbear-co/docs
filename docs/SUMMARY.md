@@ -7,6 +7,7 @@
   * [Contributing](overview/contributing.md)
 * [Using mirrord](using-mirrord/README.md)
   * [Traffic Filtering](using-mirrord/traffic-filtering.md)
+      * [Filtering by JSON body](using-mirrord/filtering-by-json-body.md)
   * [Outgoing Filter](using-mirrord/outgoing-filter.md)
   * [Targetless](using-mirrord/targetless.md)
   * [Local Container](using-mirrord/local-container.md)
