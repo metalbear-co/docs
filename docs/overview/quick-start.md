@@ -50,12 +50,31 @@ If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll
 
 #### Installation
 
+{% tabs %}
+{% tab title="MacOS/Linux" %}
+
 To install the CLI, run:
 
-| Operating System | Command |
-| - | - |
-| MacOS/Linux | `brew install metalbear-co/mirrord/mirrord`<br>or alternatively<br>`curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh \| bash`|
-| Windows | `choco install --pre mirrord` |
+```bash
+brew install metalbear-co/mirrord/mirrord
+```
+
+or
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
+```
+{% endtab %}
+
+{% tab title="Windows" %}
+To install the CLI, run:
+
+```powershell
+choco install --pre mirrord
+```
+{% endtab %}
+{% endtabs %}
+
 
 #### Usage
 
