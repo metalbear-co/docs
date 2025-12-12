@@ -25,8 +25,13 @@ mirrord runs on your local machine and in your Kubernetes cluster.
 
 #### Local Requirements
 
-- MacOS (Intel, Apple Silicon) and Linux (x86_64) are supported for the local machine. Windows users can use mirrord using WSL (IDE plugins supported as well).
-- kubectl needs to be configured on the local machine.
+For your local machine, you may use any of:
+- MacOS (Intel, Apple Silicon).
+- Linux (x86_64).
+- Windows (x86_64), WSL (x86_64).
+  - IDE plugins support for native mirrord for Windows is currently not supported.
+
+kubectl needs to be configured on the local machine.
 
 #### Remote Requirements
 
@@ -45,6 +50,9 @@ If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll
 
 #### Installation
 
+{% tabs %}
+{% tab title="MacOS/Linux" %}
+
 To install the CLI, run:
 
 ```bash
@@ -56,6 +64,17 @@ or
 ```bash
 curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
 ```
+{% endtab %}
+
+{% tab title="Windows" %}
+To install the CLI, run:
+
+```powershell
+choco install --pre mirrord
+```
+{% endtab %}
+{% endtabs %}
+
 
 #### Usage
 

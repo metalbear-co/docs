@@ -21,8 +21,9 @@ description: mirrord's architecture
 mirrord is composed of the following components:
 
 * `mirrord-agent` - Rust binary that is packaged as a container image. mirrord-agent runs in the cloud and acts as a proxy for the local process.
-* `mirrord-layer` - Rust dynamic library (so/dylib) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
-* `mirrord-cli` - Rust binary that wraps the behavior of mirrord-layer in a user friendly CLI.
+* `mirrord-layer` - Rust dynamic library for Unix systems (so/dylib) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
+* `mirrord-layer-win` - Rust dynamic library for Windows (dll) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
+* `mirrord-cli` - Rust binary that wraps the behavior of the respective mirrord layer in a user friendly CLI.
 * `VS Code extension` - Exposes the same functionality as - mirrord-cli within the VS Code IDE.
 * `IntelliJ plugin` - Exposes the same functionality as - mirrord-cli within the IntelliJ IDEs. 
 
@@ -44,14 +45,17 @@ However, you can disable any subset of those in the configuration using [agent.d
 
 mirrord-layer is a `.dylib` file for OSX systems and `.so` file on Linux distributions. mirrord-layer is loaded through `LD_PRELOAD/DYLD_INSERT_LIBRARIES` environment variable with the local process, which lets mirrord-layer selectively override libc functions. The overridden functions are then responsible for maintaining coordination between the process and incoming/outgoing requests for network traffic/file access. mirrord-layer sends and receives events from the agent using port-forwarding.
 
+## mirrord-layer-win
+mirrord-layer-win is a `.dll` file. It is dynamically loaded into the local process, started in a frozen state, and execution begins after the library has been fully initialized. It selectively overrides functions at the lowest level we can get to in user-mode, often right before your operation is dispatched to the kernel through a syscall. The overriden functions are then responsible for maintaining coordination between the process and incoming/outgoing requests for network traffic/file access.
+
 ## mirrord-cli
 
-mirrord-cli is a user friendly interface over the essential functionality provided by mirrord-layer. When you run mirrord-cli, it runs the process provided as an argument with mirrord-layer loaded into it.
+mirrord-cli is a user friendly interface over the essential functionality provided by the respective mirrord layer. When you run mirrord-cli, it runs the process provided as an argument with the respective mirrord layer loaded into it.
 
 ## VS Code Extension
 
-mirrord’s VS Code extension provides mirrord’s functionality within VS Code’s UI. When you debug a process with mirrord enabled in VS Code, it prompts you for a pod to impersonate, then runs the debugged process with mirrord-layer loaded into it.
+mirrord’s VS Code extension provides mirrord’s functionality within VS Code’s UI. When you debug a process with mirrord enabled in VS Code, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
 
 ## IntelliJ Plugin
 
-mirrord’s IntelliJ Plugin provides mirrord’s functionality within the IntelliJ UI. When you debug a process with mirrord enabled in IntelliJ, it prompts you for a pod to impersonate, then runs the debugged process with mirrord-layer loaded into it.
+mirrord’s IntelliJ Plugin provides mirrord’s functionality within the IntelliJ UI. When you debug a process with mirrord enabled in IntelliJ, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
