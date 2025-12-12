@@ -12,7 +12,7 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-# Running mirrord on Windows 
+# Running mirrord on WSL 
 
 Another way to run mirrord on Windows is using the _Linux Subsystem for Windows_ (_WSL_).
 You’ll also need a Kubernetes cluster. If you don’t have one, you can set one up locally
