@@ -29,8 +29,7 @@ For your local machine, you may use any of:
 - MacOS (Intel, Apple Silicon).
 - Linux (x86_64).
 - Windows (x86_64), WSL (x86_64).
-  - IDE plugins support for native mirrord for Windows is currently in development.
-  - Windows users may also use mirrord using WSL (IDE plugins supported as well).
+  - IDE plugins support for native mirrord for Windows is currently not supported.
 
 kubectl needs to be configured on the local machine.
 
@@ -55,9 +54,8 @@ To install the CLI, run:
 
 | Operating System | Command |
 | - | - |
-| MacOS | <pre>brew install metalbear-co/mirrord/mirrord</pre> |
-| Linux | <pre>curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh \| bash</pre> |
-| Windows | <pre>choco install --pre mirrord</pre> |
+| MacOS/Linux | `brew install metalbear-co/mirrord/mirrord`<br>or alternatively<br>`curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh \| bash`|
+| Windows | `choco install --pre mirrord` |
 
 #### Usage
 
