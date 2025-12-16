@@ -23,14 +23,14 @@ You can use mirrord to browse the web as if you were inside your cluster. This i
 
 This guide assumes you have already set up a local proxy using `microsocks` and `mirrord`. If you haven't done this yet, please follow the [setup guide](./connecting-external-tools.md) first to launch the proxy.
 
-Once the proxy is configured, [install "Socks5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb)
+Once the proxy is configured, [install "SOCKS5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb)
 
 ### Configuration
 
-1. Ensure the prerequisite SOCKS5 proxy is running with `mirrord` and targeting the desired cluster.
+1. Ensure the prerequisite [SOCKS5 proxy](./connecting-external-tools.md) is running with `mirrord` and targeting the desired cluster.
 2. In a Chrome window:
-   1. Open the Socks5 Configurator extension
-   2. Make sure the "Socks5 Proxy" is enabled
+   1. Open the SOCKS5 Configurator extension
+   2. Make sure the "SOCKS5 Proxy" is enabled
    3. Type in its respective textbox `127.0.0.1:1080`
    4. Hit the save button
 3. That's it! You can verify your IP address has changed via a quick "what is my ip address" search in Google

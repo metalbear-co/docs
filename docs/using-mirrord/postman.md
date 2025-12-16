@@ -21,7 +21,7 @@ This guide assumes you have already set up a local proxy using `microsocks` and 
 
 ### Configuration
 
-1. Ensure the prerequisite SOCKS5 proxy is running with `mirrord` and targeting the desired cluster.
+1. Ensure the prerequisite [SOCKS5 proxy](./connecting-external-tools.md) is running with `mirrord` and targeting the desired cluster.
 2. Open Postman and open Settings (click the gear icon in the top right > **Settings**).
 3. Select the **Proxy** tab.
 4. Under **Proxy configurations for sending requests**:

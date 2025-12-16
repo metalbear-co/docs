@@ -19,35 +19,20 @@ Instead of setting up complex port-forwards or VPNs, you can use `mirrord` to cr
 
 ### Prerequisites
 
-* **microsocks**: Install via your package manager.
-    * macOS: `brew install microsocks`
-    * Ubuntu/Debian: `apt install microsocks`
+Install **microsocks** via your package manager.
+* For macOS: `brew install microsocks`
+* For Ubuntu/Debian: `apt install microsocks`
 
 ### Setup
 
 Regardless of which tool you are connecting, the first step is to establish the tunnel.
 
-1. **Run the Proxy:**
-   In your terminal, use `mirrord exec` to launch `microsocks`.
+1. Start the proxy by running one of the following commands in your terminal:
+  - `mirrord exec microsocks` to run targetless in the default namespace
+  - `mirrord exec -t deployment/my-deployment microsocks` to target a specific deployment
+  - `mirrord exec -a my-namespace microsocks` to run within a specific namespace
 
-   * **Targetless (Default Namespace):**
-     ```bash
-     mirrord exec microsocks
-     ```
-
-   * **Targeting a Deployment:**
-     ```bash
-     mirrord exec -t deployment/my-deployment microsocks
-     ```
-
-   * **Targeting a Namespace:**
-     ```bash
-     mirrord exec -a my-namespace microsocks
-     ```
-
-2. **Verify Output:**
-   * `microsocks` typically listens on `127.0.0.1:1080` by default. Ensure the command is running and listening before configuring your tool.
-   * Try calling a service health endpoint in your kubernetes cluster using `curl --socks5 socks5h://127.0.0.1:1080 <svc>.<namespace>.svc.cluster.local/health`
+2. Verify the proxy is working. microsocks listens on `127.0.0.1:1080` by default. Try calling a service health endpoint in your kubernetes cluster using `curl --socks5 socks5h://127.0.0.1:1080 <svc>.<namespace>.svc.cluster.local/health`
 
 ### Tool Guides
 
