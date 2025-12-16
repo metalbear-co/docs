@@ -17,22 +17,20 @@ description: Using mirrord to browse using cluster networking
 
 # Web Browsing
 
-One way to use mirrord's [targetless mode](targetless.md) is to set up your browser to use the IP address of the remote target. This way, you can browse the web as if you were in the same location as the remote target. Below is a guide on how to do this with Google Chrome.
+You can use mirrord to browse the web as if you were inside your cluster. This is useful for accessing internal tools (like Grafana, Kibana, or ArgoCD) that are not exposed to the public internet, or for verifying that a service is reachable from within the namespace.
 
-**Prerequisites**
+### Prerequisites
 
-1. [Install microsocks](https://github.com/rofl0r/microsocks) (via brew or apt)
-2. [Install "Socks5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb)
+This guide assumes you have already set up a local proxy using `microsocks` and `mirrord`. If you haven't done this yet, please follow the [setup guide](./connecting-external-tools.md) first to launch the proxy.
 
-**Steps**
+Once the proxy is configured, [install "SOCKS5 Configurator" Chrome extension](https://chromewebstore.google.com/detail/socks5-configurator/hnpgnjkeaobghpjjhaiemlahikgmnghb)
 
-1. In a terminal session, trigger `microsocks` using `mirrord`.
-   - If you want to use a specific target's network: `mirrord exec -t deployment/my_deployment microsocks`
-   - If you just want a specific namespace networking: `mirrord exec -a namespace microsocks`
-   - And you can just do: `mirrord exec microsocks` if you want to use your current namespace.
+### Configuration
+
+1. Ensure the prerequisite [SOCKS5 proxy](./connecting-external-tools.md) is running with `mirrord` and targeting the desired cluster.
 2. In a Chrome window:
-   1. Open the Socks5 Configurator extension
-   2. Make sure the "Socks5 Proxy" is enabled
+   1. Open the SOCKS5 Configurator extension
+   2. Make sure the "SOCKS5 Proxy" is enabled
    3. Type in its respective textbox `127.0.0.1:1080`
    4. Hit the save button
 3. That's it! You can verify your IP address has changed via a quick "what is my ip address" search in Google
