@@ -103,7 +103,7 @@ Both settings follow the same configuration mechanism as other agent parameters 
 These limits ensure predictable performance and prevent excessive memory usage.
 
 ### Configuration Example
-Configuartion below applies to only steal requests with path `/orders` and have a JSON body with at least one numeric `price` value ending in "99".
+Configuration below applies to only steal requests with path `/orders` and have a JSON body with at least one numeric `price` value ending in "99".
 
 ```json
 {

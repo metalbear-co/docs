@@ -91,7 +91,7 @@ spec:
       #
       # If empty, ALPN is disabled.
       #
-      # Optional. Defaults to en ampty list.
+      # Optional. Defaults to an empty list.
       alpnProtocols:
       - h2
       - http/1.1

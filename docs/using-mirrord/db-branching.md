@@ -75,7 +75,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 5. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
 6. `connection.url`: The environment variable that contains your DB connection string.
 7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
-8. `creation_timeout_secs`: Override for branch creation timout. The default is 60 seconds.
+8. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
 
 
 ## Running With DB Branches
