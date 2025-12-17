@@ -18,7 +18,7 @@ description: Limiting available features for selected targets with mirrord for T
 
 # Policies
 
-The installation of the mirrord operator defines two [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster: the namespaced `MirrordPolicy` and the clusterwide `MirrordClusterPolicy`. With these policies you can limit the use of some features of mirrord for selected targets.
+The installation of the mirrord operator defines two [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster: the namespaced `MirrordPolicy` and the cluster-wide `MirrordClusterPolicy`. With these policies you can limit the use of some features of mirrord for selected targets.
 
 * `MirrordPolicy` and `MirrordClusterPolicy` have the exact same specification (`spec` field);
 * `MirrordPolicy` applies only to targets living in the same namespace;

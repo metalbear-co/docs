@@ -49,7 +49,7 @@ To use the Jira integration while running mirrord, users must be on a git branch
 
 The operator will emit logs with details upon successful session reporting, or upon encountering an error. When metrics are successfully reported, the operator will emit a `DEBUG` log with a link to the Jira issue that was updated. If the operator is up to date with the Jira webhook configured but did _not_ successfully report metrics:
 
-- If no branch name was recieved by the operator, a `DEBUG` log will be emitted. This can happen if a mirrord user is not using the latest version of the mirrord CLI or plugin, or if they are not currently on a git branch.
+- If no branch name was received by the operator, a `DEBUG` log will be emitted. This can happen if a mirrord user is not using the latest version of the mirrord CLI or plugin, or if they are not currently on a git branch.
 - If the branch name was present but the operator still fails to report metric to the Jira app, a `WARN` log will be emitted with more details.
 
 ### Data security

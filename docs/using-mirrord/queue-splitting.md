@@ -73,7 +73,7 @@ First, we have a consumer app reading messages from a Kafka queue:
 
 ![A K8s application that consumes messages from a Kafka queue](queue-splitting/before-splitting-kafka.svg)
 
-When the first mirrord Kafka splitting session starts, two temporary quques are created (one for the target deployed in the cluster, one for the user's local application),
+When the first mirrord Kafka splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
 and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
 
 ![One Kafka splitting session](queue-splitting/1-user-kafka.svg)
@@ -91,7 +91,7 @@ If the filters defined by the two users both match some message, one of the user
 
 Temporary queues are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
 
-Plese note that:
+Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 
@@ -117,7 +117,7 @@ Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](
 The mirrord operator will need to be able to perform operations on the SQS queues.
 To do this, it will build an SQS client, using the default credentials provider chain.
 
-The easiest way to provide the crendentials for the operator is with IAM role assumption.
+The easiest way to provide the credentials for the operator is with IAM role assumption.
 For that, an IAM role with an appropriate policy has to be assigned to the operator's service account. Please follow [AWS's documentation on how to do that](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html). Note that operator's service account can be annotated with the IAM role's ARN with the `sa.roleArn` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 Some of the SQS permissions are needed for your actual queues that you would like to split, and some permissions are only needed for the temporary queues, managed by the operator.
@@ -422,8 +422,8 @@ The topics consumer resource describes Kafka queues consumed by the referenced c
 The queues are described in entries of the `spec.topics` list:
 * `id` can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 * `clientConfig` stores the name of the `MirrordKafkaClientConfig` to use when making connections to the Kafka cluster.
-* `nameSources` stores a list of all occurences of the queue name in the consumer workload's pod template.
-* `groupIdSources` stores a list of all occurences of the consumer Kafka group ID in the consumer workload's pod template.
+* `nameSources` stores a list of all occurrences of the queue name in the consumer workload's pod template.
+* `groupIdSources` stores a list of all occurrences of the consumer Kafka group ID in the consumer workload's pod template.
 The operator will use the same group ID when consuming messages from the queue.
 
 {% hint style="warning" %}
@@ -568,7 +568,7 @@ When the `MSK_IAM` kind is used, two additional properties are automatically mer
 2. `security.protocol=SASL_SSL`
 
 To produce the authentication tokens, the operator will use the default credentials provider chain.
-The easiest way to provide the crendentials for the operator is with IAM role assumption.
+The easiest way to provide the credentials for the operator is with IAM role assumption.
 For that, an IAM role with an appropriate policy has to be assigned to the operator's service account.
 Please follow [AWS's documentation on how to do that](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html).
 Note that operator's service account can be annotated with the IAM role's ARN with the `sa.roleArn` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).

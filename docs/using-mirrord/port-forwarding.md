@@ -25,7 +25,7 @@ You can use the command like so:
 mirrord port-forward --target <target-path> -L <local port>:<remote address>:<remote port>
 ```
 
-For example, to forward traffic from localhost:8080 to an incluster service py-serv listening on port 80:
+For example, to forward traffic from localhost:8080 to an in-cluster service py-serv listening on port 80:
 ```bash
 mirrord port-forward -L 8080:py-serv:80
 ```
@@ -37,7 +37,7 @@ It also allows for reverse port forwarding, where traffic is redirected from a p
 mirrord port-forward --target <target-path> -R <remote port>:<local port>
 ```
 
-For example, to forward traffic from an incluster deployment py-serv listening on port 80 to localhost:8080:
+For example, to forward traffic from an in-cluster deployment py-serv listening on port 80 to localhost:8080:
 ```bash
 mirrord port-forward --target deployment/py-serv -R 80:8080
 ```

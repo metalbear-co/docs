@@ -33,7 +33,7 @@ This guide assumes you have already set up a local proxy using `microsocks` and 
 5. Ensure **Proxy Auth** is **OFF**.
 6. Close the settings window.
 
-### Verfiy 
+### Verify  
 
 You can now use cluster DNS names in your requests.
 * Create a new request.

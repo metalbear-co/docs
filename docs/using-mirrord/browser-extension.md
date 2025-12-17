@@ -51,7 +51,7 @@ Before you start, make sure you have:
 
 ## Header Filter
 
-The mirrord Browser extenstion will automatically inject the `header_filter` defined in `mirrord.json`.
+The mirrord Browser extension will automatically inject the `header_filter` defined in `mirrord.json`.
 In case `header_filter` configured with regex pattern, you will be prompted in the browser to enter a header that matches it:
 `Please enter a header that matches pattern $HEADER_PATTERN`
 

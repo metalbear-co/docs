@@ -48,7 +48,7 @@ Default value is 60 seconds.
 ## Copy Modes 
 The `copy` field controls what data gets cloned when creating a database branch.
 
-1. ### Empty Databae
+1. ### Empty Database
 `"mode": "empty"` Creates an empty database with no schema or data, this is the default value when the `copy` attribute is not specified.
 Best for workflows where your application initializes the schema or runs migrations as part of startup.
 
