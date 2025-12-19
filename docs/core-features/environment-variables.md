@@ -1,3 +1,20 @@
+---
+title: Environment variables
+date: 2024-12-19T00:00:00.000Z
+lastmod: 2024-12-19T00:00:00.000Z
+draft: false
+menu:
+  docs:
+    parent: core-features
+weight: 121
+toc: true
+tags:
+  - open source
+  - team
+  - enterprise
+description: Load environment variables from your target pod into your local process
+---
+
 # Environment variables
 
 mirrord loads environment variables from your target pod into your local process. This means your app gets the same configuration it would have in the cluster—database URLs, feature flags, service discovery values, and secrets.

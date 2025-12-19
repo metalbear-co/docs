@@ -1,10 +1,14 @@
+---
+description: Install mirrord and integrate it into your development environment
+---
+
 # Setup & IDEs
 
 This section covers getting mirrord installed and integrated into your development environment.
 
 ## Installation options
 
-- **[Install & Run via CLI](install-cli.md)** — Install the mirrord CLI and run it from your terminal
+- **[Using the CLI](using-cli.md)** — Install the mirrord CLI and run it from your terminal
 - **[Using VS Code](using-vscode.md)** — Use the mirrord extension in Visual Studio Code
 - **[Using IntelliJ](using-intellij.md)** — Use the mirrord plugin in JetBrains IDEs
 

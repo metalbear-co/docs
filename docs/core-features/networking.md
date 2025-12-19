@@ -1,3 +1,20 @@
+---
+title: Networking
+date: 2024-12-19T00:00:00.000Z
+lastmod: 2024-12-19T00:00:00.000Z
+draft: false
+menu:
+  docs:
+    parent: core-features
+weight: 120
+toc: true
+tags:
+  - open source
+  - team
+  - enterprise
+description: Access cluster services, resolve internal DNS, and receive incoming traffic from your local machine
+---
+
 # Networking
 
 When you run with mirrord, your local process gets network access as if it were running inside the cluster. This means your code can call internal services, resolve cluster DNS names, and optionally receive incoming traffic—all without deploying.

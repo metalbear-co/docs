@@ -1,8 +1,22 @@
-# Test staging locally
+---
+title: Core Features
+date: 2024-12-19T00:00:00.000Z
+lastmod: 2024-12-19T00:00:00.000Z
+draft: false
+weight: 115
+toc: true
+tags:
+  - open source
+  - team
+  - enterprise
+description: Run your local process with the network, environment, and files of a pod in your cluster
+---
+
+# Core Features
 
 This section covers the fundamentals of using mirrord to run your local process as if it were running inside your Kubernetes cluster. If you've completed the [Quick Start](../overview/quick-start.md), you're ready to go deeper.
 
-## How mirrord works
+## Overview
 
 When you run your application with mirrord, it intercepts your process at the system call level and redirects operations to a remote target in your cluster. This gives your local process:
 

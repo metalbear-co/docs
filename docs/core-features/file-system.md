@@ -1,3 +1,20 @@
+---
+title: File system
+date: 2024-12-19T00:00:00.000Z
+lastmod: 2024-12-19T00:00:00.000Z
+draft: false
+menu:
+  docs:
+    parent: core-features
+weight: 122
+toc: true
+tags:
+  - open source
+  - team
+  - enterprise
+description: Read files from your target pod including ConfigMaps, certificates, and service account tokens
+---
+
 # File system
 
 mirrord can intercept file operations and redirect them to the target pod's filesystem. This lets your local process read files that only exist in the cluster—TLS certificates, mounted ConfigMaps, service account tokens, and other runtime files.
