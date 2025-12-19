@@ -20,9 +20,9 @@ This section covers the fundamentals of using mirrord to run your local process 
 
 When you run your application with mirrord, it intercepts your process at the system call level and redirects operations to a remote target in your cluster. This gives your local process:
 
-- **Network access**: Outgoing connections go through the cluster, and incoming traffic from the target can be mirrored or stolen to your local process
-- **Environment variables**: The same env vars your target pod has
-- **File system access**: Read (or write) files from the target pod's filesystem
+- **Network access**: Outgoing connections go through the cluster, and incoming traffic from the target can be mirrored or stolen to your local process. [Learn more](networking.md)
+- **Environment variables**: The same env vars your target pod has. [Learn more](environment-variables.md).
+- **File system access**: Read (or write) files from the target pod's filesystem. [Learn more](file-system.md).
 
 The result: your code runs locally with local tooling (debuggers, hot reload, your IDE), but behaves like it's running in the cluster.
 
@@ -57,22 +57,6 @@ Or in a configuration file:
 ```
 
 For full details on targets, see [Targets](../reference/targets.md).
-
-## The three fundamentals
-
-The following pages cover the three core capabilities you'll use in most mirrord sessions:
-
-### Networking
-
-Your process runs on your machine but connects to cluster services using cluster DNS. Outgoing requests go through the target pod's network context. You can also receive incoming traffic that was destined for the target. [Learn more](networking.md).
-
-### Environment Variables
-
-Load the target pod's environment variables into your local process—database URLs, feature flags, API keys, and service discovery values all come from the cluster. [Learn more](environment-variables.md).
-
-### File System
-
-Configure which file operations go to your local machine and which go to the target pod. Access TLS certificates, mounted ConfigMaps, service account tokens, and other runtime files. [Learn more](file-system.md).
 
 ## A minimal configuration file
 

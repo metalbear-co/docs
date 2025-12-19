@@ -4,11 +4,7 @@ description: Install the mirrord CLI and run local processes in the context of y
 
 # Using the CLI
 
-The mirrord CLI lets you run any local process in the context of your Kubernetes cluster.
-
-## Why use the CLI?
-
-The CLI is the most flexible way to use mirrord. It works with any editor or IDE, can be integrated into shell scripts and CI pipelines, and gives you direct access to all mirrord options. No plugins or extensions required.
+The mirrord CLI lets you run any local process in the context of your Kubernetes cluster. The CLI is the most flexible way to use mirrord. It works with any editor or IDE, can be integrated into shell scripts and CI pipelines, and gives you direct access to all mirrord options. No plugins or extensions required.
 
 If you use VS Code or IntelliJ, the IDE extensions provide a more integrated experience with target selection UI and one-click enablement. See [Using VS Code](using-vscode.md) or [Using IntelliJ](using-intellij.md).
 
