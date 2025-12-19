@@ -2,3 +2,9 @@ root: ./docs/
 
 structure:
   summary: ./SUMMARY.md
+
+redirects:
+  using-mirrord/vscode-extension: setup/using-vscode.md
+  using-mirrord/intellij-plugin: setup/using-intellij.md
+  using-mirrord/wsl: setup/run-on-wsl.md
+  using-mirrord/local-container: setup/run-a-local-container.md

@@ -1,11 +1,11 @@
 ---
-title: VSCode Extension
+title: Using VS Code
 date: 2025-01-07T00:00:00.000Z
 lastmod: 2025-01-07T00:00:00.000Z
 draft: false
 menu:
   docs:
-    parent: using-mirrord
+    parent: setup
 weight: 165
 toc: true
 tags:
@@ -15,14 +15,14 @@ tags:
 description: Using the mirrord extension in Visual Studio Code
 ---
 
-# VSCode Extension
+# Using VS Code
 
 If you develop your application in Visual Studio Code, you can debug it with mirrord using our Visual Studio Marketplace [extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord). Simply:
 
 1. Download the extension
-2. Enable mirrord using the "mirrord" button on the bottom toolbar 
+2. Enable mirrord using the "mirrord" button on the bottom toolbar
 
-![mirrord button](vscode-extension/images/enabler.png)
+![mirrord button](using-vscode/images/enabler.png)
 
 3. Run or debug your application as you usually do
 
@@ -60,13 +60,13 @@ mirrord's target can be specified in two ways:
 
 1. with the target selection quick pick
    * The quick pick will only appear if the mirrord config does not specify the target.
-   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
+   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://metalbear.com/mirrord/docs/config/options#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
    * If you want to see targets in a different namespace, there is an option to "Select Another Namespace".
-2. in the mirrord config's [target section](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#target)
+2. in the mirrord config's [target section](https://metalbear.com/mirrord/docs/config/options#target)
 
 ### Using the mirrord config
 
-The extension allows for using the [mirrord config](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
+The extension allows for using the [mirrord config](https://metalbear.com/mirrord/docs/config/options). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
 
 #### Active config
 
@@ -74,7 +74,7 @@ The toolbar dropdown menu allows for specifying a temporary mirrord config overr
 
 To specify the override, use `Select active config` action.
 
-![select active config action](vscode-extension/images/select-active-config.png)
+![select active config action](using-vscode/images/select-active-config.png)
 
 You will be prompted with a quick pick where you can select a mirrord config from your project files. For the file to be present in the dialog, it must either be located in a directory which name ends with `.mirrord`, or have a name that ends with `mirrord`. Accepted config file extensions are: `json`, `toml`, `yml` and `yaml`.
 
@@ -122,4 +122,4 @@ To use a specific mirrord binary from your filesystem:
 
 ### WSL
 
-The guide on how to use the extension with remote development on WSL can be found [here](wsl.md#using-mirrord-in-vs-code).
+The guide on how to use the extension with remote development on WSL can be found [here](run-on-wsl.md#using-mirrord-in-vs-code).
