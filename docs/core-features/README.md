@@ -62,17 +62,17 @@ For full details on targets, see [Targets](../reference/targets.md).
 
 The following pages cover the three core capabilities you'll use in most mirrord sessions:
 
-### [Networking](networking.md)
+### Networking
 
-Your process runs on your machine but connects to cluster services using cluster DNS. Outgoing requests go through the target pod's network context. You can also receive incoming traffic that was destined for the target.
+Your process runs on your machine but connects to cluster services using cluster DNS. Outgoing requests go through the target pod's network context. You can also receive incoming traffic that was destined for the target. [Learn more](networking.md).
 
-### [Environment variables](environment-variables.md)
+### Environment Variables
 
-Load the target pod's environment variables into your local process—database URLs, feature flags, API keys, and service discovery values all come from the cluster.
+Load the target pod's environment variables into your local process—database URLs, feature flags, API keys, and service discovery values all come from the cluster. [Learn more](environment-variables.md).
 
-### [File system](file-system.md)
+### File System
 
-Access files from the target pod: TLS certificates, mounted ConfigMaps, service account tokens, and other runtime files your app expects.
+Configure which file operations go to your local machine and which go to the target pod. Access TLS certificates, mounted ConfigMaps, service account tokens, and other runtime files. [Learn more](file-system.md).
 
 ## A minimal configuration file
 

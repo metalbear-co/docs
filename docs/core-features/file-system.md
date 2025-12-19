@@ -12,21 +12,20 @@ tags:
   - open source
   - team
   - enterprise
-description: Read files from your target pod including ConfigMaps, certificates, and service account tokens
+description: Configure file operations to read and write from local or remote filesystems
 ---
 
 # File system
 
-mirrord can intercept file operations and redirect them to the target pod's filesystem. This lets your local process read files that only exist in the cluster—TLS certificates, mounted ConfigMaps, service account tokens, and other runtime files.
+mirrord intercepts file operations and lets you control whether each read or write goes to your local machine or the target pod. This gives you flexibility to mix local and remote file access—read certificates from the cluster while writing logs locally, or keep source files local while accessing remote ConfigMaps.
 
 ## How it works
 
 When your app opens a file, mirrord intercepts the system call. Depending on your configuration, it either:
 - Opens the file locally (from your machine)
 - Opens the file remotely (from the target pod)
-- Opens the file remotely for reading and locally for writing
 
-This happens transparently—your code doesn't need to change.
+You can configure this globally or per-path, giving you fine-grained control over exactly which files come from where. This happens transparently, your code doesn't need to change.
 
 ## File system modes
 
@@ -122,42 +121,6 @@ Example—read from remote by default, but keep source files local:
 
 By default, mirrord reads most files locally but reads certain paths from the remote. This includes files that typically need to come from the cluster environment, while keeping your source code and local config files local.
 
-## Common patterns
-
-### Access mounted ConfigMaps
-
-Your app reads a config file from a volume mount:
-
-```json
-{
-  "feature": {
-    "fs": {
-      "mode": "localwithoverrides",
-      "read_only": ["/etc/app-config/.*"]
-    }
-  }
-}
-```
-
-### Access TLS certificates
-
-Your app needs certificates from the pod:
-
-```json
-{
-  "feature": {
-    "fs": {
-      "mode": "localwithoverrides",
-      "read_only": [
-        "/etc/ssl/certs/.*",
-        "/etc/pki/.*",
-        "/app/certs/.*"
-      ]
-    }
-  }
-}
-```
-
 ## Security considerations
 
 - **Prefer read-only access**: use `read` mode unless you specifically need to write to the remote filesystem.
@@ -166,5 +129,5 @@ Your app needs certificates from the pod:
 
 ## Reference
 
-- [File Operations](../reference/fileops.md) — detailed reference on file system behavior
-- [Configuration Options](https://metalbear.com/mirrord/docs/config/options) — full list of fs configuration options
+- Check out [File Operations](../reference/fileops.md) to see how file operations work under the covers.
+- [Configuration Options](https://metalbear.com/mirrord/docs/config/options) provides a full list of file system options.

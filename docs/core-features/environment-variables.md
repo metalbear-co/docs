@@ -17,7 +17,7 @@ description: Load environment variables from your target pod into your local pro
 
 # Environment variables
 
-mirrord loads environment variables from your target pod into your local process. This means your app gets the same configuration it would have in the cluster—database URLs, feature flags, service discovery values, and secrets.
+mirrord loads environment variables from your target pod into your local process. This means your app gets the same configuration it would have in the cluster such as database URLs, feature flags, service discovery values, and secrets.
 
 ## How it works
 
@@ -120,37 +120,6 @@ You can combine `include` or `exclude` with `override`:
 
 This loads only database, Redis, and feature flag variables from the remote, then overrides the database host to point to a local database.
 
-## Common patterns
-
-### Use remote config but local database
-
-```json
-{
-  "feature": {
-    "env": {
-      "exclude": "DATABASE_*",
-      "override": {
-        "DATABASE_URL": "postgres://localhost:5432/myapp_dev"
-      }
-    }
-  }
-}
-```
-
-### Load only service discovery variables
-
-Kubernetes injects service discovery variables like `SERVICE_NAME_HOST` and `SERVICE_NAME_PORT`. Load only these:
-
-```json
-{
-  "feature": {
-    "env": {
-      "include": "*_SERVICE_HOST;*_SERVICE_PORT;*_PORT"
-    }
-  }
-}
-```
-
 ### Safe staging testing
 
 Load remote config but redirect external services to sandboxes:
@@ -173,9 +142,8 @@ Load remote config but redirect external services to sandboxes:
 
 - **Treat remote env vars like secrets**: they may contain API keys, database passwords, and other sensitive data. Avoid logging them or writing them to files.
 - **Use `exclude` for sensitive variables**: if you don't need secrets locally, exclude them.
-- **Override outbound services**: when testing against staging, override payment providers, email services, and SMS gateways to point to sandboxes rather than production endpoints.
 
 ## Reference
 
-- [Environment Variables](../reference/env.md) — detailed reference
-- [Configuration Options](https://metalbear.com/mirrord/docs/config/options) — full list of env configuration options
+- For more information on how this works checkout [this page](../reference/env.md)
+- The [Configuration Options](https://metalbear.com/mirrord/docs/config/options) page contains a full list of configuration options
