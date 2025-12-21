@@ -23,7 +23,7 @@ If your application consumes messages from a queue service, you should choose a 
 3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 {% hint style="info" %}
-This feature is only available for users on the Team and Enterprise pricing plans.
+This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}

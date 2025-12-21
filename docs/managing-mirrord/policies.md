@@ -25,7 +25,7 @@ The installation of the mirrord operator defines two [custom resources](https://
 * `MirrordClusterPolicy` applies to all targets in the cluster.
 
 {% hint style="info" %}
-This feature is only relevant for users on the Team and Enterprise pricing plans.
+This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 ## Blockable features

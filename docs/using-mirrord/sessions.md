@@ -17,7 +17,7 @@ session to this user, until they stop running mirrord, at which point the sessio
 in the Operator automatically.
 
 {% hint style="info" %}
-This feature is only relevant for users on the Team and Enterprise pricing plans.
+This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 ### See active Operator sessions

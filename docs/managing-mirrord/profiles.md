@@ -21,7 +21,7 @@ description: Reusable mirrord config templates
 The installation of the mirrord operator defines two types of [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster: `MirrordClusterProfile` and `MirrordProfile`.
 
 {% hint style="info" %}
-This feature is only relevant for users on the Team and Enterprise pricing plans.
+This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 These resources provide a unified base for users' mirrord configurations. Users can reference a profile in their mirrord config, and mirrord will apply the defined feature adjustments accordingly.
