@@ -19,7 +19,7 @@ description: Security in mirrord for Teams
 # Security
 
 {% hint style="info" %}
-This discussion is only relevant for users on the Team and Enterprise pricing plans.
+This discussion is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 Love using mirrord but need help getting your security team on board? Talk to one of our technical experts!
