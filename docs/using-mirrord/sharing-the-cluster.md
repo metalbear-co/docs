@@ -47,7 +47,7 @@ mirrord's queue splitting feature lets users only steal a subset of the messages
 
 mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](../managing-mirrord/policies.md).
 
-#### 4. Communicate with an personal isolated database
+#### 4. Communicate with a personal isolated database
 
 Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the DB Branching feature to work with an ephemeral database branch that is isolated from the main database. [Learn more about DB Branching](db-branching.md).
 
