@@ -4,7 +4,7 @@ date: 2024-01-03T13:37:00.000Z
 lastmod: 2024-01-03T13:37:00.000Z
 draft: false
 images: []
-linktitle: Policies
+linktitle: Outgoing Traffic Policies
 menu: null
 docs: null
 teams: null
