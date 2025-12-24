@@ -22,7 +22,7 @@ description: Restricting which resources and endpoints can be accessed when usin
 Cluster administrators can restrict which resources and endpoints can be accessed when using mirrord.
 Outgoing traffic restrictions are defined using a `MirrordPolicy` or `MirrordClusterPolicy` resource and enforced by the mirrord operator.
 
-_Supported in mirrord Operator version 3.103.0_ 
+_Supported in mirrord Operator version 3.103.0_
 {% hint style="info" %}
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
