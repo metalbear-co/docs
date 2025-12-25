@@ -1,18 +1,13 @@
 ---
 title: Outgoing Traffic Policies
-date: 2024-01-03T13:37:00.000Z
-lastmod: 2024-01-03T13:37:00.000Z
+date: 2025-08-31T00:00:00+03:00
+lastmod: 2025-08-31T00:00:00+03:00
 draft: false
-images: []
-images: []
-menu: null
-docs: null
-teams: null
-weight: 520
+menu:
+  docs:
+    parent: "Policies"
 toc: true
-tags:
-  - team
-  - enterprise
+tags: ["team", "enterprise"]
 description: Restricting which resources and endpoints can be accessed when using mirrord
 ---
 
