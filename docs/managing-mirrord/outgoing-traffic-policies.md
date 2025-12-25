@@ -68,14 +68,14 @@ Rules under allow or block are arrays of objects. Each object matches when all i
 
 `hostname`:
 
-`exact`: Array of exact hostnames.
+1. `exact`: Array of exact hostnames.
 
-`expression`: Regex pattern (e.g., ^metalbear\\..*) for flexible matching.
+2. `expression`: Regex pattern (e.g., ^metalbear\\..*) for flexible matching.
 
 `ports`: Array of objects with protocol (TCP/UDP) and port (number or range).
 ​
 
-#### Evaluation Logic
+### Evaluation Logic
 Policies evaluate runtime outgoing connections as follows:
 
 1. No rules: If no allow or block rules exist, the connection is permitted.
@@ -86,4 +86,4 @@ Policies evaluate runtime outgoing connections as follows:
 
 4. Otherwise permitted: All other cases allow the connection.
 
-Note: This differs from a strict "block by default" when no rules are present—empty policies remain permissive until rules are added.
+Note: This differs from a strict "block by default" when no rules are present - empty policies remain permissive until rules are added.
