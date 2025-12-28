@@ -30,49 +30,42 @@ metadata:
   name: block-mirroring-from-boats-deployment
   namespace: default
 spec:
-  outgoingTraffic:
-    default: block  # either "allow" or "block"; defaults to "block" if omitted
-    allow:
-      - ipBlock:
-          cidr: 10.0.0.0/16
-          except:
-            - 10.0.5.0/24
-        ports:
-          - protocol: TCP
-            port: 80
-          - protocol: TCP
-            port: 443
-          - protocol: UDP
-            port: 53
-      - hostname:
-          exact:
-            - metalbear.com
-            - metalbear.co
-          expression: "^metalbear\\..*"  # regex pattern for hostname matching
-        ports:
-          - protocol: TCP
-            port: 443
-    block:
-      - ipBlock:
-          cidr: 0.0.0.0/0
-        ports:
-          - protocol: TCP
-            port: 22
+  block: []
+  network:
+    Outgoing: 
+      allow:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+            except:
+              - 10.0.5.0/24
+          ports:
+            - protocol: TCP
+              port: 80
+            - protocol: TCP
+              port: 443
+            - protocol: UDP
+              port: 53
+        - hostname: "^metalbear\\.(co|com)$"
+          ports:
+            - protocol: TCP
+              port: 443
+      block:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+          ports:
+            - protocol: TCP
+              port: 22
 ```
 
 ### Rule fields
 Rules under allow or block are arrays of objects. Each object matches when all its fields align with the connection details.
 ​
 #### Available fields:
-`ipBlock`: Specifies CIDR ranges (cidr) with optional exclusions (except array of CIDRs).
+`ipBlock`: Specifies CIDR ranges via `cidr` field with optional exclusions (`except` field, array of CIDRs).
 
-`hostname`:
+`hostname`: Regex pattern (e.g., `^metalbear\\.(co|com)$`) for flexible matching.
 
-1. `exact`: Array of exact hostnames.
-
-2. `expression`: Regex pattern (e.g., ^metalbear\\..*) for flexible matching.
-
-`ports`: Array of objects with protocol (TCP/UDP) and port (number or range).
+`ports`: Array of objects with protocol (TCP/UDP) and port.
 ​
 
 ### Evaluation Logic
