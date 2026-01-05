@@ -76,7 +76,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 6. `connection.url`: The environment variable that contains your DB connection string.
 7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 8. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
-
+9. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
 
 ## Running With DB Branches
 
@@ -104,5 +104,9 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 **Q: Why does my connection time out?**
 A: By default, branch databases have SSL disabled. Check if your client is specifically requesting SSL.
 
+**Q: How do I use IAM authentication instead of passwords?**
+A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Add an `iam_auth` block to your config. See [IAM Authentication](./db-branching-advanced-config.md#iam-authentication) for setup instructions.
+
 ## What's next?
+
 Next, check out the [Advanced Configuration](./db-branching-advanced-config.md) and [DB Branch Management](./db-branch-management.md) sections to learn more about customization and command options.

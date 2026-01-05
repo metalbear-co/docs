@@ -93,3 +93,80 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
+## IAM Authentication
+
+mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials are read from the **target pod's environment**, just like connection URLs.
+
+### AWS RDS
+
+```json
+{
+  "db_branches": [
+    {
+      "type": "pg",
+      "version": "16",
+      "connection": {
+        "url": { "type": "env", "variable": "DATABASE_URL" }
+      },
+      "iam_auth": {
+        "type": "aws_rds",
+        "region": { "type": "env", "variable": "AWS_REGION" },
+        "access_key_id": { "type": "env", "variable": "AWS_ACCESS_KEY_ID" },
+        "secret_access_key": { "type": "env", "variable": "AWS_SECRET_ACCESS_KEY" }
+      }
+    }
+  ]
+}
+```
+
+### GCP Cloud SQL
+
+Two options for providing service account credentials:
+
+**Option 1: Inline JSON** — Load JSON content directly from an env var:
+
+```json
+{
+  "db_branches": [
+    {
+      "type": "pg",
+      "version": "17",
+      "connection": {
+        "url": { "type": "env", "variable": "DATABASE_URL" }
+      },
+      "iam_auth": {
+        "type": "gcp_cloud_sql",
+        "credentials_json": { "type": "env", "variable": "GOOGLE_APPLICATION_CREDENTIALS_JSON" }
+      }
+    }
+  ]
+}
+```
+
+**Option 2: File path** — Read from a mounted Secret file:
+
+```json
+{
+  "db_branches": [
+    {
+      "type": "pg",
+      "version": "17",
+      "connection": {
+        "url": { "type": "env", "variable": "DATABASE_URL" }
+      },
+      "iam_auth": {
+        "type": "gcp_cloud_sql",
+        "credentials_path": { "type": "env", "variable": "GOOGLE_APPLICATION_CREDENTIALS_PATH" }
+      }
+    }
+  ]
+}
+```
+
+{% hint style="warning" %}
+Use either `credentials_json` OR `credentials_path`, not both.
+{% endhint %}
+
+{% hint style="info" %}
+GCP Cloud SQL requires `sslmode=require` in your `DATABASE_URL`.
+{% endhint %}
