@@ -1,5 +1,5 @@
 ---
-title: Clone a Remote Pod
+title: Copy Target
 date: 2024-01-10T13:37:00.000Z
 lastmod: 2024-01-10T13:37:00.000Z
 draft: false
@@ -14,7 +14,7 @@ tags:
 description: Create a temporary copy of a pod to use as your target
 ---
 
-# Clone a Remote Pod
+# Copy Target
 
 When you set the [`copy_target`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target.
 

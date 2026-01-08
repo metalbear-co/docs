@@ -1,5 +1,5 @@
 ---
-title: Run Without a Target
+title: Targetless
 date: 2020-11-16T12:59:39.000Z
 lastmod: 2020-11-16T12:59:39.000Z
 draft: false
@@ -15,7 +15,7 @@ tags:
 description: Run mirrord without impersonating any pod
 ---
 
-# Run Without a Target
+# Targetless
 
 The common use case for mirrord is testing out modifications to an existing application. In this case, the stable version of the service is running in the cloud, and the new code runs locally, using the stable cloud version as its remote target. However, sometimes you want to test a brand new application that has never been deployed to the cloud. Or you might not want to run an application at all - maybe you just want to run a tool, like Postman or pgAdmin, in the context of your cluster.
 

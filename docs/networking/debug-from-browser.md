@@ -1,6 +1,6 @@
 ---
-title: "Debug from Browser"
-description: "Automatically inject HTTP headers into browser requests using the mirrord extension"
+title: Browser Extension
+description: Automatically inject HTTP headers into browser requests using the mirrord extension
 date: 2024-07-07T09:39:44+01:00
 lastmod: 2024-07-07T09:39:44+01:00
 draft: false
@@ -9,7 +9,9 @@ menu:
     parent: networking
 weight: 160
 toc: true
-tags: ["team", "enterprise"]
+tags:
+  - team
+  - enterprise
 ---
 
 The mirrord Browser Extension automatically injects an HTTP header into all your browser requests while a mirrord session is running. This solves the hassle of manually adding headers when debugging local services that rely on header-based routing, making it easier to test production-like flows in your browser with zero manual setup.

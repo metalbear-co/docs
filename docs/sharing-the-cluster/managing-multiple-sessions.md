@@ -1,5 +1,5 @@
 ---
-title: Managing Multiple Sessions
+title: Sessions
 description: View and control active mirrord sessions in your cluster
 date: 2024-03-04T00:00:00+00:00
 lastmod: 2024-03-04T00:00:00+00:00

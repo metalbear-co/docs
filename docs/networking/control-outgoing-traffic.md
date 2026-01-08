@@ -1,5 +1,5 @@
 ---
-title: Control Outgoing Traffic
+title: Outgoing Filter
 date: 2020-11-16T12:59:39.000Z
 lastmod: 2020-11-16T12:59:39.000Z
 draft: false
@@ -15,7 +15,7 @@ tags:
 description: Choose which outgoing connections go through the cluster and which stay local
 ---
 
-# Control Outgoing Traffic
+# Outgoing Filter
 
 There are several features underlying mirrord's ability to let your local app send outgoing network requests to cluster resources:
 

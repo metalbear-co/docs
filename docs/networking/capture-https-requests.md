@@ -1,5 +1,5 @@
 ---
-title: Capture HTTPS Requests
+title: HTTPS Stealing
 date: 2025-02-24T00:00:00.000Z
 lastmod: 2025-02-24T00:00:00.000Z
 draft: false
@@ -14,7 +14,7 @@ tags:
 description: Steal and filter HTTPS traffic when your target pod handles TLS termination
 ---
 
-# Capture HTTPS Requests
+# HTTPS Stealing
 
 mirrord supports HTTPS stealing across all tiers.
 However, when the deployed application receives encrypted traffic directly - for example, when HTTPS is not decrypted by the mesh or load balancer and the app itself handles TLS termination - this functionality is available only in mirrord for Teams.

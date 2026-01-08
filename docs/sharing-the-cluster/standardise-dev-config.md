@@ -1,5 +1,5 @@
 ---
-title: Standardise Dev Config
+title: Profiles
 date: 2024-03-25T00:00:00.000Z
 lastmod: 2024-03-25T00:00:00.000Z
 draft: false
@@ -11,7 +11,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: Create reusable configuration profiles to standardise mirrord settings across your team
+description: Create reusable configuration templates to standardise mirrord settings across your team
 ---
 
 # Profiles

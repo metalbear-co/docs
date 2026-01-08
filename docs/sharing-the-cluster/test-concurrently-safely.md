@@ -1,5 +1,5 @@
 ---
-title: Test Concurrently, Safely
+title: Policies
 date: 2024-01-03T13:37:00.000Z
 lastmod: 2024-01-03T13:37:00.000Z
 draft: false
@@ -11,7 +11,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: Use mirrord Policies to prevent destructive actions and enforce safe usage patterns
+description: Prevent destructive actions and enforce safe usage patterns
 ---
 
 # Policies
