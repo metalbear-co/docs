@@ -171,3 +171,31 @@ To ensure consistent behavior, you can override the remote `NODE_ENV` value by a
   }
 }
 ```
+
+## I’m running a Next.js server with Nx and mirrord, but it doesn’t behave as expected
+
+If your Next.js app is managed by Nx and uses a custom server (for example via `@nx/next:custom-server`), the local process may crash or behave incorrectly because mirrord mirrors conflicting environment variables from the remote target. The remote target (running in production) usually has variables set specifically for the container environment, such as:
+- `NODE_ENV=production`
+- `NX_NEXT_DIR=/app` (or another container-specific path)
+
+When mirrord injects these values into your local process, they override the values that Nx automatically generates for your local environment. This causes the server to run in production mode or look for build artifacts in directories that do not exist on your machine.
+
+To fix this, use `feature.env.exclude` to prevent mirrord from importing these specific variables. This allows your local Nx process to set the correct local values (e.g., dist/apps/my-service) natively.
+
+```json
+{
+  "feature": {
+    "env": {
+      "exclude": [
+        "NODE_ENV",
+        "NX_NEXT_DIR"
+      ]
+    }
+  }
+}
+```
+Then run your Nx target with mirrord:
+```
+mirrord exec -f .mirrord/mirrord.json -- pnpm nx serve my-service
+```
+By excluding `NX_NEXT_DIR` and `NODE_ENV`, you stop the remote environment from interfering with your local build configuration. This ensures the custom server uses the correct local build path and runs in development mode, while mirrord continues to mirror traffic and other environment variables.
