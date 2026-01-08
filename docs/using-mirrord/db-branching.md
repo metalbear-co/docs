@@ -105,7 +105,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 A: By default, branch databases have SSL disabled. Check if your client is specifically requesting SSL.
 
 **Q: How do I use IAM authentication instead of passwords?**
-A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Add an `iam_auth` block to your config. See [IAM Authentication](./db-branching-advanced-config.md#iam-authentication) for setup instructions.
+A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Just add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` — mirrord automatically uses standard env vars like `AWS_REGION` or `GOOGLE_APPLICATION_CREDENTIALS` from your target pod. See [IAM Authentication](./db-branching-advanced-config.md#iam-authentication) for details.
 
 ## What's next?
 
