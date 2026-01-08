@@ -29,6 +29,7 @@
   * [Connecting External Tools](using-mirrord/connecting-external-tools.md)
       * [Web Browsing](using-mirrord/web-browsing.md)
       * [Postman](using-mirrord/postman.md)
+  * [Onboarding Wizard](using-mirrord/onboarding-wizard.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
   * [Security](managing-mirrord/security.md)
