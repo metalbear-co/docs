@@ -38,3 +38,5 @@ redirects:
   managing-mirrord/monitoring: managing-the-operator/monitoring.md
   managing-mirrord/security: managing-the-operator/security.md
   managing-mirrord/license-server: managing-the-operator/license-server.md
+  managing-mirrord/outgoing-traffic-policies: sharing-the-cluster/outgoing-traffic-policies.md
+  managing-mirrord/policies/outgoing-traffic-policies: sharing-the-cluster/outgoing-traffic-policies.md

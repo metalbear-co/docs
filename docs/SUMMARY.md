@@ -32,7 +32,7 @@
   * [mirrord Operator](sharing-the-cluster/mirrord-operator.md)
   * [Managing Multiple Sessions](sharing-the-cluster/managing-multiple-sessions.md)
   * [Test Concurrently, Safely](sharing-the-cluster/test-concurrently-safely.md)
-      * [Outgoing Traffic Policies](managing-mirrord/outgoing-traffic-policies.md)
+      * [Outgoing Traffic Policies](sharing-the-cluster/outgoing-traffic-policies.md)
   * [Standardise Dev Config](sharing-the-cluster/standardise-dev-config.md)
 * [Isolated Testing](isolated-testing/README.md)
   * [Queue Splitting](isolated-testing/queue-splitting.md)
