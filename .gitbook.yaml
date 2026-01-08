@@ -1,10 +1,40 @@
 root: ./docs/
 
 structure:
-  summary: ./SUMMARY.md
+  summary: SUMMARY.md
 
 redirects:
   using-mirrord/vscode-extension: setup/using-vscode.md
   using-mirrord/intellij-plugin: setup/using-intellij.md
   using-mirrord/wsl: setup/run-on-wsl.md
   using-mirrord/local-container: setup/run-a-local-container.md
+  using-mirrord/connecting-external-tools: connecting-external-tools/README.md
+  using-mirrord/postman: connecting-external-tools/postman.md
+  using-mirrord/web-browsing: connecting-external-tools/web-browsing.md
+  managing-mirrord/jira-integration: connecting-external-tools/jira-integration.md
+  core-features/networking: networking/README.md
+  core-features/environment-variables: environment-variables.md
+  core-features/file-system: file-system.md
+  using-mirrord/steal-https: networking/capture-https-requests.md
+  using-mirrord/outgoing-filter: networking/control-outgoing-traffic.md
+  using-mirrord/browser-extension: networking/debug-from-browser.md
+  using-mirrord/traffic-filtering: networking/filter-incoming-traffic.md
+  using-mirrord/filtering-by-json-body: networking/filtering-by-json-body.md
+  using-mirrord/traffic-inspection: networking/monitor-live-traffic.md
+  using-mirrord/port-forwarding: networking/port-forwarding.md
+  using-mirrord/sharing-the-cluster: sharing-the-cluster/README.md
+  using-mirrord/sessions: sharing-the-cluster/managing-multiple-sessions.md
+  managing-mirrord/policies: sharing-the-cluster/test-concurrently-safely.md
+  managing-mirrord/profiles: sharing-the-cluster/standardise-dev-config.md
+  using-mirrord/copy-target: targeting-modes/clone-remote-pod.md
+  using-mirrord/targetless: targeting-modes/run-without-target.md
+  using-mirrord/queue-splitting: isolated-testing/queue-splitting.md
+  using-mirrord/db-branching: isolated-testing/db-branching.md
+  using-mirrord/db-branch-management: isolated-testing/db-branch-management.md
+  using-mirrord/db-branching-advanced-config: isolated-testing/db-branching-advanced-config.md
+  using-mirrord/mirrord-for-ci: mirrord-for-ci.md
+  using-mirrord: overview/README.md
+  managing-mirrord: managing-the-operator/README.md
+  managing-mirrord/monitoring: managing-the-operator/monitoring.md
+  managing-mirrord/security: managing-the-operator/security.md
+  managing-mirrord/license-server: managing-the-operator/license-server.md
