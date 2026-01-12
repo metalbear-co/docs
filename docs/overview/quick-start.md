@@ -104,6 +104,10 @@ mirrord container -- docker run nginx
 
 Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
 
+{% hint style="info" %}
+💬 **Questions?** [Join our Slack community](https://join.slack.com/t/metalbear/shared_invite/zt-2emgnleqw-MvEPjLJqUvNI1yAxgB7BhQ)
+{% endhint %}
+
 ### VS Code Extension
 
 #### Installation
@@ -277,9 +281,8 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 
 ### What's next?
 
-Now that you've tried out mirrord, it's time to get acquainted with its different configuration options and tailor it to your needs:
+Now that you've tried out mirrord, here are some next steps:
 
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
-2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
-3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4) sections?
+1. **[Explore guides](../using-mirrord/README.md)** - See mirrord in action with real-world examples
+2. **[Join our Slack](https://join.slack.com/t/metalbear/shared_invite/zt-2emgnleqw-MvEPjLJqUvNI1yAxgB7BhQ)** - Get help and connect with the community
+3. **[Configuration options](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options)** - Customize mirrord for your workflow
