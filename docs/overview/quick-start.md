@@ -104,6 +104,10 @@ mirrord container -- docker run nginx
 
 Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
 
+{% hint style="info" %}
+**Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
+{% endhint %}
+
 ### VS Code Extension
 
 #### Installation
@@ -262,6 +266,10 @@ After installing the Operator, you can verify it works by running `mirrord opera
 
 ### Test it out!
 
+{% hint style="success" %}
+**You're about to run your local code against a live Kubernetes cluster 🎉**
+{% endhint %}
+
 Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)).
 
 To test this out, enable mirrord in your IDE plugin and start debugging your process (or execute your process with the mirrord CLI). Send a request to your remote target, and you should see that request arriving at your local process as well!
@@ -275,11 +283,14 @@ Note that, by default, the following features are also enabled:
 
 We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options).
 
-### What's next?
+### Next Steps
 
-Now that you've tried out mirrord, it's time to get acquainted with its different configuration options and tailor it to your needs:
+**What are you trying to do?**
 
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
-2. If your local process reads from a queue, you might want to test out the [copy target feature](../using-mirrord/copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
-3. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-4. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4) sections?
+| Goal | Guide |
+|------|-------|
+| **Test against live traffic** | [Steal incoming traffic](../using-mirrord/steal.md) so your local process responds to real requests instead of the remote pod |
+| **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting/) lets your local process consume messages without competing with the deployed service |
+| **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
+
+Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
