@@ -267,7 +267,7 @@ After installing the Operator, you can verify it works by running `mirrord opera
 ### Test it out!
 
 {% hint style="success" %}
-🎉 **You're about to run your local code against a live Kubernetes cluster.**
+**You're about to run your local code against a live Kubernetes cluster 🎉**
 {% endhint %}
 
 Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)).
