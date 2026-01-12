@@ -44,7 +44,7 @@ There are four parts to configuration creation:
 
 ![Wizard Boilerplate Selection](/docs/overview/onboarding-wizard/wiz-boiler.png)
 
-There are three options for boilerplate configurations that you can choose between. The difference bretween them are explained in more detail in the overview steps.
+There are three options for boilerplate configurations that you can choose between. The differences between them are explained in more detail in the overview steps.
 
 _Note that using "Replace" mode requires the operator (not available in OSS)_.
 
