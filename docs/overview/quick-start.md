@@ -105,7 +105,7 @@ mirrord container -- docker run nginx
 Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
 
 {% hint style="info" %}
-💬 **Questions?** [Join our Slack community](https://join.slack.com/t/metalbear/shared_invite/zt-2emgnleqw-MvEPjLJqUvNI1yAxgB7BhQ)
+💬 **Questions?** [Join our Slack community](https://metalbear.com/slack)
 {% endhint %}
 
 ### VS Code Extension
@@ -284,5 +284,5 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 Now that you've tried out mirrord, here are some next steps:
 
 1. **[Explore guides](../using-mirrord/README.md)** - See mirrord in action with real-world examples
-2. **[Join our Slack](https://join.slack.com/t/metalbear/shared_invite/zt-2emgnleqw-MvEPjLJqUvNI1yAxgB7BhQ)** - Get help and connect with the community
+2. **[Join our Slack](https://metalbear.com/slack)** - Get help and connect with the community
 3. **[Configuration options](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options)** - Customize mirrord for your workflow
