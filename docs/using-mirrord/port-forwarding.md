@@ -20,6 +20,10 @@ The traffic is forwarded as-if it was coming from the target pod, meaning it has
 to destinations that might be outside the cluster, like third-party APIs, depending
 on what's accessible by the target pod.
 
+{% hint style="warning" %}
+To use port-forwarding with MySQL databases, at least version 3.177.0 of mirrord is required.
+{% endhint %}
+
 You can use the command like so:
 ```bash
 mirrord port-forward --target <target-path> -L <local port>:<remote address>:<remote port>
