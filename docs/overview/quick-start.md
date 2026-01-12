@@ -283,7 +283,7 @@ Note that, by default, the following features are also enabled:
 
 We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options).
 
-### What's next?
+### Next Steps
 
 **What are you trying to do?**
 
