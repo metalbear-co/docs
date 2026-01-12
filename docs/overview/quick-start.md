@@ -105,7 +105,7 @@ mirrord container -- docker run nginx
 Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
 
 {% hint style="info" %}
-💬 **Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
+**Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
 {% endhint %}
 
 ### VS Code Extension
