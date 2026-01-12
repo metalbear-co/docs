@@ -267,7 +267,7 @@ After installing the Operator, you can verify it works by running `mirrord opera
 ### Test it out!
 
 {% hint style="success" %}
-🎉 **You're about to run your local code against a live Kubernetes cluster.** No mocking, no staging - real cloud resources, from your laptop.
+🎉 **You're about to run your local code against a live Kubernetes cluster.**
 {% endhint %}
 
 Now that you've installed the CLI tool or one of the extensions, lets see mirrord at work. By default, mirrord will mirror incoming traffic to the remote target (this can be changed in the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)), sending a duplicate to the same port on your local process. So if your remote target receives traffic on port 80, your local process will receive a copy of that traffic on that same port (this can also be [configured](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming)).
@@ -289,8 +289,8 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 
 | Goal | Guide |
 |------|-------|
-| **Test against live traffic** | [Intercept (steal) incoming requests](../using-mirrord/steal.md) so your local process handles them instead of the remote pod |
-| **Debug a queue consumer** | [Copy target](../using-mirrord/copy-target.md) temporarily duplicates the pod so your local process can consume messages without competition |
+| **Handle requests instead of the cluster** | [Steal incoming traffic](../using-mirrord/steal.md) so your local process responds to real requests instead of the remote pod |
+| **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting/) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
 
 Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
