@@ -29,7 +29,7 @@ Make sure that you are connected (and if necessary signed in) to your cluster an
 
 ### Learning overview
 
-As a new user, you may want to learn some mirrord basics before jumping into creating a configuration file. You can do this from the wzard landing page, by leafing throught the overview before getting to the configuration options.
+As a new user, you may want to learn some mirrord basics before jumping into creating a configuration file. You can do this from the wizard landing page, by leafing through the overview before getting to the configuration options.
 
 ## Creating a configuration
 
@@ -44,7 +44,9 @@ There are four parts to configuration creation:
 
 ![Wizard Boilerplate Selection](/docs/overview/onboarding-wizard/wiz-boiler.png)
 
-There are three options for boilerplate configurations that you can choose between. The difference bretween them are explained in more detail in the overview steps. Some of these options may require the operator (not available in OSS).
+There are three options for boilerplate configurations that you can choose between. The difference bretween them are explained in more detail in the overview steps.
+
+_Note that using "Replace" mode requires the operator (not available in OSS)_.
 
 ### Target configuration
 
