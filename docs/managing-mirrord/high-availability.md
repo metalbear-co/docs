@@ -19,7 +19,7 @@ description: High availability for mirrord Operator in Enterprise Tier
 
 Starting from chart version `1.40.1`, the mirrord Operator is by default highly available.
 This means that mirrord sessions should survive transient failures in the cluster,
-with respect to the set of advanced mfT features used by the session (see [advanced features](#advanced-featues) section).
+with respect to the set of advanced mfT features used by the session (see [advanced features](#advanced-features) section).
 This includes failures of nodes where the mirrord Operator pods are running.
 
 High availability is implemented in a lightweight fasion, by saving sessions' state in the cluster's builtin etcd database (as [Custom Resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)). Therefore, no persistent volume is required. At startup, the operator restores and resumes saved sessions.
@@ -38,7 +38,7 @@ Any additional replicas wait in a standby mode, ready to acquire leadership and 
 Configuring the operator to run with multiple replicas allows for smoother leadership transitions,
 since the new leader candidates are already running.
 
-## Advanced featues
+## Advanced features
 
 Not all of the advanced mfT features have yet been migrated to highly available sessions.
 Sessions using such features will be forcefully terminated in case of operator pod failure.
