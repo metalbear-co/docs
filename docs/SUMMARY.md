@@ -2,9 +2,9 @@
 
 * [Overview](overview/README.md)
   * [Introduction](overview/introduction.md)
-  * [mirrord for Teams](overview/teams.md)
   * [Quick Start](overview/quick-start.md)
     * [Onboarding Wizard](overview/onboarding-wizard.md)
+  * [mirrord for Teams](overview/teams.md)
   * [Contributing](overview/contributing.md)
 * [Using mirrord](using-mirrord/README.md)
   * [Traffic Filtering](using-mirrord/traffic-filtering.md)
