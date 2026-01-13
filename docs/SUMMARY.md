@@ -33,6 +33,7 @@
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
   * [Security](managing-mirrord/security.md)
+  * [High Availability](managing-mirrord/high-availability.md)
   * [Policies](managing-mirrord/policies.md)
       * [Outgoing Traffic Policies](managing-mirrord/outgoing-traffic-policies.md)
   * [Profiles](managing-mirrord/profiles.md)
