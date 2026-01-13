@@ -41,6 +41,8 @@ since the new leader candidates are already running.
 ## Advanced featues
 
 Not all of the advanced mfT features have yet been migrated to highly available sessions.
+Sessions using such features will be forcefully terminated in case of operator pod failure.
+
 The table below summarizes the current state of development.
 
 | Feature         | HA | Chart version |
