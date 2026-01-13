@@ -75,6 +75,9 @@ choco install --pre mirrord
 {% endtab %}
 {% endtabs %}
 
+{% hint style="info" %}
+**Want to configure mirrord for your use case?** Run `mirrord wizard` to create a config file interactively.
+{% endhint %}
 
 #### Usage
 
