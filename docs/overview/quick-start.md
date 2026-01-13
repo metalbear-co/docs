@@ -295,5 +295,6 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 | **Test against live traffic** | [Steal incoming traffic](../using-mirrord/steal.md) so your local process responds to real requests instead of the remote pod |
 | **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting/) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
+| **Configure mirrord for your use case** | Run `mirrord wizard` (CLI) to create a config file interactively, or see the [onboarding wizard guide](onboarding-wizard.md) |
 
 Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
