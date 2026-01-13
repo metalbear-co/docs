@@ -15,6 +15,10 @@ description: Using the mirrord wizard to speed up onboarding setup
 
 The mirrord onboarding wizard is designed to make getting started with mirrord easier and faster. It does this by taking you through the basics of mirrord and some commonly used features, and then lets you create and download your first mirrord configuration file via the UI.
 
+{% hint style="info" %}
+This feature is available in mirrord version 3.178.0 and onwards.
+{% endhint %}
+
 ## Launching the wizard
 
 Starting the wizard will open a locally hosted webapp in your browser. To launch the wizard, install mirrord and run the following command:
