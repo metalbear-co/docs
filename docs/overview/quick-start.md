@@ -75,7 +75,6 @@ choco install --pre mirrord
 {% endtab %}
 {% endtabs %}
 
-
 #### Usage
 
 To use mirrord to plug a local process into a pod/deployment in the cluster configured with kubectl, run:
@@ -102,7 +101,7 @@ For example:
 mirrord container -- docker run nginx
 ```
 
-Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
+Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively.
 
 {% hint style="info" %}
 **Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
@@ -286,6 +285,8 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 ### Next Steps
 
 **What are you trying to do?**
+
+Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively.
 
 | Goal | Guide |
 |------|-------|
