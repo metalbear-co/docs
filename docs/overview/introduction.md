@@ -54,7 +54,7 @@ The remote part of this logic is handled by the agent, which runs in the network
 For further details, see the [architecture](../reference/architecture.md) section.
 
 {% hint style="info" %}
-**Want to see this in action?** Follow our [Quick Start guide](quick-start.md) to run mirrord in under 5 minutes.
+**Want to see mirrord in action?** Try it out with our [Quick Start guide](quick-start.md).
 {% endhint %}
 
 ## How it's different from other remocal solutions
