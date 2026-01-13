@@ -76,6 +76,7 @@ This gives mirrord some unique advantages over its alternatives:
 
 ## Get Started
 
-Want to see mirrord in action? Try it out with our **[Quick Start guide](quick-start.md)**.
+Ready to try mirrord?
 
-Or **[watch a demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** first.
+- **[Quick Start Guide](quick-start.md)** — Set up mirrord and run your first session
+- **[Watch the Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** — See mirrord in action before you start
