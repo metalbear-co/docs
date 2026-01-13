@@ -78,5 +78,5 @@ This gives mirrord some unique advantages over its alternatives:
 
 Ready to try mirrord?
 
-→ **[Quick Start Guide](quick-start.md)** - Install and run in 5 minutes
-→ **[Watch Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** - See it in action first
+- **[Quick Start Guide](quick-start.md)** - Install and run in 5 minutes
+- **[Watch Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** - See it in action first
