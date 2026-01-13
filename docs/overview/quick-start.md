@@ -75,10 +75,6 @@ choco install --pre mirrord
 {% endtab %}
 {% endtabs %}
 
-{% hint style="info" %}
-**Want to configure mirrord for your use case?** Run `mirrord wizard` to create a config file interactively.
-{% endhint %}
-
 #### Usage
 
 To use mirrord to plug a local process into a pod/deployment in the cluster configured with kubectl, run:
@@ -105,7 +101,7 @@ For example:
 mirrord container -- docker run nginx
 ```
 
-Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments.
+Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively.
 
 {% hint style="info" %}
 **Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
@@ -290,12 +286,12 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 
 **What are you trying to do?**
 
+Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively.
+
 | Goal | Guide |
 |------|-------|
 | **Test against live traffic** | [Steal incoming traffic](../using-mirrord/steal.md) so your local process responds to real requests instead of the remote pod |
 | **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting/) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
-
-Want to configure mirrord for your use case? Run `mirrord wizard` to create a config file interactively.
 
 Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
