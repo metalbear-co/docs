@@ -27,12 +27,6 @@ it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
-{% hint style="info" %}
-You can only have **one** mirrord CI session per service during a CI run. You must do one
-`mirrord ci start`, run your tests, then run `mirrord ci stop` when they're done, before you're
-able to run `mirrord ci start` again in the same CI run.
-{% endhint %}
-
 ## Prerequisites
 
 1. Minimum mirrord CLI version `3.166.0`.
@@ -81,6 +75,10 @@ The mirrord for CI session should now be running in the background, and you can 
 These tests should target the deployed service (the app running in your staging cluster, for example),
 and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
 with mirrord).
+
+{% hint style="info" %}
+If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
+{% endhint %}
 
 ### Application logs
 
