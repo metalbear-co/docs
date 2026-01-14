@@ -2,7 +2,7 @@
 title: "mirrord for CI"
 description: "How to use mirrord in a CI environment with `mirrord ci` commands."
 date: 2025-10-21T00:00:00+03:00
-lastmod: 2025-10-21T00:00:00+03:00
+lastmod: 2026-01-14T00:00:00+03:00
 draft: false
 menu:
   docs:
