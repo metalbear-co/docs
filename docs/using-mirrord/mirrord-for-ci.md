@@ -71,9 +71,7 @@ To view the entire list of arguments, run `mirrord ci start --help`.
 mirrord ci start --target deployment/ip-visit-counter npm run
 ```
 
-{% hint style="info" %}
 You can start multiple mirrord for CI sessions during a single CI job by running 'mirrord ci start' more than once. 
-{% endhint %}
 
 The mirrord for CI session should now be running in the background, and you can run the tests.
 These tests should target the deployed service (the app running in your staging cluster, for example),
