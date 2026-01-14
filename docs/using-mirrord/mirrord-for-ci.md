@@ -75,6 +75,7 @@ The mirrord for CI session should now be running in the background, and you can 
 These tests should target the deployed service (the app running in your staging cluster, for example),
 and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
 with mirrord).
+You can start multiple mirrord for CI sessions during a single CI job by running 'mirrord ci start' more than once. 
 
 {% hint style="info" %}
 If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
