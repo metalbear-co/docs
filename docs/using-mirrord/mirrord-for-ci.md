@@ -2,7 +2,7 @@
 title: "mirrord for CI"
 description: "How to use mirrord in a CI environment with `mirrord ci` commands."
 date: 2025-10-21T00:00:00+03:00
-lastmod: 2025-10-21T00:00:00+03:00
+lastmod: 2026-01-14T00:00:00+03:00
 draft: false
 menu:
   docs:
@@ -27,15 +27,9 @@ it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
-{% hint style="info" %}
-You can only have **one** mirrord CI session per service during a CI run. You must do one
-`mirrord ci start`, run your tests, then run `mirrord ci stop` when they're done, before you're
-able to run `mirrord ci start` again in the same CI run.
-{% endhint %}
-
 ## Prerequisites
 
-1. Minimum mirrord CLI version `3.166.0`.
+1. Minimum mirrord CLI version `3.181.0`.
 2. The CI runner must be able to access the Kubernetes cluster in which you want to test.
 
 ## Kubernetes requirements
@@ -77,10 +71,16 @@ To view the entire list of arguments, run `mirrord ci start --help`.
 mirrord ci start --target deployment/ip-visit-counter npm run
 ```
 
+You can start multiple mirrord for CI sessions during a single CI job by running 'mirrord ci start' more than once. 
+
 The mirrord for CI session should now be running in the background, and you can run the tests.
 These tests should target the deployed service (the app running in your staging cluster, for example),
 and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
 with mirrord).
+
+{% hint style="info" %}
+If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
+{% endhint %}
 
 ### Application logs
 
@@ -125,3 +125,7 @@ mirrord ci stop
 ```
 
 mirrord will stop running itself, and the local app.
+
+{% hint style="info" %}
+A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job.
+{% endhint %}
