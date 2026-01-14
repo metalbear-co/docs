@@ -127,3 +127,7 @@ mirrord ci stop
 ```
 
 mirrord will stop running itself, and the local app.
+
+{% hint style="info" %}
+A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job.
+{% endhint %}
