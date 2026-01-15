@@ -30,6 +30,8 @@
   * [Connecting External Tools](using-mirrord/connecting-external-tools.md)
     * [Web Browsing](using-mirrord/web-browsing.md)
     * [Postman](using-mirrord/postman.md)
+* [Using mirrord with AI](using-mirrord-with-AI/README.md)
+  * [The Meta-Prompt: Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-propmt.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
   * [Security](managing-mirrord/security.md)
