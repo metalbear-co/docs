@@ -32,7 +32,7 @@
     * [Postman](using-mirrord/postman.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [The Meta-Prompt: Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-propmt.md)
-  * [Security](managing-mirrord/security.md)
+  * [test](using-mirrord-with-ai/web-browsing.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Monitoring](managing-mirrord/monitoring.md)
   * [Security](managing-mirrord/security.md)
