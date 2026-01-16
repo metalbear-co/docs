@@ -16,7 +16,7 @@ description: Versioning and compatibility between mirrord components
 
 # Versioning
 
-mirrord is composed of multiple components, including the CLI, Operator, Agent, and License Server. These components may be deployed and upgraded independently, and mirrord is designed to support safe, incremental upgrades in production environments.
+mirrord is composed of multiple components, including the CLI, Operator, Agent, and License Server. These components may be deployed and upgraded independently, and mirrord is designed to support safe, incremental upgrades.
 
 This page describes how versioning and compatibility work across mirrord components.
 
