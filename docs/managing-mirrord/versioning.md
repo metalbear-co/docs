@@ -22,7 +22,9 @@ This page describes how versioning and compatibility work across mirrord compone
 
 ### Component Compatibility
 
-mirrord components communicate over well-defined APIs and do not require lockstep upgrades. In most cases, components can be upgraded independently as long as they remain within the same major version.
+mirrord components communicate over well-defined APIs and do not require lockstep upgrades. In most cases, components can be upgraded independently as long as they remain within the same major version. 
+
+Note: The only caveat here is that the mirrord Operator helm chart runs its own major versions, but the helm chart just delivers the Operator. The Operator version is what should be considered for compatibility.
 
 ### License Server and Operator Compatibility
 
