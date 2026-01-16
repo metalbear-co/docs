@@ -11,7 +11,6 @@ menu:
 weight: 545
 toc: true
 tags:
-  - enterprise
 description: Versioning and compatibility between mirrord components
 ---
 
