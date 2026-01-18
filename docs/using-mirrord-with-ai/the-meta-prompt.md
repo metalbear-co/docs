@@ -5,21 +5,18 @@ description: Configure AI Agents to Use mirrord
 
 - [Environment Setup](using-mirrord-with-ai/the-meta-prompt#environment-Setup)
 - [The Meta-Prompt](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt)
-Exploring the Generated Files
+- Exploring the Generated Files
+- Testing the Workflow
+- Try It Yourself
+- Benefits for the Team
+- [Wrapping Up]()
 
-Testing the Workflow
-
-Try It Yourself
-
-Benefits for the Team
-
-[Wrapping Up]()
-
-## Environment Setup
+# Environment Setup
 For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). - It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
 
 The architecture looks like this:
-![High Aevel Architecture](./high-level-architecture.png)
+
+![High Aevel Architecture](./assets/high-level-architecture.png)
 ### Here’s what you’ll need to get started:
 - Access to a Kubernetes cluster, such as a staging environment
 - kubectl configured and ready
@@ -28,7 +25,7 @@ The architecture looks like this:
 
 You can follow along using any cluster you already have access to, whether it’s staging or development. The important part is that you’re testing against a real environment.
 
-## The Meta-Prompt
+# The Meta-Prompt
 Here’s where it gets interesting. Instead of manually creating all the configuration files, we gave an AI agent a comprehensive prompt that told it exactly what to generate.
 
 We navigated to the repository root, opened Claude Code, and pasted in the following prompt:
@@ -156,14 +153,14 @@ When we ran the prompt, Claude:
 4. Validated that everything worked before presenting the results
 
 Let’s see it in action.
+<video controls width="50%">
+  <source src="./assets/screen-recording.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
 
-![Prompt Executed](./screen-recording.mov)
-
-
-What Claude Generated
+### What Claude Generated
 
 You saw Claude scan the repository and identify all the services. From there, we selected the ip-visit-counter service to configure.
-
 Claude generated three files:
 1. `AGENTS.md`
 Instructions that tell AI agents how to use mirrord when testing the service.
