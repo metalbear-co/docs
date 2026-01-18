@@ -151,12 +151,9 @@ When we ran the prompt, Claude:
 2. Matched them to Kubernetes deployments using `kubectl get deployments`
 3. Generated mirrord configurations, helper scripts, and `AGENTS.md`
 4. Validated that everything worked before presenting the results
+Let's see it in action:
 
-Let’s see it in action.
-<video controls width="50%">
-  <source src="./assets/screen-recording.mov" type="video/quicktime">
-  Your browser does not support the video tag.
-</video>
+![Promt Execution](./assets/screen-recording.mp4)
 
 ### What Claude Generated
 
