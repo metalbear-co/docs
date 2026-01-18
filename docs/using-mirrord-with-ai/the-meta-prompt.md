@@ -21,7 +21,7 @@ Benefits for the Team
 For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). - It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
 
 The architecture looks like this:
-![High Aevel Architecture](using-mirrord-with-ai/high-level-architecture.png)
+![High Aevel Architecture](using-mirrord-with-ai/images/high-level-architecture.png)
 
 ### Here’s what you’ll need to get started:
 - Access to a Kubernetes cluster, such as a staging environment
