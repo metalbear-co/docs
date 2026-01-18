@@ -153,7 +153,9 @@ When we ran the prompt, Claude:
 4. Validated that everything worked before presenting the results
 Let's see it in action:
 
-![Promt Execution](./assets/screen-recording.mp4)
+<video controls width="100%">
+  <source src="./assets/screen-recording.mp4" type="video/mp4">
+</video>
 
 ### What Claude Generated
 
