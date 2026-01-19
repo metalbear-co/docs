@@ -6,7 +6,7 @@ description: Configure AI Agents to Use mirrord
 The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
 
 {% hint style="info" %}
-[https://agents.md/](https://agents.md/) - for `AGENTS.md` file example
+`AGENTS.md` file example: [https://agents.md/](https://agents.md/)
 {% endhint %}
 
 - [Environment Setup](using-mirrord-with-ai/the-meta-prompt#environment-Setup)
@@ -265,6 +265,7 @@ Start with one service in one repository. Once you see how fast the iteration cy
 
 {% hint style="info" %}
 **A safety note**
+
 When working with AI agents and live Kubernetes environments:
 - Keep your AI assistant in edit or approval mode so you can review changes before they run
 - Never target production clusters. Use staging or development environments only
