@@ -3,10 +3,11 @@ title: The Meta-Prompt
 description: Configure AI Agents to Use mirrord
 ---
 
-# **What We’re Building**
-
 The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
 
+{% hint style="info" %}
+[https://agents.md/](https://agents.md/) - for `AGENTS.md` file example
+{% endhint %}
 
 - [Environment Setup](using-mirrord-with-ai/the-meta-prompt#environment-Setup)
 - [The Meta-Prompt](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt)
@@ -251,17 +252,25 @@ With mirrord, you skip all of that and test changes directly against the live cl
 # Try It Yourself
 
 Now it’s your turn to try this with your own repository.
-Copy the meta-prompt from [earlier in this guide](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt) and paste it into Claude Code, or your AI assistant of choice, at the repository root. The assistant will discover your services, match them to Kubernetes deployments, and generate everything you need.
-We tested this workflow with **Claude Code v2.0.76, Cursor v2.3.35, GitHub Copilot CLI v0.0.382, and Gemini CLI v0.24.0.** All of them followed the same interactive, step-by-step process. If you’re using a different assistant, you may need to run the discovery and generation steps as separate prompts.
+Copy the meta-prompt from [earlier in this guide](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt) and paste it into Claude Code, or your AI assistant of choice, at the repository root. 
+
+The assistant will discover your services, match them to Kubernetes deployments, and generate everything you need.
+We tested this workflow with **Claude Code v2.0.76, Cursor v2.3.35, GitHub Copilot CLI v0.0.382, and Gemini CLI v0.24.0.** All of them followed the same interactive, step-by-step process. 
+If you’re using a different assistant, you may need to run the discovery and generation steps as separate prompts.
+
 **Test it immediately.** Don’t just generate the files and move on. Actually run the test. For example, ask: “*Read AGENTS.md and test the [service-name] service*”, and watch it work end to end.
+
 **Make a small code change.** This is where you’ll feel the difference. Modify something, test it with mirrord, and see the fast feedback loop in action.
 Start with one service in one repository. Once you see how fast the iteration cycle becomes, you’ll want this everywhere.
 
-**A quick safety note**
+{% hint style="info" %}
+**A safety note**
 When working with AI agents and live Kubernetes environments:
 - Keep your AI assistant in edit or approval mode so you can review changes before they run
 - Never target production clusters. Use staging or development environments only
 - Start with one service at a time until you’re comfortable with the workflow
+{% endhint %}
+
 
 # Team Benefits 
 
