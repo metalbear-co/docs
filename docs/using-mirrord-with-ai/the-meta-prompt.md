@@ -18,7 +18,7 @@ For this demo, we’ll use the [the MetalBear playground repository](https://git
 The architecture looks like this:
 
 ![High Aevel Architecture](./assets/high-level-architecture.png)
-### Here’s what you’ll need to get started:
+### Here’s what you’ll need to get started:**
 
 - Access to a Kubernetes cluster, such as a staging environment
 - kubectl configured and ready
@@ -149,7 +149,7 @@ Report Back:
 - Any remaining manual inputs or values requiring review
 ```
 
-When we ran the prompt, Claude:
+**When we ran the prompt, Claude:**
 1. Discovered the services by scanning for entry points like `main.go` and `app.py`
 2. Matched them to Kubernetes deployments using `kubectl get deployments`
 3. Generated mirrord configurations, helper scripts, and `AGENTS.md`
@@ -173,26 +173,29 @@ This is the command Claude runs when you say “test the service.” `AGENTS.md`
 # Exploring the Generated Files
 
 Let’s take a closer look at what the meta-prompt actually generated.
-### `AGENTS.md`
+### 1. `AGENTS.md`
 
 The AI instructions start with a prominent attention block:
+
 ![`AGENTS.md` opens with an attention-grabbing block and uses strong language throughout. There are no soft suggestions, only clear rules.](./assets/AGENTS.png)
 
 Notice the wording: “NEVER”, “ALWAYS”, “MUST”. This is intentional. AI agents respond far more reliably to imperative instructions than to phrasing like “you might want to consider”.
 
 The file also includes exact testing commands with a required header:
+
 ![The testing section shows exact commands with the header requirement](./assets/AGENTS2.png)
 
 This detail is critical. When you later tell Claude to test the service, it automatically includes this header because `AGENTS.md` explicitly requires it.
 
-### The `mirrord-ip-visit-counter.json` config
+### 2. The `mirrord-ip-visit-counter.json` config
 
 This JSON file tells mirrord how to connect to the cluster:
+
 ![The mirrord config targets the deployment, filters traffic by header (x-mirrord: local), and enables access to cluster resources](./assets/config-file.png)
 
 The configuration targets the `ip-visit-counter` deployment in the default namespace, filters traffic using the `x-mirrord: local` header, and enables outgoing network access so your local code can reach services running in the cluster.
 
-### The helper script
+### 3. The helper script
 
 The helper script wraps the mirrord command and handles all the pre-flight checks:
 - Verifies that mirrord is installed
