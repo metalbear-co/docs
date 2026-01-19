@@ -5,19 +5,21 @@ description: Configure AI Agents to Use mirrord
 
 - [Environment Setup](using-mirrord-with-ai/the-meta-prompt#environment-Setup)
 - [The Meta-Prompt](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt)
-- Exploring the Generated Files
-- Testing the Workflow
+- [Exploring the Generated Files](using-mirrord-with-ai/the-meta-prompt#exploring-the-generated-files)
+- Testing the Setup
 - Try It Yourself
 - Benefits for the Team
 - [Wrapping Up]()
 
 # Environment Setup
+
 For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). - It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
 
 The architecture looks like this:
 
 ![High Aevel Architecture](./assets/high-level-architecture.png)
 ### Here’s what you’ll need to get started:
+
 - Access to a Kubernetes cluster, such as a staging environment
 - kubectl configured and ready
 - mirrord installed locally
@@ -26,6 +28,7 @@ The architecture looks like this:
 You can follow along using any cluster you already have access to, whether it’s staging or development. The important part is that you’re testing against a real environment.
 
 # The Meta-Prompt
+
 Here’s where it gets interesting. Instead of manually creating all the configuration files, we gave an AI agent a comprehensive prompt that told it exactly what to generate.
 
 We navigated to the repository root, opened Claude Code, and pasted in the following prompt:
@@ -151,11 +154,9 @@ When we ran the prompt, Claude:
 2. Matched them to Kubernetes deployments using `kubectl get deployments`
 3. Generated mirrord configurations, helper scripts, and `AGENTS.md`
 4. Validated that everything worked before presenting the results
-Let's see it in action:
+Let's see it in action: 
+*add first video*
 
-<video controls width="100%">
-  <source src="./assets/screen-recording.mp4" type="video/mp4">
-</video>
 
 ### What Claude Generated
 
@@ -169,4 +170,41 @@ The mirrord configuration, including which Kubernetes deployment to connect to a
 A helper script that wraps the mirrord command with pre-flight checks, such as verifying that mirrord is installed, kubectl is working, and the deployment exists.
 This is the command Claude runs when you say “test the service.” `AGENTS.md` references this script directly, so the agent knows to use it automatically.
 
+# Exploring the Generated Files
 
+Let’s take a closer look at what the meta-prompt actually generated.
+### `AGENTS.md`
+
+The AI instructions start with a prominent attention block:
+![`AGENTS.md` opens with an attention-grabbing block and uses strong language throughout. There are no soft suggestions, only clear rules.](./assets/AGENTS.png)
+
+Notice the wording: “NEVER”, “ALWAYS”, “MUST”. This is intentional. AI agents respond far more reliably to imperative instructions than to phrasing like “you might want to consider”.
+
+The file also includes exact testing commands with a required header:
+![The testing section shows exact commands with the header requirement](./assets/AGENTS2.png)
+
+This detail is critical. When you later tell Claude to test the service, it automatically includes this header because `AGENTS.md` explicitly requires it.
+
+### The `mirrord-ip-visit-counter.json` config
+
+This JSON file tells mirrord how to connect to the cluster:
+![The mirrord config targets the deployment, filters traffic by header (x-mirrord: local), and enables access to cluster resources](./assets/config-file.png)
+
+The configuration targets the `ip-visit-counter` deployment in the default namespace, filters traffic using the `x-mirrord: local` header, and enables outgoing network access so your local code can reach services running in the cluster.
+
+### The helper script
+
+The helper script wraps the mirrord command and handles all the pre-flight checks:
+- Verifies that mirrord is installed
+- Confirms kubectl can reach the cluster
+- Checks that the deployment exists
+- Prints the active traffic filter
+- Runs the full mirrord command
+
+![The helper script's pre-flight checks - verifies mirrord, kubectl, config file, and deployment before running the test](./assets/helper-script.png)
+
+This is the script Claude runs when you say “test the service”. Because AGENTS.md references it explicitly, the agent knows to use it automatically.
+
+Now let’s see if it actually works.
+
+# Testing the Setup
