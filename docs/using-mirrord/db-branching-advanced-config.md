@@ -128,6 +128,10 @@ Uses the standard AWS environment variables already present in the target pod.
 }
 ```
 
+### Default AWS environment variables
+
+mirrord reads the following variables from the **target pod**, not from your local shell.
+
 | Field | Default fallback |
 |-------|------------------|
 | `region` | `AWS_REGION`, `AWS_DEFAULT_REGION` |
