@@ -38,7 +38,7 @@ These settings give additional flexibility in how mirrord handles database branc
 }
 ```
 
-## Branch Creation Timeout
+# Branch Creation Timeout
 
 `creation_timeout_secs`
 Defines how long (in seconds) mirrord waits for a database branch to become ready after creation.
@@ -46,7 +46,7 @@ If the branch isn’t ready within this time, mirrord session fails, exists and 
 Use this field to avoid hanging operations when branch creation takes too long or fails.
 Default value is 60 seconds.
 
-## Copy Modes
+# Copy Modes
 
 The `copy` field controls what data gets cloned when creating a database branch.
 
@@ -55,12 +55,12 @@ The `copy` field controls what data gets cloned when creating a database branch.
 `"mode": "empty"` Creates an empty database with no schema or data, this is the default value when the `copy` attribute is not specified.
 Best for workflows where your application initializes the schema or runs migrations as part of startup.
 
-1. ### Database Schemas
+2. ### Database Schemas
 
 `"mode": "schema"` Copies only the table structures (schemas) from the source database, without any data.
 Useful for testing schema changes or local development where structure is needed but data is not.
 
-1. ### Complete Database
+3. ### Complete Database
 
 `"mode": "all"` Copies everything from the source database - both schema and data.
 This is helpful when you want a full clone of your environment data for debugging or reproducing production-like scenarios.
@@ -70,7 +70,7 @@ It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
-1. ### Filtered Data Clone
+4. ### Filtered Data Clone
 
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
 
@@ -101,17 +101,19 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
-## IAM Authentication
+# IAM Authentication
 
-mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials are read from the **target pod's environment**, just like connection URLs.
+mirrord supports IAM authentication for **AWS RDS** and **GCP Cloud SQL**. Credentials are read from the **target pod's environment**, just like connection URLs.
 
 {% hint style="info" %}
-**Default env vars**: If you don't specify custom sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`).
+**Default environment variables**: If you do not specify custom credential sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`). You only need additional configuration if your pod uses non-standard variable names.
 {% endhint %}
 
-### AWS RDS
+## AWS RDS IAM Authentication
 
-**Minimal config** — Uses standard AWS env vars from target pod:
+### Minimal Configuration
+
+Uses the standard AWS environment variables already present in the target pod.
 
 ```json
 {
@@ -133,7 +135,9 @@ mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials a
 | `secret_access_key` | `AWS_SECRET_ACCESS_KEY` |
 | `session_token` | `AWS_SESSION_TOKEN` |
 
-**Custom env vars** — Override when using non-standard names:
+### Custom AWS environment variables
+
+Use this only if your pod uses non-standard variable names.
 
 ```json
 {
@@ -146,9 +150,11 @@ mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials a
 }
 ```
 
-### GCP Cloud SQL
+## GCP Cloud SQL IAM Authentication
 
-**Minimal config** — Uses `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod:
+### Minimal Configuration
+
+Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 
 ```json
 {
@@ -163,14 +169,19 @@ mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials a
 }
 ```
 
+### Default GCP environment variables
+
 | Field | Default fallback |
 |-------|------------------|
 | `credentials_path` | `GOOGLE_APPLICATION_CREDENTIALS` |
 | `project` | `GOOGLE_CLOUD_PROJECT`, `GCP_PROJECT`, `GCLOUD_PROJECT` |
 
-**Custom credentials** — Two options:
+### Custom GCP credentials
 
-*Option 1: Inline JSON* — Load JSON content directly from an env var:
+You can override the default behavior in one of the following ways.
+
+**Option 1: Inline JSON credentials**
+Load the service account JSON directly from an environment variable.
 
 ```json
 {
@@ -181,7 +192,9 @@ mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials a
 }
 ```
 
-*Option 2: Custom file path* — Read from a mounted Secret file:
+**Option 2: Custom credential file path**
+
+Read credentials from a file path provided via an environment variable (for example, a mounted Kubernetes Secret).
 
 ```json
 {
@@ -196,6 +209,7 @@ mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Credentials a
 Use either `credentials_json` OR `credentials_path`, not both.
 {% endhint %}
 
-{% hint style="info" %}
-GCP Cloud SQL requires `sslmode=require` in your `DATABASE_URL`.
-{% endhint %}
+#### Required Database Settings
+
+GCP Cloud SQL requires TLS.
+Make sure your `DATABASE_URL` includes: `sslmode=require`
