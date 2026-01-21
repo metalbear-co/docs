@@ -48,7 +48,7 @@ Developers define branches in their `mirrord.json`:
   "db_branches": [
     {
       "id": "users-mysql-db",             // Optional
-      "type": "mysql",                    // Available options [mysql|pg]
+      "type": "mysql",                    // Available options [mysql|pg|mongodb]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional

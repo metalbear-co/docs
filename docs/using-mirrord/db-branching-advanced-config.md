@@ -19,7 +19,7 @@ These settings give additional flexibility in how mirrord handles database branc
   "db_branches": [
     {
       "id": "users-mysql-db",            // Optional
-      "type": "mysql",
+      "type": "mysql",                    // Available options [mysql|pg|mongodb]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
