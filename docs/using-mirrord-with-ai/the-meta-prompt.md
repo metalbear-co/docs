@@ -214,7 +214,7 @@ The helper script wraps the mirrord command and handles all the pre-flight check
 
 This is the script Claude runs when you say “test the service”. Because AGENTS.md references it explicitly, the agent knows to use it automatically.
 
-Now let’s see if it actually works. **to add 1st video link**
+[Now let’s see if it actually works.](https://www.youtube.com/watch?v=EPMTFWQJy4M) 
 
 
 # Testing the Setup
@@ -223,7 +223,7 @@ Next, we asked Claude to test the service. The key detail is that we explicitly 
 ```
 Read AGENTS.md and test the ip-visit-counter service. Send 3 requests.
 ```
-Watch running in action **add 2nd video link**
+[Watch running in action](https://www.youtube.com/watch?v=1G046UqS9gE)
 
 **Here’s what happened:**
 1. Claude read `AGENTS.md` and understood it should use mirrord
@@ -238,7 +238,7 @@ Now for the interesting part. We made a code change and had Claude test it immed
 Read AGENTS.md. Change the ip-visit-counter response to include a "message": "Welcome!" field and a "date" field with the current date. Then test the changes by sending 2 requests to the /count endpoint and show me the responses.
 ```
 
-Watch modifiying in action **add 3rd video**
+[Watch modifiying in action](https://www.youtube.com/watch?v=TdqKUXdvR0M)
 
 **This is what happened next:**
 1. Claude modified the code to add the message and date fields
