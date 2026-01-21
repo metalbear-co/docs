@@ -53,6 +53,10 @@ The remote part of this logic is handled by the agent, which runs in the network
 
 For further details, see the [architecture](../reference/architecture.md) section.
 
+{% hint style="info" %}
+**Want to see mirrord in action?** Try it out with our [Quick Start guide](quick-start.md).
+{% endhint %}
+
 ## How it's different from other remocal solutions
 
 mirrord is not the first tool to allow you to run your code in the cloud. However, it does it in a way that's completely different from all the other solutions.
@@ -69,3 +73,10 @@ This gives mirrord some unique advantages over its alternatives:
 - At the local level, you can run multiple processes simultaneously, each in the context of a different remote pod
 - At the cluster level, it's agnostic to the cluster's network setup - whether it includes a service mesh, a VPN, or anything else
 - At the cluster level, it's agnostic to the cluster's size - mirrord has been tested on clusters running 10,000+ pods
+
+## Get Started
+
+Ready to try mirrord?
+
+- **[Quick Start Guide](quick-start.md)** — Set up mirrord and run your first session
+- **[Watch the Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** — See mirrord in action before you start
