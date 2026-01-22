@@ -1,37 +1,30 @@
 ---
-title: The Meta-Prompt
-description: Configure AI Agents to Use mirrord
+title: Configure AI Agents to Use mirrord
 ---
 
-The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
+The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not mocks or CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
 
 {% hint style="info" %}
 `AGENTS.md` file example: [https://agents.md/](https://agents.md/)
 {% endhint %}
 
-- [Environment Setup](using-mirrord-with-ai/the-meta-prompt#environment-Setup)
-- [The Meta-Prompt](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt)
-- [Exploring the Generated Files](using-mirrord-with-ai/the-meta-prompt#exploring-the-generated-files)
-- [Testing the Setup](using-mirrord-with-ai/the-meta-prompt#testing-the-setup)
-- [Try It Yourself](using-mirrord-with-ai/the-meta-prompt#try-it-yourself)
-- [Team Benefits](using-mirrord-with-ai/the-meta-prompt#team-benefits)
-- [Wrapping Up](using-mirrord-with-ai/the-meta-prompt#wrapping-up)
+***You can navigate directly to any section using the table of contents on the right.***
 
 # Environment Setup
 
-For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). - It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
+For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
 
 The architecture looks like this:
 
-![High Aevel Architecture](./assets/high-level-architecture.png)
+![High Level Architecture](./assets/high-level-architecture.png)
 ### Here’s what you’ll need to get started:
 
-- Access to a Kubernetes cluster, such as a staging environment
+- Access to a Kubernetes cluster
 - kubectl configured and ready
 - mirrord installed locally
-- For this guide, we use Claude Code v2.0.76 as the AI assistant. In the Try it yourself section, we’ll cover other assistants that can be used with the same workflow.
+- For this guide, we use Claude Code v2.0.76 as the AI assistant. In the Try It Yourself section, we’ll cover other assistants that can be used with the same workflow.
 
-You can follow along using any cluster you already have access to, whether it’s staging or development. The important part is that you’re testing against a real environment.
+You can follow along using any cluster you already have access to. The important part is that you’re testing against a real environment.
 
 # The Meta-Prompt
 
@@ -161,7 +154,10 @@ Report Back:
 3. Generated mirrord configurations, helper scripts, and `AGENTS.md`
 4. Validated that everything worked before presenting the results
 Let's see it in action: 
-**add first video**
+
+https://www.youtube.com/watch?v=EPMTFWQJy4M
+
+{% embed url="https://www.youtube.com/watch?v=EPMTFWQJy4M" %}
 
 
 ### What Claude Generated
