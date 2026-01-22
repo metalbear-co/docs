@@ -56,5 +56,5 @@
   * [File Operations](reference/fileops.md)
   * [Third-party](reference/third-party.md)
 * [Coming Soon](coming-soon/README.md)
-  * [Preview Environments](coming-soon/preview-env.md)
+  * [Preview Environments](coming-soon/preview-env/preview-env.md)
 

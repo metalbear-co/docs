@@ -1,7 +1,7 @@
 ---
 title: Preview Environment - Coming soon
 lastmod: 2026-01-22T08:48:45.000Z
-description: Ephemral and Isolated Environment in the Cluster
+description: Ephemral and Isolated Environment In the Cluster
 ---
 
 Preview Environments enable teams to collaborate, validate, and review new code using real traffic without impacting live services.
@@ -70,4 +70,8 @@ mirrord preview clean --key <environment-key>
 ## Preview Environment Workflow
 
 ![Preview Environment Workflow](preview-env-flow.png)
+
+### Interested in Preview Environments?**
+[**Sign up**](https://2dkwjs.share-eu1.hsforms.com/2u8rhMF4WTomds20_JcxHOw) **if you’d like to be among the first users of Preview Environments.**
+
 
