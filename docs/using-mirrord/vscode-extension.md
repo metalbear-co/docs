@@ -24,6 +24,10 @@ If you develop your application in Visual Studio Code, you can debug it with mir
 
 ![mirrord button](vscode-extension/images/enabler.png)
 
+{% hint style="info" %}
+The mirrord extension is also available for all VS Code forks like Cursor, Windsurf, Antigravity, PearAI, and Trae.
+{% endhint %}
+
 3. Run or debug your application as you usually do
 
 When you start a debugging session with mirrord enabled, you'll be prompted with a target selection quick pick. This quick pick will allow you to select the target in your Kubernetes cluster that you want to impersonate.
