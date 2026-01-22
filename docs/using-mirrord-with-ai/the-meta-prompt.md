@@ -4,12 +4,6 @@ title: Configure AI Agents to Use mirrord
 
 The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not mocks or CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
 
-{% hint style="info" %}
-`AGENTS.md` file example: [https://agents.md/](https://agents.md/)
-{% endhint %}
-
-***You can navigate directly to any section using the table of contents on the right.***
-
 # Environment Setup
 
 For this demo, we’ll use the [the MetalBear playground repository](https://github.com/metalbear-co/playground). It's a simple IP visit counter application written in Go, with a Redis dependency, which makes it ideal for demonstrating how this works.
@@ -22,7 +16,7 @@ The architecture looks like this:
 - Access to a Kubernetes cluster
 - kubectl configured and ready
 - mirrord installed locally
-- For this guide, we use Claude Code v2.0.76 as the AI assistant. In the Try It Yourself section, we’ll cover other assistants that can be used with the same workflow.
+- For this guide, we use Claude Code as the AI assistant. In the Try It Yourself section, we’ll cover other assistants that can be used with the same workflow.
 
 You can follow along using any cluster you already have access to. The important part is that you’re testing against a real environment.
 
@@ -214,7 +208,7 @@ Next, we asked Claude to test the service. The key detail is that we explicitly 
 ```
 Read AGENTS.md and test the ip-visit-counter service. Send 3 requests.
 ```
-Watch running in action
+Watch running in action:
 
 {% embed url="https://www.youtube.com/watch?v=1G046UqS9gE" %}
 
@@ -232,7 +226,7 @@ Now for the interesting part. We made a code change and had Claude test it immed
 Read AGENTS.md. Change the ip-visit-counter response to include a "message": "Welcome!" field and a "date" field with the current date. Then test the changes by sending 2 requests to the /count endpoint and show me the responses.
 ```
 
-Watch modifiying in action
+Watch modifiying in action:
 
 {% embed url="https://www.youtube.com/watch?v=TdqKUXdvR0M" %}
 
@@ -254,9 +248,9 @@ The assistant will discover your services, match them to Kubernetes deployments,
 We tested this workflow with **Claude Code, Cursor, GitHub Copilot CLI, and Gemini CLI** All of them followed the same interactive, step-by-step process. 
 If you’re using a different assistant, you may need to run the discovery and generation steps as separate prompts.
 
-**Test** Consider testing it early. Instead of generating the files and moving on, it can be helpful to actually run the test. For example, ask: “*Read AGENTS.md and test the [service-name] service*”, and watch it work end to end.
+- **Test**: Consider testing it early. Instead of generating the files and moving on, it can be helpful to actually run the test. For example, ask: “*Read AGENTS.md and test the [service-name] service*”, and watch it work end to end.
 
-**Make a small code change.** This is where you’ll feel the difference. Modify something, test it with mirrord, and see the fast feedback loop in action.
+- **Make a small code change**: This is where you’ll feel the difference. Modify something, test it with mirrord, and see the fast feedback loop in action.
 Start with one service in one repository. Once you see how fast the iteration cycle becomes, you’ll want this everywhere.
 
 {% hint style="info" %}
