@@ -20,13 +20,14 @@ description: Using the mirrord extension in Visual Studio Code
 If you develop your application in Visual Studio Code, you can debug it with mirrord using our Visual Studio Marketplace [extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord). Simply:
 
 1. Download the extension
-2. Enable mirrord using the "mirrord" button on the bottom toolbar 
-
-![mirrord button](vscode-extension/images/enabler.png)
 
 {% hint style="info" %}
 The mirrord extension is also available for all VS Code forks like Cursor, Windsurf, Antigravity, PearAI, and Trae.
 {% endhint %}
+
+2. Enable mirrord using the "mirrord" button on the bottom toolbar 
+
+![mirrord button](vscode-extension/images/enabler.png)
 
 3. Run or debug your application as you usually do
 
