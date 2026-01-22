@@ -1,12 +1,13 @@
 ---
-title: Preview Environment - Coming soon
+title: Preview Environments - Coming Soon
 lastmod: 2026-01-22T08:48:45.000Z
-description: Ephemral and Isolated Environment In the Cluster
+description: Ephemeral and Isolated Environment In the Cluster
+
 ---
 
 Preview Environments enable teams to collaborate, validate, and review new code using real traffic without impacting live services.
 
-They provide an ephemral, isolated environment in the cluster where new versions of services can run independently of a developer’s local machine. This makes Preview Environments suitable for async feedback, cross-team reviews, and realistic validation workflows that go beyond a single mirrord session.
+They provide an ephemeral, isolated environment in the cluster where new versions of services can run independently of a developer’s local machine. This makes Preview Environments suitable for async feedback, cross-team reviews, and realistic validation workflows that go beyond a single mirrord session.
 
 {% hint style="info" %}
 This feature will be available to users on the Enterprise pricing plan.
@@ -21,11 +22,11 @@ Preview Environments provide a simple way to spin up isolated, temporary remote 
 - Receive filtered or duplicated production traffic using an environment key
 - Remain alive for a fixed TTL, independent of any local process
 
-### Key 
+### Environment Key 
 Each Preview Environment is identified by an environment key.
 The key is used to:
 - Scope HTTP and queue traffic filtering
-- Enable to associate multiple preview pods into a single environment
+- Associate multiple preview pods into a single environment
 - Enable sharing access with other developers
 - If a key is not provided, mirrord generates one automatically
 
@@ -49,16 +50,15 @@ Preview environment is live!
   TTL expires in: 59m 58s
   ```
 
-- If --key is omitted, mirrord generates a new key and prints it in the output.
+- If `--key` is omitted, mirrord generates a new key and prints it in the output.
 - You can add or update pods in an existing Preview Environment by reusing the same environment key
 
 ### Targetless Mode
-If no target is defined in the configuration, mirrord operates in targetless mode and creates a fresh isolated pod that participates in traffic filtering via the environment key.
+If no target is defined in the configuration, mirrord operates in targetless mode and creates a fresh, isolated pod that participates in traffic filtering via the environment key.
 
 ### Managing Preview Environments
 
-1. **Status:** 
-Check the current state of Preview Environments, including which environments are active, which preview pods they contain, and how long they will remain available.
+1. **Status:** Check the current state of Preview Environments, including which environments are active, which preview pods they contain, and how long they will remain available.
 ```bash
 mirrord preview status
 ```
@@ -71,7 +71,7 @@ mirrord preview clean --key <environment-key>
 
 ![Preview Environment Workflow](/docs/coming-soon/preview-env/prev-env-flow.png)
 
-### Interested in Preview Environments? 
+### Interested in Preview Environments?
 [**Sign up**](https://2dkwjs.share-eu1.hsforms.com/2u8rhMF4WTomds20_JcxHOw) **to get updates and be notified when Preview Environments are available!**
 
 
