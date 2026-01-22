@@ -69,7 +69,7 @@ mirrord preview clean --key <environment-key>
 
 ## Preview Environment Workflow
 
-![Preview Environment Workflow](preview-env-flow.png)
+![Preview Environment Workflow](/docs/coming-soon/preview-env/prev-env-flow.png)
 
 ### Interested in Preview Environments?**
 [**Sign up**](https://2dkwjs.share-eu1.hsforms.com/2u8rhMF4WTomds20_JcxHOw) **if you’d like to be among the first users of Preview Environments.**
