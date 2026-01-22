@@ -15,8 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to (*MySQL*, *PostgreSQL*) databases.
-
+Currently, the feature supports (*MySQL*, *PostgreSQL*) databases and (*Redis*) for local development.
 
 **When is this useful?**
 
@@ -37,6 +36,7 @@ Before you start, make sure you have:
 1. Minimum versions installed: 
   - MySQL: Operator `3.129.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
   - PostgreSQL: Operator `3.131.0`, mirrord CLI `3.175.0` and operator Helm chart `1.40.2` with `operator.pgBranching` value set to `true`.
+  - Redis (local): mirrord CLI `3.180.0` (because this is only for local Redis, we don't have operator or chart requirements).  See [Local Redis](#local-redis) for Redis-specific configuration.
 2. Your local application is using environment variables to store DB connection strings.  
 3. mirrord installed and working.  
 
@@ -48,7 +48,7 @@ Developers define branches in their `mirrord.json`:
   "db_branches": [
     {
       "id": "users-mysql-db",             // Optional
-      "type": "mysql",                    // Available options [mysql|pg|mongodb]
+      "type": "mysql",                    // Available options [mysql|pg|redis]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
@@ -66,9 +66,11 @@ Developers define branches in their `mirrord.json`:
   ]
 }
 ```
+
 ### Key Fields
-1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user’s branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
-2. `type`: Currently "mysql" and "pg" are supported.
+
+1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
+2. `type`: Supported values are `"mysql"`, `"pg"`, and `"redis"`.
 3. `version`: Database engine version.
 4. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the MySQL server; the application must select the DB manually in that case.
@@ -98,6 +100,37 @@ If name is ommited, the override URL just points to the MySQL server; the applic
     This setup reduces the risk of accidental writes reaching the source database by directing activity toward an isolated branch.
 
 4. The branch will be destroyed automatically when the TTL is reached and the branch is not in use (reconnecting to the same branch again extends its lifetime).
+
+---
+
+## Local Redis
+
+mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
+
+```json
+{
+  "db_branches": [
+    {
+      "type": "redis",
+      "location": "local",                     // "local" spawns Redis, "remote" is no-op (default)
+      "connection": {
+        // Use "host" for host:port format (e.g., REDIS_ADDR=redis:6379)
+        // or "url" for full URL format (e.g., REDIS_URL=redis://user:pass@host:6379/0)
+        "host": { "type": "env", "variable": "REDIS_ADDR" }
+      },
+      "local": {                               // Optional runtime config
+        "port": 6379,                          // Custom port (default: 6379)
+        "runtime": "container",                // "container" (default), "redis_server", or "auto"
+        "container_runtime": "docker"          // "docker" (default), "podman", or "nerdctl"
+      }
+    }
+  ]
+}
+```
+
+mirrord overrides the env variable to point to `localhost:<port>` and cleans up the Redis instance on exit.
+
+---
 
 ## FAQ
 
