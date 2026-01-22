@@ -153,12 +153,10 @@ Report Back:
 2. Matched them to Kubernetes deployments using `kubectl get deployments`
 3. Generated mirrord configurations, helper scripts, and `AGENTS.md`
 4. Validated that everything worked before presenting the results
+
 Let's see it in action: 
 
-https://www.youtube.com/watch?v=EPMTFWQJy4M
-
 {% embed url="https://www.youtube.com/watch?v=EPMTFWQJy4M" %}
-
 
 ### What Claude Generated
 
@@ -210,16 +208,16 @@ The helper script wraps the mirrord command and handles all the pre-flight check
 
 This is the script Claude runs when you say “test the service”. Because AGENTS.md references it explicitly, the agent knows to use it automatically.
 
-[Now let’s see if it actually works.](https://www.youtube.com/watch?v=EPMTFWQJy4M) 
-
-
 # Testing the Setup
 
 Next, we asked Claude to test the service. The key detail is that we explicitly told it to read `AGENTS.md` first.
 ```
 Read AGENTS.md and test the ip-visit-counter service. Send 3 requests.
 ```
-[Watch running in action](https://www.youtube.com/watch?v=1G046UqS9gE)
+Watch running in action
+
+{% embed url="https://www.youtube.com/watch?v=1G046UqS9gE" %}
+
 
 **Here’s what happened:**
 1. Claude read `AGENTS.md` and understood it should use mirrord
@@ -234,7 +232,9 @@ Now for the interesting part. We made a code change and had Claude test it immed
 Read AGENTS.md. Change the ip-visit-counter response to include a "message": "Welcome!" field and a "date" field with the current date. Then test the changes by sending 2 requests to the /count endpoint and show me the responses.
 ```
 
-[Watch modifiying in action](https://www.youtube.com/watch?v=TdqKUXdvR0M)
+Watch modifiying in action
+
+{% embed url="https://www.youtube.com/watch?v=TdqKUXdvR0M" %}
 
 **This is what happened next:**
 1. Claude modified the code to add the message and date fields
@@ -248,13 +248,13 @@ With mirrord, you skip all of that and test changes directly against the live cl
 # Try It Yourself
 
 Now it’s your turn to try this with your own repository.
-Copy the meta-prompt from [earlier in this guide](using-mirrord-with-ai/the-meta-prompt#the-meta-prompt) and paste it into Claude Code, or your AI assistant of choice, at the repository root. 
+Copy the meta-prompt from [earlier in this guide](#the-meta-prompt) and paste it into Claude Code, or your AI assistant of choice, at the repository root. 
 
 The assistant will discover your services, match them to Kubernetes deployments, and generate everything you need.
-We tested this workflow with **Claude Code v2.0.76, Cursor v2.3.35, GitHub Copilot CLI v0.0.382, and Gemini CLI v0.24.0.** All of them followed the same interactive, step-by-step process. 
+We tested this workflow with **Claude Code, Cursor, GitHub Copilot CLI, and Gemini CLI** All of them followed the same interactive, step-by-step process. 
 If you’re using a different assistant, you may need to run the discovery and generation steps as separate prompts.
 
-**Test it immediately.** Don’t just generate the files and move on. Actually run the test. For example, ask: “*Read AGENTS.md and test the [service-name] service*”, and watch it work end to end.
+**Test** Consider testing it early. Instead of generating the files and moving on, it can be helpful to actually run the test. For example, ask: “*Read AGENTS.md and test the [service-name] service*”, and watch it work end to end.
 
 **Make a small code change.** This is where you’ll feel the difference. Modify something, test it with mirrord, and see the fast feedback loop in action.
 Start with one service in one repository. Once you see how fast the iteration cycle becomes, you’ll want this everywhere.
@@ -273,7 +273,7 @@ When working with AI agents and live Kubernetes environments:
 
 Once you commit `AGENTS.md` to your repository, every team member using an AI coding assistant automatically benefits. When a new developer joins, they clone the repo, start using Claude or Cursor, and immediately see guidance to use mirrord for testing. No additional training is required.
 
-**For teams that want consistency:** If your organization already has an internal AI assistant with a knowledge base, you can add the reference guide to your existing knowledge base. Then any developer can just ask "*generate AGENTS.md with mirrord*" and get a complete setup in seconds. Every repo gets configured the same way, following your team's best practices.
+**For teams that want consistency:** If your organization already has an internal AI assistant with a knowledge base, you can add this guide to your existing knowledge base. Then any developer can just ask "*generate AGENTS.md with mirrord*" and get a complete setup in seconds. Every repo gets configured the same way, following your team's best practices.
 
 **Keeping it updated:** As your services evolve, just re-run the generation prompt. Added a new service? You'll get new configs, scripts, and a new section in AGENTS.md. Renamed a deployment? The targets in your mirrord configs update automatically.
 
