@@ -28,7 +28,7 @@ Preview Environments solve this by allowing you to spin up isolated, temporary p
 
 - Run **user-provided container images**
 - Match the **configuration and traffic behavior** of an existing mirrord target
-- Receive **filtered or duplicated production traffic** using an environment key
+- Receive **filtered or duplicated staging traffic** using an environment key
 - Stay alive for a **fixed TTL**, independent of any local machine or process
 
 ---
