@@ -41,7 +41,7 @@ kubectl needs to be configured on the local machine.
 mirrord can be used in three ways:
 
 1. [CLI Tool](quick-start.md#cli-tool)
-2. [VS Code Extension](quick-start.md#vs-code-extension)
+2. [VS Code Extension](quick-start.md#vs-code-extension) (also works for VS Code forks like Cursor, Windsurf, etc.)
 3. [IntelliJ Plugin](quick-start.md#intellij-plugin)
 
 If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord [Operator](quick-start.md#operator).
@@ -112,6 +112,10 @@ Use `mirrord exec --help` or `mirrord container --help` to get all possible comm
 #### Installation
 
 You can install the extension directly in the IDE (Extensions -> search for 'mirrord'), or download it from the marketplace [here](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord).
+
+{% hint style="info" %}
+The mirrord extension is also available for all VS Code forks like Cursor, Windsurf, Antigravity, PearAI, and Trae.
+{% endhint %}
 
 #### Usage
 
