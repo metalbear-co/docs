@@ -18,7 +18,7 @@ Because Preview Environments are not tied to a developer’s local process, they
 This enables realistic validation workflows without cloning an entire environment and without blocking on a single mirrord session.
 
 {% hint style="info" %}
-**Availability** Preview Environments will be available to users on the **Enterprise** pricing plan.
+Preview Environments will be available to users on the **Enterprise** pricing plan.
 {% endhint %}
 
 # What Is a Preview Environment?
