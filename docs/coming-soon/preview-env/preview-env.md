@@ -90,6 +90,7 @@ mirrord preview clean --key <environment-key>
 ## Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](/docs/coming-soon/preview-env/create-env.svg)
+
 ![Preview Environment Modification Workflow](/docs/coming-soon/preview-env/modify-env.svg)
 
 
