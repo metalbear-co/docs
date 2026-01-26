@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature supports (*MySQL*, *PostgreSQL*) databases and (*Redis*) for local development.
+Currently, the feature is limited to **MySQL, PostgreSQL and MongoDB** databases for remote usage, and **Redis** database for local development.
 
 **When is this useful?**
 
@@ -36,7 +36,7 @@ Before you start, make sure you have:
 1. Minimum versions installed: 
   - MySQL: Operator `3.129.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
   - PostgreSQL: Operator `3.131.0`, mirrord CLI `3.175.0` and operator Helm chart `1.40.2` with `operator.pgBranching` value set to `true`.
-  - Redis (local): mirrord CLI `3.180.0` (because this is only for local Redis, we don't have operator or chart requirements).  See [Local Redis](#local-redis) for Redis-specific configuration.
+  - Redis: mirrord CLI `3.180.0` (no operator or chart version requirements, since Redis is supported only via a local DB branch).
 2. Your local application is using environment variables to store DB connection strings.  
 3. mirrord installed and working.  
 
@@ -48,7 +48,8 @@ Developers define branches in their `mirrord.json`:
   "db_branches": [
     {
       "id": "users-mysql-db",             // Optional
-      "type": "mysql",                    // Available options [mysql|pg|redis]
+      "location": "remote",               // Optional, default is "remote", Available options [remote | local]
+      "type": "mysql",                    // Available options [mysql | pg | redis]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
@@ -70,15 +71,16 @@ Developers define branches in their `mirrord.json`:
 ### Key Fields
 
 1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
-2. `type`: Supported values are `"mysql"`, `"pg"`, and `"redis"`.
-3. `version`: Database engine version.
-4. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
+2. `location`: Supported values are `remote` and `local`. The default is `remote`. `remote` applies only when the `type` field is set to `mysql` or `pg`, while `local` applies only when `type` is set to `redis`.
+3. `type`: Supported values are `"mysql"`, `"pg"`, and `"redis"`.
+4. `version`: Database engine version.
+5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the MySQL server; the application must select the DB manually in that case.
-5. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
-6. `connection.url`: The environment variable that contains your DB connection string.
-7. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
-8. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
-9. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
+6. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
+7. `connection.url`: The environment variable that contains your DB connection string.
+8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
+9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
+10. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
 
 ## Running With DB Branches
 
@@ -114,8 +116,8 @@ mirrord can spin up a local Redis instance, automatically redirecting your app's
       "type": "redis",
       "location": "local",                     // "local" spawns Redis, "remote" is no-op (default)
       "connection": {
-        // Use "host" for host:port format (e.g., REDIS_ADDR=redis:6379)
-        // or "url" for full URL format (e.g., REDIS_URL=redis://user:pass@host:6379/0)
+        // Use "host" if your app reads Redis as host:port (e.g. REDIS_ADDR=redis:6379)
+        // Use "url" if your app reads a full Redis URL (e.g. REDIS_URL=redis://user:pass@redis:6379/0)
         "host": { "type": "env", "variable": "REDIS_ADDR" }
       },
       "local": {                               // Optional runtime config
