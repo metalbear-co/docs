@@ -70,7 +70,7 @@ Developers define branches in their `mirrord.json`:
 
 ### Key Fields
 
-1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier
+1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse)
 2. `location`: Supported values are `remote` and `local`. The default is `remote`. `remote` applies only when the `type` field is set to `mysql` or `pg`, while `local` applies only when `type` is set to `redis`.
 3. `type`: Supported values are `"mysql"`, `"pg"`, and `"redis"`.
 4. `version`: Database engine version.
@@ -81,6 +81,7 @@ If name is ommited, the override URL just points to the MySQL server; the applic
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
 10. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
+11. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
 
 ## Running With DB Branches
 
