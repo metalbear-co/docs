@@ -51,8 +51,6 @@ When upgrading mirrord components, the following order is recommended:
 * Upgrade the mirrord Operator
 * Upgrade client tooling (CLI) as needed
 
-Upgrading the License Server first is safe because Operators are backward compatible with newer License Server versions within the same major version.
-
 ### Semantic Versioning
 
 mirrord follows semantic versioning for all components.
