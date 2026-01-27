@@ -41,6 +41,7 @@
   * [Profiles](managing-mirrord/profiles.md)
   * [Jira Integration](managing-mirrord/jira-integration.md)
   * [License Server](managing-mirrord/license-server.md)
+  * [Versioning](managing-mirrord/versioning.md)
 * [FAQ](faq/README.md)
   * [General](faq/general.md)
   * [Limitations](faq/limitations.md)
