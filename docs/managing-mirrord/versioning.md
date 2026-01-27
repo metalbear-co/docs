@@ -20,13 +20,13 @@ mirrord is composed of multiple components, including the CLI, Operator, Agent, 
 
 This page describes how versioning and compatibility work across mirrord components.
 
-### Component Compatibility
+## Component Compatibility
 
 mirrord components communicate over well-defined APIs and do not require lockstep upgrades. In most cases, components can be upgraded independently as long as they remain within the same major version. 
 
 Note: The only caveat here is that the mirrord Operator helm chart runs its own major versions, but the helm chart just delivers the Operator. The Operator version is what should be considered for compatibility.
 
-### License Server and Operator Compatibility
+## License Server and Operator Compatibility
 
 The mirrord License Server and mirrord Operator are backward compatible with each other within the same major version.
 
@@ -34,7 +34,7 @@ This means that a newer License Server can serve older Operators, and a newer Op
 
 Breaking changes between the License Server and Operator only occur on major version upgrades.
 
-### Operator and Agent Compatibility
+## Operator and Agent Compatibility
 
 Agents are deployed and managed by the mirrord Operator.
 
@@ -42,7 +42,7 @@ The Operator selects and manages the Agent version automatically. Users should n
 
 Operator and Agent compatibility is guaranteed within the same Operator release.
 
-### Upgrade Order
+## Upgrade Order
 
 When upgrading mirrord components, the following order is recommended:
 
@@ -51,7 +51,7 @@ When upgrading mirrord components, the following order is recommended:
 * Upgrade the mirrord Operator
 * Upgrade client tooling (CLI) as needed
 
-### Semantic Versioning
+## Semantic Versioning
 
 mirrord follows semantic versioning for all components.
 
