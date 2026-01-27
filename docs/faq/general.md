@@ -56,7 +56,7 @@ If you have any restrictions for pulling external images inside your cluster, yo
 
 ## Can I use mirrord to run a local container, rather than a local process, in the context of the remote Kubernetes cluster?
 
-Yes! You can use the `mirrord container` command to run a local container in the context of the remote Kubernetes cluster. You can read more about it [here](../using-mirrord/local-container.md).
+Yes! You can use the `mirrord container` command to run a local container in the context of the remote Kubernetes cluster. You can read more about it [here](../installing-mirrord/docker.md).
 
 ## What if I can't create containers with the capabilities mirrord requires in my cluster?
 

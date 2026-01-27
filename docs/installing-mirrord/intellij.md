@@ -1,26 +1,26 @@
 ---
-title: IntelliJ Plugin
+title: IntelliJ
 date: 2025-01-07T00:00:00.000Z
 lastmod: 2025-01-07T00:00:00.000Z
 draft: false
 menu:
   docs:
-    parent: using-mirrord
-weight: 160
+    parent: installing-mirrord
+weight: 113
 toc: true
 tags:
   - open source
   - team
   - enterprise
-description: Using the mirrord plugin in JetBrains' IDEs
+description: Installing and using the mirrord plugin in JetBrains IDEs
 ---
 
-# IntelliJ Plugin
+# IntelliJ
 
 If you develop your application in one of the JetBrains' IDEs (e.g PyCharm, IntelliJ or GoLand), you can debug it with mirrord using our JetBrains Marketplace [plugin](https://plugins.jetbrains.com/plugin/19772-mirrord). Simply:
 
 1. Download the plugin
-2. Enable mirrord using the toolbar button (next to "mirrord" popup menu) ![Select Active Config action](intellij-plugin/images/enabler.png)
+2. Enable mirrord using the toolbar button (next to "mirrord" popup menu) ![Select Active Config action](intellij/images/enabler.png)
 3. Run or debug your application as you usually do
 
 When you start a debugging session with mirrord enabled, you'll be prompted with a target selection dialog. This dialog will allow you to select the target in your Kubernetes cluster that you want to impersonate.
@@ -63,7 +63,7 @@ The toolbar dropdown menu allows for specifying a temporary mirrord config overr
 
 To specify the override, use `Select Active Config` action.
 
-![Select Active Config action](intellij-plugin/images/select-active-config.png)
+![Select Active Config action](intellij/images/select-active-config.png)
 
 You will be prompted with a dialog where you can select a mirrord config from your project files. For the file to be present in the dialog, its path must contain `mirrord` and end with either `.json`, `.yaml` or `.toml`.
 
