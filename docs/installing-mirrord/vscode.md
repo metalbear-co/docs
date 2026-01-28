@@ -1,21 +1,9 @@
 ---
-title: VSCode Extension
-date: 2025-01-07T00:00:00.000Z
-lastmod: 2025-01-07T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-weight: 165
-toc: true
-tags:
-  - open source
-  - team
-  - enterprise
-description: Using the mirrord extension in Visual Studio Code
+title: VS Code
+description: Installing and using the mirrord extension in Visual Studio Code
 ---
 
-# VSCode Extension
+# VS Code
 
 If you develop your application in Visual Studio Code, you can debug it with mirrord using our Visual Studio Marketplace [extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord). Simply:
 
@@ -27,7 +15,7 @@ The mirrord extension is also available for all VS Code forks like Cursor, Winds
 
 2. Enable mirrord using the "mirrord" button on the bottom toolbar 
 
-![mirrord button](vscode-extension/images/enabler.png)
+![mirrord button](vscode/images/enabler.png)
 
 3. Run or debug your application as you usually do
 
@@ -79,7 +67,7 @@ The toolbar dropdown menu allows for specifying a temporary mirrord config overr
 
 To specify the override, use `Select active config` action.
 
-![select active config action](vscode-extension/images/select-active-config.png)
+![select active config action](vscode/images/select-active-config.png)
 
 You will be prompted with a quick pick where you can select a mirrord config from your project files. For the file to be present in the dialog, it must either be located in a directory which name ends with `.mirrord`, or have a name that ends with `mirrord`. Accepted config file extensions are: `json`, `toml`, `yml` and `yaml`.
 
