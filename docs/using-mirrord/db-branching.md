@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to **MySQL, PostgreSQL and MongoDB** databases for remote usage, and **Redis** database for local development.
+Currently, the feature is limited to **MySQL, PostgreSQL** databases for remote usage, and **Redis** database for local development.
 
 **When is this useful?**
 
