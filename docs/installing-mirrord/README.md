@@ -13,9 +13,7 @@ mirrord can be installed and used in several ways depending on your development 
 - **[Local Container](local-container.md)** - Run mirrord with local containers instead of native processes
 - **[WSL](wsl.md)** - Set up mirrord on Windows using the Windows Subsystem for Linux
 
-## Requirements
-
-### Local Requirements
+## Local Requirements
 
 For your local machine, you may use any of:
 - MacOS (Intel, Apple Silicon)
@@ -25,6 +23,6 @@ For your local machine, you may use any of:
 
 kubectl needs to be configured on the local machine.
 
-### mirrord for Teams
+## mirrord for Teams
 
 If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord Operator. See the [mirrord for Teams](../overview/teams.md) page for installation instructions.
