@@ -1,21 +1,9 @@
 ---
-title: IntelliJ
-date: 2025-01-07T00:00:00.000Z
-lastmod: 2025-01-07T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: installing-mirrord
-weight: 113
-toc: true
-tags:
-  - open source
-  - team
-  - enterprise
+title: JetBrains IDEs
 description: Installing and using the mirrord plugin in JetBrains IDEs
 ---
 
-# IntelliJ
+# JetBrains IDEs
 
 If you develop your application in one of the JetBrains' IDEs (e.g PyCharm, IntelliJ or GoLand), you can debug it with mirrord using our JetBrains Marketplace [plugin](https://plugins.jetbrains.com/plugin/19772-mirrord). Simply:
 

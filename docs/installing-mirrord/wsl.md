@@ -1,15 +1,6 @@
 ---
-title: "WSL"
-description: "Installing and using mirrord on Windows with WSL."
-date: 2024-12-03T13:37:00+00:00
-lastmod: 2024-12-09T13:37:00+00:00
-draft: false
-menu:
-  docs:
-    parent: "installing-mirrord"
-weight: 115
-toc: true
-tags: ["open source", "team", "enterprise"]
+title: WSL
+description: Installing and using mirrord on Windows with WSL
 ---
 
 # Running mirrord on WSL 

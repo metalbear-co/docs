@@ -1,24 +1,11 @@
 ---
 title: CLI
-date: 2020-11-16T12:59:39.000Z
-lastmod: 2020-11-16T12:59:39.000Z
-draft: false
-images: []
-menu:
-  docs:
-    parent: installing-mirrord
-weight: 111
-toc: true
-tags:
-  - open source
-  - team
-  - enterprise
-description: Installing and using the mirrord CLI tool
+description: Installing and using the mirrord CLI
 ---
 
 # CLI
 
-The mirrord CLI is the core tool for running mirrord from the command line. It can be used standalone or is automatically managed by the IDE extensions.
+The mirrord CLI is the core tool for running mirrord from the command line. It can be used standalone, or is automatically managed by the IDE extensions.
 
 ## Installation
 
@@ -73,11 +60,11 @@ For example:
 mirrord container -- docker run nginx
 ```
 
-Use `mirrord exec --help` or `mirrord container --help` to get all possible commands and arguments.
+Use `mirrord --help` to see all available commands.
 
 ## Interactive Setup
 
-You can use `mirrord wizard` to generate a config file interactively. This walks you through common use cases and helps you create a configuration tailored to your needs.
+You can use `mirrord wizard` to generate a `mirrord.json` configuration file interactively. This walks you through common use cases to help you create a configuration tailored to your needs. [Click here](/docs/overview/onboarding-wizard.md) for more information.
 
 ## Listing Targets
 
@@ -91,13 +78,13 @@ This will list all pods, deployments, and other resources that mirrord can targe
 
 ## Configuration
 
-The CLI reads its configuration from a mirrord config file. By default, it looks for `.mirrord/mirrord.json` in the current directory. You can specify a different config file with the `-f` flag:
+The CLI reads its configuration from a mirrord configuration file. By default, it looks for `.mirrord/mirrord.json` in the current directory. You can specify a different configuration file with the `-f` flag:
 
 ```bash
 mirrord exec -f my-config.json --target pod/app-pod python main.py
 ```
 
-Configuration options are documented in the [configuration reference](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options).
+Configuration options are documented in the [configuration reference](https://metalbear.com/mirrord/docs/config/options).
 
 ## Verifying Installation
 
@@ -107,7 +94,7 @@ To verify mirrord is installed correctly:
 mirrord --version
 ```
 
-To check connectivity to your cluster and the mirrord Operator (if using mirrord for Teams):
+To check connectivity to your cluster and the mirrord Operator (if using mirrord for Teams or Enterprise):
 
 ```bash
 mirrord operator status

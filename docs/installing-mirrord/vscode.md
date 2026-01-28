@@ -1,17 +1,5 @@
 ---
 title: VS Code
-date: 2025-01-07T00:00:00.000Z
-lastmod: 2025-01-07T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: installing-mirrord
-weight: 112
-toc: true
-tags:
-  - open source
-  - team
-  - enterprise
 description: Installing and using the mirrord extension in Visual Studio Code
 ---
 
