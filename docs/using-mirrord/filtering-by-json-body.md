@@ -20,6 +20,10 @@ description: How to filter traffic by JSON body using mirrord
 mirrord can steal incoming HTTP requests based on values inside a JSON request body. This allows matching on deeply nested fields and applying a regular expression to the extracted values.
 This filter is available in the following mirrord.json configuration:
 
+{% hint style="info" %}
+This feature is available in mirrord version 3.175.0 and onwards.
+{% endhint %}
+
 ```json
 {
   "feature": {
