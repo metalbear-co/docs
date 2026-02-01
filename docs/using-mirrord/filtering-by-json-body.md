@@ -45,6 +45,7 @@ This filter is available in the following mirrord.json configuration:
 
 `matches`: regex applied to each extracted value (after converting to string).
 
+When using `any_of` or `all_of`, `body_filter` must not be used. Filters in this scope are flat, and body fields are defined at the top level of each filter, first example can be found below.
 
 #### Type Handling and the `typeof` Extension
 
@@ -116,11 +117,9 @@ Configuration below applies to only steal requests with path `/orders` and have 
               "path": "/orders"
             },
             {
-              "body_filter": {
-                "body": "json",
-                "query": "$..[?(typeof(@.price) == 'number')].price",
-                "matches": "99$"
-              }
+            "body": "json",
+            "query": "$..[?(typeof(@.price) == 'number')].price",
+            "matches": "99$"
             }
           ]
         }
