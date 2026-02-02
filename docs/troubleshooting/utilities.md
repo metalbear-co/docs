@@ -59,9 +59,9 @@ Print help information.
 ### Example
 ```bash
 mirrord diagnose latency
+```
 
-
-
+```bash
 ...
 * 89/100 iterations completed, last iteration took 397ms
 ...
@@ -74,6 +74,7 @@ mirrord diagnose latency
 
 ```
 Iterations: mirrord performs multiple RTT checks to smooth out transient spikes.
+
 **min / max / avg:**
 `min` represents best-case latency
 `max` highlights potential spikes or instability

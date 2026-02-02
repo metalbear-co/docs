@@ -209,4 +209,5 @@ Example log entry
 ```
 ### Enabling JSON logs
 Session usage logging is available starting with license server 1.4.10.
+
 Set the `jsonLog` flag to `true` to emit logs in JSON format suitable for ingestion.
