@@ -187,23 +187,3 @@ To get a report:
 ```bash
 mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/reports/usage?format=xlsx" --header 'x-license-key: <operator API license key>' --output report.xlsx
 ```
-
-## Session Usage Logging
-License Server can emit a structured log entry for each completed session. This makes it possible to ingest high level usage data into external systems such as Datadog or internal data pipelines.
-
-When enabled, the license server logs one JSON record per session to stdout, containing available user and environment identifiers.
-
-Example log entry
-```json
-{
-  "timestamp": "2026-02-01T03:55:25.050620Z",
-  "level": "INFO",
-  "fields": {
-    "message": "Session event",
-    "user_id": "jNgtjp7x9nqsYOOzcP6uDU0QXHafSdtL74Jvo4fcUo",
-    "kubernetes_username": "minikube-user",
-    "username": "Some Username",
-    "hostname": "m4p.local"
-  }
-}
-```
