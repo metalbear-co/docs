@@ -20,10 +20,10 @@ When enabled, the mirrord agent automatically adds a `mirrord-agent` header to H
 
 ### Possible values for the header:
 - `forwarded-to-client`: The mirrord agent intercepted the request, sent it to the local process, and then passed back the response (mirrord handled it).
-- `passed-through`: The mirrord agent also intercepted the request, sent it to its original destination, and then passed back the response (the request was not handled by the local process. for example, it didn’t match active filters, so it was passed to the original destination).
+- `passed-through`: The mirrord agent intercepted the request, sent it to its original destination, and then passed back the response (the request was not handled by the local process). For example, if a request doesn’t match active filters, it will be passed to the original destination.
 
 Header injection is disabled by default.
-You can enable it with the following configuration:
+You can enable it with the following configuration in the `mirrord.json` file:
 
 ```json
 {
@@ -36,25 +36,23 @@ You can enable it with the following configuration:
 You can see all the agent configuration options [here](https://metalbear.com/mirrord/docs/config/options#agent).
 
 # Latency Diagnose
-The mirrord diagnose latency command helps identify network latency issues between your local environment and the target workload. It measures round-trip time (RTT) across multiple iterations and reports latency statistics, making it useful when mirrord feels slow or requests take longer than expected.
+The `mirrord diagnose latency` command helps identify network latency issues between your local environment and the target workload. It measures round-trip time (RTT) across multiple iterations and reports latency statistics, making it useful when mirrord feels slow or requests take longer than expected.
 
 ## When to use this
 Use this command if you experience:
 
 - Slow request/response times when using mirrord
 - Unexpected delays compared to running locally or in-cluster
-- Suspected network issues between your machine and the Kubernetes cluster
+- Network issues between your machine and the Kubernetes cluster
 
 ```bash
 mirrord diagnose latency [OPTIONS]
 ```
 Options
 
-`-f, --config-file <CONFIG_FILE>`
-Specify a config file to use.
+`-f, --config-file <CONFIG_FILE>`: Specify a config file to use.
 
-`-h, --help`
-Print help information.
+`-h, --help`: Print help information.
 
 ### Example
 ```bash
@@ -76,7 +74,7 @@ mirrord diagnose latency
 Iterations: mirrord performs multiple RTT checks to smooth out transient spikes.
 
 **min / max / avg:**
-`min` represents best-case latency
-`max` highlights potential spikes or instability
-`avg` is usually the most useful indicator for overall performance
+- `min` represents best-case latency
+- `max` highlights potential spikes or instability
+- `avg` is usually the most useful indicator for overall performance
 
