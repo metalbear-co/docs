@@ -71,7 +71,7 @@ mirrord diagnose latency
       ✓ connected to the target
 
 ```
-Iterations: mirrord performs multiple RTT checks to smooth out transient spikes.
+**Iterations:** mirrord performs multiple RTT checks to smooth out transient spikes.
 
 **min / max / avg:**
 - `min` represents best-case latency
