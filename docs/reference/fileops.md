@@ -15,7 +15,7 @@ tags: ["open source", "team", "enterprise"]
 
 ## Overview
 
-mirrord will relay file access (except for [some exceptions](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs)) to the
+mirrord will relay file access (except for some exceptions ([Unix](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) | [Windows](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/windows/read_local_by_default.rs))) to the
 target pod by default. (this functionality can be disabled using `--fs-mode local` flag on the command line or by
 setting `mode` in the configuration file in the IDE plugin.)
 

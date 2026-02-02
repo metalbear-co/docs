@@ -69,9 +69,9 @@ mirrord has a list of path patterns that are read locally by default regardless 
 
 Here you can find all the pre-defined exceptions:
 
-1. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_local_by_default.rs) are read locally by default.
-2. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/read_remote_by_default.rs) are read remotely by default when the mode is `localwithoverrides`.
-3. Paths that match [the patterns defined here](https://github.com/metalbear-co/mirrord/tree/latest/mirrord/layer/src/file/filter/not_found_by_default.rs) under the running user's home directory will be failed to be found by default when the mode is not `local`.
+1. Paths that match the patterns defined here ([Unix](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) | [Windows](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/windows/read_local_by_default.rs)) are read locally by default.
+2. Paths that match the patterns defined here ([Unix](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_remote_by_default.rs) | [Windows](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/windows/read_remote_by_default.rs)) are read remotely by default when the mode is `localwithoverrides`.
+3. Paths that match the patterns defined here ([Unix](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/not_found_by_default.rs) | [Windows](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/windows/not_found_by_default.rs)) under the running user's home directory will be failed to be found by default when the mode is not `local`.
 
 In order to override that settings for a path or a pattern, add it to the appropriate set:
 
