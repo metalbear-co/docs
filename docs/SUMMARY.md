@@ -46,7 +46,7 @@
   * [Limitations](faq/limitations.md)
   * [Comparisons](faq/comparisons.md)
 * [Troubleshooting](troubleshooting/README.md)
-  * [Response Header Injection](troubleshooting/response-header-injection.md)
+  * [Utilities](troubleshooting/utilities.md)
   * [Common Issues](troubleshooting/common-issues.md)
 * [Reference](reference/README.md)
   * [Architecture](reference/architecture.md)
