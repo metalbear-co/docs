@@ -41,6 +41,8 @@ mirrord can be persistently enabled or disabled for a specific run configuration
 
 To have mirrord always enabled for the given run configuration, set `MIRRORD_ACTIVE=1` in the run configuration's environment variables. To have mirrord always disabled, set `MIRRORD_ACTIVE=0`.
 
+In some cases, mirrord will not run for a specific run configuration regardless of if it is enabled or not. This may occur when the run configuration is a build task, a Tomcat task, or a Gradle task with "build" in the name. If required, this behaviour can be overridden by setting `MIRRORD_FORCE_RUN=true` in the run configuration's env vars. Note that mirrord _must still be enabled_ to run, with either `MIRRORD_ACTIVE` or the toolbar button.
+
 ### Selecting session target
 
 mirrord's target can be specified in two ways:
