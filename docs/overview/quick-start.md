@@ -294,8 +294,8 @@ Not sure where to start? Run `mirrord wizard` to walk through common use cases i
 
 | Goal | Guide |
 |------|-------|
-| **Test against live traffic** | [Steal incoming traffic](../using-mirrord/steal.md) so your local process responds to real requests instead of the remote pod |
-| **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting/) lets your local process consume messages without competing with the deployed service |
+| **Test against live traffic** | [Steal incoming traffic](../using-mirrord/traffic-filtering.md) so your local process responds to real requests instead of the remote pod |
+| **Debug a queue consumer** | [Queue splitting](../using-mirrord/queue-splitting.md) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
 
 Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
