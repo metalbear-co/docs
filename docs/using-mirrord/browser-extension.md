@@ -11,14 +11,16 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-The mirrord Browser Extension automatically injects an HTTP header into your browser requests while a mirrord session is running. Depending on the URL scope configuration, it can inject into all requests or only those matching specific URL patterns. This solves the hassle of manually adding headers when debugging local services that rely on header-based routing, making it easier to test production-like flows in your browser with zero manual setup.
+The mirrord Browser Extension injects custom HTTP headers into your browser requests. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
 
 ## Prerequisites
 
-Before you start, make sure you have:
-1. Header propagation set up in your app.
-2. Google Chrome is installed.
-3. [mirrord Browser Extension for Chrome](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) installed.
+1. Google Chrome installed.
+2. [mirrord Browser Extension for Chrome](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) installed.
+
+For use with mirrord CLI sessions, you also need:
+
+3. Header propagation set up in your app.
 4. A valid HTTP header filter defined in your `mirrord.json` under `feature.network.incoming.http_filter.header_filter` with `mode` set to `steal`.
 5. Browser extension config enabled in your `mirrord.json`.
    **Note:** This feature is experimental.
@@ -42,7 +44,11 @@ Before you start, make sure you have:
 
 ## Using mirrord Browser Extension
 
-The extension can be used in two ways:
+The extension can be used standalone or together with mirrord CLI.
+
+**Standalone:**
+
+Open the extension popup, configure the header name, value, and URL scope, and click Save. The extension will start injecting the header into matching browser requests. No `mirrord.json` or CLI session is required.
 
 **With mirrord CLI session:**
 1. Run `mirrord exec` with the configured `mirrord.json`, mirrord will then:
@@ -51,10 +57,6 @@ The extension can be used in two ways:
 2. The extension injects the active session's header into browser requests (based on URL scope).
 3. You can check the current header and status in the extension popup by clicking the Chrome extension icon at any time.
 4. To stop header injection, click the extension icon and remove the header from the popup.
-
-**Standalone (without mirrord CLI):**
-
-The extension can also be used independently to inject custom HTTP headers into browser requests. Simply open the extension popup, configure the header name, value, and URL scope, and click Save. This is useful for anyone who needs to add custom headers to browser requests, not just developers using mirrord.
 
 ## Extension Popup
 
