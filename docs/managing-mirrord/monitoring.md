@@ -111,7 +111,7 @@ To export traces from the operator to an endpoint, set `operator.otelTraceExport
 This feature requires at least mirrord version 3.184.0.
 {% endhint %}
 
-You can use the mirrord configuration file to propagate `traceparent` and `baggage` values to the Operator when running mirrord:
+You can use the `mirrord.json` file to propagate `traceparent` and `baggage` values to the Operator when running mirrord:
 
 ```json
 {
