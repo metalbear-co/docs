@@ -81,6 +81,12 @@ Allows you to edit the header configuration directly from the popup:
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
 
+### Full Popup View
+
+| Active | Inactive |
+|--------|----------|
+| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
+
 ## URL Scoping
 
 By default, the extension injects the header into **all browser requests** when the URL scope is empty. You can restrict this to specific URLs using scope patterns:
