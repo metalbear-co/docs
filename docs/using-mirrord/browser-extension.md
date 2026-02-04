@@ -63,21 +63,23 @@ Open the extension popup, configure the header name, value, and URL scope, and c
 The extension popup lets you see which header is currently being injected into your browser requests and adjust it when needed, without restarting your mirrord session.
 
 ### Current Header Status
+
+![Active Header](browser-extension/images/active-header.png)
+
 - Header name and value currently being injected
 - URL scope (which URLs the header applies to)
 - An **Active** or **Inactive** indicator on the extension icon
 
 ### Edit Header Configuration
+
+![Configure Header](browser-extension/images/configure-header.png)
+
 Allows you to edit the header configuration directly from the popup:
 - **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
 - **URL Scope**: Restrict header injection to specific URL patterns (see [URL Scoping](#url-scoping) below)
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
-
-| Active | Inactive |
-|--------|----------|
-| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
 
 ## URL Scoping
 
