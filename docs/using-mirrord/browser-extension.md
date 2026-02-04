@@ -75,7 +75,9 @@ Allows you to edit the header configuration directly from the popup:
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
 
-![Extension Popup](browser-extension/images/extension-popup.png)
+| Active | Inactive |
+|--------|----------|
+| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
 
 ## URL Scoping
 
