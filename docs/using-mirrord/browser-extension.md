@@ -11,7 +11,7 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-The mirrord Browser Extension automatically injects an HTTP header into all your browser requests while a mirrord session is running. This solves the hassle of manually adding headers when debugging local services that rely on header-based routing, making it easier to test production-like flows in your browser with zero manual setup.
+The mirrord Browser Extension automatically injects an HTTP header into your browser requests while a mirrord session is running. Depending on the URL scope configuration, it can inject into all requests or only those matching specific URL patterns. This solves the hassle of manually adding headers when debugging local services that rely on header-based routing, making it easier to test production-like flows in your browser with zero manual setup.
 
 ## Prerequisites
 
@@ -42,39 +42,50 @@ Before you start, make sure you have:
 
 ## Using mirrord Browser Extension
 
+The extension can be used in two ways:
+
+**With mirrord CLI session:**
 1. Run `mirrord exec` with the configured `mirrord.json`, mirrord will then:
    - Print the configuration URL to the screen.
    - Open the URL automatically in a Chrome tab.
-2. The extension injects the active session's header into all browser requests across tabs.
+2. The extension injects the active session's header into browser requests (based on URL scope).
 3. You can check the current header and status in the extension popup by clicking the Chrome extension icon at any time.
 4. To stop header injection, click the extension icon and remove the header from the popup.
 
+**Standalone (without mirrord CLI):**
+
+The extension can also be used independently to inject custom HTTP headers into browser requests. Simply open the extension popup, configure the header name, value, and URL scope, and click Save. This is useful for anyone who needs to add custom headers to browser requests, not just developers using mirrord.
+
 ## Extension Popup
 
-The extension popup uses a two-card layout:
+The extension popup lets you see which header is currently being injected into your browser requests and adjust it when needed, without restarting your mirrord session.
 
-### Active Header Card
+### Current Header Status
 Displays the currently active header being injected into requests. Shows:
-- Header name and value
+- Header name and value currently being injected
 - URL scope (which URLs the header applies to)
-- An **Active** or **Inactive** status badge on the extension icon
+- An **Active** or **Inactive** indicator on the extension icon
 
-### Configure Header Card
+<!-- TODO: Add screenshot of the Current Header Status card -->
+
+### Edit Header Configuration
 Allows you to edit the header configuration directly from the popup:
-- **Header Name** — the HTTP header name to inject (e.g., `X-My-Header`)
-- **Header Value** — the value to set for the header
-- **URL Scope** — restrict header injection to specific URL patterns (see [URL Scoping](#url-scoping) below)
-- **Save** — applies your changes and updates the active header
-- **Reset to Default** — reverts to the original header configuration provided by the mirrord CLI session (only shown when defaults are available)
+- **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
+- **Header Value**: The value to set for the header and will be added to outgoing requests
+- **URL Scope**: Restrict header injection to specific URL patterns (see [URL Scoping](#url-scoping) below)
+- **Save**: Applies your changes immediately and updates the active header
+- **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
+
+<!-- TODO: Add screenshot of the Edit Header Configuration card -->
 
 ## URL Scoping
 
-By default, the extension injects the header into **all browser requests**. You can restrict this to specific URLs using scope patterns:
+By default, the extension injects the header into **all browser requests** when the URL scope is empty. You can restrict this to specific URLs using scope patterns:
 
-- **All URLs** — leave the scope empty or set to `*` to inject on every request.
-- **Specific patterns** — enter a URL pattern to limit injection. For example:
-  - `https://api.example.com/*` — only inject on requests to `api.example.com`
-  - `https://*.example.com/*` — inject on any subdomain of `example.com`
+- **All URLs**: Leave the scope empty or set to `*` to inject on every request.
+- **Specific patterns**: Use URL patterns to limit injections, For example:
+  - `https://api.example.com/*`: Inject only for requests to `api.example.com`
+  - `https://*.example.com/*`: Inject for any subdomain of `example.com`
 
 The scope uses Chrome's [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax.
 
