@@ -61,7 +61,6 @@ The extension can also be used independently to inject custom HTTP headers into 
 The extension popup lets you see which header is currently being injected into your browser requests and adjust it when needed, without restarting your mirrord session.
 
 ### Current Header Status
-Displays the currently active header being injected into requests. Shows:
 - Header name and value currently being injected
 - URL scope (which URLs the header applies to)
 - An **Active** or **Inactive** indicator on the extension icon
