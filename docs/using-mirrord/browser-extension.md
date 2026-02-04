@@ -24,23 +24,23 @@ For use with mirrord CLI sessions, you also need:
 4. A valid HTTP header filter defined in your `mirrord.json` under `feature.network.incoming.http_filter.header_filter` with `mode` set to `steal`.
 5. Browser extension config enabled in your `mirrord.json`.
    **Note:** This feature is experimental.
-    ```json
-    {
-    "feature": {
-        "network": {
-        "incoming": {
-            "mode": "steal",
-            "http_filter": {
-            "header_filter": "X-My-Header: my-header-value"
-            }
-        }
-        }
-    },
-    "experimental": {
-        "browser_extension_config": true
-    }
-    }
-    ```
+   ```json
+   {
+     "feature": {
+       "network": {
+         "incoming": {
+           "mode": "steal",
+           "http_filter": {
+             "header_filter": "X-My-Header: my-header-value"
+           }
+         }
+       }
+     },
+     "experimental": {
+       "browser_extension_config": true
+     }
+   }
+   ```
 
 ## Using mirrord Browser Extension
 
@@ -77,7 +77,7 @@ The extension popup lets you see which header is currently being injected into y
 Allows you to edit the header configuration directly from the popup:
 - **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
-- **URL Scope**: Restrict header injection to specific URL patterns (see [URL Scoping](#url-scoping) below)
+- **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
 
@@ -87,7 +87,7 @@ Allows you to edit the header configuration directly from the popup:
 |--------|----------|
 | ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
 
-## URL Scoping
+## Limiting injection scope by URL
 
 By default, the extension injects the header into **all browser requests** when the URL scope is empty. You can restrict this to specific URLs using scope patterns:
 
