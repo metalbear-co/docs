@@ -66,8 +66,6 @@ Displays the currently active header being injected into requests. Shows:
 - URL scope (which URLs the header applies to)
 - An **Active** or **Inactive** indicator on the extension icon
 
-<!-- TODO: Add screenshot of the Current Header Status card -->
-
 ### Edit Header Configuration
 Allows you to edit the header configuration directly from the popup:
 - **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
@@ -76,7 +74,7 @@ Allows you to edit the header configuration directly from the popup:
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
 
-<!-- TODO: Add screenshot of the Edit Header Configuration card -->
+![Extension Popup](browser-extension/images/extension-popup.png)
 
 ## URL Scoping
 
