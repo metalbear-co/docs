@@ -58,25 +58,18 @@ Copy it and save it as the **secret** environment variable `MIRRORD_CI_API_KEY` 
 
 ## Starting a mirrord CI session
 
-The `mirrord ci start` command functions very much like the `mirrord exec` command, meaning that it can take
-the same arguments, such as using a configuration file with `--config-file`, setting a target with `--target`, etc.
+The `mirrord ci start` command is used to start the service being tested in your CI runner, and supports the same arguments as `mirrord exec`, including specifying a target with `--target` or using a configuration file with `--config-file`. Here’s an example for starting a Go service called `ip-visit-counter`:
 
 {% hint style="info" %}
 To view the entire list of arguments, run `mirrord ci start --help`.
 {% endhint %}
 
-- An example of starting a mirrord for CI session with `npm run` (you can run anything, it's **not** limited to `npm`):
-
 ```sh
-mirrord ci start --target deployment/ip-visit-counter npm run
+mirrord ci start --target deployment/ip-visit-counter go run ip-visit-counter.go
 ```
+At this point, your microservice will be running inside the CI runner and mirrord will be connecting it to the cluster. You can now run your test script as usual. These tests can target the stable, already deployed service in your cluster (for example, the service running in staging). mirrord will intercept that traffic and redirect it to the service running inside the CI runner, allowing it to work against real dependencies without deploying anything.
 
-You can start multiple mirrord for CI sessions during a single CI job by running 'mirrord ci start' more than once. 
-
-The mirrord for CI session should now be running in the background, and you can run the tests.
-These tests should target the deployed service (the app running in your staging cluster, for example),
-and mirrord will intercept the traffic and redirect it to the local app (the one running in the background in the CI runner
-with mirrord).
+You can start multiple mirrord for CI sessions during a single CI job by running `mirrord ci start` more than once. 
 
 {% hint style="info" %}
 If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
