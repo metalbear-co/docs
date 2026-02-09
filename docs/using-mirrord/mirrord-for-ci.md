@@ -32,7 +32,7 @@ background processes, allowing you to then run tests while your app is running i
 1. Minimum mirrord CLI version `3.181.0`.
 2. The CI runner must be able to access the Kubernetes cluster in which you want to test.
 
-## Kubernetes requirements
+## Kubernetes permissions requirements
 
 The CI runner must be able to access the Kubernetes cluster where the service you want to target is deployed,
 otherwise mirrord won't work. You'll need a
@@ -40,8 +40,8 @@ otherwise mirrord won't work. You'll need a
 CI runner that points to the target's cluster, and has the appropriate
 [authentication](https://kubernetes.io/docs/reference/access-authn-authz/authentication/).
 
-It's recommended that you create a Kubernetes
-[service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
+It is recommended that you create a Kubernetes
+[service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner. You can then grant it the built-in mirrord operator role by creating a ClusterRoleBinding from that service account to the `mirrord-operator-user` ClusterRole. Read more about `mirrord-operator-user` [here](https://metalbear.com/mirrord/docs/managing-mirrord/security#how-can-i-prevent-users-from-using-mirrord-without-going-through-the-operator).
 
 ## For mirrord for Teams users
 
