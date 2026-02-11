@@ -68,7 +68,14 @@ To specify a filter on a header, use the `feature.network.incoming.http_filter.h
 }
 ```
 
-The `feature.network.incoming.http_filter.ports` configuration lets mirrord know which ports are listening to HTTP traffic and should be filtered. It defaults to `[80, 8080]`.
+Note that, with the configuration above, mirrord applies the HTTP header filter on ports 80 and 8080, while stealing from all other eligible ports without filtering.
+To prevent mirrord from stealing unwanted ports, set `feature.network.incoming.ports` to an explicit list.
+
+In general, stealing and filtering follow these rules:
+
+1. When `feature.network.incoming.ports` is **not** set, **all eligible ports** are stolen.
+2. When `feature.network.incoming.http_filter.ports` is **not** set but an HTTP filter is provided, **all ports** are filtered.
+3. When `feature.network.incoming.http_filter.ports` is set, only the listed ports are filtered.
 
 To specify a filter on a path, use the `feature.network.incoming.http_filter.path_filter` configuration:
 
