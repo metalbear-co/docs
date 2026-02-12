@@ -23,6 +23,8 @@
   * [Copy Target](using-mirrord/copy-target.md)
   * [Sharing the Cluster](using-mirrord/sharing-the-cluster.md)
   * [Traffic Inspection](using-mirrord/traffic-inspection.md)
+  * [Multi-Cluster](using-mirrord/multi-cluster.md)
+    * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
   * [DB Branching](using-mirrord/db-branching.md)
     * [Branch Management](using-mirrord/db-branch-management.md)
     * [Advanced Configuration](using-mirrord/db-branching-advanced-config.md)
