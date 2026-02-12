@@ -20,7 +20,7 @@ We call this new approach to cloud development “remocal” (remote + local), s
 
 Want to see mirrord in action? Check out our <a target="_blank" href="https://www.youtube.com/watch?v=ZR7A7cqQcFM)">demo</a>.
 
-## Why?
+# Why?
 
 Traditionally, software development happens in loops. Developers write and test their code locally, then deploy it to a staging/pre-production environment in the cloud, where they perform additional tests. These tests often fail, because the code is meeting a production-like environment for the first time, and encounters new conditions. The code must then be fixed/rewritten, tested locally again, deployed to staging again, and so on, until the tests on staging pass.
 
@@ -35,7 +35,7 @@ mirrord removes the costs associated with deployment to staging, by taking 'depl
 
 However, the point of mirrord is not just to make that final step in the dev loop of testing in staging quicker. mirrord makes running your code in the cloud easy, fast and safe, so you can **shift left on cloud testing**, and test your code in the cloud from the very beginning of your development process. Instead of spending your time running local environments, writing mocks, test fixtures, and so on - why not just test your code on staging itself?
 
-## How it works
+# How it works
 
 mirrord runs in two places - in the memory of your local process (`mirrord-layer`), and as a pod in your cloud environment (`mirrord-agent`).
 
@@ -57,7 +57,7 @@ For further details, see the [architecture](../reference/architecture.md) sectio
 **Want to see mirrord in action?** Try it out with our [Quick Start guide](quick-start.md).
 {% endhint %}
 
-## How it's different from other remocal solutions
+# How it's different from other remocal solutions
 
 mirrord is not the first tool to allow you to run your code in the cloud. However, it does it in a way that's completely different from all the other solutions.
 While all other remocal solutions use some version of a VPN to connect your local machine (or local Docker container) to the cluster, mirrord works at the level of your local process, overriding its syscalls and proxying them to the cloud.
@@ -74,7 +74,17 @@ This gives mirrord some unique advantages over its alternatives:
 - At the cluster level, it's agnostic to the cluster's network setup - whether it includes a service mesh, a VPN, or anything else
 - At the cluster level, it's agnostic to the cluster's size - mirrord has been tested on clusters running 10,000+ pods
 
-## Get Started
+# Where does mirrord fit in the cloud development loop
+
+This is what the traditional software dev loop looks like today: developers can do some limited testing locally, but for integration and end-to-end testing they need to rely on CI pipelines and deployment to staging to be able to get feedback. This entire cycle can take at least 20-30 minutes (a lot more for larger apps). That would’ve been okay if developers had to go through it only once for each feature or bug fix. But software development is an iterative process depending heavily on feedback. Today developers end up going through this cycle at least 3–4 times per feature change. That’s 1–2 hours wasted per developer per feature easily, which compounds across your entire team. This isn’t even considering other blockers like the staging environment breaking down or being unusable because some other developer is testing their change.
+
+With mirrord, developers are able to break out of this loop.
+
+![How mirrord fits in the cloud development loop](/docs/overview/introduction/where-mirrord-fits.png)
+
+They’re able to test against the shared staging environment instantly without the risk of breaking it down or waiting for another developer to finish testing first. The inner loop for iteration takes less than 5 seconds instead of hours in the traditional way. Then, when they’re confident that the feature is complete, they can go through the CI pipelines and staging deployments once as a sanity check. The difference is that here they only use it once at the end instead of having to rely on it every time they want to test. And that frees up a lot of time and provides a massive boost to dev productivity.
+
+# Get Started
 
 Ready to try mirrord?
 
