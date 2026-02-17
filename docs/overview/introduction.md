@@ -14,11 +14,18 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-mirrord is a tool that lets developers run local processes in the context of their cloud environment. It makes it incredibly easy to test your code on a cloud environment (e.g. staging) without actually going through the hassle of Dockerization, CI, or deployment, and without disrupting the environment by deploying untested code. Instead of saving it for the last step, now you can shift-left on cloud testing and test your code in the cloud from the very beginning of your development process.
+mirrord is a tool that lets developers run local processes in the context of their cloud environment. It makes it incredibly easy to test your code on a cloud environment (e.g. staging) without actually going through the hassle of Dockerization, CI, or deployment, and without disrupting the environment by deploying untested code.
 
-We call this new approach to cloud development “remocal” (remote + local), since it’s not completely local or completely remote, but a hybrid of the two. It’s local in the sense that you’re running your code on your local machine, but remote in the sense that you’re running it in the context of your cloud environment.
+```bash
+mirrord exec --target deploy/my-app -- node server.js
+```
 
-Want to see mirrord in action? Check out our <a target="_blank" href="https://www.youtube.com/watch?v=ZR7A7cqQcFM)">demo</a>.
+Your local `server.js` now receives traffic from the cluster, reads remote files, and uses remote environment variables — no deployment needed.
+
+{% hint style="success" %}
+**Ready to try it?** Install mirrord in under a minute and run your first session.
+**[Get Started →](quick-start.md)**
+{% endhint %}
 
 ## Why?
 
@@ -33,7 +40,7 @@ Deployment to staging can be costly for several reasons:
 
 mirrord removes the costs associated with deployment to staging, by taking 'deployment' out of the process completely. By plugging your local process directly into the staging environment, you can test your code in cloud conditions without having to go through a long CI process, and without the risk of breaking the environment for other developers.
 
-However, the point of mirrord is not just to make that final step in the dev loop of testing in staging quicker. mirrord makes running your code in the cloud easy, fast and safe, so you can **shift left on cloud testing**, and test your code in the cloud from the very beginning of your development process. Instead of spending your time running local environments, writing mocks, test fixtures, and so on - why not just test your code on staging itself?
+Instead of spending your time running local environments, writing mocks, test fixtures, and so on — why not just test your code on staging itself? We call this approach "remocal" (remote + local) development: your code runs locally, but in the context of your cloud environment.
 
 ## How it works
 
@@ -53,10 +60,6 @@ The remote part of this logic is handled by the agent, which runs in the network
 
 For further details, see the [architecture](../reference/architecture.md) section.
 
-{% hint style="info" %}
-**Want to see mirrord in action?** Try it out with our [Quick Start guide](quick-start.md).
-{% endhint %}
-
 ## How it's different from other remocal solutions
 
 mirrord is not the first tool to allow you to run your code in the cloud. However, it does it in a way that's completely different from all the other solutions.
@@ -74,9 +77,9 @@ This gives mirrord some unique advantages over its alternatives:
 - At the cluster level, it's agnostic to the cluster's network setup - whether it includes a service mesh, a VPN, or anything else
 - At the cluster level, it's agnostic to the cluster's size - mirrord has been tested on clusters running 10,000+ pods
 
-## Get Started
+## What's next?
 
-Ready to try mirrord?
-
-- **[Quick Start Guide](quick-start.md)** — Set up mirrord and run your first session
-- **[Watch the Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** — See mirrord in action before you start
+- **[Quick Start Guide](quick-start.md)** — Install mirrord and run your first session in under 5 minutes
+- **[mirrord for Teams](teams.md)** — Collaborate with shared configurations, policies, and concurrent access
+- **[Using mirrord](../using-mirrord/README.md)** — Traffic filtering, queue splitting, IDE extensions, and more
+- **[Watch the Demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM)** — See mirrord in action
