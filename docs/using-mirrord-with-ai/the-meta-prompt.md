@@ -1,5 +1,5 @@
 ---
-title: Configure AI Agents to Use mirrord
+title: The Meta-Prompt
 ---
 
 The goal is to help you create an `AGENTS.md` file that lives in your repository and tells AI agents something like: “*Hey, when testing code changes, use mirrord first, not mocks or CI/CD.*” Now the challenge is that writing this file manually is tedious. You need to figure out mirrord configs for each service, create helper scripts, write clear instructions and validate that everything works.
