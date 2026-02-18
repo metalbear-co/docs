@@ -4,4 +4,7 @@ On September 2025, we published an article about [self-correcting AI agents](htt
 
 But then came the questions: "*How do I actually set this up?*" "*What do I put in [AGENTS.md](http://AGENTS.md)?*" "*How do I configure mirrord for my services?*"
 
-So we decided to write this guide. Think of it as a **meta-prompt,** a prompt that generates instructions for AI agents. Writing an `AGENTS.md` file manually is time-consuming. You need to figure out the right mirrord configuration for each service, create helper scripts, write clear instructions and validate everything works. For a typical microservices repository with 5-10 services, this setup can take several hours.
+So we decided to write this guide. In it you'll find two approaches you can use together or separately:
+
+- **[Agent skills for mirrord](./ai-skills-plugin.md)** — Install skills that give your AI assistant built-in mirrord expertise.
+- **[Configure AI Agents to Use mirrord](./the-meta-prompt.md)** — A meta-prompt that generates project-specific `AGENTS.md` and configs. Writing them manually is time-consuming (for 5–10 services, it can take hours); the meta-prompt automates that.
