@@ -7,4 +7,4 @@ But then came the questions: "*How do I actually set this up?*" "*What do I put 
 So we decided to write this guide. In it you'll find two approaches you can use together or separately:
 
 - **[Agent skills for mirrord](./ai-skills-plugin.md)** — Install skills that give your AI assistant built-in mirrord expertise.
-- **[The meta-prompt](./the-meta-prompt.md)** — A prompt that generates project-specific `AGENTS.md` and configs. Writing them manually is time-consuming (for 5–10 services, it can take hours); the meta-prompt automates that.
+- **[Configure AI Agents to Use mirrord](./the-meta-prompt.md)** — A meta-prompt that generates project-specific `AGENTS.md` and configs. Writing them manually is time-consuming (for 5–10 services, it can take hours); the meta-prompt automates that.
