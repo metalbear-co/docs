@@ -5,6 +5,10 @@ description: Ephemeral, Isolated Environments Connected to Your Cluster
 
 ---
 
+{% hint style="success" %}
+Preview Environments are now available! See the [full documentation](../../using-mirrord/preview-environments.md).
+{% endhint %}
+
 Preview Environments let teams collaborate, validate, and review new code using real traffic, without affecting live services.
 
 A Preview Environment runs **only the new or changed services** in isolated pods inside your Kubernetes cluster. All other dependencies (for example, databases, queues, and upstream services) continue to run in the main cluster, such as staging, and are accessed via mirrord.
@@ -50,23 +54,22 @@ If no key is provided, mirrord generates one automatically
 
 Create a new Preview Environment using a mirrord configuration file and a container image:
 ```bash
-mirrord preview start --config-file <mirrord.json> --image <code-image> --key <key>
+mirrord preview start -f <mirrord.json> -i <image> -k <key>
 ```
 Example output:
-```bash
-Creating preview environment: <key>
-Deploying pod... done.
-Preview environment is live!
+```
+  ✓ mirrord preview start
+    ✓ configuration loaded
+    ✓ connected to operator
+    ✓ preview session resource created
+    ✓ preview pod is ready
+  info:
+    * key: <key>
+    * namespace: <namespace>
+    * pod: preview-session-<target>-<id>
+```
 
-
-  Environment key:  <key>
-  Pods:
-    • preview-svc-env-users-7f9d8c7df8
-  TTL expires in: 59m 58s
-  ```
-
-- If `--key` is omitted, mirrord generates a new key and prints it in the output.
-- You can add or update pods in an existing Preview Environment by reusing the same environment key
+- If `-k` is omitted, mirrord generates a new key and prints it in the output.
 
 ### Targetless Mode
 
@@ -74,7 +77,7 @@ If no target is defined in the mirrord configuration, Preview Environments run i
 
 In this mode, mirrord creates a fresh, isolated pod that still participates in traffic filtering via the environment key, without mirroring an existing workload.
 
---- 
+---
 
 ### Managing Preview Environments
 
@@ -82,9 +85,9 @@ In this mode, mirrord creates a fresh, isolated pod that still participates in t
 ```bash
 mirrord preview status
 ```
-2. **Clean:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
+2. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
 ```bash
-mirrord preview clean --key <environment-key>
+mirrord preview stop --key <environment-key>
 ```
 
 ## Preview Environment Workflow
@@ -96,5 +99,3 @@ mirrord preview clean --key <environment-key>
 
 ### Interested in Preview Environments?
 [**Sign up**](https://2dkwjs.share-eu1.hsforms.com/2u8rhMF4WTomds20_JcxHOw) **to get updates and be notified when Preview Environments are available.**
-
-
