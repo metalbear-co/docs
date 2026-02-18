@@ -42,6 +42,23 @@ If you are not using the latest operator version, the set of supported blockable
 kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spec.versions[-1].schema.openAPIV3Schema.properties.spec.properties.block.items.enum}'
 ```
 
+Here is an example of of a policy that will block steal without a filter
+
+```yaml
+apiVersion: policies.mirrord.metalbear.co/v1alpha
+kind: MirrordClusterPolicy
+metadata:
+  name: block-steal-without-filter
+  namespace: mirrord-operator
+spec:
+  targetPath: "*"
+  block:
+    - steal-without-filter
+```
+
+
+
+
 ## Controllable features
 
 Some policies are not for outright blocking features, instead they change behaviour, overriding what the user has set in their mirrord config file.
