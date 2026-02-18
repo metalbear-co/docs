@@ -15,7 +15,7 @@ Skills are reusable instruction modules that teach AI agents how to work with mi
 - Guide you through installation and your first mirrord session
 - Help set up mirrord in CI pipelines
 - Configure the mirrord operator for team environments
-- Set up database branching (MySQL, PostgreSQL) for isolated development
+- Help set up [database branching](../using-mirrord/db-branching.md) for your cluster
 
 This is complementary to the [meta-prompt approach](./the-meta-prompt.md): the meta-prompt helps you generate `AGENTS.md` and project-specific configs for your repository, while the skills plugin gives your AI assistant global knowledge about mirrord that applies across any project.
 
