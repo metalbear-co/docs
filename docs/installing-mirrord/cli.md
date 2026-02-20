@@ -5,7 +5,7 @@ description: Installing and using the mirrord CLI
 
 # CLI
 
-The mirrord CLI is the core tool for running mirrord from the command line. It can be used standalone, or is automatically managed by the IDE extensions.
+The mirrord CLI is the core tool for running mirrord from the command line.
 
 ## Installation
 
@@ -48,23 +48,21 @@ For example:
 mirrord exec --target pod/app-pod-01 python main.py
 ```
 
-Or, if you'd rather run a local container than a native process, run:
-
-```bash
-mirrord container --target <target-path> -- <command used to run the local container>
-```
-
-For example:
-
-```bash
-mirrord container -- docker run nginx
-```
-
 Use `mirrord --help` to see all available commands.
+
+## Configuration
+
+mirrord is configured using a JSON or YAML configuration file. The CLI reads its configuration from this file — by default, it looks for `.mirrord/mirrord.json` in the current directory. You can specify a different configuration file with the `-f` flag:
+
+```bash
+mirrord exec -f my-config.json --target pod/app-pod python main.py
+```
+
+Configuration options are documented in the [configuration reference](https://metalbear.com/mirrord/docs/config/options).
 
 ## Interactive Setup
 
-You can use `mirrord wizard` to generate a `mirrord.json` configuration file interactively. This walks you through common use cases to help you create a configuration tailored to your needs. [Click here](/docs/overview/onboarding-wizard.md) for more information.
+You can use `mirrord wizard` to generate a `mirrord.json` configuration file interactively. This walks you through common use cases and helps you create a configuration tailored to your needs. See the [Onboarding Wizard](../overview/onboarding-wizard.md) for more information.
 
 ## Listing Targets
 
@@ -76,16 +74,6 @@ mirrord ls
 
 This will list all pods, deployments, and other resources that mirrord can target.
 
-## Configuration
-
-The CLI reads its configuration from a mirrord configuration file. By default, it looks for `.mirrord/mirrord.json` in the current directory. You can specify a different configuration file with the `-f` flag:
-
-```bash
-mirrord exec -f my-config.json --target pod/app-pod python main.py
-```
-
-Configuration options are documented in the [configuration reference](https://metalbear.com/mirrord/docs/config/options).
-
 ## Verifying Installation
 
 To verify mirrord is installed correctly:
@@ -94,7 +82,7 @@ To verify mirrord is installed correctly:
 mirrord --version
 ```
 
-To check connectivity to your cluster and the mirrord Operator (if using mirrord for Teams or Enterprise):
+To check connectivity to your cluster and the mirrord Operator (if using [mirrord for Teams](../overview/teams.md)):
 
 ```bash
 mirrord operator status

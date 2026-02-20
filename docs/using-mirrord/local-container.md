@@ -1,9 +1,9 @@
 ---
-title: Local Container
+title: Working with Local Containers
 description: Running mirrord with local containers (Docker, Podman, nerdctl)
 ---
 
-# Local Container
+# Working with Local Containers
 
 The common way to use mirrord is on a locally running process. This way you can easily debug it in your IDE, as well as make quick changes and test them out without going through the additional layer of containerization.
 
@@ -25,6 +25,6 @@ Local container execution is currently only supported in the mirrord CLI tool. I
 
 ### What's next?
 
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../using-mirrord/steal.md). Note that you can even filter which traffic you intercept!
-2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../using-mirrord/targetless.md).
-3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/) sections?
+1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](steal.md). Note that you can even filter which traffic you intercept!
+2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](targetless.md).
+3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://metalbear.com/mirrord/docs/config/options) sections?

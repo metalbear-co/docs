@@ -6,5 +6,4 @@ structure:
 redirects:
   using-mirrord/vscode-extension: installing-mirrord/vscode
   using-mirrord/intellij-plugin: installing-mirrord/intellij
-  using-mirrord/local-container: installing-mirrord/local-container
   using-mirrord/wsl: installing-mirrord/wsl

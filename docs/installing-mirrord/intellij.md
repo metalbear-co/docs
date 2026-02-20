@@ -37,13 +37,13 @@ mirrord's target can be specified in two ways:
 
 1. with the target selection dialog
    * The dialog will only appear if the mirrord config does not specify the target.
-   * The dialog will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
+   * The dialog will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://metalbear.com/mirrord/docs/config/options#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
    * If you want to see targets in a different namespace, there is a dropdown to choose between namespaces.
-2. in the mirrord config's [target section](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#target)
+2. in the mirrord config's [target section](https://metalbear.com/mirrord/docs/config/options#target)
 
 ### Using the mirrord config
 
-The plugin allows for using the [mirrord config](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
+The plugin allows for using the [mirrord config](https://metalbear.com/mirrord/docs/config/options). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
 
 #### Active config
 
