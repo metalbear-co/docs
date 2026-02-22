@@ -133,7 +133,7 @@ sa:
 
 #### Connecting Operators to the License Server
 
-First update your operator `values.yaml` file ([see this page](../overview/quick-start.md#helm) for quickstart helm setup for operator):
+First update your operator `values.yaml` file ([see this page](../getting-started/quick-start.md#helm) for quickstart helm setup for operator):
 
 ```yaml
 # ./values.yaml

@@ -96,7 +96,7 @@ kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spe
 
 _Added in mirrord Operator version 3.105.0_
 
-Allows the operator to control which patterns may be used as [HTTP header filters](../using-mirrord/steal.md#stealing-only-a-subset-of-the-remote-targets-traffic). Header filters specified by the user must match the regex specified in the network policy.
+Allows the operator to control which patterns may be used as [HTTP header filters](../traffic/traffic-filtering.md#stealing-only-a-subset-of-the-remote-targets-traffic). Header filters specified by the user must match the regex specified in the network policy.
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
@@ -138,7 +138,7 @@ this also works _any of_ or _all of_ patterns
 
 _Added in mirrord Operator version 3.108.0_
 
-Allows the operator to enforce using a [mirrord profile](../managing-mirrord/profiles.md) and to specify a set of allowed profiles.
+Allows the operator to enforce using a [mirrord profile](profiles.md) and to specify a set of allowed profiles.
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha

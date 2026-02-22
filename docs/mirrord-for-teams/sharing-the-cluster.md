@@ -35,21 +35,21 @@ These conflicts and more are resolved by the mirrord Operator, available in the 
 
 #### 1. Concurrently debug the same HTTP server with HTTP filters
 
-mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](traffic-filtering.md#filtering-a-subset-of-traffic-with-mirror-or-steal-mode).
+mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](../traffic/traffic-filtering.md#filtering-a-subset-of-traffic-with-mirror-or-steal-mode).
 
 > _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise versions.
 
 #### 2. Concurrently debug the same queue-based service with queue splitting
 
-mirrord's queue splitting feature lets users only steal a subset of the messages from a queue. By configuring mirrord to only steal messages with specific properties, users can debug the same queue-based service concurrently without affecting each other. [Learn more about queue splitting](queue-splitting.md).
+mirrord's queue splitting feature lets users only steal a subset of the messages from a queue. By configuring mirrord to only steal messages with specific properties, users can debug the same queue-based service concurrently without affecting each other. [Learn more about queue splitting](../queues-and-data/queue-splitting.md).
 
 #### 3. Prevent unwanted behavior with mirrord Policies
 
-mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](../managing-mirrord/policies.md).
+mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](../administration/policies.md).
 
 #### 4. Communicate with a personal isolated database
 
-Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the DB Branching feature to work with an ephemeral database branch that is isolated from the main database. [Learn more about DB Branching](db-branching.md).
+Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the DB Branching feature to work with an ephemeral database branch that is isolated from the main database. [Learn more about DB Branching](../queues-and-data/db-branching.md).
 
 #### 5. View other sessions running in the cluster (and kill them if necessary)
 

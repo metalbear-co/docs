@@ -29,7 +29,7 @@ mirrord wizard
 
 Make sure that you are connected (and if necessary signed in) to your cluster and that if you are using the operator, it is set up properly. If you do not, the wizard will not be able to list targets or suggest ports for network configuration.
 
-![The Onboarding Wizard Homepage](/docs/overview/onboarding-wizard/wiz-home.png)
+![The Onboarding Wizard Homepage](/docs/getting-started/onboarding-wizard/wiz-home.png)
 
 ### Learning overview
 
@@ -46,7 +46,7 @@ There are four parts to configuration creation:
 
 ### Boilerplate selection
 
-![Wizard Boilerplate Selection](/docs/overview/onboarding-wizard/wiz-boiler.png)
+![Wizard Boilerplate Selection](/docs/getting-started/onboarding-wizard/wiz-boiler.png)
 
 There are three options for boilerplate configurations that you can choose between. The differences between them are explained in more detail in the overview steps.
 
@@ -54,7 +54,7 @@ _Note that using "Replace" mode requires the operator (not available in OSS)_.
 
 ### Target configuration
 
-![Wizard Target Selection](/docs/overview/onboarding-wizard/wiz-target.png)
+![Wizard Target Selection](/docs/getting-started/onboarding-wizard/wiz-target.png)
 
 Select a target from a given namespace in your cluster, optionally filtering by specific types (this can be helpful if there are a lot of resources in your cluster). Target selection is required in the wizard (targetless configurations are not yet supported).
 
@@ -66,7 +66,7 @@ Optionally configure traffic filters and/or ports.
 
 **Traffic filters**
 
-![Wizard Traffic Filter Configuration](/docs/overview/onboarding-wizard/wiz-filter.png)
+![Wizard Traffic Filter Configuration](/docs/getting-started/onboarding-wizard/wiz-filter.png)
 
 Here, you can set header or path filters for traffic. Strings are RegEx by default, but selecting "Exact" matching from the dropdown will enable exact matching instead.
 
@@ -74,7 +74,7 @@ If you set multiple filters, you can choose how to combine them: "Any" will filt
 
 **Ports**
 
-![Wizard Port Configuration](/docs/overview/onboarding-wizard/wiz-port.png)
+![Wizard Port Configuration](/docs/getting-started/onboarding-wizard/wiz-port.png)
 
 Here, you can configure specific ports that you are interested in mirroring or stealing. Ports that are exposed in the resource definition of your target will be added automatically, but you can remove these or add your own.
 
@@ -82,6 +82,6 @@ Additionally, if you wish to map ports that differ on the local and remote, you 
 
 ### Export
 
-![Wizard Configuration Export](/docs/overview/onboarding-wizard/wiz-export.png)
+![Wizard Configuration Export](/docs/getting-started/onboarding-wizard/wiz-export.png)
 
 Preview and download (or copy to clipboard) the configuration file according to the options you have set in the previous steps. To use a configuration file in the CLI, use the `-f <CONFIG_PATH>` flag. Or if using VSCode Extension or JetBrains plugin, simply create a `.mirrord/mirrord.json` file or use the UI.
