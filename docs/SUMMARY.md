@@ -2,9 +2,9 @@
 
 * [Welcome](README.md)
 * [Getting Started](getting-started/README.md)
+  * [Introduction](getting-started/introduction.md)
   * [Quick Start](getting-started/quick-start.md)
     * [Onboarding Wizard](getting-started/onboarding-wizard.md)
-  * [Introduction](getting-started/introduction.md)
   * [VSCode Extension](getting-started/vscode-extension.md)
   * [IntelliJ Plugin](getting-started/intellij-plugin.md)
   * [WSL](getting-started/wsl.md)
