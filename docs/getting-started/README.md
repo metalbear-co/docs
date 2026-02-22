@@ -1,3 +1,3 @@
 # Getting Started
 
-Install mirrord, set up your IDE, and run your first session. Start with the [Quick Start](quick-start.md) guide, then explore the IDE-specific pages for detailed configuration.
+Install mirrord and run your first session. You can use mirrord as a [CLI tool](quick-start.md#cli-tool) or through an IDE extension for [VSCode](vscode-extension.md) / [IntelliJ](intellij-plugin.md). Start with the [Quick Start](quick-start.md) guide.
