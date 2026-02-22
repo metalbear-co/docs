@@ -631,7 +631,7 @@ Common cases would be running with dlv or any other debugger, which sets a break
 
 Controls mirrord features.
 
-See the [using mirrord](../using-mirrord/README.md) section to learn more about what each feature does.
+See the [traffic](../traffic/README.md) section to learn more about what each feature does.
 
 The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) and [`network`](configuration.md#feature-network) options have support for a shortened version, that you can see [here](configuration.md#root-shortened).
 
@@ -685,7 +685,7 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
 
 ### feature.copy\_target
 
-Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../overview/teams.md).
+Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../working-as-a-team/teams.md).
 
 This feature is not compatible with rollout targets and running without a target (`targetless` mode).
 
