@@ -89,19 +89,9 @@ For example:
 mirrord exec --target pod/app-pod-01 python main.py
 ```
 
-Or, if you'd rather run a local container than a native process, run:
+Use `mirrord exec --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively. Learn more about it in the [Onboarding Wizard](onboarding-wizard.md) guide.
 
-```bash
-mirrord container --target <target-path> -- <command used to run the local container>
-```
-
-For example:
-
-```bash
-mirrord container -- docker run nginx
-```
-
-Use `mirrord exec --help` or `mirrord container --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively.
+Want to run a local container instead of a native process? See [Local Container](../execution-modes/local-container.md).
 
 {% hint style="info" %}
 **Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
@@ -290,7 +280,7 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 
 **What are you trying to do?**
 
-Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively.
+Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively. See the [Onboarding Wizard](onboarding-wizard.md) guide for details.
 
 | Goal | Guide |
 |------|-------|
