@@ -89,7 +89,7 @@ For example:
 mirrord exec --target pod/app-pod-01 python main.py
 ```
 
-Use `mirrord exec --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively. Learn more about it in the [Onboarding Wizard](onboarding-wizard.md) guide.
+Use `mirrord exec --help` to get all possible commands + arguments. You can also use `mirrord wizard` to generate a config file interactively.
 
 Want to run a local container instead of a native process? See [Local Container](../execution-modes/local-container.md).
 
@@ -280,7 +280,7 @@ We find that this configuration works for a lot of use cases, but if you'd like 
 
 **What are you trying to do?**
 
-Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively. See the [Onboarding Wizard](onboarding-wizard.md) guide for details.
+Not sure where to start? Run `mirrord wizard` to walk through common use cases interactively.
 
 | Goal | Guide |
 |------|-------|
