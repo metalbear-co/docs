@@ -53,7 +53,7 @@ Sometimes a database is just too sensitive to write to remotely. Or maybe you wa
 
 #### 5. View other sessions running in the cluster (and kill them if necessary)
 
-Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](sessions.md).
+Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](../administration/sessions.md).
 
 #### 6. Guardrails for Destructive Actions in mirrord
 

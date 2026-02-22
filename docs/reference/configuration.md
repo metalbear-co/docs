@@ -685,7 +685,7 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
 
 ### feature.copy\_target
 
-Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../mirrord-for-teams/teams.md).
+Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../getting-started/teams.md).
 
 This feature is not compatible with rollout targets and running without a target (`targetless` mode).
 
