@@ -1,16 +1,5 @@
 ---
-title: "Multi-Cluster"
-description: "Run mirrord across multiple Kubernetes clusters simultaneously"
-date: 2026-02-12T00:00:00+00:00
-lastmod: 2026-02-12T00:00:00+00:00
-draft: false
-images: []
-menu:
-  docs:
-    parent: "using-mirrord"
-weight: 175
-toc: true
-tags: ["enterprise"]
+title: "Seamless Multi-Cluster Development"
 ---
 
 {% hint style="info" %}
@@ -22,12 +11,15 @@ Multi-cluster mirrord lets developers intercept traffic from pods running in mul
 **When is this useful?**
 
 1. **Multi-region traffic testing**
-   Your service receives traffic in us-east-1, eu-west-1, and eu-west-1. You want to test your local app against traffic from all regions at once.
+
+   Your service receives traffic from multiple regions such as `us-east-1` and `eu-west-1`. You want to validate your local changes against live traffic from all regions simultaneously, without running separate mirrord sessions per cluster.
 
 2. **Centralized access**
-   Your security policy requires developers to connect through a management cluster. Developers can't directly reach workload clusters.
+
+   Your organization requires developers to connect through a management cluster, with no direct access to workload clusters. You need mirrord to coordinate traffic interception across clusters while operating from the approved entry point.
 
 3. **Shared environments with multiple clusters**
+
    Your staging environment spans multiple clusters. You want mirrord to intercept traffic across all of them in a single session.
 
 ---
@@ -64,9 +56,9 @@ Workload clusters are where your application pods run. Each workload cluster has
 
 ### Default Cluster
 
-Some operations need to return consistent data — environment variables, file reads, outgoing connections, and database branching. These are called "stateful operations." The Default cluster is the one cluster designated to handle all of them.
+Some operations need to return consistent data such as environment variables, file reads, outgoing connections, and database branching. These are called "stateful operations." The Default cluster is the one cluster designated to handle all of them.
 
-When your app reads `DATABASE_URL`, the request goes to the Default cluster only — you get one answer, not different answers from different clusters. Traffic operations (mirror/steal) still go to all workload clusters.
+When your app reads `DATABASE_URL` for example, the request goes to the Default cluster only. You get one answer, not different answers from different clusters. Traffic operations (mirror/steal) still go to all workload clusters.
 
 ### Management-Only Mode
 
@@ -76,28 +68,32 @@ If the Primary cluster only orchestrates and doesn't run application workloads, 
 
 ## Session Lifecycle
 
-When the developer runs `mirrord exec`, the CLI connects to the Primary operator and creates a parent session. The Primary operator then creates child sessions on each workload cluster. Each child session is a normal single-cluster session from the remote cluster's perspective — it resolves the target, spawns an agent, and handles traffic locally.
+When the developer runs `mirrord exec`, the CLI connects to the Primary cluster and creates a single parent session. The Primary operator then creates child sessions on each workload cluster. From the perspective of each Workload cluster, each child session behaves exactly like a regular single-cluster session: the operator resolves the target, spawns an agent, and handles the traffic interception.
 
-Once all child sessions are ready, the CLI establishes a WebSocket connection. Messages are routed automatically based on the type of operation (see the routing table above).
+Once all child sessions are ready, the CLI establishes a unified WebSocket connection to the Primary cluster. Messages are routed automatically based on the type of operation (see the routing table above).
 
 ---
 
 ## Database Branching in Multi-Cluster
 
-[Database branching](db-branching.md) works across clusters. The developer connects to the Primary cluster, but the branch is created on the Default cluster.
+[Database branching](db-branching.md) in multi-cluster mode behaves the same from the developer’s perspective, but may execute on a different cluster internally. The developer connects to the Primary cluster, but the branch is created on the Default cluster.
 
-If Primary is not the Default cluster, a sync controller (`DbBranchSyncController`) on Primary mirrors branch resources to the Default cluster and copies the status back. The developer's CLI waits for the branch to be ready, then passes the branch name via connection parameters when creating the session — the same flow as single-cluster.
+If the Primary cluster is not the Default cluster, a synchronization controller (`DbBranchSyncController`) runs on the Primary. It mirrors branch resources to the Default cluster and syncs the branch status back to the Primary. The CLI waits waits for the branch to be ready, then passes the branch name via connection parameters when creating the session, same flow as single-cluster.
 
-If Primary is the Default cluster, no syncing is needed — branching controllers run locally on Primary, just like single-cluster.
+If the Primary cluster is also the Default cluster, no synchronization is required. The branching controllers operate locally on the Primary, and the flow is identical to single-cluster behavior.
 
 ---
 
 ## SQS Queue Splitting in Multi-Cluster
 
-[SQS queue splitting](queue-splitting.md) works across clusters. The operator on each workload cluster creates its own temporary queue and patches the local workload. The Primary operator passes SQS split configuration to each child session via connection parameters, including the `sqs_output_queues` map for cross-cluster output queue routing.
+[SQS queue splitting](queue-splitting.md) works seamlessly in multi-cluster sessions. Each Workload cluster handles queue splitting independently: its operator creates a temporary queue and patches the target workload locally, just as in single-cluster mode.
+
+During session setup, the Primary cluster operator propagates the SQS split configuration to every child session via connection parameters. This includes the sqs_output_queues mapping, ensuring that messages produced by your local application are routed to the correct cluster-specific output queues.
+
+Queue isolation happens independently in each Workload cluster, while configuration and coordination remain centralized through the Primary cluster.
 
 ---
 
 ## What's Next?
 
-To set up multi-cluster operator, see the [Multi-Cluster Setup](multi-cluster-setup.md) guide which covers authentication methods, Helm configuration, and RBAC.
+To set up multi-cluster, see the [Multi-Cluster Setup](multi-cluster-setup.md) guide which covers authentication methods, Helm configuration, and RBAC.

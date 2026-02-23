@@ -1,16 +1,5 @@
 ---
 title: "Multi-Cluster Setup"
-description: "How to install and configure mirrord for multi-cluster operation"
-date: 2026-02-12T00:00:00+00:00
-lastmod: 2026-02-12T00:00:00+00:00
-draft: false
-images: []
-menu:
-  docs:
-    parent: "using-mirrord"
-weight: 176
-toc: true
-tags: ["enterprise"]
 ---
 
 This guide covers how to set up multi-cluster mirrord. It involves installing the operator on all clusters, choosing an authentication method, and configuring the Primary cluster to connect to remote clusters.
@@ -19,7 +8,7 @@ This guide covers how to set up multi-cluster mirrord. It involves installing th
 
 Before you start, make sure you have:
 
-1. The mirrord operator Helm chart ready to install on all clusters.
+1. The mirrord operator `3.141.0+` Helm chart `1.50.0+` ready to install on all clusters.
 2. `kubectl` access to all clusters.
 3. For EKS IAM authentication: AWS CLI and `eksctl` installed.
 
@@ -27,7 +16,7 @@ Before you start, make sure you have:
 
 ## Authentication Methods
 
-Each remote cluster must specify an `authType` that determines how the Primary operator authenticates to it. The `authType` field is **required** — the Helm chart validates it at install time and fails if it's missing.
+Each remote cluster must specify an `authType` that determines how the Primary operator authenticates to it. The `authType` field is **required** - the Helm chart validates it at install time and fails if it's missing.
 
 ### Bearer Token (`authType: bearerToken`)
 
@@ -37,17 +26,17 @@ You generate an initial token manually during setup. After that, the operator au
 
 ### EKS IAM (`authType: eks`)
 
-For AWS EKS clusters. The Primary operator generates short-lived tokens using its IAM role (via IRSA). No secrets to manage — tokens are generated and refreshed automatically every 10 minutes.
+For AWS EKS clusters. The Primary operator generates short-lived tokens using its IAM role (via IRSA). No secrets to manage - tokens are generated and refreshed automatically every 10 minutes.
 
 On the Primary cluster, the operator pod gets AWS credentials through IRSA (`sa.roleArn`). It uses those credentials to generate a presigned STS URL, which is sent to the remote cluster as a bearer token. The remote EKS cluster validates the token with AWS STS, then maps the IAM role to a Kubernetes group via an [Access Entry](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html). Kubernetes RBAC on the remote cluster grants permissions to that group.
 
-No Kubernetes Secret is needed — authentication is entirely through IAM.
+No Kubernetes Secret is needed - authentication is entirely through IAM.
 
 ### mTLS (`authType: mtls`)
 
 For clusters that require client certificate authentication. You provide the client certificate and key in the cluster configuration or Secret.
 
-Certificates are **not** auto-refreshed. You are responsible for rotating them before they expire.
+Kubernetes does not auto-refresh mTLS client certificates. You are responsible for rotating the certificates you provide before they expire.
 
 ### Fields per Auth Type
 
@@ -64,7 +53,7 @@ Certificates are **not** auto-refreshed. You are responsible for rotating them b
 
 ## Setting Up Remote Clusters
 
-Every remote cluster needs the mirrord operator installed with `multiClusterMember` enabled. This creates the ServiceAccount, ClusterRoles, and ClusterRoleBindings that the Primary operator needs to manage sessions on that cluster.
+Every remote cluster needs the mirrord operator installed with `multiClusterMember` enabled. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
 
 ### Bearer Token / mTLS Clusters
 
@@ -89,7 +78,7 @@ This creates a `mirrord-operator-envoy` ServiceAccount with the necessary RBAC p
 kubectl create token mirrord-operator-envoy -n mirrord --duration=24h
 ```
 
-Save this token — you'll need it when configuring the Primary cluster. This initial token is only needed once during setup. After the Primary operator starts, it auto-refreshes tokens using the TokenRequest API before they expire.
+Save this token - you'll need it when configuring the Primary cluster. This initial token is only needed once during setup. After the Primary operator starts, it auto-refreshes tokens using the TokenRequest API before they expire.
 
 For mTLS, skip this step. Instead, you'll provide the client certificate and key when configuring the Primary cluster.
 
