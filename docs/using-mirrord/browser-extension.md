@@ -62,9 +62,13 @@ Open the extension popup, configure the header name, value, and URL scope, and c
 
 The extension popup lets you see which header is currently being injected into your browser requests and adjust it when needed, without restarting your mirrord session.
 
-### Current Header Status
+### Full Popup View
 
-![Active Header](browser-extension/images/active-header.png)
+| Active | Inactive |
+|--------|----------|
+| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
+
+### Current Header Status
 
 - Header name and value currently being injected
 - URL scope (which URLs the header applies to)
@@ -72,20 +76,21 @@ The extension popup lets you see which header is currently being injected into y
 
 ### Edit Header Configuration
 
-![Configure Header](browser-extension/images/configure-header.png)
-
-Allows you to edit the header configuration directly from the popup:
 - **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
 - **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
 - **Save**: Applies your changes immediately and updates the active header
 - **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
 
-### Full Popup View
+## Settings
 
-| Active | Inactive |
-|--------|----------|
-| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
+Click the gear icon in the top-right corner of the popup (or right-click the extension icon and select **Options**) to open the settings page.
+
+![Settings Page](browser-extension/images/settings.png)
+
+### Usage analytics
+
+The extension sends anonymous usage analytics to help improve mirrord. You can opt out at any time by toggling **Usage analytics** off in the settings page.
 
 ## Limiting injection scope by URL
 
