@@ -24,7 +24,8 @@ With a regular mirrord session, the test environment disappears when your local 
 ## Prerequisites
 
 1. The mirrord operator must be installed in the cluster with an Enterprise license.
-2. The container image for the service you want to run in the preview environment must be pre-built and pushed to a registry accessible by the cluster.
+2. The `operator.previewEnv` feature flag in your chart's `values.yaml` must be set to `true`.
+3. The container image for the service you want to run in the preview environment must be pre-built and pushed to a registry accessible by the cluster.
 
 ## Configuration
 

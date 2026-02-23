@@ -2,3 +2,6 @@ root: ./docs/
 
 structure:
   summary: ./SUMMARY.md
+
+redirects:
+  coming-soon/preview-env: using-mirrord/preview-env
