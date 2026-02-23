@@ -13,7 +13,7 @@ description: Ephemeral, Isolated Environments Connected to Your Cluster
 
 # Preview Environments
 
-Preview Environments let you deploy a new version of your code into the cluster as an isolated pod. The pod can communicate with its dependencies in the cluster and receive filtered traffic without affecting other users or live services.. Unlike a regular mirrord session, a preview environment is not tied to a local process. It stays alive for a configurable TTL, making it suitable for sharing with teammates, QA, or product managers who need to validate changes asynchronously.
+Preview Environments let you deploy a new version of your code into the cluster as an isolated pod. The pod can communicate with its dependencies in the cluster and receive filtered traffic without affecting other users or live services. Unlike a regular mirrord session, a preview environment is not tied to a local process. It stays alive for a configurable TTL, making it suitable for sharing with teammates, QA, or product managers who need to validate changes asynchronously.
 
 {% hint style="info" %}
 This feature is available to users on the **Enterprise** pricing plan.
@@ -73,7 +73,7 @@ With the configuration above, `{{ key }}` is replaced with `key-my-feature` at l
 
 Preview environments support the same [incoming traffic modes](../reference/traffic.md) as regular mirrord sessions:
 
-- Filtered steal: requests matching an HTTP filter are redirected to the preview pod instead of the original target. Other traffic is unaffected. This is the most common mode for preview environments.
+- Stealing: requests matching an HTTP filter are redirected to the preview pod instead of the original target. Other traffic is unaffected. This is the most common mode for preview environments.
 - Mirroring (filtered or unfiltered): a copy of incoming traffic is sent to the preview pod. The preview pod's responses are discarded, the original target still serves all real traffic. Useful for observing how new code handles production-like requests without any risk of disruption.
 
 {% hint style="warning" %}
@@ -168,4 +168,4 @@ This removes the preview pod and all associated resources from the cluster. If y
 ### Current Limitations
 
 - No in-place updates: you can't update the image or configuration of a running preview session. To deploy a new version, `stop` the existing session and `start` a new one.
-- Targetless mode not yet supported: preview environments currently require a target workload to clone the pod spec from. Support for [targetless](targetless.md) preview environments — creating a fresh, isolated pod without an existing target — is not yet available.
+- Targetless mode not yet supported: preview environments currently require a target workload to clone the pod spec from. Support for [targetless](targetless.md) preview environments, creating a fresh, isolated pod without an existing target, is not yet available.
