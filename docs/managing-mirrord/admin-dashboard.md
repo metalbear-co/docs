@@ -20,7 +20,7 @@ description: Admin Dashboard for monitoring mirrord usage
 The mirrord Admin Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
 {% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan and requires mirrord operator version 3.143.0 or later.
+This feature is available to users on the Enterprise pricing plan.
 {% endhint %}
 
 | Dark mode | Light mode |
@@ -29,9 +29,8 @@ This feature is available to users on the Enterprise pricing plan and requires m
 
 ## Prerequisites
 
-1. A running [license server](license-server.md) with Helm chart version 1.5.0 or later.
-2. The dashboard enabled in your Helm values (`dashboard.enabled: true`).
-3. Network access to the license server from your browser (via ingress, port-forward, or `mirrord exec`).
+1. A running [license server](license-server.md) with `dashboard.enabled: true` in your Helm values (see [Helm Configuration](#helm-configuration) below).
+2. Network access to the license server from your browser (via ingress or port-forward).
 
 ## Accessing the Dashboard
 
@@ -52,12 +51,6 @@ kubectl port-forward -n mirrord svc/mirrord-license-server 3000:80
 ```
 
 Then open [http://localhost:3000/dashboard/](http://localhost:3000/dashboard/) in your browser.
-
-**Via mirrord exec:**
-
-```bash
-mirrord exec -- curl "mirrord-license-server.mirrord.svc.cluster.local/dashboard/"
-```
 
 {% hint style="info" %}
 The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking and ingress configuration.
@@ -141,7 +134,7 @@ The operator version is displayed in the app bar for quick reference (e.g., "v3.
 
 ## Helm Configuration
 
-The dashboard requires Helm chart version 1.5.0 or later. Enable it by adding `dashboard.enabled: true` to your `values.yaml`:
+Enable the dashboard by adding `dashboard.enabled: true` to your `values.yaml`:
 
 ```yaml
 # values.yaml
