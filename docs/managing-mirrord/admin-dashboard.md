@@ -29,8 +29,8 @@ This feature is available to users on the Enterprise pricing plan and requires m
 
 ## Prerequisites
 
-1. A running [license server](license-server.md) with Helm chart version 1.50.0 or later.
-2. The `DASHBOARD_DIR` environment variable set on the license server deployment (this is configured automatically by the Helm chart).
+1. A running [license server](license-server.md) with Helm chart version 1.5.0 or later.
+2. The dashboard enabled in your Helm values (`dashboard.enabled: true`).
 3. Network access to the license server from your browser (via ingress, port-forward, or `mirrord exec`).
 
 ## Accessing the Dashboard
@@ -141,16 +141,22 @@ The operator version is displayed in the app bar for quick reference (e.g., "v3.
 
 ## Helm Configuration
 
-The dashboard is enabled by default when using the license server Helm chart version 1.50.0 or later. The Helm chart handles setting the `DASHBOARD_DIR` environment variable and bundling the dashboard assets.
+The dashboard requires Helm chart version 1.5.0 or later. Enable it by adding `dashboard.enabled: true` to your `values.yaml`:
 
-To upgrade your existing license server to include the dashboard:
+```yaml
+# values.yaml
+dashboard:
+  enabled: true
+```
+
+This sets the `DASHBOARD_DIR` environment variable on the license server, which tells it to serve the bundled dashboard assets at `/dashboard/`.
+
+Then install or upgrade:
 
 ```bash
 helm repo update metalbear
 helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
 ```
-
-No additional `values.yaml` changes are required for the dashboard itself.
 
 ## API Endpoints
 
