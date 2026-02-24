@@ -23,8 +23,10 @@ With a regular mirrord session, the test environment disappears when your local 
 
 ## Prerequisites
 
-1. The mirrord operator must be installed in the cluster with an Enterprise license.
-2. The `operator.previewEnv` feature flag in your chart's `values.yaml` must be set to `true`.
+Before you start, make sure you have:
+
+1. Minimum versions installed: Operator `3.142.0`, mirrord CLI `3.189.0` with `operator.previewEnv` value set to `true` in your chart's `values.yaml`.
+2. The mirrord operator must be installed in the cluster with an Enterprise license.
 3. The container image for the service you want to run in the preview environment must be pre-built and pushed to a registry accessible by the cluster.
 
 ## Configuration
