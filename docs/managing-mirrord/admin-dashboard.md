@@ -17,11 +17,15 @@ description: Admin Dashboard for monitoring mirrord usage
 
 # Admin Dashboard
 
-The mirrord Admin Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, machines, CI pipelines, and overall adoption trends, all served directly from the license server.
+The mirrord Admin Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan and requires mirrord operator version 3.143.0 or later.
 {% endhint %}
+
+| Dark mode | Light mode |
+|-----------|------------|
+| ![Dashboard - Dark Mode](admin-dashboard/images/dashboard-dark.png) | ![Dashboard - Light Mode](admin-dashboard/images/dashboard-light.png) |
 
 ## Prerequisites
 
@@ -59,43 +63,67 @@ mirrord exec -- curl "mirrord-license-server.mirrord.svc.cluster.local/dashboard
 The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking and ingress configuration.
 {% endhint %}
 
-## Dashboard Overview
+## Usage Tab
 
-The dashboard is organized into several sections:
+The Usage tab is the main view, showing metrics, session activity, and analytics charts.
 
-### Metric Cards
+### Metric Cards and Session Activity
+
+![Metric cards and session activity table](admin-dashboard/images/metrics-and-activity.png)
 
 The top row displays five key metrics at a glance:
 
 | Metric | Description |
 |--------|-------------|
-| **Tier** | Your mirrord license tier and total license count |
-| **Total Sessions** | Cumulative number of mirrord sessions across all time |
-| **Active Machines** | Number of unique machines that have used mirrord |
+| **Licenses** | Total license count and number of unique machines |
+| **mirrord Champion** | The most active mirrord user and their total session time |
+| **Total Sessions** | Cumulative number of mirrord sessions, with a sparkline trend |
+| **Session Time** | Total cumulative session time, with a sparkline trend |
 | **CI Sessions** | Total CI pipeline sessions, with current or max concurrency |
-| **Session Time** | Total cumulative session time across all users |
 
-### User Activity
+Use the time range selector in the top-right corner (**7d**, **30d**, **90d**, **All**) to filter data by period.
 
-Below the metrics, a chart shows session distribution across users, paired with a details panel listing each user's total session count. This helps identify your most active mirrord users and understand adoption patterns.
+Below the metrics, the **Session Activity** table shows a cross-referenced view of users and their target workloads. Each row shows the user, target, namespace, session count with a visual bar, and total time. The table is searchable and sortable by any column, with pagination for large datasets.
 
-### User Metrics Table
+### Users View
 
-A searchable, sortable table with detailed per-user statistics:
+![User charts and metrics table](admin-dashboard/images/users-view.png)
 
-| Column | Description |
-|--------|-------------|
-| **Identifier** | The user's machine identifier |
-| **First Active** | Date of the user's first mirrord session |
-| **Last Seen** | Date of the user's most recent session |
-| **Sessions** | Total number of sessions |
-| **Total Time** | Cumulative session time |
-| **Avg Duration** | Average session duration |
+Switch to the **Users** tab to see user-focused analytics:
 
-The table supports:
-- **Search**: Filter users by identifier
-- **Sorting**: Click column headers to sort ascending or descending
-- **Pagination**: Navigate through pages when there are many users
+- **Session Duration vs. Count**: A scatter chart plotting each user's total sessions against their average session duration. Larger bubbles indicate more total session time, helping you spot power users and usage patterns.
+- **User Timeline**: Shows when each user was first seen and their most recent activity, giving a quick view of adoption over time.
+- **User Metrics** table: A detailed, searchable table with columns for identifier, first active date, last seen date, total sessions, cumulative time, and average duration. Click any column header to sort.
+
+### Targets View
+
+![Target adoption and namespace breakdown](admin-dashboard/images/targets-view.png)
+
+Switch to the **Targets** tab to see target-focused analytics:
+
+- **Target Adoption**: A scatter chart showing sessions vs. unique users per target. This helps identify which workloads are broadly adopted vs. heavily used by a few people.
+- **Sessions by Namespace**: A horizontal bar chart breaking down session distribution across Kubernetes namespaces.
+- **Target Metrics** table: A searchable table listing each target workload with its namespace, session count, total time, and number of unique users.
+
+## ROI Calculator
+
+![ROI Calculator](admin-dashboard/images/roi-calculator.png)
+
+The **ROI Calculator** tab estimates the time and cost savings from using mirrord. Configure the inputs on the left and see the calculated results on the right:
+
+**Inputs:**
+- **Number of developers**: How many developers use mirrord
+- **Developer cost**: Annual salary or hourly rate
+- **Deploy/test cycles per developer per day**: How many code-deploy-test loops each developer does daily
+- **Minutes per deploy cycle**: Time saved per cycle by using mirrord instead of deploying to the cluster
+- **Infrastructure savings** (expandable): Number of staging environments decommissioned and their monthly or annual cost
+
+**Results:**
+- **Hours saved per developer per week**
+- **Faster delivery** percentage
+- **Annual productivity savings** (team hours and dollar value)
+- **Annual infrastructure savings**
+- **Net Annual ROI** after subtracting the mirrord license cost
 
 ## Features
 
@@ -109,7 +137,7 @@ Click the **Sync** button in the app bar to manually refresh all dashboard data.
 
 ### Operator Version
 
-When available, the operator version is displayed below the app bar for quick reference.
+The operator version is displayed in the app bar for quick reference (e.g., "v3.142.0").
 
 ## Helm Configuration
 
@@ -128,7 +156,7 @@ No additional `values.yaml` changes are required for the dashboard itself.
 
 The dashboard consumes two API endpoints from the license server. These are also available for programmatic access:
 
-- `GET /api/v1/reports/usage?format=json` returns the full usage report (users, sessions, CI metrics, machines).
+- `GET /api/v1/reports/usage?format=json` returns the full usage report (users, targets, sessions, CI metrics, machines).
 - `GET /api/v1/reports/usage/trends?days=30` returns time-series data (daily sessions, active users, CI sessions, user adoption).
 
 Both endpoints require the `x-license-key` header when accessed directly. The dashboard injects this automatically when served by the license server.
