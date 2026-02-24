@@ -41,6 +41,7 @@
       * [Outgoing Traffic Policies](managing-mirrord/outgoing-traffic-policies.md)
   * [Profiles](managing-mirrord/profiles.md)
   * [Jira Integration](managing-mirrord/jira-integration.md)
+  * [Admin Dashboard](managing-mirrord/admin-dashboard.md)
   * [License Server](managing-mirrord/license-server.md)
   * [Versioning](managing-mirrord/versioning.md)
 * [FAQ](faq/README.md)
