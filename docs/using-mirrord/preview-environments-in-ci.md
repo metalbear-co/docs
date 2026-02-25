@@ -114,7 +114,7 @@ If you don't propagate the header, downstream services won't know which preview 
 
 ## mirrord Configuration
 
-Create a `mirrord-preview.json` (or similar) per service. The image can be provided via the config file or overridden with `-i` in CI:
+Create a `mirrord-preview.json` (or similar) per service. The image can be provided via the configuration file or overridden with `-i` in CI:
 
 ```json
 {
