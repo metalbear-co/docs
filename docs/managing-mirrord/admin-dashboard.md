@@ -1,10 +1,10 @@
 ---
-title: Admin Dashboard
+title: Dashboard
 date: 2026-02-24T00:00:00.000Z
 lastmod: 2026-02-24T00:00:00.000Z
 draft: false
 images: []
-linktitle: Admin Dashboard
+linktitle: Dashboard
 menu:
   docs:
     teams: null
@@ -12,12 +12,12 @@ weight: 535
 toc: true
 tags:
   - enterprise
-description: Admin Dashboard for monitoring mirrord usage
+description: Dashboard for monitoring mirrord usage
 ---
 
-# Admin Dashboard
+# Dashboard
 
-The mirrord Admin Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
+The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan.
@@ -30,7 +30,7 @@ This feature is available to users on the Enterprise pricing plan.
 ## Prerequisites
 
 1. A running [license server](license-server.md) with `dashboard.enabled: true` in your Helm values (see [Helm Configuration](#helm-configuration) below).
-2. Network access to the license server from your browser (via ingress or port-forward).
+2. Network access to the license server from your browser, as described in [Accessing the Dashboard](#accessing-the-dashboard) below.
 
 ## Accessing the Dashboard
 
@@ -44,7 +44,7 @@ If your license server is exposed via an ingress or gateway, navigate to:
 https://<your-license-server-host>/dashboard/
 ```
 
-**Via kubectl port-forward:**
+**Via `kubectl port-forward`:**
 
 ```bash
 kubectl port-forward -n mirrord svc/mirrord-license-server 3000:80
@@ -68,13 +68,13 @@ The top row displays five key metrics at a glance:
 
 | Metric | Description |
 |--------|-------------|
-| **Licenses** | Total license count and number of unique machines |
+| **Licenses** | Total license count and number of active unique machines |
 | **mirrord Champion** | The most active mirrord user and their total session time |
 | **Total Sessions** | Cumulative number of mirrord sessions, with a sparkline trend |
 | **Session Time** | Total cumulative session time, with a sparkline trend |
-| **CI Sessions** | Total CI pipeline sessions, with current or max concurrency |
+| **CI Sessions** | Total CI pipeline sessions, with max concurrency |
 
-Use the time range selector in the top-right corner (**7d**, **30d**, **90d**, **All**) to filter data by period.
+Use the time range selector in the top-right corner (**7d**, **30d**, **90d**, **All**) to adjust the data to the selected time period.
 
 Below the metrics, the **Session Activity** table shows a cross-referenced view of users and their target workloads. Each row shows the user, target, namespace, session count with a visual bar, and total time. The table is searchable and sortable by any column, with pagination for large datasets.
 
@@ -130,7 +130,7 @@ Click the **Sync** button in the app bar to manually refresh all dashboard data.
 
 ### Operator Version
 
-The operator version is displayed in the app bar for quick reference (e.g., "v3.142.0").
+The operator version is displayed in the app bar for quick reference (e.g., `v3.142.0`).
 
 ## Helm Configuration
 
@@ -158,6 +158,11 @@ The dashboard consumes two API endpoints from the license server. These are also
 - `GET /api/v1/reports/usage?format=json` returns the full usage report (users, targets, sessions, CI metrics, machines).
 - `GET /api/v1/reports/usage/trends?days=30` returns time-series data (daily sessions, active users, CI sessions, user adoption).
 
-Both endpoints require the `x-license-key` header when accessed directly. The dashboard injects this automatically when served by the license server.
+Both endpoints require the `x-license-key` header. This is the license key configured in the license server's Helm values (`license.key`). When the dashboard is served by the license server, this header is injected automatically. For direct API access (e.g., via `curl`), pass it manually:
+
+```bash
+curl -H "x-license-key: <your-license-key>" \
+  http://localhost:3000/api/v1/reports/usage?format=json
+```
 
 For spreadsheet reports (Excel format), see [Getting a Utilisation Report](license-server.md#getting-a-utilisation-report-from-the-license-server).
