@@ -21,6 +21,8 @@ targeted app that's deployed in your staging cluster, so it gets access to traff
 it's running in the cluster. This means there's no need to spin up a whole test environment for a CI run,
 then spin it down when it's done.
 
+![How mirrord for CI works](/docs/using-mirrord/ci/images/mirrord-ci-diagram.png)
+
 While running regular `mirrord exec` can be made to work for this purpose, it requires some
 finagling to get right, such as wrapping `mirrord exec` in some other command that would start
 it as a background process.
