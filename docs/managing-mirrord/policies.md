@@ -42,7 +42,7 @@ If you are not using the latest operator version, the set of supported blockable
 kubectl get crd mirrordpolicies.policies.mirrord.metalbear.co -o jsonpath='{.spec.versions[-1].schema.openAPIV3Schema.properties.spec.properties.block.items.enum}'
 ```
 
-Here is an example of of a policy that will block steal without a filter
+Here is an example of a policy that blocks stealing when no filter is defined:
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
