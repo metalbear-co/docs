@@ -19,7 +19,7 @@ Preview Environments let you deploy a new version of your code into the cluster 
 This feature is available to users on the **Enterprise** pricing plan.
 {% endhint %}
 
-![How How mirrord Preview Environments work works](/docs/using-mirrord/preview-envs/images/preview-envs-diagram.png)
+![How mirrord Preview Environments work works](/docs/using-mirrord/preview-envs/images/preview-envs-diagram.png)
 
 With a regular mirrord session, the test environment disappears when your local process stops. Preview environments solve this: the code runs in-cluster, so it keeps serving traffic regardless of what's happening on your machine. Multiple preview environments can run side by side, each receiving only the traffic intended for them.
 
