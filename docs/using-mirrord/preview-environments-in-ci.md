@@ -114,32 +114,7 @@ If you don't propagate the header, downstream services won't know which preview 
 
 ## mirrord Configuration
 
-Create a `mirrord-preview.json` (or similar) per service. The image can be provided via the configuration file or overridden with `-i` in CI:
-
-```json
-{
-  "target": {
-    "path": "deployment/my-app",
-    "namespace": "staging"
-  },
-  "feature": {
-    "preview": {
-      "ttl_mins": 120,
-      "creation_timeout_secs": 600
-    },
-    "network": {
-      "incoming": {
-        "mode": "steal",
-        "http_filter": {
-          "header_filter": "X-PG-Tenant: {{ key }}"
-        }
-      }
-    }
-  }
-}
-```
-
-In CI, pass the image and key via CLI:
+Use the same config file as above (e.g. `mirrord-preview.json`) per service. The image can be provided in the config or overridden with `-i` in CI. In CI, pass the image and key via CLI:
 
 ```bash
 mirrord preview start \
