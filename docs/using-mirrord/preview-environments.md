@@ -172,5 +172,4 @@ This removes the preview pod and all associated resources from the cluster. If y
 
 ### Current Limitations
 
-- No in-place updates: you can't update the image or configuration of a running preview session. To deploy a new version, `stop` the existing session and `start` a new one.
 - Targetless mode not yet supported: preview environments currently require a target workload to clone the pod spec from. Support for [targetless](targetless.md) preview environments, creating a fresh, isolated pod without an existing target, is not yet available.
