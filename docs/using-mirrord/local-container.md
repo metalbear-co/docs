@@ -25,6 +25,6 @@ Local container execution is currently only supported in the mirrord CLI tool. I
 
 ### What's next?
 
-1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](steal.md). Note that you can even filter which traffic you intercept!
+1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](incoming-traffic/filter-incoming-traffic.md). Note that you can even filter which traffic you intercept!
 2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](targetless.md).
 3. If you just want to learn more about mirrord, why not check out our [architecture](../reference/architecture.md) or [configuration](https://metalbear.com/mirrord/docs/config/options) sections?

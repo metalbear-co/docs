@@ -1,3 +1,24 @@
+---
+title: Using mirrord
+description: Guides for mirrord's features — traffic control, targets, containers, and more
+---
+
 # Using mirrord
 
-This section provides detailed guides and explanations on how to use mirrord in various scenarios. You'll find instructions and best practices for features such as copying targets, running local containers, filtering outgoing traffic, port forwarding, managing sessions, stealing HTTPS and general traffic, using targetless mode, web browsing, and integrating with popular development tools like IntelliJ and VSCode. Whether you're new to mirrord or looking to leverage its advanced capabilities, these topics will help you get the most out of your development workflow.
+This section covers the features you use to control how mirrord connects your local process to the cluster.
+
+### Traffic
+
+- **[Incoming Traffic](incoming-traffic/README.md)** — Mirror or steal traffic from the cluster to your local process
+- **[Outgoing Traffic](outgoing-traffic/README.md)** — Control how your local process reaches cluster services
+- **[Port Forwarding](port-forwarding.md)** — Forward ports between your machine and the cluster
+
+### Targets and execution modes
+
+- **[Run Without a Target](targetless.md)** — Run mirrord without impersonating a specific pod
+- **[Copy Target](copy-target.md)** **[Teams]** — Work against a copy of a pod instead of the live one
+- **[Local Containers](local-container.md)** — Run mirrord with Docker, Podman, or nerdctl instead of a native process
+
+### Tools
+
+- **[Connecting Tools to the Cluster](connecting-tools/README.md)** — Use browsers, Postman, and other tools with cluster networking
