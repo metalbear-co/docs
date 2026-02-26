@@ -28,7 +28,7 @@ Inspect real traffic to easily find the right filter for isolating each develope
 Before you start, make sure you have:
 1. `kubectl` configured to access your target cluster.
 2. mirrord installed and working.
-3. The details of your target resource (for example, the Deployment name and the port you want to inspect).
+3. The details of your target resource (for example, the Deployment name and the port you want to inspect). The command cannot run in targetless mode.
 
 ## Using `mirrord dump`
 
@@ -53,5 +53,13 @@ Connection ID 0 closed
 ```
 4. Press `Ctrl+C` to stop the dump session.
 
+### Automatically detecting ports on the target
 
+{% hint style="info" %}
+This feature requires at least mirrord version **3.191.0**.
+{% endhint %}
 
+If you want to listen for traffic on all ports exposed by the target, you can omit the ports argument like so:
+```
+mirrord dump -t deployment/my-deployment
+```
