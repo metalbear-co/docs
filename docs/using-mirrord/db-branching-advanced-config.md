@@ -46,6 +46,74 @@ If the branch isn’t ready within this time, mirrord session fails, exists and 
 Use this field to avoid hanging operations when branch creation takes too long or fails.
 Default value is 60 seconds.
 
+# Connection Modes
+
+mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**.
+
+### Connection URL
+
+Provide a single environment variable that contains the full database connection string:
+
+```json
+{
+  "connection": {
+    "type": "env",
+    "url": "DATABASE_URL"
+  }
+}
+```
+
+The `type` field controls where the environment variable is read from (applies to both URL and params modes):
+
+- `"env"`: Direct `env` entry in the target pod spec.
+- `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
+
+### Individual Connection Parameters (Params)
+
+Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
+
+Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Specify the parameters that your application uses to connect to the database.
+
+```json
+{
+  "connection": {
+    "type": "env",
+    "params": {
+      "host": "DB_HOST",
+      "port": "DB_PORT",
+      "user": "DB_USER",
+      "password": "DB_PASSWORD",
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+### Secret Source
+
+Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
+
+Instead of a plain string (env var name), use an object with `secret` and `key`:
+
+```json
+{
+  "connection": {
+    "type": "env",
+    "params": {
+      "host": "DB_HOST",
+      "password": { "secret": "rds-credentials", "key": "password" },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+In this example, `host` and `database` are read from environment variables, while `password` is read directly from the `rds-credentials` Kubernetes Secret (key `password`).
+
+{% hint style="info" %}
+The `secret` source is only supported for individual connection parameters, not for the full connection URL.
+{% endhint %}
+
 # Copy Modes (MySQL & PostgreSQL)
 
 The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL and PostgreSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
@@ -101,72 +169,6 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
-## Connection Modes
-
-mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**.
-
-### Connection URL
-
-Provide a single environment variable that contains the full database connection string:
-
-```json
-{
-  "connection": {
-    "type": "env",
-    "url": "DATABASE_URL"
-  }
-}
-```
-
-The `type` field controls where the environment variable is read from (applies to both URL and params modes):
-
-- `"env"`: Direct `env` entry in the target pod spec.
-- `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
-
-### Individual Connection Parameters (Params)
-
-Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables:
-
-```json
-{
-  "connection": {
-    "type": "env",
-    "params": {
-      "host": "DB_HOST",
-      "port": "DB_PORT",
-      "user": "DB_USER",
-      "password": "DB_PASSWORD",
-      "database": "DB_NAME"
-    }
-  }
-}
-```
-
-### Secret Source
-
-Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
-
-Instead of a plain string (env var name), use an object with `secret` and `key`:
-
-```json
-{
-  "connection": {
-    "type": "env",
-    "params": {
-      "host": "DB_HOST",
-      "password": { "secret": "rds-credentials", "key": "password" },
-      "database": "DB_NAME"
-    }
-  }
-}
-```
-
-In this example, `host` and `database` are read from environment variables, while `password` is read directly from the `rds-credentials` Kubernetes Secret (key `password`).
-
-{% hint style="info" %}
-The `secret` source is only supported for individual connection parameters, not for the full connection URL.
-{% endhint %}
-
 # MongoDB Copy Modes
 
 MongoDB supports two copy modes:
@@ -190,7 +192,7 @@ Copying large datasets can significantly increase branch creation time and stora
 MongoDB does not support a `"schema"` copy mode. MongoDB is schema-less, so `"empty"` and `"all"` are the available options.
 {% endhint %}
 
-## MongoDB Collection Filters
+### MongoDB Collection Filters
 
 Developers can customize which collections are copied and apply MongoDB query filters per collection:
 

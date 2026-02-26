@@ -76,7 +76,7 @@ Developers define branches in their `mirrord.json`:
 5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
 6. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
-7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](#connection-modes) below.
+7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
 10. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
@@ -86,7 +86,7 @@ If name is ommited, the override URL just points to the database server; the app
 
 1. Run your app with mirrord and set the `db_branches` field in [the mirrord configuration file](https://metalbear.com/mirrord/docs/config).
 
-2. mirrord will spin up a MySQL branch according to the following rules:
+2. mirrord will spin up a database branch according to the following rules:
  - Reusing an existing branch:
     If you provide an ID that matches an existing branch and its TTL hasn’t expired, mirrord will reuse that branch.
     When this happens, mirrord will notify you:
