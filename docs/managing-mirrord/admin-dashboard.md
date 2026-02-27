@@ -47,10 +47,10 @@ https://<your-license-server-host>/dashboard/
 **Via `kubectl port-forward`:**
 
 ```bash
-kubectl port-forward -n mirrord svc/mirrord-license-server 3000:80
+kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
 ```
 
-Then open [http://localhost:3000/dashboard/](http://localhost:3000/dashboard/) in your browser.
+Then open [http://localhost:8050/](http://localhost:8050/) in your browser.
 
 {% hint style="info" %}
 The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking and ingress configuration.
@@ -142,7 +142,12 @@ dashboard:
   enabled: true
 ```
 
-This sets the `DASHBOARD_DIR` environment variable on the license server, which tells it to serve the bundled dashboard assets at `/dashboard/`.
+This tells the license server to serve the bundled dashboard UI on a separate port (default `8050`). The chart automatically configures the container port, service port, and required environment variables.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `dashboard.enabled` | `false` | Enable the dashboard |
+| `dashboard.port` | `8050` | Port the dashboard is served on |
 
 Then install or upgrade:
 
