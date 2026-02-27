@@ -27,20 +27,32 @@ This feature is available to users on the Enterprise pricing plan.
 |-----------|------------|
 | ![Dashboard - Dark Mode](admin-dashboard/images/dashboard-dark.png) | ![Dashboard - Light Mode](admin-dashboard/images/dashboard-light.png) |
 
-## Prerequisites
+## Quick Start
 
-1. A running [license server](license-server.md) with `dashboard.enabled: true` in your Helm values (see [Helm Configuration](#helm-configuration) below).
-2. Network access to the license server from your browser, as described in [Accessing the Dashboard](#accessing-the-dashboard) below.
+1. Add `dashboard.enabled: true` to your license server Helm values:
 
-## Accessing the Dashboard
+```yaml
+# values.yaml
+dashboard:
+  enabled: true
+```
 
-The dashboard is served by the license server on a dedicated port (default `8050`). Use `kubectl port-forward` to access it:
+2. Upgrade the license server:
+
+```bash
+helm repo update metalbear
+helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
+```
+
+3. Port-forward the dashboard port to your local machine:
 
 ```bash
 kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
 ```
 
-Then open [http://localhost:8050/](http://localhost:8050/) in your browser.
+4. Open [http://localhost:8050/](http://localhost:8050/) in your browser.
+
+The dashboard reads from the license server's existing session database, so your historical usage data appears immediately. Target workload breakdowns (namespace, deployment name) are available for sessions recorded after the upgrade.
 
 {% hint style="info" %}
 The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking configuration.
@@ -124,27 +136,12 @@ The operator version is displayed in the app bar for quick reference (e.g., `v3.
 
 ## Helm Configuration
 
-Enable the dashboard by adding `dashboard.enabled: true` to your `values.yaml`:
-
-```yaml
-# values.yaml
-dashboard:
-  enabled: true
-```
-
-This tells the license server to serve the bundled dashboard UI on a separate port (default `8050`). The chart automatically configures the container port, service port, and required environment variables.
-
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `dashboard.enabled` | `false` | Enable the dashboard |
 | `dashboard.port` | `8050` | Port the dashboard is served on |
 
-Then install or upgrade:
-
-```bash
-helm repo update metalbear
-helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
-```
+The chart automatically configures the container port, service port, and required environment variables when `dashboard.enabled` is set to `true`.
 
 ## API Endpoints
 
@@ -157,7 +154,7 @@ Both endpoints require the `x-license-key` header. This is the license key confi
 
 ```bash
 curl -H "x-license-key: <your-license-key>" \
-  http://localhost:3000/api/v1/reports/usage?format=json
+  http://localhost:8050/api/v1/reports/usage?format=json
 ```
 
 For spreadsheet reports (Excel format), see [Getting a Utilisation Report](license-server.md#getting-a-utilisation-report-from-the-license-server).
