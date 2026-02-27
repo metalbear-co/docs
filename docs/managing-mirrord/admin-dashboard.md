@@ -34,17 +34,7 @@ This feature is available to users on the Enterprise pricing plan.
 
 ## Accessing the Dashboard
 
-The dashboard is served by the license server at the `/dashboard/` path. How you access it depends on your cluster setup:
-
-**Via ingress (recommended for production):**
-
-If your license server is exposed via an ingress or gateway, navigate to:
-
-```
-https://<your-license-server-host>/dashboard/
-```
-
-**Via `kubectl port-forward`:**
+The dashboard is served by the license server on a dedicated port (default `8050`). Use `kubectl port-forward` to access it:
 
 ```bash
 kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
@@ -53,7 +43,7 @@ kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
 Then open [http://localhost:8050/](http://localhost:8050/) in your browser.
 
 {% hint style="info" %}
-The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking and ingress configuration.
+The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking configuration.
 {% endhint %}
 
 ## Usage Tab
