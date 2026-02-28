@@ -6,7 +6,7 @@
 
 * [What is mirrord?](getting-started/what-is-mirrord.md)
 * [Quick Start](getting-started/quick-start.md)
-* [Onboarding Wizard](getting-started/onboarding-wizard.md)
+  * [Onboarding Wizard](getting-started/onboarding-wizard.md)
 * [Installing mirrord](installing-mirrord/README.md)
   * [CLI](installing-mirrord/cli.md)
   * [VS Code](installing-mirrord/vscode.md)
