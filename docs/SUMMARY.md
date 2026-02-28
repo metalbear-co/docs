@@ -20,6 +20,8 @@
   * [JetBrains IDEs](installing-mirrord/intellij.md)
   * [WSL](installing-mirrord/wsl.md)
 
+## Guides
+
 * [Using mirrord](using-mirrord/README.md)
   * [Incoming Traffic](using-mirrord/incoming-traffic/README.md)
     * [Filter Incoming Traffic](using-mirrord/incoming-traffic/filter-incoming-traffic.md)
