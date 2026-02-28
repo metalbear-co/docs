@@ -4,7 +4,7 @@
 
 ## Use Cases
 
-* [Local Development with Cloud Context](use-cases/local-development.md)
+* [Remocal Development](use-cases/local-development.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
