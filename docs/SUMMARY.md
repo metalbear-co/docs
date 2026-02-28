@@ -12,6 +12,7 @@
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
   * [WSL](installing-mirrord/wsl.md)
+  * [mirrord Operator](managing-mirrord/operator.md)
 
 ## Use Cases
 
@@ -55,7 +56,6 @@
 
 ## Managing mirrord
 
-* [mirrord Operator](managing-mirrord/operator.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
