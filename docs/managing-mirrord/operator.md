@@ -12,13 +12,13 @@ The mirrord Operator is a Kubernetes operator that runs persistently in your clu
 
 ## Why the Operator?
 
-In the open-source version of mirrord, each session is standalone — mirrord injects itself into the local process and creates an agent pod directly. This works well for individual use, but doesn't support coordination between users.
+In the open-source version of mirrord, each session is standalone - mirrord injects itself into the local process and creates an agent pod directly. This works well for individual use, but doesn't support coordination between users.
 
 The Operator solves this by acting as a centralized control plane:
 
-- **Better security** — Users no longer need permissions to create privileged pods. Only the Operator does. Permissions are managed through Kubernetes RBAC.
-- **Concurrent use** — The Operator coordinates multiple mirrord sessions on the same cluster, preventing conflicts.
-- **Advanced features** — Support for [policies](../sharing-the-cluster/policies.md), [profiles](../sharing-the-cluster/profiles.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [DB branching](../sharing-the-cluster/db-branching.md), and more.
+- **Better security** - Users no longer need permissions to create privileged pods. Only the Operator does. Permissions are managed through Kubernetes RBAC.
+- **Concurrent use** - The Operator coordinates multiple mirrord sessions on the same cluster, preventing conflicts.
+- **Advanced features** - Support for [policies](../sharing-the-cluster/policies.md), [profiles](../sharing-the-cluster/profiles.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [DB branching](../sharing-the-cluster/db-branching.md), and more.
 
 ![mirrord for Teams - Architecture](/docs/overview/teams/operator-architecture.svg)
 

@@ -27,7 +27,7 @@ The mirrord Operator resolves these conflicts by coordinating sessions centrally
 
 ### Concurrent HTTP traffic with filters
 
-[Filter incoming traffic](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) by HTTP headers so each developer only steals their own requests. Add a personalized header to your requests and configure mirrord to match it — multiple developers can debug the same service simultaneously.
+[Filter incoming traffic](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) by HTTP headers so each developer only steals their own requests. Add a personalized header to your requests and configure mirrord to match it - multiple developers can debug the same service simultaneously.
 
 ### Queue splitting
 
@@ -35,19 +35,19 @@ The mirrord Operator resolves these conflicts by coordinating sessions centrally
 
 ### Database isolation
 
-[DB Branching](db-branching.md) creates ephemeral database branches — each developer works against an isolated copy without affecting the shared database.
+[DB Branching](db-branching.md) creates ephemeral database branches - each developer works against an isolated copy without affecting the shared database.
 
 ### Session visibility
 
-[Managing Sessions](sessions.md) — View all active mirrord sessions in the cluster with `mirrord operator status`, and kill problematic ones with `mirrord operator kill`.
+[Managing Sessions](sessions.md) - View all active mirrord sessions in the cluster with `mirrord operator status`, and kill problematic ones with `mirrord operator kill`.
 
 ### Governance
 
-[Policies](policies.md) let admins define rules — for example, requiring HTTP filters when stealing traffic, or blocking access to sensitive namespaces. [Profiles](profiles.md) standardize mirrord configuration across the team.
+[Policies](policies.md) let admins define rules - for example, requiring HTTP filters when stealing traffic, or blocking access to sensitive namespaces. [Profiles](profiles.md) standardize mirrord configuration across the team.
 
 ### Preview Environments
 
-[Preview Environments](../use-cases/preview-environments.md) let you spin up isolated, ephemeral pods in the cluster for async review and QA — without tying the environment to a developer's local machine.
+[Preview Environments](../use-cases/preview-environments.md) let you spin up isolated, ephemeral pods in the cluster for async review and QA - without tying the environment to a developer's local machine.
 
 ### Guardrails for destructive actions
 

@@ -9,7 +9,7 @@ mirrord lets your local process receive network traffic that would normally go t
 
 ### Mirroring (default)
 
-In the default configuration, mirrord **mirrors** incoming TCP traffic — your local process receives a copy of the traffic while the remote pod continues to handle it normally. Responses from your local process are dropped. This is a safe, read-only way to observe how your code handles real requests.
+In the default configuration, mirrord **mirrors** incoming TCP traffic - your local process receives a copy of the traffic while the remote pod continues to handle it normally. Responses from your local process are dropped. This is a safe, read-only way to observe how your code handles real requests.
 
 ### Stealing
 
@@ -29,8 +29,8 @@ Steal mode can be configured in your mirrord config:
 
 ### What's in this section
 
-- **[Filter Incoming Traffic](filter-incoming-traffic.md)** — Steal only a subset of traffic using HTTP header, path, or method filters
-  - [Filtering by JSON Body](filtering-by-json-body.md) — Filter based on request body content
-  - [Debug from Browser](debug-from-browser.md) — Use the Chrome extension to route browser traffic to your local process
-- **[Steal HTTPS Requests](steal-https.md)** **[Teams]** — Decrypt and steal HTTPS traffic using TLS certificates
-- **[Inspect Live Traffic](inspect-live-traffic.md)** — Monitor incoming traffic without running a local process
+- **[Filter Incoming Traffic](filter-incoming-traffic.md)** - Steal only a subset of traffic using HTTP header, path, or method filters
+  - [Filtering by JSON Body](filtering-by-json-body.md) - Filter based on request body content
+  - [Debug from Browser](debug-from-browser.md) - Use the Chrome extension to route browser traffic to your local process
+- **[Steal HTTPS Requests](steal-https.md)** **[Teams]** - Decrypt and steal HTTPS traffic using TLS certificates
+- **[Inspect Live Traffic](inspect-live-traffic.md)** - Monitor incoming traffic without running a local process

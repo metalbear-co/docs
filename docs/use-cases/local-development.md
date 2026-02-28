@@ -9,7 +9,7 @@ tags: ["open source", "team", "enterprise"]
 
 # Local Development with Cloud Context
 
-mirrord lets developers run local processes in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services — databases, queues, APIs — as if it were deployed in the cluster.
+mirrord lets developers run local processes in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services - databases, queues, APIs - as if it were deployed in the cluster.
 
 We call this approach "remocal" (remote + local): local execution with remote context.
 
@@ -23,14 +23,14 @@ Traditionally, development happens in loops. You write and test code locally, th
 
 This is slow for two reasons:
 
-1. **CI is a bottleneck** — Long test suites, flaky pipelines, and queued builds all add friction.
-2. **Staging is fragile** — Deploying unstable code to a shared environment breaks it for everyone.
+1. **CI is a bottleneck** - Long test suites, flaky pipelines, and queued builds all add friction.
+2. **Staging is fragile** - Deploying unstable code to a shared environment breaks it for everyone.
 
 mirrord removes deployment from the loop entirely. Instead of deploying to test in the cloud, you plug your local process directly into the cloud environment.
 
 ## How it works
 
-mirrord runs in two places — in the memory of your local process (`mirrord-layer`) and as a pod in the cluster (`mirrord-agent`).
+mirrord runs in two places - in the memory of your local process (`mirrord-layer`) and as a pod in the cluster (`mirrord-agent`).
 
 ![mirrord - Basic Architecture](/docs/reference/architecture/architecture.svg)
 
@@ -49,13 +49,13 @@ For the full architecture, see the [Architecture reference](../reference/archite
 
 Other tools use VPNs to connect your machine to the cluster. mirrord works at the process level, overriding individual syscalls. This gives it unique advantages:
 
-- **Fine-grained control** — Choose exactly what happens remotely vs locally. Read some files locally, others remotely. Route some traffic through the cluster, keep other connections local.
+- **Fine-grained control** - Choose exactly what happens remotely vs locally. Read some files locally, others remotely. Route some traffic through the cluster, keep other connections local.
 - **No root access needed** locally
-- **Fast startup** — 15 seconds or less
-- **Run multiple sessions** — Each local process can target a different remote pod simultaneously
-- **Cluster-agnostic** — Works regardless of network setup (service mesh, VPN, etc.) and scales to 10,000+ pod clusters
+- **Fast startup** - 15 seconds or less
+- **Run multiple sessions** - Each local process can target a different remote pod simultaneously
+- **Cluster-agnostic** - Works regardless of network setup (service mesh, VPN, etc.) and scales to 10,000+ pod clusters
 
 ## Get started
 
-- **[Quick Start](../getting-started/quick-start.md)** — Install mirrord and run your first session
-- **[Using mirrord](../using-mirrord/README.md)** — Explore traffic control, targets, and more
+- **[Quick Start](../getting-started/quick-start.md)** - Install mirrord and run your first session
+- **[Using mirrord](../using-mirrord/README.md)** - Explore traffic control, targets, and more
