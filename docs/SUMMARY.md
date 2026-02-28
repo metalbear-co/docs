@@ -1,20 +1,25 @@
 # Table of contents
 
 * [Welcome](welcome.md)
-* [Use Cases](use-cases/README.md)
-  * [Local Development with Cloud Context](use-cases/local-development.md)
-  * [mirrord for CI](use-cases/mirrord-for-ci.md)
-  * [Preview Environments](use-cases/preview-environments.md)
-  * [Using mirrord with AI](using-mirrord-with-ai/README.md)
-    * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
-* [Getting Started](getting-started/README.md)
-  * [Quick Start](getting-started/quick-start.md)
-  * [Onboarding Wizard](getting-started/onboarding-wizard.md)
-  * [Installing mirrord](installing-mirrord/README.md)
-    * [CLI](installing-mirrord/cli.md)
-    * [VS Code](installing-mirrord/vscode.md)
-    * [JetBrains IDEs](installing-mirrord/intellij.md)
-    * [WSL](installing-mirrord/wsl.md)
+
+## Use Cases
+
+* [Local Development with Cloud Context](use-cases/local-development.md)
+* [mirrord for CI](use-cases/mirrord-for-ci.md)
+* [Preview Environments](use-cases/preview-environments.md)
+* [Using mirrord with AI](using-mirrord-with-ai/README.md)
+  * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
+
+## Getting Started
+
+* [Quick Start](getting-started/quick-start.md)
+* [Onboarding Wizard](getting-started/onboarding-wizard.md)
+* [Installing mirrord](installing-mirrord/README.md)
+  * [CLI](installing-mirrord/cli.md)
+  * [VS Code](installing-mirrord/vscode.md)
+  * [JetBrains IDEs](installing-mirrord/intellij.md)
+  * [WSL](installing-mirrord/wsl.md)
+
 * [Using mirrord](using-mirrord/README.md)
   * [Incoming Traffic](using-mirrord/incoming-traffic/README.md)
     * [Filter Incoming Traffic](using-mirrord/incoming-traffic/filter-incoming-traffic.md)
@@ -50,17 +55,21 @@
   * [Jira Integration](managing-mirrord/jira-integration.md)
   * [License Server](managing-mirrord/license-server.md)
   * [Versioning](managing-mirrord/versioning.md)
-* [FAQ](faq/README.md)
-  * [General](faq/general.md)
-  * [Limitations](faq/limitations.md)
-  * [Comparisons](faq/comparisons.md)
+
+## FAQ
+
+* [General](faq/general.md)
+* [Limitations](faq/limitations.md)
+* [Comparisons](faq/comparisons.md)
 * [Troubleshooting](troubleshooting/README.md)
   * [Utilities](troubleshooting/utilities.md)
   * [Common Issues](troubleshooting/common-issues.md)
-* [Reference](reference/README.md)
-  * [Architecture](reference/architecture.md)
-  * [Targets](reference/targets.md)
-  * [Network Traffic](reference/traffic.md)
-  * [Environment Variables](reference/env.md)
-  * [File Operations](reference/fileops.md)
-  * [Third-party](reference/third-party.md)
+
+## Reference
+
+* [Architecture](reference/architecture.md)
+* [Targets](reference/targets.md)
+* [Network Traffic](reference/traffic.md)
+* [Environment Variables](reference/env.md)
+* [File Operations](reference/fileops.md)
+* [Third-party](reference/third-party.md)
