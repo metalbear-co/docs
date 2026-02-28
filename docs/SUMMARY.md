@@ -18,6 +18,7 @@
 * [Remocal Development](use-cases/local-development.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
+* [Port Forwarding](using-mirrord/port-forwarding.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 
@@ -35,7 +36,6 @@
   * [Connect Tools to the Cluster](using-mirrord/connecting-tools/README.md)
     * [Web Browsing](using-mirrord/connecting-tools/web-browsing.md)
     * [Postman](using-mirrord/connecting-tools/postman.md)
-  * [Port Forwarding](using-mirrord/port-forwarding.md)
   * [Run Without a Target](using-mirrord/targetless.md)
   * [Copy Target](using-mirrord/copy-target.md)
   * [Local Containers](using-mirrord/local-container.md)
