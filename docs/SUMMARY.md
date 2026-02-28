@@ -2,16 +2,9 @@
 
 * [Welcome](welcome.md)
 
-## Use Cases
-
-* [Remocal Development](use-cases/local-development.md)
-* [CI/CD Integration](use-cases/mirrord-for-ci.md)
-* [Preview Environments](use-cases/preview-environments.md)
-* [Using mirrord with AI](using-mirrord-with-ai/README.md)
-  * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
-
 ## Getting Started
 
+* [What is mirrord?](getting-started/what-is-mirrord.md)
 * [Quick Start](getting-started/quick-start.md)
 * [Onboarding Wizard](getting-started/onboarding-wizard.md)
 * [Installing mirrord](installing-mirrord/README.md)
@@ -19,6 +12,14 @@
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
   * [WSL](installing-mirrord/wsl.md)
+
+## Use Cases
+
+* [Remocal Development](use-cases/local-development.md)
+* [CI/CD Integration](use-cases/mirrord-for-ci.md)
+* [Preview Environments](use-cases/preview-environments.md)
+* [Using mirrord with AI](using-mirrord-with-ai/README.md)
+  * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 
 ## Guides
 
