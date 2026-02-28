@@ -32,7 +32,7 @@
     * [Inspect Live Traffic](using-mirrord/incoming-traffic/inspect-live-traffic.md)
   * [Outgoing Traffic](using-mirrord/outgoing-traffic/README.md)
     * [Filter Outgoing Traffic](using-mirrord/outgoing-traffic/filter-outgoing-traffic.md)
-  * [Connecting Tools to the Cluster](using-mirrord/connecting-tools/README.md)
+  * [Connect Tools to the Cluster](using-mirrord/connecting-tools/README.md)
     * [Web Browsing](using-mirrord/connecting-tools/web-browsing.md)
     * [Postman](using-mirrord/connecting-tools/postman.md)
   * [Port Forwarding](using-mirrord/port-forwarding.md)
