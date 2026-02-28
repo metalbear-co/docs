@@ -5,7 +5,7 @@
 ## Use Cases
 
 * [Local Development with Cloud Context](use-cases/local-development.md)
-* [mirrord for CI](use-cases/mirrord-for-ci.md)
+* [CI Testing on Persistent Environment](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
