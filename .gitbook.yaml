@@ -39,5 +39,8 @@ redirects:
   managing-mirrord/outgoing-traffic-policies: sharing-the-cluster/outgoing-traffic-policies
   managing-mirrord/profiles: sharing-the-cluster/profiles
 
-  # Coming soon → new location
+  # Coming soon / old preview-env locations → new locations
   coming-soon/preview-env/preview-env: use-cases/preview-environments
+  coming-soon/preview-env: use-cases/preview-environments
+  using-mirrord/preview-environments: sharing-the-cluster/preview-environments
+  using-mirrord/preview-environments-in-ci: sharing-the-cluster/preview-environments-in-ci
