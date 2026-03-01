@@ -789,7 +789,7 @@ Some environment variables are excluded by default (`PATH` for example), includi
 
 Allows for changing the way mirrord loads remote environment variables. If set, the variables are fetched after the user application is started.
 
-This setting is meant to resolve issues when using mirrord via the IntelliJ plugin on WSL and the remote environment contains a lot of variables.
+This setting is meant to resolve issues when using mirrord via the JetBrains plugin on WSL and the remote environment contains a lot of variables.
 
 #### feature.env.mapping
 

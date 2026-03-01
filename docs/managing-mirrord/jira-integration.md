@@ -35,7 +35,7 @@ The operator is able to report mirrord session times to the mirrord app installe
 | operator chart  | 1.29.1          |
 | mirrord         | 3.145.0         |
 | VSCode plugin   | 3.66.0          |
-| IntelliJ plugin | 3.68.0          |
+| JetBrains plugin | 3.68.0          |
 
 > To verify that the app in installed properly, navigate to an issue in a project you selected in step 2 and check for the `mirrord by MetalBear` context panel in the right sidebar.
 
@@ -61,4 +61,4 @@ The Jira app stores usage data for each issue in [encrypted key-value storage](h
 ### Known Issues
 
 - Metrics reporting will not work for `jj` users, as `jj` operates in detached HEAD mode.
-- Fetching the user's branch name may rarely be unreliable with the IntelliJ plugin, causing metrics reporting to be skipped. In this case you can use the CLI instead, and in the future users will be able to manually override the branch name in config.
+- Fetching the user's branch name may rarely be unreliable with the JetBrains plugin, causing metrics reporting to be skipped. In this case you can use the CLI instead, and in the future users will be able to manually override the branch name in config.

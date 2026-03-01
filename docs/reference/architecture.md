@@ -25,7 +25,7 @@ mirrord is composed of the following components:
 * `mirrord-layer-win` - Rust dynamic library for Windows (dll) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
 * `mirrord-cli` - Rust binary that wraps the behavior of the respective mirrord layer in a user friendly CLI.
 * `VS Code extension` - Exposes the same functionality as - mirrord-cli within the VS Code IDE.
-* `IntelliJ plugin` - Exposes the same functionality as - mirrord-cli within the IntelliJ IDEs. 
+* `JetBrains plugin` - Exposes the same functionality as mirrord-cli within JetBrains IDEs. 
 
 ![mirrord - Architecture](architecture/architecture.svg)
 
@@ -56,6 +56,6 @@ mirrord-cli is a user friendly interface over the essential functionality provid
 
 mirrord’s VS Code extension provides mirrord’s functionality within VS Code’s UI. When you debug a process with mirrord enabled in VS Code, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
 
-## IntelliJ Plugin
+## JetBrains Plugin
 
-mirrord’s IntelliJ Plugin provides mirrord’s functionality within the IntelliJ UI. When you debug a process with mirrord enabled in IntelliJ, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
+mirrord’s JetBrains plugin provides mirrord’s functionality within JetBrains IDEs. When you debug a process with mirrord enabled, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.

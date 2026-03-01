@@ -42,7 +42,7 @@ mirrord can be used in three ways:
 
 1. [CLI Tool](quick-start.md#cli-tool)
 2. [VS Code Extension](quick-start.md#vs-code-extension) (also works for VS Code forks like Cursor, Windsurf, etc.)
-3. [IntelliJ Plugin](quick-start.md#intellij-plugin)
+3. [JetBrains Plugin](quick-start.md#jetbrains-plugin)
 
 If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord [Operator](quick-start.md#operator).
 
@@ -125,7 +125,7 @@ To use extension, click the 'Enable mirrord' button in the status bar at the bot
 
 The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
 
-### IntelliJ Plugin
+### JetBrains Plugin
 
 #### Installation
 
@@ -137,7 +137,7 @@ To use extension, click the mirrord icon in the Navigation Toolbar at the top ri
 
 #### Configuration
 
-The IntelliJ plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/).
+The JetBrains plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/).
 
 ### Operator
 

@@ -28,6 +28,6 @@ mirrord can be a great alternative to Telepresence. The main differences are:
 * This means that you can run **multiple** services at the same time, each in a different context and without needing to containerize them.
 * mirrord doesn't require you to install anything on the cluster.
 * mirrord duplicates traffic and doesn't intercept/steal it by default.
-* mirrord can be run through one of our IDE extensions: we support [IntelliJ](https://plugins.jetbrains.com/plugin/19772-mirrord) and [VS Code](vscode:extension/MetalBear.mirrord).
+* mirrord can be run through one of our IDE extensions: we support [JetBrains IDEs](https://plugins.jetbrains.com/plugin/19772-mirrord) and [VS Code](vscode:extension/MetalBear.mirrord).
 
 More details can be found in this [GitHub discussion.](https://github.com/metalbear-co/mirrord/discussions/154#discussioncomment-2972127)

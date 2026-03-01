@@ -29,7 +29,7 @@ mirrord exec /bin/my-tool
 
 ### IDE
 
-If you want to run in targetless mode using the IntelliJ or VSCode plugin, you can select the `No Target ("targetless")` option from the target selection dialog, or you can add
+If you want to run in targetless mode using the JetBrains or VS Code plugin, you can select the `No Target ("targetless")` option from the target selection dialog, or you can add
 
 ```json
 {
