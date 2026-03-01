@@ -19,6 +19,7 @@
 * [Remocal Development](use-cases/local-development.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments \[Teams\]](use-cases/preview-environments.md)
+  * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Configuring AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 
