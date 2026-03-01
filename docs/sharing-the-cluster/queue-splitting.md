@@ -596,7 +596,7 @@ is started before the TTL elapses. Specified in seconds.
 ## Setting a Filter for a mirrord Run
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
-[`feature.split_queues`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.split_queues) is the configuration field they need to specify in order to filter queue messages.
+[`feature.split_queues`](../reference/configuration.md#feature.split_queues) is the configuration field they need to specify in order to filter queue messages.
 Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains two fields:
