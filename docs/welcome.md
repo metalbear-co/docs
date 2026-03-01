@@ -1,33 +1,45 @@
 ---
 title: Welcome
 description: mirrord documentation - run local code in the context of your cloud environment
+layout:
+  title:
+    visible: true
+  description:
+    visible: true
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
 ---
 
 # mirrord
 
-mirrord lets developers run local processes in the context of their cloud environment. Test your code against real cloud services - databases, queues, APIs - without deploying, without mocks, and without disrupting your staging environment.
+mirrord plugs your local process into a Kubernetes cluster. Instead of deploying to test, your code runs locally while accessing real cloud traffic, environment variables, file systems, and network. No mocks, no CI cycles, no waiting.
 
-## What can you do with mirrord?
+```
+┌─────────────────────────────────────────────────────────┐
+│  Kubernetes Cluster (staging)                           │
+│                                                         │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐         │
+│   │ Service A │◄──►│ Service B │◄──►│   DB     │         │
+│   └────▲─────┘    └──────────┘    └──────────┘         │
+│        │                                                │
+│        │  mirrord connects your                         │
+│        │  local process here                            │
+│        │                                                │
+└────────┼────────────────────────────────────────────────┘
+         │
+    ┌────┴─────┐
+    │  Your    │
+    │  Laptop  │
+    │  (IDE)   │
+    └──────────┘
+```
 
-| Use case | Description |
-|----------|-------------|
-| **[Local Development with Cloud Context](use-cases/local-development.md)** | Run your code locally while it talks to real cloud services - incoming traffic, outgoing connections, environment variables, and files all come from the cluster |
-| **[mirrord for CI](use-cases/mirrord-for-ci.md)** | Run your CI tests against a real cloud environment instead of mocks |
-| **[Preview Environments](use-cases/preview-environments.md)** | Spin up isolated, ephemeral environments in your cluster for async review and QA |
-
-## Get started
-
-1. **[Quick Start](getting-started/quick-start.md)** - Install mirrord and run your first session in minutes
-2. **[Installing mirrord](installing-mirrord/README.md)** - CLI, VS Code, JetBrains IDEs, and WSL setup guides
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Quick Start</strong></td><td>Install mirrord and run your first session in minutes.</td><td><a href="getting-started/quick-start.md">getting-started/quick-start.md</a></td></tr><tr><td><strong>What is mirrord?</strong></td><td>Understand how mirrord works and how it's different from alternatives.</td><td><a href="getting-started/what-is-mirrord.md">getting-started/what-is-mirrord.md</a></td></tr><tr><td><strong>Use Cases</strong></td><td>Remocal development, CI/CD integration, preview environments, and more.</td><td><a href="use-cases/local-development.md">use-cases/local-development.md</a></td></tr><tr><td><strong>Guides</strong></td><td>Traffic filtering, queue splitting, DB branching, and other how-to guides.</td><td><a href="using-mirrord/incoming-traffic/README.md">using-mirrord/incoming-traffic/README.md</a></td></tr></tbody></table>
 
 ## Open source vs Teams
 
-mirrord's core functionality is free and open source. [mirrord for Teams](https://metalbear.com/mirrord/pricing) adds the mirrord Operator - a Kubernetes operator that enables concurrent cluster usage, advanced traffic control, and organizational governance.
-
-Features marked with **[Teams]** in these docs require a mirrord for Teams license.
-
-## Resources
-
-- [GitHub](https://github.com/metalbear-co/mirrord) - Source code and issue tracker
-- [Slack community](https://metalbear.com/slack) - Get help and share feedback
-- [Configuration reference](reference/configuration.md) - All available config options
+mirrord's core functionality is free and open source. [mirrord for Teams](https://metalbear.com/mirrord/pricing) adds the mirrord Operator, enabling concurrent cluster usage, advanced traffic control, and organizational governance. Features marked with **\[Teams]** in these docs require a license.
