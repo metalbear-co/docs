@@ -40,7 +40,7 @@
 * [Copying a Target](using-mirrord/copy-target.md)
 * [Local Containers](using-mirrord/local-container.md)
 
-## Sharing the Cluster
+## Sharing the Cluster \[Teams]
 
 * [Overview](sharing-the-cluster/README.md)
 * [Managing Sessions](sharing-the-cluster/sessions.md)
@@ -51,10 +51,8 @@
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [Branch Management](sharing-the-cluster/db-branch-management.md)
   * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
-* [Preview Environments](sharing-the-cluster/preview-environments.md)
-  * [Preview Environments in CI](sharing-the-cluster/preview-environments-in-ci.md)
 
-## Managing mirrord
+## Managing mirrord \[Teams]
 
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
@@ -80,3 +78,7 @@
 * [Environment Variables](reference/env.md)
 * [File Operations](reference/fileops.md)
 * [Third-party](reference/third-party.md)
+
+***
+
+* [Contributing](contributing.md)

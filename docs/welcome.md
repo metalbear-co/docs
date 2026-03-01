@@ -1,6 +1,6 @@
 ---
 title: Welcome
-description: mirrord documentation - run local code in the context of your cloud environment
+description: Run local code in the context of your cloud environment
 layout:
   title:
     visible: true

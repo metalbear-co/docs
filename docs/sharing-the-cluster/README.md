@@ -21,7 +21,7 @@ This raises the question, what if I want multiple users in my organization to us
 2. If a service reads from a queue, wouldn't a developer targeting it with mirrord steal all the messages from the queue, preventing other developers from reading them?
 3. If a developer writes to a database, wouldn't that affect the data that other developers see when they read from the same database?
 
-These conflicts and more are resolved by the mirrord Operator, available in the mirrord Team and Enterprise plans. By having a persistent, centralized component in the cluster that can synchronize and orchestrate different instances of mirrord running in the cluster, we can allow developers to use mirrord against the same cluster without affecting each other.
+These conflicts and more are resolved by the mirrord Operator, available in the mirrord Team and Enterprise pricing plans. By having a persistent, centralized component in the cluster that can synchronize and orchestrate different instances of mirrord running in the cluster, we can allow developers to use mirrord against the same cluster without affecting each other.
 
 ### What capabilities does mirrord have to allow concurrent usage of the same cluster?
 
@@ -31,7 +31,7 @@ These conflicts and more are resolved by the mirrord Operator, available in the 
 
 mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](../using-mirrord/incoming-traffic/filter-incoming-traffic.md).
 
-> _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise versions.
+> _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise pricing plans.
 
 #### 2. Concurrently debug the same queue-based service with queue splitting
 
