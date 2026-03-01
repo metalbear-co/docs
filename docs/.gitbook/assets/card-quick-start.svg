@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bg1)" rx="8"/>
+  <!-- Terminal window -->
+  <rect x="200" y="80" width="400" height="240" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="2"/>
+  <circle cx="224" cy="100" r="6" fill="#ff5f57"/>
+  <circle cx="244" cy="100" r="6" fill="#febc2e"/>
+  <circle cx="264" cy="100" r="6" fill="#28c840"/>
+  <text x="220" y="145" font-family="monospace" font-size="16" fill="#8b949e">$</text>
+  <text x="240" y="145" font-family="monospace" font-size="16" fill="#58a6ff">mirrord exec</text>
+  <text x="380" y="145" font-family="monospace" font-size="16" fill="#c9d1d9"> --target</text>
+  <text x="220" y="175" font-family="monospace" font-size="16" fill="#c9d1d9">  deploy/my-app python main.py</text>
+  <text x="220" y="215" font-family="monospace" font-size="14" fill="#3fb950">&#x2714; mirrord connected to cluster</text>
+  <text x="220" y="245" font-family="monospace" font-size="14" fill="#3fb950">&#x2714; traffic mirroring active</text>
+  <text x="220" y="275" font-family="monospace" font-size="14" fill="#8b949e">Ready - listening on port 8080</text>
+  <!-- Play icon -->
+  <polygon points="720,180 720,220 750,200" fill="#58a6ff" opacity="0.3"/>
+</svg>

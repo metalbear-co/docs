@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bg3)" rx="8"/>
+  <!-- Three use case cards -->
+  <!-- Remocal -->
+  <rect x="60" y="80" width="200" height="240" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <circle cx="160" cy="140" r="30" fill="none" stroke="#58a6ff" stroke-width="2"/>
+  <text x="160" y="146" font-family="monospace" font-size="24" fill="#58a6ff" text-anchor="middle">{ }</text>
+  <text x="160" y="200" font-family="sans-serif" font-size="14" fill="#c9d1d9" text-anchor="middle" font-weight="bold">Remocal Dev</text>
+  <text x="160" y="225" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">Code locally,</text>
+  <text x="160" y="245" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">test on staging</text>
+  <!-- CI/CD -->
+  <rect x="300" y="80" width="200" height="240" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <circle cx="400" cy="140" r="30" fill="none" stroke="#3fb950" stroke-width="2"/>
+  <text x="400" y="148" font-family="sans-serif" font-size="20" fill="#3fb950" text-anchor="middle">CI</text>
+  <text x="400" y="200" font-family="sans-serif" font-size="14" fill="#c9d1d9" text-anchor="middle" font-weight="bold">CI/CD</text>
+  <text x="400" y="225" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">Test against real</text>
+  <text x="400" y="245" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">cloud in pipelines</text>
+  <!-- Preview Envs -->
+  <rect x="540" y="80" width="200" height="240" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <circle cx="640" cy="140" r="30" fill="none" stroke="#d2a8ff" stroke-width="2"/>
+  <text x="640" y="148" font-family="sans-serif" font-size="20" fill="#d2a8ff" text-anchor="middle">&#x26A1;</text>
+  <text x="640" y="200" font-family="sans-serif" font-size="14" fill="#c9d1d9" text-anchor="middle" font-weight="bold">Preview Envs</text>
+  <text x="640" y="225" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">Ephemeral envs</text>
+  <text x="640" y="245" font-family="sans-serif" font-size="12" fill="#8b949e" text-anchor="middle">for review &amp; QA</text>
+</svg>

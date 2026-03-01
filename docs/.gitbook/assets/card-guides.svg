@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bg4)" rx="8"/>
+  <!-- Guide items as a list -->
+  <rect x="150" y="50" width="500" height="300" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <!-- Items -->
+  <rect x="180" y="75" width="440" height="40" rx="8" fill="#0d1117"/>
+  <circle cx="205" cy="95" r="8" fill="#58a6ff"/>
+  <text x="225" y="100" font-family="sans-serif" font-size="14" fill="#c9d1d9">Filter Incoming Traffic</text>
+  <text x="570" y="100" font-family="sans-serif" font-size="12" fill="#8b949e">&#x2192;</text>
+  <rect x="180" y="125" width="440" height="40" rx="8" fill="#0d1117"/>
+  <circle cx="205" cy="145" r="8" fill="#3fb950"/>
+  <text x="225" y="150" font-family="sans-serif" font-size="14" fill="#c9d1d9">Queue Splitting</text>
+  <text x="570" y="150" font-family="sans-serif" font-size="12" fill="#8b949e">&#x2192;</text>
+  <rect x="180" y="175" width="440" height="40" rx="8" fill="#0d1117"/>
+  <circle cx="205" cy="195" r="8" fill="#d2a8ff"/>
+  <text x="225" y="200" font-family="sans-serif" font-size="14" fill="#c9d1d9">DB Branching</text>
+  <text x="570" y="200" font-family="sans-serif" font-size="12" fill="#8b949e">&#x2192;</text>
+  <rect x="180" y="225" width="440" height="40" rx="8" fill="#0d1117"/>
+  <circle cx="205" cy="245" r="8" fill="#f0883e"/>
+  <text x="225" y="250" font-family="sans-serif" font-size="14" fill="#c9d1d9">Sharing the Cluster</text>
+  <text x="570" y="250" font-family="sans-serif" font-size="12" fill="#8b949e">&#x2192;</text>
+  <rect x="180" y="275" width="440" height="40" rx="8" fill="#0d1117"/>
+  <circle cx="205" cy="295" r="8" fill="#8b949e"/>
+  <text x="225" y="300" font-family="sans-serif" font-size="14" fill="#8b949e">and more...</text>
+</svg>
