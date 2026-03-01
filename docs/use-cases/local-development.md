@@ -53,7 +53,4 @@ Other tools use VPNs to connect your machine to the cluster. mirrord works at th
 - **Run multiple sessions** - Each local process can target a different remote pod simultaneously
 - **Cluster-agnostic** - Works regardless of network setup (service mesh, VPN, etc.) and scales to 10,000+ pod clusters
 
-## Get started
-
-- **[Quick Start](../getting-started/quick-start.md)** - Install mirrord and run your first session
-- **[Using mirrord](../using-mirrord/README.md)** - Explore traffic control, targets, and more
+**[Get started →](../getting-started/quick-start.md)**
