@@ -15,8 +15,6 @@ tags:
 description: How to filter traffic by JSON body using mirrord
 ---
 
-# JSON Body Filtering for Incoming HTTP Requests
-
 mirrord can steal incoming HTTP requests based on values inside a JSON request body. This allows matching on deeply nested fields and applying a regular expression to the extracted values.
 This filter is available in the following mirrord.json configuration:
 

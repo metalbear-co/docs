@@ -1,5 +1,5 @@
 ---
-title: "Inspect Live Traffic"
+title: "Inspecting Live Traffic"
 description: "Monitor incoming traffic to a pod using the mirrord dump command"
 date: 2025-08-11T00:00:00+03:00
 lastmod: 2025-08-11T00:00:00+03:00

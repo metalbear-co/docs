@@ -16,8 +16,6 @@ tags:
 description: Security in mirrord for Teams
 ---
 
-# Security
-
 {% hint style="info" %}
 This discussion is only relevant for users on the Team and Enterprise pricing plans.
 {% endhint %}
@@ -98,7 +96,7 @@ If the user doesn't have `get` access to the targets, then they won't be able to
 
 ### How can I prevent users in my team from stealing or mirroring traffic from a target?
 
-You can define [policies](policies.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
+You can define [policies](../sharing-the-cluster/policies.md) that prevent stealing (or only prevent stealing without setting a filter) and/or mirroring for selected targets. Let us know if there are more features you would like to be able to limit using policies.
 
 ### How can I prevent users from using mirrord without going through the Operator?
 

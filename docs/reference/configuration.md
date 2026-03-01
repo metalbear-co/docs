@@ -16,8 +16,6 @@ tags:
 description: Config
 ---
 
-# Configuration
-
 mirrord allows for a high degree of customization when it comes to which features you want to enable, and how they should function.
 
 All of the configuration fields have a default value, so a minimal configuration would be no configuration at all.
@@ -685,7 +683,7 @@ The [`env`](configuration.md#feature-env), [`fs`](configuration.md#feature-fs) a
 
 ### feature.copy\_target
 
-Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../overview/teams.md).
+Creates a new copy of the target. mirrord will use this copy instead of the original target (e.g. intercept network traffic). This feature requires a [mirrord operator](../managing-mirrord/operator.md).
 
 This feature is not compatible with rollout targets and running without a target (`targetless` mode).
 

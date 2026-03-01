@@ -3,8 +3,6 @@ title: VS Code
 description: Installing and using the mirrord extension in Visual Studio Code
 ---
 
-# VS Code
-
 If you develop your application in Visual Studio Code, you can debug it with mirrord using our Visual Studio Marketplace [extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord). Simply:
 
 1. Download the extension

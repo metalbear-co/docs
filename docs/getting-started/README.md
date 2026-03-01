@@ -3,8 +3,6 @@ title: Getting Started
 description: Get up and running with mirrord
 ---
 
-# Getting Started
-
 New to mirrord? Start here.
 
 - **[Quick Start](quick-start.md)** - Install mirrord and run your first session

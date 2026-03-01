@@ -16,8 +16,6 @@ tags:
 description: Some common issues and workarounds.
 ---
 
-# Common Issues
-
 ## I've run my program with mirrord, but it seems to have no effect
 
 There are currently two known cases where mirrord cannot load into the application's process:

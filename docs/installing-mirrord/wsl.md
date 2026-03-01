@@ -3,8 +3,6 @@ title: WSL
 description: Installing and using mirrord on Windows with WSL
 ---
 
-# Running mirrord on WSL 
-
 Another way to run mirrord on Windows is using the _Linux Subsystem for Windows_ (_WSL_).
 You’ll also need a Kubernetes cluster. If you don’t have one, you can set one up locally
 using [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/).
@@ -62,7 +60,7 @@ Ubuntu (Default)
 
 - If you're not seeing any Linux Distribution listed, please refer back to the
  [Microsoft guide](https://learn.microsoft.com/en-us/windows/wsl/install), or join our
- [Discord server](link pending) and we'll be happy to help you.
+ [Discord server](https://discord.gg/metalbear) and we'll be happy to help you.
 
 To start a session in WSL, now enter the `wsl` command:
 

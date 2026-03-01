@@ -17,8 +17,6 @@ shallowToc: true
 description: How to (very) quickly start using mirrord
 ---
 
-# Quick Start
-
 ### Requirements
 
 mirrord runs on your local machine and in your Kubernetes cluster.

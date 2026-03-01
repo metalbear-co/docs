@@ -15,8 +15,6 @@ tags:
 description: High availability for mirrord Operator in Enterprise Tier
 ---
 
-# High Availability
-
 Starting from chart version `1.40.1`, the mirrord Operator is by default highly available.
 This means that mirrord sessions should survive transient failures in the cluster,
 with respect to the set of advanced mfT features used by the session (see [advanced features](#advanced-features) section).

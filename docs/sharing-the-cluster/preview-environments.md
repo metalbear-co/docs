@@ -11,8 +11,6 @@ tags:
 description: Ephemeral, Isolated Environments Connected to Your Cluster
 ---
 
-# Preview Environments
-
 Preview Environments let you deploy a new version of your code into the cluster as an isolated pod. The pod can communicate with its dependencies in the cluster and receive filtered traffic without affecting other users or live services. Unlike a regular mirrord session, a preview environment is not tied to a local process. It stays alive for a configurable TTL, making it suitable for sharing with teammates, QA, or product managers who need to validate changes asynchronously.
 
 {% hint style="info" %}

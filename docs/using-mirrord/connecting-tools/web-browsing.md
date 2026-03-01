@@ -15,8 +15,6 @@ tags:
 description: Using mirrord to browse using cluster networking
 ---
 
-# Web Browsing
-
 You can use mirrord to browse the web as if you were inside your cluster. This is useful for accessing internal tools (like Grafana, Kibana, or ArgoCD) that are not exposed to the public internet, or for verifying that a service is reachable from within the namespace.
 
 ### Prerequisites

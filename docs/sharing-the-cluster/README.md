@@ -11,8 +11,6 @@ tags:
   - enterprise
 ---
 
-# Sharing the Cluster
-
 The core value of mirrord is that it cuts iteration time by letting developers run their code against the cluster directly, instead of having to build, push and deploy images. This significantly cuts down iteration time by letting developers test their code in the cloud from the very first step of the development cycle. However, in order to properly test new code in the cloud, it needs to be able to not only read or receive traffic from the environment, but also to write or send traffic to it, potentially mutating it. This discussion is only relevant for users on the Team and Enterprise pricing plans.
 
 This raises the question, what if I want multiple users in my organization to use the same cluster (e.g. the organization's staging cluster) concurrently? Wouldn't they step on each other's toes and affect each other's work?

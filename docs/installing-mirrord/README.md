@@ -3,8 +3,6 @@ title: Installing mirrord
 description: How to install mirrord on your local machine
 ---
 
-# Installing mirrord
-
 mirrord can be installed and used in several ways depending on your development workflow:
 
 - **[CLI](cli.md)** - Install the mirrord command-line tool directly
@@ -24,4 +22,4 @@ kubectl needs to be configured on the local machine.
 
 ## mirrord for Teams
 
-If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord Operator. See the [mirrord for Teams](../overview/teams.md) page for installation instructions.
+If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord Operator. See the [mirrord for Teams](../managing-mirrord/operator.md) page for installation instructions.

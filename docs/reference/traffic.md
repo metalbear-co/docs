@@ -16,8 +16,6 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-# Network Traffic
-
 ### Incoming
 
 mirrord lets users debug incoming network traffic by mirroring or stealing the traffic sent to the remote pod.

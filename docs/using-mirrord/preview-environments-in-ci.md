@@ -12,8 +12,6 @@ menu:
     parent: preview-environments
 ---
 
-# Preview Environments in CI
-
 This guide explains how to automate [Preview Environments](preview-environments.md) in your CI pipeline. By integrating mirrord preview with your pull request workflow, each PR gets its own ephemeral environment that reviewers can access via a shared URL and a simple header—no local mirrord setup required.
 
 {% hint style="info" %}
@@ -23,7 +21,7 @@ This feature is available to users on the **Enterprise** pricing plan.
 ## Flow Overview
 
 1. **On PR open or push:** Your CI builds the image(s), pushes to a registry, runs `mirrord preview start` with a stable key (e.g. `pr-123`), and posts or updates a comment on the PR with the preview URL and the header to use.
-2. **Reviewers:** Open the shared URL and send the header (via the [mirrord Browser Extension](browser-extension.md) or `curl`). Traffic matching the header is routed to the preview pod.
+2. **Reviewers:** Open the shared URL and send the header (via the [mirrord Browser Extension](incoming-traffic/debug-from-browser.md) or `curl`). Traffic matching the header is routed to the preview pod.
 3. **On PR merge or close:** CI runs `mirrord preview stop -k <key>` to tear down the preview environment.
 
 ## Choosing the Preview Key
@@ -51,7 +49,7 @@ Post a comment on the PR that includes:
 
 Also include instructions for reviewers:
 
-- Use the [mirrord Browser Extension](browser-extension.md) to set the header for the preview URL, or
+- Use the [mirrord Browser Extension](incoming-traffic/debug-from-browser.md) to set the header for the preview URL, or
 - Use `curl -H "X-PG-Tenant: pr-123" https://myapp.example.com/api/...`
 
 **Best practice:** Find an existing comment (e.g. by a marker like `## mirrord Preview Environment`) and update it on each push, instead of creating a new comment every time. This keeps the PR tidy.

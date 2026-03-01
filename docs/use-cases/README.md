@@ -3,8 +3,6 @@ title: Use Cases
 description: What you can do with mirrord
 ---
 
-# Use Cases
-
 mirrord supports several distinct workflows for cloud-native development:
 
 - **[Remocal Development](local-development.md)** - Run your code locally while it communicates with real cloud services, receives real traffic, and uses real environment variables

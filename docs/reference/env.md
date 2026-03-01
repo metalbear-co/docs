@@ -16,8 +16,6 @@ tags:
 description: Reference to including remote environment variables
 ---
 
-# Environment Variables
-
 ### Overview
 
 mirrord lets you run a local process in the context of remote environment i.e. environment variables present in the remote pod will be loaded into the local process.

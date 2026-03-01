@@ -16,8 +16,6 @@ tags:
 description: Possible targets for mirrord and how to set them
 ---
 
-# Targets
-
 ### Overview
 
 You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4). When a target is specified, a [mirrord-agent](architecture.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.

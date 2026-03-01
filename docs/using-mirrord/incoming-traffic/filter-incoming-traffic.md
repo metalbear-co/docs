@@ -1,5 +1,5 @@
 ---
-title: Filter Incoming Traffic
+title: Filtering Incoming Traffic
 date: 2020-11-16T12:59:39.000Z
 lastmod: 2025-02-24T00:00:00.000Z
 draft: false
@@ -14,8 +14,6 @@ tags:
   - enterprise
 description: Steal a subset of incoming traffic using HTTP header, path, or method filters
 ---
-
-# Traffic Filtering with Mirror vs Steal
 
 By default, mirrord mirrors all incoming traffic into the remote target, and sends a copy to your local process. This is useful when you want the remote target to answer requests, keeping the remote environment completely agnostic to your local code.
 

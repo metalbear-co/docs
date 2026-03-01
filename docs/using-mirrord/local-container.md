@@ -3,8 +3,6 @@ title: Working with Local Containers
 description: Running mirrord with local containers (Docker, Podman, nerdctl)
 ---
 
-# Working with Local Containers
-
 The common way to use mirrord is on a locally running process. This way you can easily debug it in your IDE, as well as make quick changes and test them out without going through the additional layer of containerization.
 
 However, sometimes you're just not able to run your microservice locally - usually due to complicated dependencies. For these cases, you can run mirrord on a local container instead. To do this, simply run the following command:

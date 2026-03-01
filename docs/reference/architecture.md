@@ -16,8 +16,6 @@ tags:
 description: mirrord's architecture
 ---
 
-# Architecture
-
 mirrord is composed of the following components:
 
 * `mirrord-agent` - Rust binary that is packaged as a container image. mirrord-agent runs in the cloud and acts as a proxy for the local process.

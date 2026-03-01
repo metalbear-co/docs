@@ -3,8 +3,6 @@ title: Incoming Traffic
 description: How mirrord handles incoming network traffic from the cluster
 ---
 
-# Incoming Traffic
-
 mirrord lets your local process receive network traffic that would normally go to a pod in the cluster. There are two modes:
 
 ### Mirroring (default)

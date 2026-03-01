@@ -3,8 +3,6 @@ title: CLI
 description: Installing and using the mirrord CLI
 ---
 
-# CLI
-
 The mirrord CLI is the core tool for running mirrord from the command line.
 
 ## Installation
@@ -62,7 +60,7 @@ Configuration options are documented in the [configuration reference](https://me
 
 ## Interactive Setup
 
-You can use `mirrord wizard` to generate a `mirrord.json` configuration file interactively. This walks you through common use cases and helps you create a configuration tailored to your needs. See the [Onboarding Wizard](../overview/onboarding-wizard.md) for more information.
+You can use `mirrord wizard` to generate a `mirrord.json` configuration file interactively. This walks you through common use cases and helps you create a configuration tailored to your needs. See the [Onboarding Wizard](../getting-started/onboarding-wizard.md) for more information.
 
 ## Listing Targets
 
@@ -82,7 +80,7 @@ To verify mirrord is installed correctly:
 mirrord --version
 ```
 
-To check connectivity to your cluster and the mirrord Operator (if using [mirrord for Teams](../overview/teams.md)):
+To check connectivity to your cluster and the mirrord Operator (if using [mirrord for Teams](../managing-mirrord/operator.md)):
 
 ```bash
 mirrord operator status

@@ -1,10 +1,10 @@
 ---
-title: Copy Target
+title: Copying a Target
 date: 2024-01-10T13:37:00.000Z
 lastmod: 2024-01-10T13:37:00.000Z
 draft: false
 images: []
-linktitle: Copy Target
+linktitle: Copying a Target
 menu: null
 docs: null
 teams: null
@@ -15,8 +15,6 @@ tags:
   - enterprise
 description: Making mirrord copy a target and use the copy instead of the original
 ---
-
-# Copy Target
 
 When you set the [`copy_target`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target.
 

@@ -3,8 +3,6 @@ title: Using mirrord
 description: Guides for mirrord's features - traffic control, targets, containers, and more
 ---
 
-# Using mirrord
-
 This section covers the features you use to control how mirrord connects your local process to the cluster.
 
 ### Traffic

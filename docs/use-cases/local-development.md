@@ -7,8 +7,6 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-# Local Development with Cloud Context
-
 mirrord lets developers run local processes in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services - databases, queues, APIs - as if it were deployed in the cluster.
 
 We call this approach "remocal" (remote + local): local execution with remote context.
