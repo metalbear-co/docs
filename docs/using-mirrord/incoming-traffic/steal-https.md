@@ -24,7 +24,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 
 **Important:** stealing HTTPS with a filter requires mirrord-operator version at least `3.106.0` and mirrord-agent version at least `1.134.0`.
 
-### Configuring HTTPS stealing in the cluster
+## Configuring HTTPS stealing in the cluster
 
 To enable mirrord users to steal HTTPS requests with a filter, you must provide the mirrord Operator with some insight into your TLS configuration. This can be done with dedicated custom resources: `MirrordTlsStealConfig` and `MirrordClusterTlsStealConfig`. These two resources look and work almost the same. The only exception is that `MirrordTlsStealConfig` is scoped to the namespace in which you create it, while `MirrordClusterTlsStealConfig` scopes the whole Kubernetes cluster.
 
@@ -160,7 +160,7 @@ When the mirrord Operator finds multiple configuration resources matching the se
 
 **Important:** mirrord-agent will search for all files and directories referenced by the config resources in the target container filesystem.
 
-### Configuring delivery of stolen HTTPS to your local application
+## Configuring delivery of stolen HTTPS to your local application
 
 By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is be made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
 

@@ -20,7 +20,7 @@ in the Operator automatically.
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
-### See active Operator sessions
+## See active Operator sessions
 
 Users can use the command `mirrord operator status` to see active sessions in the cluster.
 For example, in the following output, we can see the session ID, the target used, 
@@ -52,7 +52,7 @@ filtering HTTP traffic with the following filter: `X-PG-Tenant: Avi.+`
 +------------------+-----------------------------+-----------+---------------------------------------------------------------+----------------------------------------------------------+------------------+
 ```
 
-### Stop active Operator sessions
+## Stop active Operator sessions
 
 Users may also forcefully stop a session with the `mirrord operator session` CLI commands.
 These allow users to manually close Operator sessions while they're still alive  (user is
@@ -64,7 +64,7 @@ The session management commands are:
 - `mirrord operator session kill --id {id}` which will forcefully stop a session with `id`,
   where you may obtain the session id through `mirrord operator status`;
 
-#### `sessions` RBAC
+### `sessions` RBAC
 
 Every `mirrord-operator-user` has access to **all** session operations by **default**, as they come
 with `deletecollection` and `delete` privileges for the `sessions` resource. You may limit

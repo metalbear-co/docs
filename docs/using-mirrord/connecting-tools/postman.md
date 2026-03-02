@@ -13,11 +13,11 @@ description: Connect Postman to your cluster via mirrord.
 
 By routing Postman traffic through a local SOCKS5 proxy, you can send API requests to kubernetes internal services (e.g., `http://my-service:8080`) directly from your local machine.
 
-### Prerequisites
+## Prerequisites
 
 This guide assumes you have already set up a local proxy using `microsocks` and `mirrord`. If you haven't done this yet, please follow the [setup guide](./README.md) first to launch the proxy.
 
-### Configuration
+## Configuration
 
 1. Ensure the prerequisite [SOCKS5 proxy](./README.md) is running with `mirrord` and targeting the desired cluster.
 2. Open Postman and open Settings (click the gear icon in the top right > **Settings**).
@@ -31,7 +31,7 @@ This guide assumes you have already set up a local proxy using `microsocks` and 
 5. Ensure **Proxy Auth** is **OFF**.
 6. Close the settings window.
 
-### Verify  
+## Verify  
 
 You can now use cluster DNS names in your requests.
 * Create a new request.
