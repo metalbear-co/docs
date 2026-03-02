@@ -33,6 +33,7 @@
     * [Web Browsing](using-mirrord/web-browsing.md)
     * [Postman](using-mirrord/postman.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
+  * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 * [Managing mirrord](managing-mirrord/README.md)
   * [Dashboard](managing-mirrord/admin-dashboard.md)
