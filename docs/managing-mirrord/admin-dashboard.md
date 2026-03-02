@@ -157,4 +157,4 @@ curl -H "x-license-key: <your-license-key>" \
   http://localhost:8050/api/v1/reports/usage?format=json
 ```
 
-For spreadsheet reports (Excel format), see [Getting a Utilisation Report](license-server.md#getting-a-utilisation-report-from-the-license-server).
+For spreadsheet reports (Excel format), see [Getting a Utilisation Report](../managing-mirrord/license-server.md#getting-a-utilisation-report-from-the-license-server).

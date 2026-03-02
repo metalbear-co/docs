@@ -153,7 +153,7 @@ this also works _any of_ or _all of_ patterns
 
 _Added in mirrord Operator version 3.108.0_
 
-Allows the operator to enforce using a [mirrord profile](profiles.md) and to specify a set of allowed profiles.
+Allows the operator to enforce using a [mirrord profile](../sharing-the-cluster/profiles.md) and to specify a set of allowed profiles.
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha

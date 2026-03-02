@@ -113,4 +113,4 @@ To use a specific mirrord binary from your filesystem:
 
 ### WSL
 
-The guide on how to use the extension with remote development on WSL can be found [here](wsl.md#using-mirrord-in-vs-code).
+The guide on how to use the extension with remote development on WSL can be found [here](../installing-mirrord/wsl.md#using-mirrord-in-vs-code).

@@ -19,4 +19,4 @@ If mirrord is configured to **mirror** incoming traffic, both the remote pod and
 
 ### What's in this section
 
-- **[Filter Outgoing Traffic](filter-outgoing-traffic.md)** - Control which outgoing connections go through the cluster and which stay local
+- **[Filter Outgoing Traffic](../outgoing-traffic/filter-outgoing-traffic.md)** - Control which outgoing connections go through the cluster and which stay local
