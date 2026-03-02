@@ -11,7 +11,7 @@ mirrord lets developers run local processes in the context of their cloud enviro
 
 We call this approach "remocal" (remote + local): local execution with remote context.
 
-{% embed url="https://www.youtube.com/watch?v=ZR7A7cqQcFM" %}
+Want to see it in action? [Watch the demo](https://www.youtube.com/watch?v=ZR7A7cqQcFM).
 
 ## The problem
 
