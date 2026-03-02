@@ -16,8 +16,6 @@ tags:
 description: Monitoring with mirrord for Teams
 ---
 
-# Monitoring
-
 The mirrord Operator can produce logs in JSON format that can be digested by most popular logging solutions (DataDog, Dynatrace, etc). To enable JSON logging, set `operator.jsonLog` to `true` in the Operator Helm chart values. The log level is `INFO` by default, and can be changed by setting `operator.logLevel` in the Helm chart values, or alternatively by using the `RUST_LOG` environment variable in the Operator container, which takes values in the following format: `mirrord={log_level}` (e.g. `mirrord=debug`).
 
 {% hint style="info" %}
@@ -49,7 +47,7 @@ Fields:
 | session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirror` `Port Release` `Session Start` `Session End` |
 | session\_duration | the session's duration in seconds                                                                                                                                            | `Session End`                                                                |
 | port              | port number                                                                                                                                                                  | `Port Steal` `Port Mirror` `Port Release`                                  |
-| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Steal`                                                                  |
+| http\_filter      | the client's configured [HTTP Filter](../reference/configuration.md#feature.network) | `Port Steal`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
 ## Prometheus

@@ -16,8 +16,6 @@ tags:
 description: What are the limitations to using mirrord?
 ---
 
-# Limitations
-
 #### What frameworks/languages does mirrord support?
 
 mirrord works by [hooking libc](https://metalbear.com/blog/mirrord-internals-hooking-libc-functions-in-rust-and-fixing-bugs/), so it should work with any language/framework that uses libc (vast majority).
@@ -32,7 +30,7 @@ Yes, mirrord works exactly the same way with and without a service mesh installe
 
 #### Does mirrord support OpenShift?
 
-Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](../overview/teams.md).
+Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](../managing-mirrord/operator.md).
 
 #### Does mirrord support binaries that are statically compiled? (Linux)
 
@@ -52,4 +50,4 @@ marvin@heart-of-gold:~/MetalBear$ file some_static_binary
 some_static_binary: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=2e1eda62d5f755377435c009e856cd7b9836734e, for GNU/Linux 3.2.0, not stripped
 ```
 
-Sometimes Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.
+Sometimes Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](../troubleshooting/common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.

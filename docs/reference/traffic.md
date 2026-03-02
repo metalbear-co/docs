@@ -16,8 +16,6 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-# Network Traffic
-
 ### Incoming
 
 mirrord lets users debug incoming network traffic by mirroring or stealing the traffic sent to the remote pod.
@@ -146,7 +144,7 @@ Currently only supported in `steal` mode: mirrord lets you specify a regular exp
 
 **Specifying a Filter**
 
-An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming.http_filter.header_filter) or [`feature.network.incoming.http_filter.path_filter`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming.http_filter.path_filter).
+An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](configuration.md#feature.network.incoming.http_filter.header_filter) or [`feature.network.incoming.http_filter.path_filter`](configuration.md#feature.network.incoming.http_filter.path_filter).
 
 **Setting Custom HTTP Ports**
 

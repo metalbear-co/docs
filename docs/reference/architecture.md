@@ -16,8 +16,6 @@ tags:
 description: mirrord's architecture
 ---
 
-# Architecture
-
 mirrord is composed of the following components:
 
 * `mirrord-agent` - Rust binary that is packaged as a container image. mirrord-agent runs in the cloud and acts as a proxy for the local process.
@@ -25,7 +23,7 @@ mirrord is composed of the following components:
 * `mirrord-layer-win` - Rust dynamic library for Windows (dll) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
 * `mirrord-cli` - Rust binary that wraps the behavior of the respective mirrord layer in a user friendly CLI.
 * `VS Code extension` - Exposes the same functionality as - mirrord-cli within the VS Code IDE.
-* `IntelliJ plugin` - Exposes the same functionality as - mirrord-cli within the IntelliJ IDEs. 
+* `JetBrains plugin` - Exposes the same functionality as mirrord-cli within JetBrains IDEs. 
 
 ![mirrord - Architecture](architecture/architecture.svg)
 
@@ -39,7 +37,7 @@ mirrord-agent does **not** run as a privileged container in the cluster. However
 * `CAP_SYS_PTRACE` - required for reading target pod environment
 * `CAP_SYS_ADMIN` - required for joining target pod network namespace
 
-However, you can disable any subset of those in the configuration using [agent.disabled\_capabilities](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#agent.disabled_capabilities) option. This will possibly limit mirrord functionalities or even make it unusable in some setups.
+However, you can disable any subset of those in the configuration using [agent.disabled\_capabilities](configuration.md#agent.disabled_capabilities) option. This will possibly limit mirrord functionalities or even make it unusable in some setups.
 
 ## mirrord-layer
 
@@ -56,6 +54,6 @@ mirrord-cli is a user friendly interface over the essential functionality provid
 
 mirrord’s VS Code extension provides mirrord’s functionality within VS Code’s UI. When you debug a process with mirrord enabled in VS Code, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
 
-## IntelliJ Plugin
+## JetBrains Plugin
 
-mirrord’s IntelliJ Plugin provides mirrord’s functionality within the IntelliJ UI. When you debug a process with mirrord enabled in IntelliJ, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
+mirrord’s JetBrains plugin provides mirrord’s functionality within JetBrains IDEs. When you debug a process with mirrord enabled, it prompts you for a pod to impersonate, then runs the debugged process with the respective mirrord layer loaded into it.
