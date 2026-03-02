@@ -5,10 +5,10 @@ description: How to install mirrord on your local machine
 
 mirrord can be installed and used in several ways depending on your development workflow:
 
-- **[CLI](cli.md)** - Install the mirrord command-line tool directly
-- **[VS Code](vscode.md)** - Install the mirrord extension for Visual Studio Code and compatible editors (Cursor, Windsurf, etc.)
-- **[JetBrains IDEs](intellij.md)** - Install the mirrord plugin for JetBrains IDEs (IntelliJ, PyCharm, GoLand, etc.)
-- **[WSL](wsl.md)** - Set up mirrord on Windows using the Windows Subsystem for Linux
+- **[CLI](../installing-mirrord/cli.md)** - Install the mirrord command-line tool directly
+- **[VS Code](../installing-mirrord/vscode.md)** - Install the mirrord extension for Visual Studio Code and compatible editors (Cursor, Windsurf, etc.)
+- **[JetBrains IDEs](../installing-mirrord/intellij.md)** - Install the mirrord plugin for JetBrains IDEs (IntelliJ, PyCharm, GoLand, etc.)
+- **[WSL](../installing-mirrord/wsl.md)** - Set up mirrord on Windows using the Windows Subsystem for Linux
 
 ## Local Requirements
 

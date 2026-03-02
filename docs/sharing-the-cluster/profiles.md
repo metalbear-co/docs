@@ -87,6 +87,6 @@ Starting from mirrord version 3.136.0, the user can select a mirrord profile in 
 
 ## Enforcing profiles
 
-Use of mirrord profiles can be enforced with [mirrord policies](policies.md#profile-policy).
+Use of mirrord profiles can be enforced with [mirrord policies](../sharing-the-cluster/policies.md#profile-policy).
 
 **Important:** mirrord profiles are applied to the session on the user machine, and should not be used as security features.

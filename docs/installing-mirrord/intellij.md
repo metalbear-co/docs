@@ -77,4 +77,4 @@ You can also pin the binary version in the plugin settings (`Settings -> Tools -
 
 ### WSL
 
-The guide on how to use the plugin with remote development on WSL can be found [here](wsl.md#root-project-intellij).
+The guide on how to use the plugin with remote development on WSL can be found [here](../installing-mirrord/wsl.md#root-project-intellij).
