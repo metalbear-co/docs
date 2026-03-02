@@ -44,7 +44,7 @@
 
 ## Sharing the Cluster
 
-* [Overview](sharing-the-cluster/README.md)
+* [Overview](sharing-the-cluster/overview.md)
 * [Managing Sessions](sharing-the-cluster/sessions.md)
 * [Policies](sharing-the-cluster/policies.md)
   * [Outgoing Traffic Policies](sharing-the-cluster/outgoing-traffic-policies.md)
@@ -59,9 +59,9 @@
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
-* [Jira Integration](managing-mirrord/jira-integration.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
+* [Jira Integration](managing-mirrord/jira-integration.md)
 
 ## FAQ
 
@@ -79,8 +79,8 @@
 * [Network Traffic](reference/traffic.md)
 * [Environment Variables](reference/env.md)
 * [File Operations](reference/fileops.md)
-* [Third-party](reference/third-party.md)
 
 ***
 
+* [Third-party](reference/third-party.md)
 * [Contributing](contributing.md)

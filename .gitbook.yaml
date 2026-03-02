@@ -10,10 +10,12 @@ redirects:
   using-mirrord/wsl: installing-mirrord/wsl
 
   # Overview section → new locations
-  overview/introduction: use-cases/local-development
+  overview: getting-started/what-is-mirrord
+  overview/introduction: getting-started/what-is-mirrord
   overview/quick-start: getting-started/quick-start
   overview/onboarding-wizard: getting-started/onboarding-wizard
-  overview/teams: managing-mirrord/operator
+  overview/teams: getting-started/what-is-mirrord#mirrord-for-teams
+  overview/contributing: contributing
 
   # Using mirrord → new locations
   using-mirrord/traffic-filtering: using-mirrord/incoming-traffic/filter-incoming-traffic
