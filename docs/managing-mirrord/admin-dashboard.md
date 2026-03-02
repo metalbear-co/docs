@@ -19,6 +19,10 @@ description: Dashboard for monitoring mirrord usage
 
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
+{% hint style="warning" %}
+The Dashboard is currently in **early access**. Features and APIs may change. We'd love your feedback, so please reach out to us on [Discord](https://discord.gg/metalbear) or via email.
+{% endhint %}
+
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan. See [Quick Start](#quick-start) below to enable it.
 {% endhint %}
