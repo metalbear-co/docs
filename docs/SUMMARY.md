@@ -21,7 +21,6 @@
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
-  * [Configuring AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 
 ## Using mirrord
 
