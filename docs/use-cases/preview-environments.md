@@ -6,7 +6,7 @@ description: Ephemeral, isolated environments connected to your cluster
 ---
 
 {% hint style="success" %}
-Preview Environments are now available! See the [full documentation](../sharing-the-cluster/preview-environments.md).
+Preview Environments are now available!
 {% endhint %}
 
 Preview Environments let teams collaborate, validate, and review new code using real traffic, without affecting live services.
@@ -92,6 +92,6 @@ mirrord preview stop --key <environment-key>
 
 ## Preview Environment Workflow
 
-![Preview Environment Creation Workflow](/docs/coming-soon/preview-env/create-env.svg)
+![Preview Environment Creation Workflow](preview-environments/create-env.svg)
 
-![Preview Environment Modification Workflow](/docs/coming-soon/preview-env/modify-env.svg)
+![Preview Environment Modification Workflow](preview-environments/modify-env.svg)
