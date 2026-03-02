@@ -22,4 +22,4 @@ The result is that your local process behaves as if it's running in the cloud, e
 
 ## Open source vs Teams
 
-mirrord's core functionality is free and open source. [mirrord for Teams](https://metalbear.com/mirrord/pricing) adds the mirrord Operator, enabling concurrent cluster usage, advanced traffic control, and organizational governance. Features marked with **\[Teams]** in these docs require a license.
+mirrord's core functionality is free and open source. [mirrord for Teams](https://metalbear.com/mirrord/pricing) adds the mirrord Operator, enabling concurrent cluster usage, advanced traffic control, and organizational governance.
