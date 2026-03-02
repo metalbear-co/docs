@@ -16,19 +16,19 @@ tags:
 description: Reference to including remote environment variables
 ---
 
-### Overview
+## Overview
 
 mirrord lets you run a local process in the context of remote environment i.e. environment variables present in the remote pod will be loaded into the local process.
 
 For example, if you want your local process to access a remote database, the connection string configured in the remote pod's environment variable can be used by your local process.
 
-### How does it work?
+## How does it work?
 
 ![mirrord - fileops](env/mirrord-env-vars.png)
 
 mirrord-layer sends a message to mirrord-agent requesting remote environment variables, which are then set before the local process starts.
 
-### Usage
+## Usage
 
 To include/exclude environment variables selectively, use the `--override-env-vars-include` flag to include and `--override-env-vars-exclude` to exclude with environment variables specified in a `semicolon` separated list.
 

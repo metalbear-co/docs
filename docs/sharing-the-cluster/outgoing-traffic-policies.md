@@ -20,7 +20,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 
-#### Example Policy 
+### Example Policy 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
 kind: MirrordPolicy
@@ -55,10 +55,10 @@ spec:
               port: 22
 ```
 
-### Rule fields
+## Rule fields
 Rules under allow or block are arrays of objects. Each object matches when all its fields align with the connection details.
 ​
-#### Available fields:
+### Available fields:
 `ipBlock`: Specifies CIDR ranges via `cidr` field with optional exclusions (`except` field, array of CIDRs).
 
 `hostname`: Regex pattern (e.g., `^metalbear\\.(co|com)$`) for flexible matching.
@@ -66,7 +66,7 @@ Rules under allow or block are arrays of objects. Each object matches when all i
 `ports`: Array of objects with protocol (TCP/UDP) and port.
 ​
 
-### Evaluation Logic
+## Evaluation Logic
 Policies evaluate runtime outgoing connections as follows:
 
 1. No rules: If no allow or block rules exist, the connection is permitted.

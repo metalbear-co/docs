@@ -15,13 +15,13 @@ Sometimes you need to use local tools like Web Browsers, Postman, or Database Cl
 
 Instead of setting up complex port-forwards or VPNs, you can use `mirrord` to create a lightweight SOCKS5 tunnel. This allows any application that supports SOCKS5 to resolve internal DNS and connect to private cluster services as if it were running inside the cluster itself.
 
-### Prerequisites
+## Prerequisites
 
 Install **microsocks** via your package manager.
 * For macOS: `brew install microsocks`
 * For Ubuntu/Debian: `apt install microsocks`
 
-### Setup
+## Setup
 
 Regardless of which tool you are connecting, the first step is to establish the tunnel.
 
@@ -32,7 +32,7 @@ Regardless of which tool you are connecting, the first step is to establish the 
 
 2. Verify the proxy is working. microsocks listens on `127.0.0.1:1080` by default. Try calling a service health endpoint in your kubernetes cluster using `curl --socks5 socks5h://127.0.0.1:1080 <svc>.<namespace>.svc.cluster.local/health`
 
-### Tool Guides
+## Tool Guides
 
 Once the proxy is running, choose your tool below to configure the connection:
 

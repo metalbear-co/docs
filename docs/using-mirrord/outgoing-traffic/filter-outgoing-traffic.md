@@ -41,7 +41,7 @@ For example, if you want your app to access the hostname `example-hostname.svc` 
 
 You can see all the configuration options for the outgoing filter feature [here](../../reference/configuration.md#feature.network.outgoing.filter).
 
-### What's next?
+## What's next?
 
 1. If you'd like to intercept traffic rather than mirror it so that your local process is the one answering the remote requests, check out [this guide](../incoming-traffic/filter-incoming-traffic.md). Note that you can even filter which traffic you intercept!
 2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../targetless.md).

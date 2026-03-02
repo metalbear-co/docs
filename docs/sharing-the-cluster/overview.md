@@ -21,32 +21,32 @@ This raises the question, what if I want multiple users in my organization to us
 
 These conflicts and more are resolved by the mirrord Operator, available in the mirrord Team and Enterprise pricing plans. By having a persistent, centralized component in the cluster that can synchronize and orchestrate different instances of mirrord running in the cluster, we can allow developers to use mirrord against the same cluster without affecting each other.
 
-### What capabilities does mirrord have to allow concurrent usage of the same cluster?
+## What capabilities does mirrord have to allow concurrent usage of the same cluster?
 
 ![Using clusters concurrently with mirrord](images/shared-cluster.png)
 
-#### 1. Concurrently debug the same HTTP server with HTTP filters
+### 1. Concurrently debug the same HTTP server with HTTP filters
 
 mirrord's HTTP filters let users only steal a subset of the incoming traffic to the remote service. By adding personalized headers to incoming traffic and then configuring mirrord to only steal traffic with those headers, users can debug the same service concurrently without affecting each other. [Learn more about HTTP filters](../using-mirrord/incoming-traffic/filter-incoming-traffic.md).
 
 > _**NOTE:**_ While HTTP filters are supported in the OSS version of mirrord, concurrently debugging the same service using HTTP filters is only supported in the Team and Enterprise pricing plans.
 
-#### 2. Concurrently debug the same queue-based service with queue splitting
+### 2. Concurrently debug the same queue-based service with queue splitting
 
 mirrord's queue splitting feature lets users only steal a subset of the messages from a queue. By configuring mirrord to only steal messages with specific properties, users can debug the same queue-based service concurrently without affecting each other. [Learn more about queue splitting](queue-splitting.md).
 
-#### 3. Prevent unwanted behavior with mirrord Policies
+### 3. Prevent unwanted behavior with mirrord Policies
 
 mirrord Policies let you define rules that prevent users from doing certain actions. For example, you can prevent users from writing to a database, or from stealing traffic without using an HTTP filter. [Learn more about mirrord Policies](policies.md).
 
-#### 4. Communicate with a personal isolated database
+### 4. Communicate with a personal isolated database
 
 Sometimes a database is just too sensitive to write to remotely. Or maybe you want to test a migration, and don't want it to affect your coworkers who are using the same cluster. In these cases, you can use the DB Branching feature to work with an ephemeral database branch that is isolated from the main database. [Learn more about DB Branching](db-branching.md).
 
-#### 5. View other sessions running in the cluster (and kill them if necessary)
+### 5. View other sessions running in the cluster (and kill them if necessary)
 
 Sometimes, all you need to avoid clashes is just to see what other users are doing in the cluster. The `mirrord operator status` command displays a list of all the currently running sessions in the cluster, along with the user who started them. If you see a session that's causing problems, you can kill it using the `mirrord operator kill` command (given you have the necessary permissions). [Learn more about managing mirrord sessions](sessions.md).
 
-#### 6. Guardrails for Destructive Actions in mirrord
+### 6. Guardrails for Destructive Actions in mirrord
 
 To prevent destructive operations (like DB resets during integration tests) from running against remote environments, mirrord supports `MIRRORD_DONT_LOAD` environment variable. When set to `true`, mirrord will immediately abort and refuse to start, regardless of IDE settings. This makes it easy to mark specific scripts or run configurations (e.g. integration tests) as "safe" from mirrord.

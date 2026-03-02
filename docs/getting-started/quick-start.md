@@ -17,11 +17,11 @@ shallowToc: true
 description: How to (very) quickly start using mirrord
 ---
 
-### Requirements
+## Requirements
 
 mirrord runs on your local machine and in your Kubernetes cluster.
 
-#### Local Requirements
+### Local Requirements
 
 For your local machine, you may use any of:
 - MacOS (Intel, Apple Silicon).
@@ -31,7 +31,7 @@ For your local machine, you may use any of:
 
 kubectl needs to be configured on the local machine.
 
-#### Remote Requirements
+### Remote Requirements
 
 - Docker or containerd runtime (containerd is the most common). If you'd like support for other runtimes to be added, please let us know by [opening an issue on GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=&labels=enhancement&template=feature_request.md).
 - Linux Kernel version 4.20+
@@ -44,9 +44,9 @@ mirrord can be used in three ways:
 
 If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord [Operator](quick-start.md#operator).
 
-### CLI Tool
+## CLI Tool
 
-#### Installation
+### Installation
 
 {% tabs %}
 {% tab title="MacOS/Linux" %}
@@ -73,7 +73,7 @@ choco install --pre mirrord
 {% endtab %}
 {% endtabs %}
 
-#### Usage
+### Usage
 
 To use mirrord to plug a local process into a pod/deployment in the cluster configured with kubectl, run:
 
@@ -105,9 +105,9 @@ Use `mirrord exec --help` or `mirrord container --help` to get all possible comm
 **Got it working? Stuck?** Either way, [come say hi in Slack](https://metalbear.com/slack)
 {% endhint %}
 
-### VS Code Extension
+## VS Code Extension
 
-#### Installation
+### Installation
 
 You can install the extension directly in the IDE (Extensions -> search for 'mirrord'), or download it from the marketplace [here](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord).
 
@@ -115,33 +115,33 @@ You can install the extension directly in the IDE (Extensions -> search for 'mir
 The mirrord extension is also available for all VS Code forks like Cursor, Windsurf, Antigravity, PearAI, and Trae.
 {% endhint %}
 
-#### Usage
+### Usage
 
 To use extension, click the 'Enable mirrord' button in the status bar at the bottom of the window. When you next run a debug session, you'll be prompted with a dropdown listing pods in the namespace you've configured (or the 'default' namespace, if you haven't). Select the pod you want to impersonate, and the debugged process will be plugged into that pod by mirrord.
 
-#### Configuration
+### Configuration
 
 The VS Code extension reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md). The configuration file also supports autocomplete when edited in VS Code when the extension is installed.
 
-### JetBrains Plugin
+## JetBrains Plugin
 
-#### Installation
+### Installation
 
 You can install the plugin directly in the IDE (Preferences -> Plugins, search for 'mirrord'), or download it from the marketplace [here](https://plugins.jetbrains.com/plugin/19772-mirrord).
 
-#### Usage
+### Usage
 
 To use extension, click the mirrord icon in the Navigation Toolbar at the top right of the window. When you next run a debug session, you'll be prompted with a dropdown listing namespaces in your cluster, and then another with pods in the namespace you selected. Select the pod you want to impersonate, and the debugged process will be plugged into that pod by mirrord.
 
-#### Configuration
+### Configuration
 
 The JetBrains plugin reads its configuration from the following file: `<project-path>/.mirrord/mirrord.json`. You can also prepend a prefix, e.g. `my-config.mirrord.json`, or use .toml or .yaml format. Configuration options are listed [here](../reference/configuration.md).
 
-### Operator
+## Operator
 
 To install and use the Operator, you'll need a mirrord for Teams license. You can get one [here](https://app.metalbear.com/). The Operator is installed using the [Helm chart](quick-start.md#helm). This has to be performed by a user with elevated permissions to the cluster.
 
-#### Helm
+### Helm
 
 To install the mirrord Operator with Helm, first add the MetalBear Helm repository:
 
@@ -163,7 +163,7 @@ Finally, install the chart:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-### Using Internal Registry (Optional)
+## Using Internal Registry (Optional)
 
 The use of an internal registry for storing mirrord images is useful for:
 
@@ -171,7 +171,7 @@ The use of an internal registry for storing mirrord images is useful for:
 2. Reducing cost of ingress traffic needed to download the images.
 3. Ensuring that even if our registry goes down (we use GitHub) your use of mirrord isn't interrupted.
 
-#### Copying images
+### Copying images
 
 The first step would be to copy the needed images to your internal registry. We recommend using [regctl](https://regclient.org/) because it has a built in copy command, that supports copying multi-arch images so you can use mirrord on a mixed arm/x64 fleet at ease.
 
@@ -218,7 +218,7 @@ Copy agent image to your registry
 regctl image copy ghcr.io/metalbear-co/mirrord:$AGENT_IMAGE_VERSION your-registry/mirrord:$AGENT_IMAGE_VERSION
 ```
 
-#### Setting chart to use internal registry
+### Setting chart to use internal registry
 
 In the operator chart, set the following values:
 
@@ -239,7 +239,7 @@ server:
 
 Note: License server uses same image as operator for simplicity in deployment.
 
-#### OpenShift
+### OpenShift
 
 In order to make the operator work with OpenShift, you need to apply the following scc:
 
@@ -261,11 +261,11 @@ users:
   - system:serviceaccount:mirrord:default
 ```
 
-#### Verifying the Installation
+### Verifying the Installation
 
 After installing the Operator, you can verify it works by running `mirrord operator status`. All mirrord clients will now use the Operator instead of doing actions on their own when running against the cluster.
 
-### Test it out!
+## Test it out!
 
 {% hint style="success" %}
 **You're about to run your local code against a live Kubernetes cluster 🎉**
@@ -284,7 +284,7 @@ Note that, by default, the following features are also enabled:
 
 We find that this configuration works for a lot of use cases, but if you'd like to change it, please read about available options in the [configuration](../reference/configuration.md).
 
-### Next Steps
+## Next Steps
 
 **What are you trying to do?**
 
