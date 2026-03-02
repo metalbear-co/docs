@@ -6,7 +6,7 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-By default, mirrord imports all environment variables from the remote pod into your local process. This means your local code automatically gets the same database URLs, API keys, feature flags, and service discovery values as the deployed application — without any manual setup.
+By default, mirrord imports all environment variables from the remote pod into your local process. This means your local code automatically gets the same database URLs, API keys, feature flags, and service discovery values as the deployed application, without any manual setup.
 
 Local environment variables that aren't present in the remote pod are preserved. When a variable exists in both, the remote value wins.
 
@@ -40,11 +40,11 @@ If most remote variables are useful but a few cause problems locally, use `exclu
 }
 ```
 
-`include` and `exclude` are mutually exclusive — use one or the other.
+`include` and `exclude` are mutually exclusive. Use one or the other.
 
 ## Overriding values
 
-Sometimes you want the remote variable but with a different value — for example, pointing at a local database while keeping everything else remote:
+Sometimes you want the remote variable but with a different value. For example, pointing at a local database while keeping everything else remote:
 
 ```json
 {
@@ -109,11 +109,11 @@ To ensure a remote variable is *not* present in your local process at all:
 
 ## Common scenarios
 
-**"My app connects to the wrong database locally"** — The remote `DATABASE_URL` is being imported. Either override it with a local value, or exclude it.
+**"My app connects to the wrong database locally"** The remote `DATABASE_URL` is being imported. Either override it with a local value, or exclude it.
 
-**"I need remote env vars but PATH keeps getting overwritten"** — Exclude `PATH` (and other shell variables like `HOME`, `USER`, `SHELL`).
+**"I need remote env vars but PATH keeps getting overwritten"** Exclude `PATH` (and other shell variables like `HOME`, `USER`, `SHELL`).
 
-**"I want to test with a feature flag enabled"** — Use `override` to set the flag value, regardless of what the remote pod has.
+**"I want to test with a feature flag enabled"** Use `override` to set the flag value, regardless of what the remote pod has.
 
 For the full list of environment variable settings, see the [configuration reference](../reference/configuration.md#feature.env).
 For a technical explanation of how environment variables work under the hood, see the [Environment Variables reference](../reference/env.md).

@@ -8,7 +8,7 @@ tags: ["open source", "team", "enterprise"]
 
 By default, mirrord redirects most file access from your local process to the remote pod. When your code opens `/etc/config/app.yaml`, it reads the remote pod's copy. This means your local process sees the same configuration files, certificates, and data that the deployed application does.
 
-Some paths — like language runtimes, package managers, and temp files — are always read locally. See the [full default list](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) for details.
+Some paths, like language runtimes, package managers, and temp files, are always read locally. See the [full default list](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) for details.
 
 ## Choosing a mode
 
@@ -32,7 +32,7 @@ mirrord supports three file system modes:
 
 ## Reading specific files remotely
 
-Use `localwithoverrides` when you only need a handful of remote files — for example, a config file or TLS certificate:
+Use `localwithoverrides` when you only need a handful of remote files, for example a config file or TLS certificate:
 
 ```json
 {
@@ -61,7 +61,7 @@ If your application writes to files that need to land on the remote filesystem (
 }
 ```
 
-Be careful with remote writes — they modify the actual remote pod's filesystem.
+Be careful with remote writes. They modify the actual remote pod's filesystem.
 
 ## Keeping specific files local
 
@@ -79,11 +79,11 @@ If the default `read` mode pulls in remote files that conflict with your local s
 
 ## Common scenarios
 
-**"My app reads config from a mounted ConfigMap"** — The default `read` mode handles this. Your local process will read the ConfigMap contents from the remote pod.
+**"My app reads config from a mounted ConfigMap"** The default `read` mode handles this. Your local process will read the ConfigMap contents from the remote pod.
 
-**"My app writes logs to a file and I don't want them on the remote pod"** — Default `read` mode already writes locally. No change needed.
+**"My app writes logs to a file and I don't want them on the remote pod"** Default `read` mode already writes locally. No change needed.
 
-**"I only need one remote config file, everything else should be local"** — Use `localwithoverrides` with the specific path.
+**"I only need one remote config file, everything else should be local"** Use `localwithoverrides` with the specific path.
 
 For the full list of file operation settings, see the [configuration reference](../reference/configuration.md#feature.fs).
 For a technical explanation of how file operations work under the hood, see the [File Operations reference](../reference/fileops.md).
