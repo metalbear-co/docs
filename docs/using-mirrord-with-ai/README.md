@@ -1,5 +1,5 @@
 ---
-title: Using mirrord with AI
+title: Using mirrord with AI Agents
 description: Configure AI coding agents to test code changes against your cluster using mirrord
 draft: false
 toc: true

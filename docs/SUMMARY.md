@@ -20,7 +20,7 @@
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
-* [Using mirrord with AI](using-mirrord-with-ai/README.md)
+* [Using mirrord with AI Agents](using-mirrord-with-ai/README.md)
 
 ## Using mirrord
 
