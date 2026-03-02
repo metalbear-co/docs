@@ -17,6 +17,6 @@ Both outgoing TCP and UDP forwarding are enabled by default.
 If mirrord is configured to **mirror** incoming traffic, both the remote pod and your local process may make outgoing API calls for the same incoming request. If those calls are write operations (e.g. database inserts), this could lead to duplicates. Consider using [steal mode](../incoming-traffic/README.md) or disabling outgoing traffic forwarding to avoid this.
 {% endhint %}
 
-### What's in this section
+## What's in this section
 
 - **[Filter Outgoing Traffic](filter-outgoing-traffic.md)** - Control which outgoing connections go through the cluster and which stay local

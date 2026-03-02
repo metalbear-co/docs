@@ -49,7 +49,7 @@ This feature is available in mirrord version 3.175.0 and onwards.
 
 When using `any_of` or `all_of`, body filter fields are written directly in each condition, rather than under `body_filter`, example can be found below.
 
-#### Type Handling and the `typeof` Extension
+### Type Handling and the `typeof` Extension
 
 mirrord stringifies all JSONPath query results before applying the regex.
 To filter values by JSON type, mirrord provides a custom `typeof` function extension to `RFC 9535`
@@ -67,7 +67,7 @@ This allows writing queries like:
 If the queried nodes do not share a single type, typeof returns 'nothing'.
 
 
-### Overview
+## Overview
 When enabled, mirrord:
 1. **Read and parse the request body**
 
@@ -86,7 +86,7 @@ When enabled, mirrord:
     If the JSONPath extraction and regex match conditions succeed, the filter matches and mirrord may steal the request based on the overall filtering rules.
     If any step fails, the filter simply does not match.
 
-#### Processing Limits
+### Processing Limits
 mirrord applies two safeguards when reading request bodies for JSON filtering:
 
 1. **Maximum body size**
@@ -105,7 +105,7 @@ mirrord applies two safeguards when reading request bodies for JSON filtering:
 Both settings follow the same configuration mechanism as other agent parameters and can be set through the operator or in the [mirrord.json configuration](../../reference/configuration.md#:~:text=%22-,agent,-%22%3A%20%7B) file.
 These limits ensure predictable performance and prevent excessive memory usage.
 
-### Configuration Example
+## Configuration Example
 Configuration below applies to only steal requests with path `/orders` and have a JSON body with at least one numeric `price` value ending in "99".
 
 ```json
@@ -132,9 +132,9 @@ Configuration below applies to only steal requests with path `/orders` and have 
 ```
 
 
-### Examples and Results
+## Examples and Results
 
-#### Request A matches and stolen:
+### Request A matches and stolen:
 ```bash
 POST /orders
 Content-Type: application/json
@@ -150,7 +150,7 @@ Content-Type: application/json
 ```
 
 
-#### Request B does not match and not stolen:
+### Request B does not match and not stolen:
 ```bash
 POST /orders
 Content-Type: application/json
@@ -166,7 +166,7 @@ Content-Type: application/json
 ```
 
 
-#### Request C does not match and not stolen:
+### Request C does not match and not stolen:
 ```bash
 POST /payments
 Content-Type: application/json

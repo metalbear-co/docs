@@ -27,7 +27,7 @@ Filtering is the same idea whether you’re mirroring or stealing. Declare which
 
 `steal` + `http_filter`: only the filtered subset of requests is redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
 
-### Stealing all of the remote target's traffic
+## Stealing all of the remote target's traffic
 
 If you want all traffic arriving at the remote target to be redirected to your local process, change the `feature.network.incoming` configuration to `steal`:
 
@@ -43,7 +43,7 @@ If you want all traffic arriving at the remote target to be redirected to your l
 
 Run your process with mirrord using the steal configuration, then send a request to the remote target. The response you receive will have been sent by the local process. If you're using one of our IDE extensions, set a breakpoint in the function handling the request - your request should hang when the breakpoint is hit and until you continue the process.
 
-### Filtering a subset of traffic with `mirror` or `steal` mode
+## Filtering a subset of traffic with `mirror` or `steal` mode
 
 For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports filtering a subset of the remote target's traffic. You can do this by specifying a filter on either an HTTP header or path. To control whether traffic is duplicated (mirror) or redirected (steal), set the mode field:
 `mirror`: the remote target still handles the request, and your local process gets a copy.
@@ -95,7 +95,7 @@ To specify a filter on a path, use the `feature.network.incoming.http_filter.pat
 
 Note that both `header_filter` and `path_filter` take regex value, so for example `"header_filter": "X-Header-.+: header-value-.+"` would work.
 
-#### Filtering out healthchecks using a negative look-ahead
+### Filtering out healthchecks using a negative look-ahead
 
 The HTTP filters both take "fancy" regexes that support negative look-aheads. This can be useful for avoiding the stealing of Kubernetes liveness, readiness and startup probes.
 
@@ -155,7 +155,7 @@ If you filter only by path, you might capture a large amount of traffic unintent
 
 The `method_filter` is case-insensitive and supports all standard HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`) as well as non-standard methods.
 
-#### Grouping Filters: Match All or Any
+### Grouping Filters: Match All or Any
 
 You can group multiple simple filters together using the `all_of` or `any_of` fields:
 * `all_of`: the request must match all nested filters.
@@ -182,13 +182,13 @@ It has the following rules:
 }
 ```
 
-#### Stealing HTTPS traffic with a filter
+### Stealing HTTPS traffic with a filter
 
 `feature.network.incoming.http_filter` allows you to steal a subset of HTTP requests. To apply the filter, the mirrord-agent needs to be able to parse the requests stolen from the target. Most commonly, the in-cluster traffic is encrypted with TLS, but it is decrypted by a service mesh before it gets to the target service. In this case, mirrord is able to parse the requests out of the box.
 
 However, in some cases the traffic is only decrypted by the target service itself. Using an HTTP filter in this case requires some additional setup. Check out the [HTTPS stealing guide](steal-https.md) for more information. Note that this HTTPS stealing requires mirrord Operator, which is part of mirrord for Teams.
 
-### What's next?
+## What's next?
 
 1. If your local process reads from a queue, you might want to test out the [copy target feature](../copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
 2. If you don't want to impersonate a remote target - for example, if you want to run a tool in the context of your cluster - check out our [guide on the targetless mode](../targetless.md).
