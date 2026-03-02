@@ -20,7 +20,7 @@ description: Dashboard for monitoring mirrord usage
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
 {% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan.
+This feature is available to users on the Enterprise pricing plan. See [Quick Start](#quick-start) below to enable it.
 {% endhint %}
 
 | Dark mode | Light mode |
@@ -44,7 +44,7 @@ helm repo update metalbear
 helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
 ```
 
-3. Port-forward the dashboard port to your local machine:
+3. **Via `kubectl port-forward`:** Forward the dashboard port to your local machine:
 
 ```bash
 kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
