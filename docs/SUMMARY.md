@@ -12,13 +12,13 @@
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
   * [WSL](installing-mirrord/wsl.md)
-  * [mirrord Operator \[Teams\]](managing-mirrord/operator.md)
+  * [mirrord Operator](managing-mirrord/operator.md)
 
 ## Use Cases
 
 * [Remocal Development](use-cases/local-development.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
-* [Preview Environments \[Teams\]](use-cases/preview-environments.md)
+* [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Configuring AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
@@ -40,10 +40,10 @@
   * [Web Browsing](using-mirrord/connecting-tools/web-browsing.md)
   * [Postman](using-mirrord/connecting-tools/postman.md)
 * [Running Without a Target](using-mirrord/targetless.md)
-* [Copying a Target \[Teams\]](using-mirrord/copy-target.md)
+* [Copying a Target](using-mirrord/copy-target.md)
 * [Local Containers](using-mirrord/local-container.md)
 
-## Sharing the Cluster \[Teams]
+## Sharing the Cluster
 
 * [Overview](sharing-the-cluster/README.md)
 * [Managing Sessions](sharing-the-cluster/sessions.md)
@@ -55,7 +55,7 @@
   * [Branch Management](sharing-the-cluster/db-branch-management.md)
   * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
 
-## Managing mirrord \[Teams]
+## Managing mirrord
 
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
