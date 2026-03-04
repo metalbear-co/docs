@@ -24,6 +24,8 @@ Love using mirrord but need help getting your security team on board? Talk to on
 
 <a href="https://metalbear.com/mirrord/demo/" class="button primary">Get Security Support</a>
 
+You can also visit our [Trust Center](https://trust.metalbear.com) for an overview of MetalBear's security posture, certifications, and compliance documentation.
+
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
 * mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
