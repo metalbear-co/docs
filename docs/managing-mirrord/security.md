@@ -24,6 +24,8 @@ Love using mirrord but need help getting your security team on board? Talk to on
 
 <a href="https://metalbear.com/mirrord/demo/" class="button primary">Get Security Support</a>
 
+You can also visit our [Trust Center](https://trust.metalbear.com) for an overview of MetalBear's security posture, certifications, and compliance documentation.
+
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
 * mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
@@ -41,9 +43,9 @@ Love using mirrord but need help getting your security team on board? Talk to on
 * mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
 * Missing anything? Feel free to ask us on Discord or hi@metalbear.com
 
-## Are you SOC2/GDPR compliant?
+## Are you SOC2/ISO27001 compliant?
 
-mirrord for Teams is completely on-prem and doesn't process your customer data, so SOC2 and GDPR don't apply to it.
+Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 ## How do I configure Role Based Access Control for mirrord for Teams?
 
