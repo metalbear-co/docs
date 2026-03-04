@@ -41,9 +41,9 @@ Love using mirrord but need help getting your security team on board? Talk to on
 * mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
 * Missing anything? Feel free to ask us on Discord or hi@metalbear.com
 
-## Are you SOC2/GDPR compliant?
+## Are you SOC2/ISO27001 compliant?
 
-mirrord for Teams is completely on-prem and doesn't process your customer data, so SOC2 and GDPR don't apply to it.
+Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 ## How do I configure Role Based Access Control for mirrord for Teams?
 
