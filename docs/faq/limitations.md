@@ -22,7 +22,7 @@ mirrord works by [hooking libc](https://metalbear.com/blog/mirrord-internals-hoo
 
 This includes: Rust, Node, Python, Java, Kotlin, Ruby, and others (most languages use libc).
 
-mirrord also supports for [Go](https://metalbear.com/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
+mirrord also supports [Go](https://metalbear.com/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
 
 #### Does mirrord support clusters with a service mesh like Istio or Linkerd?
 
@@ -50,4 +50,4 @@ marvin@heart-of-gold:~/MetalBear$ file some_static_binary
 some_static_binary: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), statically linked, BuildID[sha1]=2e1eda62d5f755377435c009e856cd7b9836734e, for GNU/Linux 3.2.0, not stripped
 ```
 
-Sometimes Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](../troubleshooting/common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.
+Sometimes, Go is statically compiled by default, so it's important to check and compile dynamically if necessary. See [this section in Common Issues](../troubleshooting/common-issues.md#ive-run-my-program-with-mirrord-but-it-seems-to-have-no-effect) for more info.
