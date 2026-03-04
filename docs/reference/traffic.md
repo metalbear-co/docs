@@ -16,13 +16,11 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-# Network Traffic
-
-### Incoming
+## Incoming
 
 mirrord lets users debug incoming network traffic by mirroring or stealing the traffic sent to the remote pod.
 
-#### Mirroring
+### Mirroring
 
 mirrord's default configuration is to mirror incoming TCP traffic from the remote pod, i.e. run the local process in the context of cloud environment without disrupting incoming traffic for the remote pod. Any responses by the local process to the mirrored requests are dropped, and so whatever application is running on the remote pod continues to operate normally while the traffic is mirrored to the local process.
 
@@ -54,7 +52,7 @@ metalbear-deployment-85c754c75f-6k7mg       1/1     Running   1 (15h ago)   16h
 
 To mirror traffic from remote services to the local development environment, run the services locally with mirrord
 
-##### Window 1
+#### Window 1
 
 ```bash
 bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
@@ -73,21 +71,21 @@ user-service/service.py
 // ^ Received mirrored traffic from the remote pod
 ```
 
-##### Window 2
+#### Window 2
 
 ```bash
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
 ```                                                                                                                                             
 
-#### Stealing
+### Stealing
 
 mirrord can steal network traffic, i.e. intercept it and send it to the local process instead of the remote pod. This means that all incoming traffic is only handled by the local process.
 
 Example - running `user-service` with mirrord and `--tcp-steal` on:
 
 
-##### Window 1
+#### Window 1
 
 ```bash
 bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
@@ -110,7 +108,7 @@ python3 user-service/service.py
  ^Cbigbear@metalbear:~/mirrord-demo$ 
 ```
 
-##### Window 2
+#### Window 2
 
 ```bash
 // Before running mirrord with `--tcp-steal`
@@ -146,13 +144,13 @@ Currently only supported in `steal` mode: mirrord lets you specify a regular exp
 
 **Specifying a Filter**
 
-An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming.http_filter.header_filter) or [`feature.network.incoming.http_filter.path_filter`](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network.incoming.http_filter.path_filter).
+An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](configuration.md#feature.network.incoming.http_filter.header_filter) or [`feature.network.incoming.http_filter.path_filter`](configuration.md#feature.network.incoming.http_filter.path_filter).
 
 **Setting Custom HTTP Ports**
 
 The configuration also allows specifying custom HTTP ports under `feature.network.incoming.http_filter.ports`. By default, ports 80 and 8080 are used as HTTP ports if a filter is specified, which means that the mirrord agent checks each new connection on those ports for HTTP, and if the connection has valid HTTP messages, they are filtered with the header filter.
 
-### Outgoing
+## Outgoing
 
 mirrord's outgoing traffic feature intercepts outgoing requests from the local process and sends them through the remote pod instead. Responses are then routed back to the local process. A simple use case of this feature is enabling the local process to make an API call to another service in the k8s cluster, for example, a database read/write.
 
@@ -160,7 +158,7 @@ For UDP, outgoing traffic is currently only intercepted and forwarded by mirrord
 
 > **Note:** If the handling of incoming requests by your app involves outgoing API calls to other services, and mirrord is configured to mirror incoming traffic, then it might be the case that both the remote pod and the local process (which receives mirrored requests) make an outgoing API call to another service for the same incoming request. If that call is a write operation to a database, this could lead e.g. to duplicate lines in the database. You can avoid such an effect by switching from [traffic mirroring](traffic.md#mirroring) to [traffic stealing](traffic.md#stealing) mode. Alternatively, if the service your application makes an API call to is only reachable from within the Kubernetes cluster, you can disable outgoing traffic forwarding, which would make it impossible for your local process to reach that service.
 
-### DNS Resolution
+## DNS Resolution
 
 mirrord can resolve DNS queries in the context of the remote pod
 

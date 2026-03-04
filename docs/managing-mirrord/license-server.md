@@ -15,8 +15,6 @@ tags:
 description: License Server
 ---
 
-# License Server
-
 The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization.
 
 {% hint style="info" %}
@@ -133,7 +131,7 @@ sa:
 
 #### Connecting Operators to the License Server
 
-First update your operator `values.yaml` file ([see this page](../overview/quick-start.md#helm) for quickstart helm setup for operator):
+First update your operator `values.yaml` file ([see this page](../getting-started/quick-start.md#helm) for quickstart helm setup for operator):
 
 ```yaml
 # ./values.yaml
