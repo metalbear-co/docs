@@ -19,7 +19,7 @@ Because Preview Environments are not tied to a developer's local process, they a
 - QA engineers testing changes against realistic traffic and dependencies
 - Engineers collaborating on a feature in progress or requesting async feedback
 
-This enables realistic validation workflows without cloning an entire environment and without blocking on a single mirrord session. This model becomes even more valuable as AI coding agents begin shipping features and fixes autonomously. Instead of reviewing Git diffs alone, teams can let an AI agent deploy its changes into a preview environment automatically. The result is a realistic, production-like environment where the code can be observed running, end-to-end workflows can be tested, and behavior can be validated before anything is merged.
+This enables realistic validation workflows without cloning an entire environment and without blocking on a single mirrord session. This model becomes even more valuable as [AI coding agents](../using-mirrord-with-ai/README.md) begin shipping features and fixes autonomously. Instead of reviewing Git diffs alone, teams can let an AI agent deploy its changes into a preview environment automatically. The result is a realistic, production-like environment where the code can be observed running, end-to-end workflows can be tested, and behavior can be validated before anything is merged.
 
 {% hint style="info" %}
 Preview Environments are available to users on the **Enterprise** pricing plan.
