@@ -20,15 +20,17 @@ Currently, the feature is limited to **MySQL, PostgreSQL, MongoDB** databases fo
 **When is this useful?**
 
 1. **Running schema migrations safely**  
-   Developers can test migrations and schema changes without risking corruption of the remote databases.
+    Developers can test migrations and schema changes without risking corruption of the remote databases.
 
 2. **Experimenting locally**  
-   Developers get a branch of the remote DB connected to their local app automatically - no admin setup required.
+    Developers get a branch of the remote DB connected to their local app automatically - no admin setup required.
 
 3. **Collaborating with teammates**  
-   If a branch already exists (with the same ID), mirrord reuses it. Developers can share branches as needed.
+    If a branch already exists (with the same ID), mirrord reuses it. Developers can share branches as needed.
 
-   --- 
+4. **Validating AI-generated database changes**
+    If your AI coding agents need to generate migrations or schema updates, DB branching provides a safe environment to test those changes without risking the shared environment.
+
 
 ## Prerequisites
 

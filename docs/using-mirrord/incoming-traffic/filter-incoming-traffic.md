@@ -15,17 +15,19 @@ tags:
 description: Steal a subset of incoming traffic using HTTP header, path, or method filters
 ---
 
-By default, mirrord mirrors all incoming traffic into the remote target, and sends a copy to your local process. This is useful when you want the remote target to answer requests, keeping the remote environment completely agnostic to your local code.
+By default, mirrord mirrors **all** incoming traffic into the remote target, and sends a copy to your local process. But in most cases, you don’t need *every* request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment. 
+
+[AI agents using mirrord](../../using-mirrord-with-ai/README.md) can also take advantage of the same mechanism by setting filters, allowing them to safely target and test only the requests relevant to the changes they’re working on. This way both developers and autonomous AI agents can safely test using the same shared Kubernetes environment.
 
 Filtering is the same idea whether you’re mirroring or stealing. Declare which HTTP requests you care about, and only those will be delivered to your local process. The difference is what happens to the original request:
 
-`mirror` mode: the remote target still receives and handles the request. A copy is delivered to your local process for testing or inspection.
+- `mirror` mode: the remote target still receives and handles the request. A copy is delivered to your local process for testing or inspection.
 
-`mirror` + `http_filter`: the remote target still handles all requests, but only the filtered subset is copied to your local process. Use this when you want to observe a specific subset of endpoints while keeping production behavior untouched.
+- `mirror` + `http_filter`: the remote target still handles all requests, but only the filtered subset is copied to your local process. Use this when you want to observe a specific subset of endpoints while keeping production behavior untouched.
 
-`steal` mode: all requests are redirected to your local process. Your local code is the one answering everything, and the remote target does not see the requests. This is useful when you want to test how your code responds to real traffic, or when handling all requests locally avoids issues like duplicate database writes.
+- `steal` mode: all requests are redirected to your local process. Your local code is the one answering everything, and the remote target does not see the requests. This is useful when you want to test how your code responds to real traffic, or when handling all requests locally avoids issues like duplicate database writes.
 
-`steal` + `http_filter`: only the filtered subset of requests is redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
+- `steal` + `http_filter`: only the filtered subset of requests is redirected to your local process. Your local code handles those, while the rest continue to the remote target as usual. Use this when you want to test or mutate only specific requests locally, while leaving other traffic untouched.
 
 ## Stealing all of the remote target's traffic
 
