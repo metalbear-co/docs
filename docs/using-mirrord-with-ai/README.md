@@ -6,7 +6,11 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-AI coding agents like Claude Code, Cursor, and GitHub Copilot can use mirrord to test code changes against a real Kubernetes cluster in seconds, instead of relying on mocks or waiting on CI/CD.
+AI coding models don’t have the full context of your application. The code they generate might look correct, but things often break once you try integrating it with the rest of your system.
+
+If you're using tools like Claude Code, Cursor, or OpenAI Codex, mirrord lets you safely test AI-generated code in a real, production-like Kubernetes environment in seconds, instead of relying on mocks or waiting for CI/CD to reveal integration issues.
+
+You can also configure AI agents to verify their own changes. By instructing them to use mirrord as part of their workflow, they can run code against a real environment, catch issues early, and iterate until the feature actually works end-to-end.
 
 The workflow: the agent writes code, runs it with mirrord against the cluster, checks the result, and iterates. Feedback cycles drop from minutes to seconds.
 

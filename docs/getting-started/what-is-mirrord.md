@@ -3,7 +3,7 @@ title: What is mirrord?
 description: How mirrord works and what mirrord for Teams adds
 ---
 
-mirrord lets developers run local processes in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services - databases, queues, APIs - as if it were deployed in the cluster.
+mirrord lets developers (or AI agents) run local code in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services - databases, queues, APIs - as if it were deployed in the cluster.
 
 When you start your process with mirrord, it overrides low-level system calls to:
 
