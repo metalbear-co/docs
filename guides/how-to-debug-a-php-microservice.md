@@ -24,7 +24,7 @@ Debugging effectively within a Kubernetes context is the biggest challenge of wo
 With mirrord, we don’t have to think of building and releasing our applications for debugging. We can run our applications locally, and mirrord will make sure to have your locally running process in the context of Kubernetes. Context mirroring for processes allows your process to run locally and consume the resources of a remote resource. 
 
 ### Workload to process context mirroring
-To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a PHP process. Let’s see how we can mirror inputs for our locally running PHP application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback look effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
+To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a PHP process. Let’s see how we can mirror inputs for our locally running PHP application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback loop effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
 
 ### Sample application setup
 In the example below, our PHP application will run locally. It will need to have the network information and environment of a Kubernetes Pod to debug. This Kubernetes Pod is running as part of a staging application deployment and will be our mirroring target.
@@ -33,7 +33,7 @@ Let’s get started with some prerequisites by setting up a test cluster and dep
 ### Prerequisites
 Set up the Kubernetes cluster to test our application setup.
 
-1. Start an instance of a development cluster like minikube, k3d kind, etc. We are using minikube here.
+1. Start an instance of a development cluster like minikube, k3d, kind, etc. We are using minikube here.
 
 ```
 minikube start
@@ -71,7 +71,7 @@ The minikube service command automatically sets up a port forwarding session to 
 
 
 
-Once we run the command minikube service command, we get this output. 
+Once we run the minikube service command, we get this output. 
 
 ```
 
@@ -122,7 +122,7 @@ Install the mirrord CLI tool and run Guestbook with the required Kubernetes cont
 
 3. Run the Guestbook application with php and mirrord in the CLI
 
-Let’s install php-redis locally as it contains dependencies for our code to run !
+Let’s install php-redis locally, as our code depends on it.
 
 ```
 brew install php-redis
@@ -162,7 +162,7 @@ After you have run the guestbook program with mirrord you should be able to make
 
 ## Debugging with mirrord vs. other debugging techniques
 [mirrord](https://metalbear.com/mirrord/) distinguishes itself by eliminating the need for repeated building and deployment cycles. It allows developers to run the application locally while providing the necessary network and execution context of the target Kubernetes Pod. In this case, the local application behaves as if it were running within the cluster, enabling developers to debug using familiar tools without the overhead to build and deploy.
-Conclusion
+## Conclusion
 
 This guide explored how we can use mirrord in the command line for debugging PHP applications.
 By enabling local execution with Kubernetes context, mirrord helps developers save substantial time during debugging.

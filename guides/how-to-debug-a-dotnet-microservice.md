@@ -90,7 +90,7 @@ On the run above we can see that the application run fails because this local ex
 
 <img src=".gitbook/assets/dotnet-debug-images/dotnet_run_failure.png" alt="guestbook application failure" class="img-fluid">
 
-The microservice needs access to the "redis" service hosted on the cluster. To run the .NET microservice in the context of the Kubernetes cluster, we can use the mirrord.
+The microservice needs access to the "redis" service hosted on the cluster. To run the .NET microservice in the context of the Kubernetes cluster, we can use mirrord.
 
 2. Installing mirrord
 
@@ -178,7 +178,7 @@ Let's add a new config file for mirrord, which we can use with VS Code for debug
 
 If you want to steal traffic from a multipod deployment, you can learn more about [mirrord for Teams](https://metalbear.com/mirrord/docs/overview/teams/) which provides this feature. Right now, we only have one pod in this deployment, and mirrord's OSS features should work perfectly for us.
 
-To ensure that the configuration file created is read by the VS Code mirrord extension, hover over the mirrord button we mentioned earlier and press the 'Select active config` option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
+To ensure that the configuration file created is read by the VS Code mirrord extension, hover over the mirrord button we mentioned earlier and press the 'Select active config' option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
 
 ![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.01.35 PM.png)
 
@@ -222,7 +222,7 @@ Upon choosing the .NET Pod as the target, you can see logs similar to the ones b
 
 
 
-Once the app is running with the mirrord extension, access it on `localhost:8080` in the browser. You will see the following UI to the mirrord Guestbook application.
+Once the app is running with the mirrord extension, access it on `localhost:8080` in the browser. You will see the following UI for the mirrord Guestbook application.
 
 
 
@@ -251,7 +251,7 @@ You should hit the breakpoint as shown below:
 
 We can debug the issue now as the breakpoint is hit.
 
-You now know how to debug your .NET microservice with VS Code + mirrord without having to build and deploy your application everytime.
+You now know how to debug your .NET microservice with VS Code + mirrord without having to build and deploy your application every time.
 ## Debugging with mirrord vs. other debugging techniques
 
 [mirrord](https://metalbear.com/mirrord/) distinguishes itself by eliminating the need for repeated building and deployment cycles. It allows developers to run the application locally while providing the necessary network and execution context of the target Kubernetes Pod. In this case, the local application behaves as if it were running within the cluster, enabling developers to debug using familiar tools without the overhead to build and deploy.

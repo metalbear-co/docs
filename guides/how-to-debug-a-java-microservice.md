@@ -4,7 +4,7 @@ In this guide, we’ll cover how to debug a Java microservice running in a Kuber
 
 ---
 
-**_Tip:_** You can use [mirrord](https://metalbear.com/mirrord/)  to debug, test, and troubleshoot your applications locally with Kubernetes context, without needing to build or deploy each time.
+**_Tip:_** You can use [mirrord](https://metalbear.com/mirrord/) to debug, test, and troubleshoot your applications locally with Kubernetes context, without needing to build or deploy each time.
 
 ---
 
@@ -30,7 +30,7 @@ As someone who develops applications for Kubernetes, one of the biggest challeng
 
 ## Introduction to debugging Java microservices with mirrord
 
-With mirrord, we don’t have to think of building and releasing our applications now. We can run our applications locally and mirrord will make sure to have your locally running process think that it is running in the context of Kubernetes. The application would be running locally, but it will have the network and execution context of your preferred Kubernetes pod as a target. Traffic from your Kubernetes context is mirrored (or stolen if you prefer that) to the application with which you can test your application against the services running in your cluster without having to deploy the process on your cluster.
+With mirrord, we don’t have to think of building and releasing our applications now. We can run our applications locally and mirrord will ensure your locally running process thinks that it is running in the context of Kubernetes. The application runs locally, but it will have the network and execution context of your preferred Kubernetes pod as a target. Traffic from your Kubernetes context is mirrored (or stolen if you prefer that) to the application with which you can test your application against the services running in your cluster without having to deploy the process on your cluster.
 
 ### Prerequisites
 
@@ -90,7 +90,7 @@ Once the above command runs, we will have access to the knote application on [ht
 
 ![alt text](.gitbook/assets/how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.00.06 1.png)
 
-The above minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the port-forward to our microsservice setup, our application architecture now looks like this:
+The above minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the port-forward to our microservice setup, our application architecture now looks like this:
 
 ![alt text](.gitbook/assets/how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.01.10 1.png)
 
@@ -98,7 +98,7 @@ Now that we have our application running in Kubernetes, let’s run the microser
 
 ## Using Intellij IDEA + mirrord (plugin) to debug a SpringBoot application
 
-In this section of the guide, we are going to use the mirrord Intellij Plugin to help debug the Java application. If you would like to see how we can do the same with the Java Debugger in the CLI, go to this (TODO: and header link) section of the guide. 
+In this section of the guide, we are going to use the mirrord Intellij Plugin to help debug the Java application. If you would like to see how we can do the same with the Java Debugger in the CLI, go to this section of the guide. 
 
 The application in question is knote, a simple note taking app written in SpringBoot with support for storing notes in MongoDB and attachments in MinIO. The source code for the test application is available on github at [https://github.com/waveywaves/mirrord-java-debug-example](https://github.com/waveywaves/mirrord-java-debug-example). We are going to use it as a follow along Java application for debugging with mirrord.
 
@@ -106,7 +106,7 @@ The application in question is knote, a simple note taking app written in Spring
 
 #### Setup
 
-To get started, install mirrord on our IDEA : IntelliJ IDEA.
+To get started, install mirrord in IntelliJ IDEA.
 
 ![alt text](.gitbook/assets/how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.04.02 1.png)
 
@@ -151,7 +151,7 @@ If you want to mirror traffic from a multipod deployment, you can learn more abo
 
 Choose the config we just updated as the active configuration by selecting the button above and setting it as the active config. Once that’s done, start the application with mirrord and see if it works in the context of the cluster. We should be able to create notes in the application.
 
-To demonstrate that the knote fails when running in the context of its dependencies, we are going to build and run the application locally from the IDE by pressing the “play” button in the top right corner of the IDE which is visible below. The dependencies in question here is the Kubernetes Pod where knote is deployed.
+To demonstrate that the knote fails when running in the context of its dependencies, we are going to build and run the application locally from the IDE by pressing the “play” button in the top right corner of the IDE which is visible below. The dependencies in question here are the Kubernetes Pod where knote is deployed.
 
 ![alt text](.gitbook/assets/how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.17.57 1.png)
 
@@ -205,11 +205,11 @@ You now know how to debug your Java microservice with IntelliJ IDEA + mirrord wi
 
 Next, let’s see how we can debug our microservice in the CLI with the Java Debugger and mirrord.
 
-## Using the Java debugger (jdc) + mirrord to debug in the CLI
+## Using the Java debugger (jdb) + mirrord to debug in the CLI
 
-1. jdc + mirrord
+1. jdb + mirrord
 
-You should already have jdc installed locally if you have the Java Development Kit of your choice installed on your system. To work effectively with jdc let’s make sure that the application runs properly first. Let’s run the following command to check the same (we expect this execution to fail).
+You should already have jdb installed locally if you have the Java Development Kit of your choice installed on your system. To work effectively with jdb, let’s make sure that the application runs properly first. Let’s run the following command to check the same (we expect this execution to fail).
 
 ```bash
 mvn spring-boot:run
@@ -233,7 +233,7 @@ The above command runs the knote SpringBoot application in the context of the �
 
 2. **Run the microservice in debug mode**
 
-As the above command runs we can debug this application using mvnDebug. Run the following command start knote in debug mode.
+As the above command runs we can debug this application using mvnDebug. Run the following command to start knote in debug mode.
 
 ```bash
 mirrord exec -t deployment/knote mvnDebug spring-boot:run
@@ -256,9 +256,9 @@ In another terminal instance let’s run the following command and attach our de
 jdb -sourcepath ./src/main/java -attach 8000
 ```
 
-Even if the java application has the context of the kubernetes cluster, its ports are still opened on the local machine. So we can attach our debugger to the 8000 port.
+Even if the Java application has the context of the kubernetes cluster, its ports are still opened on the local machine. So we can attach our debugger to the 8000 port.
 
-#### Using jdc for debugging
+#### Using jdb for debugging
 
 The above command will ensure that we attach to the debuggable knote process. You will see the following output if the debugger successfully attaches to knote.
 
@@ -282,9 +282,9 @@ You can use the ‘step’ and/or ‘next’ commands to continue the execution 
 
 The location of the breakpoint requires us to use the application to publish a note. Go to [http://localhost:8080](http://localhost:8080) and create a note which will call the /note POST endpoint executing through this particular line of code where the breakpoint is set.
 
-Once you hit the breakpoint you will be able to use jdc to dig further into the execution context of the application.
+Once you hit the breakpoint you will be able to use jdb to dig further into the execution context of the application.
 
-With that, we know how to use mirrord and jdc together to debug a Java application with a Kuberentes context without the hassle of deploying or using an IDE for debugging.
+With that, we know how to use mirrord and jdb together to debug a Java application with a Kubernetes context without the hassle of deploying or using an IDE for debugging.
 
 ## Debugging with mirrord vs. other debugging techniques
 

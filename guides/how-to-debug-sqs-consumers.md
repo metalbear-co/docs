@@ -2,11 +2,11 @@
 
 In this guide, we’ll cover how to debug SQS consumer applications running in a Kubernetes environment using mirrord. You’ll learn how to set up mirrord and use it to effectively debug SQS consumers without the traditional overhead of rebuilding and redeploying your application.
 
-**Tip**: mirrord is a development tool which makes developing cloud applications significantly easier. If you're not familiar we'll recommend checking out the [getting started guide](https://metalbear.com/mirrord/docs/overview/quick-start/) first!
+**Tip**: mirrord is a development tool which makes developing cloud applications significantly easier. If you're not familiar, we recommend checking out the [getting started guide](https://metalbear.com/mirrord/docs/overview/quick-start/) first!
 
 Debugging distributed applications, especially those that use messaging systems like Amazon SQS, can be challenging. These systems often span multiple services and depend on asynchronous communication patterns. Traditional debugging approaches can fall short when trying to trace issues across these complex systems.
 
-Developers can debug cloud-native applications using mirrord by allowing local SQS consumer applications to access remote Kubernetes resources using context mirroring. Let’s go through some common debugging techniques to debug such applications to understand how using mirrord would help you save time and shorten the development feedback loop when working with SQS consumers.
+Developers can debug cloud-native applications using mirrord by allowing local SQS consumer applications to access remote Kubernetes resources using context mirroring. Let’s go through some common techniques for debugging such applications to understand how using mirrord would help you save time and shorten the development feedback loop when working with SQS consumers.
 
 ## Common debugging techniques for SQS consumers
 
@@ -240,7 +240,8 @@ This configuration:
 
 1. Targets the sqs-consumer deployment
 2. Creates a copy of the deployment’s pod
-3. Scales down the original deployment to zero replicas 4. Ensures your local application receives all the messages
+3. Scales down the original deployment to zero replicas
+4. Ensures your local application receives all the messages
 
 This approach is illustrated in the following diagram:
 
@@ -374,19 +375,19 @@ mirrord exec -f .mirrord/mirrord.json -- python sqs_consumer.py
 
 **Tip**: You can use message filters to focus on specific patterns of messages, making debugging more targeted.
 
-After running with queue splitting and specific message filtering, you can produce messages with or without the necessary filter from the producer UI. You can access the producer UI at `https://localhost:8081` after running the following command:
+After running with queue splitting and specific message filtering, you can produce messages with or without the necessary filter from the producer UI. You can access the producer UI at `http://localhost:8081` after running the following command:
 
 ```bash
 kubectl port-forward service/sqs-producer 8081:
 ```
 
-Once both the local debug `sqs_consumer` and the producer UI are accessible. Let’s send some messages to see if the filtering works.
+Once both the local debug `sqs_consumer` and the producer UI are accessible, let’s send some messages to see if the filtering works.
 
 ![SQS Producer UI Screenshot for Queue Splitting](.gitbook/assets/how-to-debug-sqs-consumers/producer-ui.png)
 
 After sending some messages with the required message attribute for filtering and some without, we can see in the debug sqs_consumer instance that the filtering indeed works.
 
-You’ll see that both the consumer and the copy Pod are available ensuring that the original consumer doesn’t stop consuming the messages whereas the copy Pods will received the filtered messages:
+You’ll see that both the consumer and the copy Pod are available ensuring that the original consumer doesn’t stop consuming the messages whereas the copy Pods will receive the filtered messages:
 
 ![mirrord Exec Queue Splitting](.gitbook/assets/how-to-debug-sqs-consumers/terminal-output-for-queue-split.png)
 

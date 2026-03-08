@@ -62,7 +62,7 @@ The above minikube service command automatically sets up a port forwarding sessi
 
 ![kotlin application architecture](.gitbook/assets/how-to-debug-a-kotlin-microservice/Screenshot 2025-03-14 at 4.07.40 PM.png)
 
-Once we run the command minikube service command, we get this output. 
+Once we run the minikube service command, we get this output. 
 
 ```
 minikube service kotlin-guestbook
@@ -91,7 +91,7 @@ Let’s access this URL from the browser.
 We have our staging application deployed now. Let’s run the microservice with mirrord now. This will allow us to run the local Kotlin application in the context of Kubernetes without having to build and deploy it over and over again for testing.
 
 ## Debug the Guestbook application with IntelliJ IDEA and the JetBrains mirrord plugin
-In this section of the guide, we are going to use the mirrord Intellij Plugin to help debug the Kotlin application. If you would like to see how we can do the same with the Kotlin Debugger in the CLI, go to [this section of the guide](https://metalbear-co/guides/how-to-debug-a-kotlin-microservice/#:~:text=Debugger%20and%20mirrord.-,Debug%20in%20the%20CLI%20with%20mvn%20and%20mirrord,-1.%20Run%20the).
+In this section of the guide, we are going to use the mirrord Intellij Plugin to help debug the Kotlin application. If you would like to see how we can do the same with the Kotlin Debugger in the CLI, go to [this section of the guide](https://metalbear.co/guides/how-to-debug-a-kotlin-microservice/#:~:text=Debugger%20and%20mirrord.-,Debug%20in%20the%20CLI%20with%20mvn%20and%20mirrord,-1.%20Run%20the).
 
 The application in question is Guestbook, a simple note-taking app written in Kotlin with support for storing notes in Redis. The source code for the test application is available on GitHub at https://github.com/waveywaves/mirrord-kotlin-debug-example. We will use it as a follow-along Kotlin application for debugging with mirrord.
 ### 1. Setup IntelliJ IDEA with the mirrord plugin
@@ -154,9 +154,9 @@ Before starting, make sure that you have updated your run configuration in Intel
 mvn compile exec:java
 ```
 
-A disabled mirrord button will be shown with a slash in front of if mirrord is disabled.
+A disabled mirrord button will be shown with a slash in front of it if mirrord is disabled.
 
-![screenshot of mirrord diabled](.gitbook/assets/how-to-debug-a-kotlin-microservice/Screenshot 2025-03-14 at 4.05.34 PM.png)
+![screenshot of mirrord disabled](.gitbook/assets/how-to-debug-a-kotlin-microservice/Screenshot 2025-03-14 at 4.05.34 PM.png)
 
 After running the above command you should see that the application fails to start because it’s not able to connect to the “redis” service.
 
@@ -192,7 +192,7 @@ Moving forward, let’s set a debug breakpoint in the application and see how it
 
 Start debugging by pressing the debug button below.
 
-![screenshor of starting debugging in mirrord](.gitbook/assets/how-to-debug-a-kotlin-microservice/Screenshot 2025-03-14 at 4.03.35 PM.png)
+![screenshot of starting debugging in mirrord](.gitbook/assets/how-to-debug-a-kotlin-microservice/Screenshot 2025-03-14 at 4.03.35 PM.png)
 
 From http://localhost:8080 create a new note and publish it. 
 On the application run, you should hit the breakpoint as shown below:
@@ -207,7 +207,7 @@ Next, let’s see how we can debug our microservice in the CLI with the Kotlin D
 
 ## Debug in the CLI with mvn and mirrord
 ### 1. Run the application with Maven in the CLI
-Let’s run the following command to run the application with maven locally.
+Let’s run the following command to run the application with Maven locally.
 
 ```
 mvn compile exec:java

@@ -11,7 +11,7 @@ These guides walk you through debugging real applications running in Kubernetes 
 
 ## Language Guides
 
-Debug microservices written in your language of choice — with IDE integration and CLI workflows.
+Debug microservices written in your language of choice, with IDE integration and CLI workflows.
 
 | Language | IDE | Guide |
 |----------|-----|-------|

@@ -32,7 +32,7 @@ With mirrord, we don’t have to think of building and releasing our application
 
 ### Workload to process context mirroring
 
-To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a Node.js process. Let’s see how we can mirror inputs for our locally running Node.js application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback look effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
+To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a Node.js process. Let’s see how we can mirror inputs for our locally running Node.js application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback loop effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
 
 ### Sample application setup
 
@@ -44,7 +44,7 @@ Let’s get started with some prerequisites by setting up a test cluster and dep
 
 Set up the Kubernetes cluster to test our application setup.
 
-1. Start an instance of a development cluster like minikube, k3d kind, etc. We are using minikube here.
+1. Start an instance of a development cluster like minikube, k3d, kind, etc. We are using minikube here.
 
 ```bash
 minikube start
@@ -78,7 +78,7 @@ The above minikube service command automatically sets up a port forwarding sessi
 
 ![alt text](.gitbook/assets/how-to-debug-a-nodejs-microservice/Architecture Diagram - without mirrord.png)
 
-Once we run the command minikube service command, we get output which looks something like this. 
+Once we run the minikube service command, we get output which looks something like this. 
 
 
 ![alt text](.gitbook/assets/how-to-debug-a-nodejs-microservice/minikube service nodejs-guestbook.png)
@@ -140,7 +140,7 @@ Let’s add a new config file for mirrord, which we can use with VSCode for debu
 
 If you want to mirror traffic from a multipod deployment, you can learn more about mirrord for teams /mirrord/docs/overview/teams/ which provides this feature. Right now, we only have one pod in this deployment, and mirrord’s OSS features should work perfectly for us.
 
-To ensure that the configuration file created is read by the VSCode mirrord extension, hover over the mirrord button we mentioned earlier and press the ‘Select active config` option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
+To ensure that the configuration file created is read by the VSCode mirrord extension, hover over the mirrord button we mentioned earlier and press the ‘Select active config’ option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
 
 ![alt text](.gitbook/assets/how-to-debug-a-nodejs-microservice/Screenshot 2025-02-21 at 7.01.35 PM.png)
 
@@ -189,7 +189,7 @@ Upon choosing the Node.js Pod as the target, you can see logs similar to the one
 ![alt text](.gitbook/assets/how-to-debug-a-nodejs-microservice/Screenshot 2025-02-21 at 7.08.00 PM.png)
 
 
-Once the app is running with the mirrord extension, access it on localhost:3000 in the browser. You will see the following UI to the mirrord guestbook application.
+Once the app is running with the mirrord extension, access it on localhost:3000 in the browser. You will see the following UI for the mirrord guestbook application.
 
 ![alt text](.gitbook/assets/how-to-debug-a-nodejs-microservice/Screenshot 2025-02-21 at 7.08.41 PM.png)
 
@@ -235,7 +235,7 @@ You now know how to debug your Node.js microservice with VSCode + mirrord withou
 
 Next, let’s see how to debug our microservice in the CLI with the Node.js Debugger and mirrord.
 
-# Debug in the CLI with Node.js and mirrord
+## Debug in the CLI with Node.js and mirrord
 
 ## Run the application with npm in the CLI
 
@@ -260,7 +260,7 @@ Install the mirrord CLI tool and run Guestbook with the required Kubernetes cont
 
 ## Run the guestbook application with Node.js and mirrord in the CLI
 
-After installing, run the following command: start the Node.js guestbook application with mirrord.
+After installing, run the following command to start the Node.js guestbook application with mirrord:
 
 ```bash
 mirrord exec -t deployment/nodejs-guestbook npm start 
@@ -289,11 +289,11 @@ Guestbook app running on port 3000
 
 After you have run the Guestbook program with mirrord you should be able to make your changes and rerun the service as necessary. You can even run the program in debug mode and attach a debugger if required.
 
-# Debugging with mirrord vs. other debugging techniques
+## Debugging with mirrord vs. other debugging techniques
 
 [mirrord](https://metalbear.com/mirrord/) distinguishes itself by eliminating the need for repeated building and deployment cycles. It allows developers to run the application locally while providing the necessary network and execution context of the target Kubernetes Pod. In this case, the local application behaves as if it were running within the cluster, enabling developers to debug using familiar tools without the overhead to build and deploy.
 
-# Conclusion
+## Conclusion
 
 This guide explored how to use mirrord in VSCode using the mirrord extension and the mirrord CLI. We demonstrated how developers can set breakpoints in their IDE or CLI debugger and step through code execution while leveraging the live Kubernetes environment.
 

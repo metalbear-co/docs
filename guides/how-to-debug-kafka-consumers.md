@@ -2,7 +2,7 @@
 
 In this guide, we’ll cover how to debug Kafka consumer applications running in a Kubernetes environment using mirrord. You’ll learn how to set up mirrord and use it to effectively debug Kafka consumers without the traditional overhead of rebuilding and redeploying your application.
 
-**Tip**: mirrord is a development tool which makes developing cloud applications significantly easier. If you're not familiar we'll recommend checking out the [getting started guide](https://metalbear.com/mirrord/docs/overview/quick-start/) first!
+**Tip**: mirrord is a development tool which makes developing cloud applications significantly easier. If you're not familiar, we recommend checking out the [getting started guide](https://metalbear.com/mirrord/docs/overview/quick-start/) first!
 
 Debugging distributed applications, especially those that use messaging systems like Apache Kafka, can be challenging. These systems often span multiple services and depend on asynchronous communication patterns. Traditional debugging approaches can fall short when trying to trace issues across these complex systems.
 
@@ -136,7 +136,7 @@ Our example application has these components:
 - Topic: test-topic
 - Consumer group: test-consumer-group
 
-The application componenets are containerized and deployed to Kubernetes.
+The application components are containerized and deployed to Kubernetes.
 
 ## Deploying the sample application
 
@@ -236,7 +236,7 @@ This approach is illustrated in the following diagram:
 
 2. Which is then picked up by the mirrord-copy Pod which has scaled the consumer Pod down and is going to relay the message to our local consumer.
 
-3. The local mirrord based execution of the consumer application receives this. Messages can be created and set from the UI
+3. The local mirrord based execution of the consumer application receives this. Messages can be created and sent from the UI
 
 Now that we understand how this works, let’s use this configuration locally.
 
@@ -381,7 +381,7 @@ After running with queue splitting and specific message filtering, you’ll see 
 
 ![Terminal Screenshot for Filter Queue Splitting](.gitbook/assets/how-to-debug-kafka-consumers/terminal-queue-splitting.png)
 
-You’ll see that the consumer and the copy Pods are both available ensuring that the original consumer doesn’t stop consuming the messages whereas the copy Pods will received the filtered messages:
+You’ll see that the consumer and the copy Pods are both available ensuring that the original consumer doesn’t stop consuming the messages whereas the copy Pods will receive the filtered messages:
 
 ![mirrord Exec Queue Splitting 1](.gitbook/assets/how-to-debug-kafka-consumers/terminal-single.png)
 

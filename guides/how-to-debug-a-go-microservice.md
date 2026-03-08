@@ -28,15 +28,15 @@ The above methods can be used by themselves or they can be used together.
 
 ## Challenges of debugging Go microservices in Kubernetes
 
-Debugging effectively within a Kubernetes context is the biggest challenge of working with Kubernetes. The build and release loop of the application can be short, but still process slows down development. Nothing beats the ease and speed of debugging applications locally.
+Debugging effectively within a Kubernetes context is the biggest challenge of working with Kubernetes. The build and release loop of the application can be short, but the process still slows down development. Nothing beats the ease and speed of debugging applications locally.
 
 ## Introduction to debugging Go microservices with mirrord
 
-With mirrord, we don’t have to think of building and releasing our applications for debugging. We can run our applications locally and mirrord will make sure to have your locally running process have the context of Kubernetes. Context mirroring for processes allows your process to run locally and consume the resources of a remote resource.
+With mirrord, we don’t have to think of building and releasing our applications for debugging. We can run our applications locally and mirrord will ensure your locally running process has the context of Kubernetes. Context mirroring for processes allows your process to run locally and consume the resources of a remote resource.
 
 ### Workload to process context mirroring
 
-To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a Golang process. Let’s see how we can mirror inputs for our locally running Golang application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback look effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
+To achieve this, inputs from a Kubernetes workload (eg: a Pod) are mirrored to a locally running process. The process in question here today is a Golang process. Let’s see how we can mirror inputs for our locally running Golang application using mirrord and pipe these outputs back to Kubernetes. This will create a tighter feedback loop effectively allowing you to debug faster without the downsides of the common debugging techniques we discussed above.
 
 ### Sample application setup
 
@@ -48,7 +48,7 @@ Let’s get started with some prerequisites by setting up a test cluster and dep
 
 Set up the Kubernetes cluster to test our application setup.
 
-1. Start an instance of a development cluster like minikube, k3d kind, etc. We are using minikube here.
+1. Start an instance of a development cluster like minikube, k3d, kind, etc. We are using minikube here.
 
 ```bash
 minikube start
@@ -84,7 +84,7 @@ The above minikube service command automatically sets up a port forwarding sessi
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.43.59 1.png)
 
-Once we run the command minikube service command, we get the below output.
+Once we run the minikube service command, we get the below output.
 
 ```md
 minikube service guestbook                                                        
@@ -131,7 +131,7 @@ After installing the plugin and restarting the IDE, a dialog box like the one be
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.48.47 1.png)
 
-This dialogue box appears as mirrord is successfully installed. It contains the directions for how to use mirrord in the Goland IDE. Let’s setup the mirrord configuration.
+This dialogue box appears as mirrord is successfully installed. It contains the directions for how to use mirrord in the Goland IDE. Let’s set up the mirrord configuration.
 
 #### mirrord configuration
 
@@ -172,8 +172,8 @@ Choose the config by selecting the button above and setting it as the active con
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.59.37 1.png)
 
-After adding the above configuration, let’s start the application without mirrord first to test if the runs well when not running with the Kubernetes context. 
-A disabled mirrord button will be shown with a slash in front of if mirrord is disabled.
+After adding the above configuration, let’s start the application without mirrord first to test if it runs well when not running with the Kubernetes context. 
+A disabled mirrord button will be shown with a slash in front of it if mirrord is disabled.
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.00.53 1.png)
 
@@ -181,7 +181,7 @@ Once we run the application without mirrord we can see that the guestbook fails 
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.01.46 1.png)
 
-It is failing to connect to a Redis instance. We Redis instance would be running in our Kubernetes cluster.
+It is failing to connect to a Redis instance. The Redis instance is running in our Kubernetes cluster.
 Let’s try running the application in the context of the Kubernetes cluster with mirrord.
 
 #### Running the application with the mirrord plugin enabled
@@ -220,7 +220,7 @@ Start debugging by pressing the debug button below.
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.17.26 1.png)
 
 From [http://localhost:8080](http://localhost:8080) create a new note and publish it.
-On the application run, you should hit the breakpoint as shown below :
+On the application run, you should hit the breakpoint as shown below:
 
 ![alt text](.gitbook/assets/how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.18.54 1.png)
 
@@ -228,7 +228,7 @@ We can debug the issue now as the breakpoint is hit.
 
 You now know how to debug your Go microservice with Goland + mirrord without having to build and deploy your application anew.
 
-Next, let’s see how to debug our microservice in the CLI with the go and mirrord.
+Next, let’s see how to debug our microservice in the CLI with go and mirrord.
 
 ## Debug in the CLI with go and mirrord
 
@@ -277,7 +277,7 @@ You should see the following output which will let you know that the guestbook h
 [negroni] 2024-11-28T18:06:42+05:30 | 200 |  	11.456667ms | localhost:3000 | GET /lrange/guestboo
 ```
 
-After you have run the guesbook program with mirrord you should be able to make your changes and rerun the service as necessary. You can even run the program in debug mode and attach a debugger if required
+After you have run the guestbook program with mirrord you should be able to make your changes and rerun the service as necessary. You can even run the program in debug mode and attach a debugger if required.
 
 ## Debugging with mirrord vs. other debugging techniques
 
