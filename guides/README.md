@@ -1,5 +1,8 @@
 ---
 description: Step-by-step guides for debugging microservices and queue consumers in Kubernetes with mirrord
+layout:
+  pagination:
+    visible: false
 ---
 
 # Guides
