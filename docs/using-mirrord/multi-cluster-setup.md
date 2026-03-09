@@ -16,7 +16,7 @@ Before you start, make sure you have:
 
 ## Authentication Methods
 
-Each remote cluster must specify an `authType` that determines how the Primary operator authenticates to it. The `authType` field is **required** - the Helm chart validates it at install time and fails if it's missing.
+For each remote cluster, you must specify an `authType` that determines how the Primary mirrord operator authenticates to it.
 
 ### Bearer Token (`authType: bearerToken`)
 
@@ -53,7 +53,7 @@ Kubernetes does not auto-refresh mTLS client certificates. You are responsible f
 
 ## Setting Up Remote Clusters
 
-Every remote cluster needs the mirrord operator installed with `multiClusterMember` enabled. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
+Every remote cluster needs the mirrord operator installed with the `operator.multiClusterMember` helm chart value set to `true`. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
 
 ### Bearer Token / mTLS Clusters
 
@@ -241,19 +241,19 @@ operator:
     enabled: true
 
     # Logical name of this cluster (set by you, should match the real cluster name)
-    clusterName: "primary"
+    clusterName: "eu-west-1"
 
     # Default cluster for stateful operations (env vars, files, db branching)
-    defaultCluster: "cluster-a"
+    defaultCluster: "us-east-1"
 
-    # Set to true if Primary cluster has no workloads (management-only)
+    # Set to true if the Primary cluster has no workloads
     managementOnly: false
 
     # Remote cluster configuration
     # Each key should match the real cluster name
     clusters:
       # Bearer token authentication
-      cluster-a:
+      us-east-1:
         authType: bearerToken
         server: "https://api.cluster-a.example.com:6443"
         caData: "LS0tLS1CRUdJTi..."
@@ -261,14 +261,14 @@ operator:
         isDefault: true
 
       # EKS IAM authentication
-      cluster-b:
+      us-west-1:
         authType: eks
         region: eu-north-1
         server: "https://ABCDEF1234567890.gr7.eu-north-1.eks.amazonaws.com"
         caData: "LS0tLS1CRUdJTi..."
 
       # mTLS authentication
-      cluster-c:
+      us-north-1:
         authType: mtls
         server: "https://api.cluster-c.example.com:6443"
         caData: "LS0tLS1CRUdJTi..."
@@ -402,7 +402,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 ## FAQ
 
 **Q: Do developers need to know about multi-cluster?**
-A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything.
+A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything. Note that multi-cluster sessions only work when the developer connects to the Primary cluster — connecting directly to a remote cluster will start a regular single-cluster session on that cluster.
 
 **Q: Can the Primary cluster also run workloads?**
 A: Yes. By default, the Primary cluster participates as a workload cluster. Set `managementOnly: true` only if the Primary has no application pods.

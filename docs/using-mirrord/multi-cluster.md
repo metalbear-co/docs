@@ -60,6 +60,9 @@ Some operations need to return consistent data such as environment variables, fi
 
 When your app reads `DATABASE_URL` for example, the request goes to the Default cluster only. You get one answer, not different answers from different clusters. Traffic operations (mirror/steal) still go to all workload clusters.
 
+The default cluster is chosen in the settings of the operator on the primary cluster.
+Any workload cluster can be set to be the default cluster, including the primary cluster, if it's also a workload cluster.
+
 ### Management-Only Mode
 
 If the Primary cluster only orchestrates and doesn't run application workloads, set it to management-only mode (`managementOnly: true`). In this case, you must designate a different cluster as the Default, since stateful operations can't run on a cluster with no application pods.
@@ -78,7 +81,7 @@ Once all child sessions are ready, the CLI establishes a unified WebSocket conne
 
 [Database branching](db-branching.md) in multi-cluster mode behaves the same from the developer’s perspective, but may execute on a different cluster internally. The developer connects to the Primary cluster, but the branch is created on the Default cluster.
 
-If the Primary cluster is not the Default cluster, a synchronization controller (`DbBranchSyncController`) runs on the Primary. It mirrors branch resources to the Default cluster and syncs the branch status back to the Primary. The CLI waits waits for the branch to be ready, then passes the branch name via connection parameters when creating the session, same flow as single-cluster.
+If the Primary cluster is not the Default cluster, a synchronization controller (`DbBranchSyncController`) runs on the Primary. It mirrors branch resources to the Default cluster and syncs the branch status back to the Primary. The CLI waits for the branch to be ready, then passes the branch name via connection parameters when creating the session, same flow as single-cluster.
 
 If the Primary cluster is also the Default cluster, no synchronization is required. The branching controllers operate locally on the Primary, and the flow is identical to single-cluster behavior.
 
@@ -86,11 +89,11 @@ If the Primary cluster is also the Default cluster, no synchronization is requir
 
 ## SQS Queue Splitting in Multi-Cluster
 
-[SQS queue splitting](queue-splitting.md) works seamlessly in multi-cluster sessions. Each Workload cluster handles queue splitting independently: its operator creates a temporary queue and patches the target workload locally, just as in single-cluster mode.
+[SQS queue splitting](queue-splitting.md) works the same way in multi-cluster as it does in single-cluster. The Primary cluster sends the queue splitting config to every child session during setup, and each Workload cluster creates its own temporary queues and patches the target workload on its own.
 
-During session setup, the Primary cluster operator propagates the SQS split configuration to every child session via connection parameters. This includes the sqs_output_queues mapping, ensuring that messages produced by your local application are routed to the correct cluster-specific output queues.
-
-Queue isolation happens independently in each Workload cluster, while configuration and coordination remain centralized through the Primary cluster.
+{% hint style="info" %}
+Create your `MirrordWorkloadQueueRegistry` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
+{% endhint %}
 
 ---
 
