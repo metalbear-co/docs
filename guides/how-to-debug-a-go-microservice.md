@@ -82,7 +82,7 @@ minikube service guestbook
 
 The above minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the tunnel to our microservice setup, our application architecture now looks like this.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.43.59 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-43-59-1.png)
 
 Once we run the minikube service command, we get the below output.
 
@@ -107,7 +107,7 @@ minikube service guestbook                           
 Now we have access to the Guestbook application on http://localhost:57485 as the above output says.
 Let’s access this URL from the browser.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.44.46 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-44-46-1.png)
 
 We have our staging application deployed now. Let’s run the microservice with mirrord now. This will allow us to run the local Golang application in the context of Kubernetes without having to build and deploy it over and over again for testing.
 
@@ -125,11 +125,11 @@ To get started, install mirrord in Goland.
 
 You can install the plugin by searching for the Plugin in the Plugins settings.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.47.32 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-47-32-1.png)
 
 After installing the plugin and restarting the IDE, a dialog box like the one below will appear.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.48.47 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-48-47-1.png)
 
 This dialogue box appears as mirrord is successfully installed. It contains the directions for how to use mirrord in the Goland IDE. Let’s set up the mirrord configuration.
 
@@ -137,11 +137,11 @@ This dialogue box appears as mirrord is successfully installed. It contains the 
 
 You will see a mirrord button and a dropdown menu in the top right corner of the screen.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.48.47 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-48-47-1.png)
 
 If you don’t already have a .mirrord/.mirrord.json configuration file for this application, you can create one using the Settings option in the plugin dropdown menu.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.48.47 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-48-47-1.png)
 
 Let’s update the new config file created and opened in the editor. The configuration below contains the target deployment from where we need to mirror the context. 
 
@@ -170,16 +170,16 @@ If you want to mirror traffic from a multipod deployment, you can learn more abo
 
 Choose the config by selecting the button above and setting it as the active config. Once that’s done, let’s add a “go build” run configuration like the one below.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 07.59.37 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-07-59-37-1.png)
 
 After adding the above configuration, let’s start the application without mirrord first to test if it runs well when not running with the Kubernetes context. 
 A disabled mirrord button will be shown with a slash in front of it if mirrord is disabled.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.00.53 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-00-53-1.png)
 
 Once we run the application without mirrord we can see that the guestbook fails because it can’t connect to a Redis instance, the application throws errors accordingly as well.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.01.46 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-01-46-1.png)
 
 It is failing to connect to a Redis instance. The Redis instance is running in our Kubernetes cluster.
 Let’s try running the application in the context of the Kubernetes cluster with mirrord.
@@ -188,16 +188,16 @@ Let’s try running the application in the context of the Kubernetes cluster wit
 
 Click the “mirrord” button to enable the mirrord plugin. A “mirrord enabled” notification will appear in the bottom-right corner of the screen.
 
-![alt text](how-to-debug-a-go-microservice/Group 3498.png)
+![alt text](how-to-debug-a-go-microservice/group-3498.png)
 
 Once mirrord is enabled, let’s run the application once again.
 Below you can see the successful run of the Guestbook application.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.03.46 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-03-46-1.png)
 
 As the application starts successfully, you should be able to access the Go application listening on http://localhost:3000 on your local machine. Let’s access the endpoint in the browser.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.13.46 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-13-46-1.png)
 
 We can see that this debuggable instance of Guestbook also has access to the stored notes in Redis which are reflected above the submit button. 
 
@@ -205,7 +205,7 @@ We can see that this debuggable instance of Guestbook also has access to the sto
 
 Now that we can run the application, let’s understand what our setup looks like with the mirrord-agent working with the target-impersonated Pod. The target impersonated Pod here is the Guestbook Pod.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.14.59 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-14-59-1.png)
 
 If you would like to learn more about how the mirrord-agent in the above architecture works, go check out the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture/#mirrord-agent).
 
@@ -213,16 +213,16 @@ We can now be sure that mirrord is working properly. 
 
 Moving forward, let’s set a debug breakpoint in the application and see how it runs. I want to put a breakpoint in the application every time I create a note with the Guestbook application. The below line of code is where I am going to put the breakpoint.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.16.39 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-16-39-1.png)
 
 Start debugging by pressing the debug button below.
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.17.26 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-17-26-1.png)
 
 From [http://localhost:8080](http://localhost:8080) create a new note and publish it.
 On the application run, you should hit the breakpoint as shown below:
 
-![alt text](how-to-debug-a-go-microservice/Screenshot 2024-12-20 at 08.18.54 1.png)
+![alt text](how-to-debug-a-go-microservice/screenshot-2024-12-20-at-08-18-54-1.png)
 
 We can debug the issue now as the breakpoint is hit.
 

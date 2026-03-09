@@ -80,7 +80,7 @@ minikube service ruby-app
 
 The above minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the tunnel to our microservice setup, our application architecture now looks like this.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.44.21 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-44-21-1.png)
 
 Once we run the minikube service command, we get the below output. 
 
@@ -105,7 +105,7 @@ minikube service guestbook                           
 Now we have access to the Guestbook application on http://localhost:57485 as the above output says.
 Let’s access this URL from the browser.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.46.45 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-46-45-1.png)
 
 We have our staging application deployed now. Let’s run the microservice with mirrord now. This will allow us to run the local Ruby application in the context of Kubernetes without having to build and deploy it over and over again for testing.
 
@@ -123,15 +123,15 @@ To get started, install mirrord in RubyMine.
 
 You can install the plugin by searching for the Plugin in the Plugins settings.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.52.35 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-52-35-1.png)
 
 Tip: When using the mirrord plugin on a macOS system, ensure that you are using RVM as the version manager for your Ruby binary, otherwise mirrord may not work correctly. mirrord is known not to work with RubyMine as is, we have to use rubies managed by RVM for this purpose due to SIP restrictions on macOS.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.54.14 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-54-14-1.png)
 
 After installing the plugin and restarting the IDE, a dialog box like the one below will appear.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.55.13 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-55-13-1.png)
 
 This dialogue box appears as mirrord is successfully installed. It contains the directions for how to use mirrord in the RubyMine IDE. Let’s set up the mirrord configuration.
 
@@ -139,11 +139,11 @@ This dialogue box appears as mirrord is successfully installed. It contains the 
 
 You will see a mirrord button and a dropdown menu in the top right corner of the screen.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 14.56.17 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-14-56-17-1.png)
 
 If you don’t already have a .mirrord/.mirrord.json configuration file for this application, you can create one using the Settings option in the plugin dropdown menu.
 
-![alt text](how-to-debug-a-ruby-microservice/Group 3473.png)
+![alt text](how-to-debug-a-ruby-microservice/group-3473.png)
 
 Let’s update the new config file created and opened in the editor. The configuration below contains the target deployment from where we need to mirror the context. 
 
@@ -173,11 +173,11 @@ If you want to mirror traffic from a multipod deployment, you can learn more abo
 After adding the above configuration from the step before, let’s start the application without mirrord first to test if it runs well when not running with the Kubernetes context. 
 A disabled mirrord button will be shown with a slash in front of it if mirrord is disabled.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.04.14 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-04-14-1.png)
 
 Once we run the application without mirrord we can see that the guestbook fails because it can’t connect to a Redis instance, the application throws errors accordingly as well.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.04.22 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-04-22-1.png)
 
 It is failing to connect to a Redis instance. The Redis instance is running in our Kubernetes cluster.
 Let’s try running the application in the context of the Kubernetes cluster with mirrord.
@@ -186,16 +186,16 @@ Let’s try running the application in the context of the Kubernetes cluster wit
 
 Click the “mirrord” button to enable the mirrord plugin. A “mirrord enabled” notification will appear in the bottom-right corner of the screen.
 
-![alt text](how-to-debug-a-ruby-microservice/Group 3498.png)
+![alt text](how-to-debug-a-ruby-microservice/group-3498.png)
 
 Once mirrord is enabled, let’s run the application once again. 
 Below you can see the successful run of the Guestbook application. Choose the ruby-app deployment as the target.
 
-![alt text](how-to-debug-a-ruby-microservice/Group 3510.png)
+![alt text](how-to-debug-a-ruby-microservice/group-3510.png)
 
 As the application starts successfully, you should be able to access the Ruby application listening on http://localhost:4567 on your local machine. Let’s access the endpoint in the browser.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.04.22 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-04-22-1.png)
 
 We can see that this debuggable instance of Guestbook also has access to the stored notes in Redis which are reflected above the submit button. 
 
@@ -203,7 +203,7 @@ We can see that this debuggable instance of Guestbook also has access to the sto
 
 Now that we can run the application, let’s understand our setup with the mirrord-agent working with the target-impersonated Pod. The target impersonated Pod here is the Guestbook Pod.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.04.22 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-04-22-1.png)
 
 If you would like to learn more about how the mirrord-agent in the above architecture works, go check out the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture/#mirrord-agent).
 
@@ -211,16 +211,16 @@ We can now be sure that mirrord is working properly.
 
 Moving forward, let’s set a debug breakpoint in the application and see how it runs. I want to put a breakpoint in the application every time I create a note with the Guestbook application. The below line of code is where I am going to put the breakpoint.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.13.27 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-13-27-1.png)
 
 Start debugging by pressing the debug button below.
 
-![alt text](how-to-debug-a-ruby-microservice/Screenshot 2024-12-18 at 15.13.42 1.png)
+![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-13-42-1.png)
 
 From [http://localhost:4567](http://localhost:4567) create a new guestbook entry and publish it.
 On the application run, you should hit the breakpoint as shown below :
 
-![alt text](how-to-debug-a-ruby-microservice/image14 1.png)
+![alt text](how-to-debug-a-ruby-microservice/image14-1.png)
 
 We can debug the issue now as the breakpoint is hit.
 

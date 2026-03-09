@@ -67,7 +67,7 @@ minikube service php-guestbook
 
 
 The minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the tunnel to our microservice setup, our application architecture now looks like this. 
-![php application architecture](how-to-debug-a-php-microservice/Screenshot 2025-03-24 at 12.28.34 PM.png)
+![php application architecture](how-to-debug-a-php-microservice/screenshot-2025-03-24-at-12-28-34pm.png)
 
 
 
@@ -91,14 +91,14 @@ minikube service php-guestbook
 🎉  Opening service default/guestbook in default browser...
 ❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
 ```
-![guestbook application webpage](how-to-debug-a-php-microservice/Screenshot 2025-03-24 at 12.28.46 PM.png)
+![guestbook application webpage](how-to-debug-a-php-microservice/screenshot-2025-03-24-at-12-28-46pm.png)
 
 
 
 Now we have access to the Guestbook application on http://localhost:57485.
 Let’s access this URL from the browser.
 
-![console output](how-to-debug-a-php-microservice/Screenshot 2025-03-24 at 12.29.07 PM.png)
+![console output](how-to-debug-a-php-microservice/screenshot-2025-03-24-at-12-29-07pm.png)
 
 We have our staging application deployed now. Let’s run the microservice with mirrord next. This will allow us to run the local PHP application in the context of Kubernetes without having to build and deploy it over and over again for testing. 
 ## Debug in the CLI with php and mirrord
@@ -112,7 +112,7 @@ php -S localhost:8080 -t src/
 
 On the run above we can see that the application run fails because this local execution doesn’t have access to the Redis instance running inside the Kubernetes cluster we have created. 
 
-![guestbook application failure](how-to-debug-a-php-microservice/Screenshot 2025-03-24 at 12.31.48 PM.png)
+![guestbook application failure](how-to-debug-a-php-microservice/screenshot-2025-03-24-at-12-31-48pm.png)
 
 The microservice needs access to the “redis” service hosted on the cluster. To run the PHP microservice with Kubernetes, we can use the mirrord CLI tool.
 
@@ -156,7 +156,7 @@ You should see the following output which will let you know that the guestbook h
 
 The target impersonated Pod here is the Guestbook Pod. In this diagram, you can see how mirrord allows the user to use the mirrord-agent Pod as the execution context.
 
-![application diagram with mirrord](how-to-debug-a-php-microservice/Screenshot 2025-03-24 at 12.32.04 PM.png)
+![application diagram with mirrord](how-to-debug-a-php-microservice/screenshot-2025-03-24-at-12-32-04pm.png)
 
 After you have run the guestbook program with mirrord you should be able to make your changes and rerun the service as necessary. You can even run the program in debug mode and attach a debugger if required.
 

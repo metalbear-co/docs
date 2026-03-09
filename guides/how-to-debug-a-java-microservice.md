@@ -88,11 +88,11 @@ minikube service knote
 
 Once the above command runs, we will have access to the knote application on [http://localhost:52030](http://localhost:52030) as you can see above.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.00.06 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-00-06-1.png)
 
 The above minikube service command automatically sets up a port forwarding session to the specified service and opens it in the default web browser. With the port-forward to our microservice setup, our application architecture now looks like this:
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.01.10 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-01-10-1.png)
 
 Now that we have our application running in Kubernetes, let’s run the microservice with mirrord without having to deploy it on the Kubernetes cluster.
 
@@ -108,21 +108,21 @@ The application in question is knote, a simple note taking app written in Spring
 
 To get started, install mirrord in IntelliJ IDEA.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.04.02 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-04-02-1.png)
 
 After installing the plugin and restarting the IDE, a dialog box like the one below will appear.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.04.48 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-04-48-1.png)
 
 You will see a mirrord button and a dropdown menu in the top right corner of the screen.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.05.00 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-05-00-1.png)
 
 #### mirrord configuration
 
 If you don’t already have a .mirrord/.mirrord.json configuration file for this application, you can create one using the Settings option in the plugin dropdown menu.
 
-![alt text](how-to-debug-a-java-microservice/Group 3473.png)
+![alt text](how-to-debug-a-java-microservice/group-3473.png)
 
 As a new config file is opened up in your editor, you can update the contents of the file to the ones below so that you choose the knote pod deployed to the default namespace as your mirrord target. This will ensure that your mirrord debug process will run in the context of the knote deployment.
 
@@ -147,32 +147,32 @@ If you want to mirror traffic from a multipod deployment, you can learn more abo
 
 #### Testrun without mirrord enabled
 
-![alt text](how-to-debug-a-java-microservice/Group 3474.png)
+![alt text](how-to-debug-a-java-microservice/group-3474.png)
 
 Choose the config we just updated as the active configuration by selecting the button above and setting it as the active config. Once that’s done, start the application with mirrord and see if it works in the context of the cluster. We should be able to create notes in the application.
 
 To demonstrate that the knote fails when running in the context of its dependencies, we are going to build and run the application locally from the IDE by pressing the “play” button in the top right corner of the IDE which is visible below. The dependencies in question here are the Kubernetes Pod where knote is deployed.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.17.57 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-17-57-1.png)
 
 After running the above command you should see that the application fails to start because it’s not able to connect to the “minio” or “mongo” Services.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-02 at 20.18.51 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-02-at-20-18-51-1.png)
 
 2. **Execution with the mirrord plugin**
 
 Click the “mirrord” button to enable it. You’ll see a “mirrord enabled” notification in the bottom-right corner of your screen.
 
-![alt text](how-to-debug-a-java-microservice/Group 3498.png)
+![alt text](how-to-debug-a-java-microservice/group-3498.png)
 
 Once mirrord is enabled, let’s run the application once again.  
 Below you can see the successful run of the knote application.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.40.15 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-40-15-1.png)
 
 As the application starts successfully, you should be able to access the java application listening on the [http://localhost:8080](http://localhost:8080) on your local machine. Let’s access the endpoint in the browser.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.42.08 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-42-08-1.png)
 
 We can see that this debuggable instance of knote also has access to the stored notes in the mongodb database which is reflected under the Notes section of the application. The application has been exposed on 8080 because Springboot sees that port 80 on the Pod is already bound and the next best port (8080) has been picked by Springboot to expose this application. If this application were running locally with all dependencies satisfied and nothing listening on port 80, it would be exposed on port 80 itself.
 
@@ -180,7 +180,7 @@ We can see that this debuggable instance of knote also has access to the stored 
 
 Now that we are able to run the application, let’s understand what our setup looks like with the mirrord-agent working with the target impersonated Pod. The target impersonated Pod here is the knote Pod.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.43.53 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-43-53-1.png)
 
 If you would like to learn more about how the mirrord-agent in the above architecture works, go checkout the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture/#mirrord-agent).
 
@@ -188,16 +188,16 @@ We can now be sure that mirrord is working properly.
 
 Moving forward, let’s set a debug breakpoint in the application and see how it runs. I want to put a breakpoint in the application every time I create a note with the knote application. The below line of code is where I am going to put the breakpoint.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.44.44 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-44-44-1.png)
 
 Start debugging by pressing the debug button below.
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.46.47 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-46-47-1.png)
 
 From [http://localhost:8080](http://localhost:8080) create a new note and publish it.  
 On the application run, you should hit the breakpoint as shown below:
 
-![alt text](how-to-debug-a-java-microservice/Screenshot 2024-12-03 at 08.47.16 1.png)
+![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-47-16-1.png)
 
 We can debug the issue now as the breakpoint is hit.
 
