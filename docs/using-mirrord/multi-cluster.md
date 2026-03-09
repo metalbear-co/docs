@@ -69,6 +69,18 @@ If the Primary cluster only orchestrates and doesn't run application workloads, 
 
 ---
 
+## Access Control
+
+In multi-cluster mode, users only need access to the operator API on the **Primary cluster**. The Primary operator connects to remote clusters using its own credentials, so users don't need any RBAC on remote clusters. The per-target permission check does not apply in multi-cluster — if a user can reach the Primary operator, they can target workloads on any connected cluster.
+
+To restrict what users can do per target, use [MirrordPolicy](../sharing-the-cluster/policies.md) resources on each cluster.
+
+{% hint style="warning" %}
+Access to the Primary operator API grants the ability to target workloads across all connected clusters. Use `MirrordPolicy` to limit operations per target.
+{% endhint %}
+
+---
+
 ## Session Lifecycle
 
 When the developer runs `mirrord exec`, the CLI connects to the Primary cluster and creates a single parent session. The Primary operator then creates child sessions on each workload cluster. From the perspective of each Workload cluster, each child session behaves exactly like a regular single-cluster session: the operator resolves the target, spawns an agent, and handles the traffic interception.
