@@ -67,7 +67,7 @@ service/redis created
 
 
 Once the above is deployed, our application architecture now looks like this:
-<img src=".gitbook/assets/dotnet-debug-images/Screenshot 2026-02-04 at 10.34.53.png" alt="dotnet application architecture" class="img-fluid">
+<img src="dotnet-debug-images/Screenshot 2026-02-04 at 10.34.53.png" alt="dotnet application architecture" class="img-fluid">
 
 - A `dotnet-guestbook` Deployment running an ASP.NET Core web server on port 8080
 - A `redis` Deployment running Redis on port 6379
@@ -88,7 +88,7 @@ dotnet run --project src
 
 On the run above we can see that the application run fails because this local execution doesn't have access to the Redis instance running inside the Kubernetes cluster we have created.
 
-<img src=".gitbook/assets/dotnet-debug-images/dotnet_run_failure.png" alt="guestbook application failure" class="img-fluid">
+<img src="dotnet-debug-images/dotnet_run_failure.png" alt="guestbook application failure" class="img-fluid">
 
 The microservice needs access to the "redis" service hosted on the cluster. To run the .NET microservice in the context of the Kubernetes cluster, we can use mirrord.
 
@@ -127,7 +127,7 @@ The `-f mirrord.json` flag points to the mirrord configuration file which specif
 
 You should see the following output which will let you know that the Guestbook has started in debug mode.
 
-<img src=".gitbook/assets/dotnet-debug-images/mirrord_exec_success.png" alt="mirrord exec success" class="img-fluid">
+<img src="dotnet-debug-images/mirrord_exec_success.png" alt="mirrord exec success" class="img-fluid">
 
 The target impersonated Pod here is the Guestbook Pod. mirrord lets your local process use the mirrord-agent Pod as its *execution context*—meaning your app gets the same environment variables, file system, and network identity as if it were running inside that Pod in the cluster.
 
@@ -150,12 +150,12 @@ To get started, install mirrord in VSCode.
 ### Extension installation
 
 You can install the plugin by searching for mirrord in the extensions.
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.00.07 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.00.07 PM.png)
 
 
 After mirrord is installed, you will see a mirrord button in the bottom left corner of your VSCode instance.
 
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.00.36 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.00.36 PM.png)
 
 
 ### mirrord configuration
@@ -180,7 +180,7 @@ If you want to steal traffic from a multipod deployment, you can learn more abou
 
 To ensure that the configuration file created is read by the VS Code mirrord extension, hover over the mirrord button we mentioned earlier and press the 'Select active config' option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
 
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.01.35 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.01.35 PM.png)
 
 
 Once the active configuration is selected, we can start using mirrord with VS Code.
@@ -197,7 +197,7 @@ Enable the mirrord plugin by clicking on the mirrord button in the bottom left c
 
 
 
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.07.05 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.07.05 PM.png)
 
 
 
@@ -210,7 +210,7 @@ dotnet restore
 After that, let's Run and Debug our application with mirrord by selecting **Run and Debug** from the Run and Debug tab.
 
 
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.04.51 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.04.51 PM.png)
 
 
 
@@ -218,7 +218,7 @@ After that, let's Run and Debug our application with mirrord by selecting **Run 
 Upon choosing the .NET Pod as the target, you can see logs similar to the ones below with the .NET app, call stack and the terminal for debugging starting successfully. 
 
 
-<img src=".gitbook/assets/dotnet-debug-images/Screenshot 2026-02-04 at 9.15.16.png" alt="alt text" class="img-fluid">
+<img src="dotnet-debug-images/Screenshot 2026-02-04 at 9.15.16.png" alt="alt text" class="img-fluid">
 
 
 
@@ -226,7 +226,7 @@ Once the app is running with the mirrord extension, access it on `localhost:8080
 
 
 
-![alt text](.gitbook/assets/how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.08.41 PM.png)
+![alt text](how-to-debug-a-dotnet-microservice/Screenshot 2025-02-21 at 7.08.41 PM.png)
 
 
 Now, let's debug the application with mirrord.
@@ -239,7 +239,7 @@ We can now be sure that mirrord is working properly.
 Let's set a debug breakpoint in the application and see how it runs. I want to put a breakpoint in the application every time I create a note with the Guestbook application. The below line of code is where I am going to put the breakpoint.
 
 
-<img src=".gitbook/assets/dotnet-debug-images/Screenshot 2026-02-04 at 9.21.35.png" alt="alt text" class="img-fluid">
+<img src="dotnet-debug-images/Screenshot 2026-02-04 at 9.21.35.png" alt="alt text" class="img-fluid">
 
 
 
@@ -247,7 +247,7 @@ From http://localhost:8080, try publishing a new entry to the guestbook, which w
 
 You should hit the breakpoint as shown below:
 
-<img src=".gitbook/assets/dotnet-debug-images/debug.gif" alt="debug breakpoint hit" class="img-fluid">
+<img src="dotnet-debug-images/debug.gif" alt="debug breakpoint hit" class="img-fluid">
 
 We can debug the issue now as the breakpoint is hit.
 
