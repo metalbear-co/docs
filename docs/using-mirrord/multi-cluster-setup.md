@@ -2,7 +2,7 @@
 title: "Multi-Cluster Setup"
 ---
 
-This guide covers how to set up multi-cluster mirrord. It involves installing the operator on all clusters, choosing an authentication method, and configuring the Primary cluster to connect to remote clusters.
+This guide covers how to set up multi-cluster mirrord. It involves installing the operator on all clusters, choosing an authentication method, and configuring the Primary cluster to connect to downstream clusters.
 
 ## Prerequisites
 
@@ -16,11 +16,11 @@ Before you start, make sure you have:
 
 ## Authentication Methods
 
-For each remote cluster, you must specify an `authType` that determines how the Primary mirrord operator authenticates to it.
+For each downstream cluster, you must specify an `authType` that determines how the Primary mirrord operator authenticates to it.
 
 ### Bearer Token (`authType: bearerToken`)
 
-Uses ServiceAccount tokens that are automatically refreshed via the Kubernetes TokenRequest API. Good for most setups where the Primary cluster can reach the remote cluster's API server.
+Uses ServiceAccount tokens that are automatically refreshed via the Kubernetes TokenRequest API. Good for most setups where the Primary cluster can reach the downstream cluster's API server.
 
 You generate an initial token manually during setup. After that, the operator auto-refreshes the token before it expires using the TokenRequest API. The refreshed token keeps the same lifetime as the original.
 
@@ -28,7 +28,7 @@ You generate an initial token manually during setup. After that, the operator au
 
 For AWS EKS clusters. The Primary operator generates short-lived tokens using its IAM role (via IRSA). No secrets to manage - tokens are generated and refreshed automatically every 10 minutes.
 
-On the Primary cluster, the operator pod gets AWS credentials through IRSA (`sa.roleArn`). It uses those credentials to generate a presigned STS URL, which is sent to the remote cluster as a bearer token. The remote EKS cluster validates the token with AWS STS, then maps the IAM role to a Kubernetes group via an [Access Entry](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html). Kubernetes RBAC on the remote cluster grants permissions to that group.
+On the Primary cluster, the operator pod gets AWS credentials through IRSA (`sa.roleArn`). It uses those credentials to generate a presigned STS URL, which is sent to the downstream cluster as a bearer token. The downstream EKS cluster validates the token with AWS STS, then maps the IAM role to a Kubernetes group via an [Access Entry](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html). Kubernetes RBAC on the downstream cluster grants permissions to that group.
 
 No Kubernetes Secret is needed - authentication is entirely through IAM.
 
@@ -51,16 +51,16 @@ Kubernetes does not auto-refresh mTLS client certificates. You are responsible f
 
 ---
 
-## Setting Up Remote Clusters
+## Setting Up Downstream Clusters
 
-Every remote cluster needs the mirrord operator installed with the `operator.multiClusterMember` helm chart value set to `true`. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
+Every downstream cluster needs the mirrord operator installed with the `operator.multiClusterMember` helm chart value set to `true`. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
 
 ### Bearer Token / mTLS Clusters
 
 {% stepper %}
 {% step %}
 
-### Install the operator on the remote cluster
+### Install the operator on the downstream cluster
 
 ```bash
 helm install mirrord-operator metalbear/mirrord-operator \
@@ -87,21 +87,21 @@ For mTLS, skip this step. Instead, you'll provide the client certificate and key
 
 ### EKS IAM Clusters
 
-EKS IAM authentication lets the Primary operator authenticate to remote EKS clusters using its AWS IAM role. No Kubernetes Secrets to manage — the operator generates short-lived tokens from its IAM identity.
+EKS IAM authentication lets the Primary operator authenticate to downstream EKS clusters using its AWS IAM role. No Kubernetes Secrets to manage — the operator generates short-lived tokens from its IAM identity.
 
 #### How EKS IAM Authentication Works
 
-The Primary operator pod needs to talk to remote EKS clusters. To do that, it needs a token. Here's how the token gets created and accepted:
+The Primary operator pod needs to talk to downstream EKS clusters. To do that, it needs a token. Here's how the token gets created and accepted:
 
 1. **The pod gets AWS credentials** — the `sa.roleArn` annotation on the Primary operator's ServiceAccount tells EKS to inject AWS credentials into the pod via IRSA. Now the pod can act as that IAM role.
 
 2. **The pod creates a token** — the operator uses those AWS credentials to generate a presigned `GetCallerIdentity` STS URL. This URL is used as a Kubernetes bearer token that EKS understands.
 
-3. **The remote cluster validates the token** — when the remote EKS cluster receives this token, it calls AWS STS to verify the identity. AWS responds: "This is IAM role X."
+3. **The downstream cluster validates the token** — when the downstream EKS cluster receives this token, it calls AWS STS to verify the identity. AWS responds: "This is IAM role X."
 
-4. **EKS maps the IAM role to a Kubernetes group** — the Access Entry on the remote cluster maps that IAM role to a Kubernetes group (e.g. `mirrord-operator-envoy`). Now the operator is authenticated as a member of that group.
+4. **EKS maps the IAM role to a Kubernetes group** — the Access Entry on the downstream cluster maps that IAM role to a Kubernetes group (e.g. `mirrord-operator-envoy`). Now the operator is authenticated as a member of that group.
 
-5. **Kubernetes RBAC grants permissions** — the ClusterRoleBindings on the remote cluster (created by Helm with `multiClusterMemberIamGroup`) grant the `mirrord-operator-envoy` group the necessary permissions.
+5. **Kubernetes RBAC grants permissions** — the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberIamGroup`) grant the `mirrord-operator-envoy` group the necessary permissions.
 
 #### What Goes Where
 
@@ -110,11 +110,11 @@ The Primary operator pod needs to talk to remote EKS clusters. To do that, it ne
 | OIDC Identity Provider | Primary cluster (AWS) | Enables IRSA so the pod can assume an IAM role |
 | IAM role + trust policy | AWS IAM | The identity the operator pod assumes. Has no AWS permissions — only used as a Kubernetes identity |
 | `sa.roleArn` in Helm | Primary cluster | Annotates the operator's ServiceAccount so the pod gets AWS credentials for the IAM role |
-| Access Entry | Each remote EKS cluster (AWS) | Maps the IAM role to a Kubernetes group. Created via `aws eks create-access-entry` |
-| `multiClusterMemberIamGroup` in Helm | Each remote cluster | Creates ClusterRoleBindings that grant permissions to the Kubernetes group |
+| Access Entry | Each downstream EKS cluster (AWS) | Maps the IAM role to a Kubernetes group. Created via `aws eks create-access-entry` |
+| `multiClusterMemberIamGroup` in Helm | Each downstream cluster | Creates ClusterRoleBindings that grant permissions to the Kubernetes group |
 
 {% hint style="info" %}
-The Primary cluster does **not** need an Access Entry. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount — no IAM token needed. The Access Entries are only needed on remote clusters where the pod authenticates from the outside.
+The Primary cluster does **not** need an Access Entry. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount — no IAM token needed. The Access Entries are only needed on downstream clusters where the pod authenticates from the outside.
 {% endhint %}
 
 #### Setup Steps
@@ -170,21 +170,21 @@ aws eks describe-cluster --name <PRIMARY_CLUSTER_NAME> --region <REGION> \
 ```
 
 {% hint style="info" %}
-This IAM role does **not** need any IAM policies attached (no `s3:*`, `sqs:*`, etc.). It has zero AWS permissions. All actual permissions come from Kubernetes RBAC on the remote clusters. The role is only used as an identity.
+This IAM role does **not** need any IAM policies attached (no `s3:*`, `sqs:*`, etc.). It has zero AWS permissions. All actual permissions come from Kubernetes RBAC on the downstream clusters. The role is only used as an identity.
 {% endhint %}
 
 {% endstep %}
 {% step %}
 
-### Create an EKS Access Entry on each remote cluster
+### Create an EKS Access Entry on each downstream cluster
 
-This is an AWS-level configuration (not a Kubernetes resource). It tells each remote EKS cluster: "When this IAM role authenticates, map it to the `mirrord-operator-envoy` Kubernetes group."
+This is an AWS-level configuration (not a Kubernetes resource). It tells each downstream EKS cluster: "When this IAM role authenticates, map it to the `mirrord-operator-envoy` Kubernetes group."
 
-Run this for **each remote EKS cluster**:
+Run this for **each downstream EKS cluster**:
 
 ```bash
 aws eks create-access-entry \
-  --cluster-name <REMOTE_CLUSTER_NAME> \
+  --cluster-name <DOWNSTREAM_CLUSTER_NAME> \
   --principal-arn arn:aws:iam::<ACCOUNT_ID>:role/<IAM_ROLE_NAME> \
   --type STANDARD \
   --kubernetes-groups mirrord-operator-envoy
@@ -195,7 +195,7 @@ The Access Entry itself doesn't grant any Kubernetes permissions — it only est
 {% endstep %}
 {% step %}
 
-### Install the operator on each remote cluster
+### Install the operator on each downstream cluster
 
 Install the operator with `multiClusterMember` and `multiClusterMemberIamGroup`:
 
@@ -219,7 +219,7 @@ sa:
   roleArn: "arn:aws:iam::<ACCOUNT_ID>:role/<IAM_ROLE_NAME>"
 ```
 
-This annotates the operator's ServiceAccount with `eks.amazonaws.com/role-arn`. When the pod starts, EKS injects AWS credentials into the pod automatically. The operator uses these credentials to generate tokens for each remote cluster.
+This annotates the operator's ServiceAccount with `eks.amazonaws.com/role-arn`. When the pod starts, EKS injects AWS credentials into the pod automatically. The operator uses these credentials to generate tokens for each downstream cluster.
 
 See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) section below for the full Helm values.
 
@@ -230,7 +230,7 @@ See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) sect
 
 ## Configuring the Primary Cluster
 
-Install the operator on the Primary cluster with multi-cluster enabled and all remote clusters configured.
+Install the operator on the Primary cluster with multi-cluster enabled and all downstream clusters configured.
 
 ### Helm Values
 
@@ -249,7 +249,7 @@ operator:
     # Set to true if the Primary cluster has no workloads
     managementOnly: false
 
-    # Remote cluster configuration
+    # Downstream cluster configuration
     # Each key should match the real cluster name
     clusters:
       # Bearer token authentication
@@ -333,7 +333,7 @@ EKS IAM clusters do not need a Secret at all. They authenticate using the operat
 
 ## RBAC — How Permissions Work
 
-When the Primary operator connects to a remote cluster, it needs permissions to list targets, create sessions, run health checks, and more. These permissions are set up automatically by the Helm chart on each remote cluster.
+When the Primary operator connects to a downstream cluster, it needs permissions to list targets, create sessions, run health checks, and more. These permissions are set up automatically by the Helm chart on each downstream cluster.
 
 The chart creates two ClusterRoles (permission definitions):
 
@@ -355,14 +355,14 @@ For EKS IAM, the Access Entry maps the IAM role to the `mirrord-operator-envoy` 
 
 In practice:
 
-- **Bearer token / mTLS remote**: `multiClusterMember=true`
-- **EKS IAM remote**: `multiClusterMember=true` + `multiClusterMemberIamGroup=mirrord-operator-envoy`
+- **Bearer token / mTLS downstream cluster**: `multiClusterMember=true`
+- **EKS IAM downstream cluster**: `multiClusterMember=true` + `multiClusterMemberIamGroup=mirrord-operator-envoy`
 
 ---
 
 ## Verify the Connection
 
-After installing the operator on all clusters, verify that the Primary can reach all remote clusters:
+After installing the operator on all clusters, verify that the Primary can reach all downstream clusters:
 
 ```bash
 kubectl --context <PRIMARY_CLUSTER> get mirrordoperators operator -o yaml
@@ -402,19 +402,19 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 ## FAQ
 
 **Q: Do developers need to know about multi-cluster?**
-A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything. Note that multi-cluster sessions only work when the developer connects to the Primary cluster — connecting directly to a remote cluster will start a regular single-cluster session on that cluster.
+A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything. Note that multi-cluster sessions only work when the developer connects to the Primary cluster — connecting directly to a downstream cluster will start a regular single-cluster session on that cluster.
 
 **Q: Can the Primary cluster also run workloads?**
 A: Yes. By default, the Primary cluster participates as a workload cluster. Set `managementOnly: true` only if the Primary has no application pods.
 
-**Q: What happens if a remote cluster is unreachable?**
+**Q: What happens if a downstream cluster is unreachable?**
 A: The session creation will fail. The operator reports connection errors in the `MirrordOperator` status (see Verify the Connection above).
 
 **Q: Can I mix authentication methods?**
-A: Yes. Each remote cluster can use a different `authType`. You can have some clusters using bearer tokens, others using EKS IAM, and others using mTLS.
+A: Yes. Each downstream cluster can use a different `authType`. You can have some clusters using bearer tokens, others using EKS IAM, and others using mTLS.
 
 **Q: Do I need the same operator version on all clusters?**
 A: It's recommended. Version mismatches may cause compatibility issues.
 
 **Q: Does the IAM role need AWS permissions?**
-A: No. The IAM role used for EKS IAM authentication has zero AWS permissions. It's only used as an identity. All actual permissions come from Kubernetes RBAC on the remote clusters via the Access Entry and ClusterRoleBindings.
+A: No. The IAM role used for EKS IAM authentication has zero AWS permissions. It's only used as an identity. All actual permissions come from Kubernetes RBAC on the downstream clusters via the Access Entry and ClusterRoleBindings.

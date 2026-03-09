@@ -71,7 +71,7 @@ If the Primary cluster only orchestrates and doesn't run application workloads, 
 
 ## Access Control
 
-In multi-cluster mode, users only need access to the operator API on the **Primary cluster**. The Primary operator connects to remote clusters using its own credentials, so users don't need any RBAC on remote clusters. The per-target permission check does not apply in multi-cluster — if a user can reach the Primary operator, they can target workloads on any connected cluster.
+In multi-cluster mode, users only need access to the operator API on the **Primary cluster**. The Primary operator connects to downstream clusters using its own credentials, so users don't need any RBAC on downstream clusters. The per-target permission check does not apply in multi-cluster — if a user can reach the Primary operator, they can target workloads on any connected cluster.
 
 To restrict what users can do per target, use [MirrordPolicy](../sharing-the-cluster/policies.md) resources on each cluster.
 
