@@ -46,3 +46,17 @@ redirects:
   coming-soon/preview-env: use-cases/preview-environments
   using-mirrord/preview-environments: sharing-the-cluster/preview-environments
   using-mirrord/preview-environments-in-ci: sharing-the-cluster/preview-environments-in-ci
+
+  # Top 404 URLs from production logs (Mar 2026)
+  reference/configuration: config/options
+  "reference/configuration#root-target": config/options#target
+  guides: guides
+  guides/how-to-debug-a-java-microservice: guides/how-to-debug-a-java-microservice
+  guides/how-to-debug-a-kotlin-microservice: guides/how-to-debug-a-kotlin-microservice
+  guides/how-to-debug-a-go-microservice: guides/how-to-debug-a-go-microservice
+  guides/how-to-debug-a-ruby-microservice: guides/how-to-debug-a-ruby-microservice
+  installation: installing-mirrord
+  using-mirrord-with-ai/the-meta-prompt: using-mirrord-with-ai#generating-the-setup-with-a-meta-prompt
+  readme/introduction: welcome
+  overview/configuration: config
+  overview/operator: managing-mirrord/operator
