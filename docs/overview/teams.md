@@ -38,6 +38,5 @@ The following functionality is currently available in mirrord for Teams that isn
 - **Concurrent use** - mirrord for Teams includes various features that allow your entire team to work on a shared environment without conflicts.
 - **Better security and RBAC** - with the mirrord Operator, users no longer need permissions to create privileged pods - only the Operator does. In addition, permissions can be managed within Kubernetes to allow or prevent users from impersonating specific targets.
 - **Advanced features** - support for new resource types like Jobs and StatefulSets, multi-pod deployments, and more.
-- **[Dashboard](/docs/managing-mirrord/admin-dashboard)** - a web-based interface for monitoring mirrord usage, sessions, and adoption trends across your organization. [Try the live playground](https://playground.metalbear.dev/dashboard/).
 
 For the full list of features, see the mirrord for Teams [pricing page](https://metalbear.com/mirrord/pricing).
