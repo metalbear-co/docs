@@ -27,6 +27,10 @@ The Dashboard is currently in **early access**. Features and APIs may change. We
 This feature is available to users on the Enterprise pricing plan. See [Quick Start](#quick-start) below to enable it.
 {% endhint %}
 
+{% hint style="success" %}
+Want to see the dashboard in action? Check out our [live playground](https://playground.metalbear.dev/dashboard/).
+{% endhint %}
+
 | Dark mode | Light mode |
 |-----------|------------|
 | ![Dashboard - Dark Mode](admin-dashboard/images/dashboard-dark.png) | ![Dashboard - Light Mode](admin-dashboard/images/dashboard-light.png) |
