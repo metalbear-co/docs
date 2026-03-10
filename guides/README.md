@@ -21,6 +21,7 @@ Debug microservices written in your language of choice, with IDE integration and
 | **Kotlin** | IntelliJ IDEA | [How to Debug Kotlin Microservices](how-to-debug-a-kotlin-microservice.md) |
 | **Ruby** | RubyMine | [How to Debug Ruby Microservices](how-to-debug-a-ruby-microservice.md) |
 | **PHP** | CLI | [How to Debug PHP Microservices](how-to-debug-a-php-microservice.md) |
+| **Python** | VS Code | [How to Debug Python Microservices](how-to-debug-a-python-microservice.md) |
 | **.NET** | VS Code | [How to Debug .NET Microservices](how-to-debug-a-dotnet-microservice.md) |
 
 ## Queue Guides

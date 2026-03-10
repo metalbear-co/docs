@@ -10,6 +10,7 @@
 * [Kotlin](how-to-debug-a-kotlin-microservice.md)
 * [Ruby](how-to-debug-a-ruby-microservice.md)
 * [PHP](how-to-debug-a-php-microservice.md)
+* [Python](how-to-debug-a-python-microservice.md)
 * [.NET](how-to-debug-a-dotnet-microservice.md)
 
 ## Queue Guides
