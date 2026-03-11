@@ -2,7 +2,9 @@
 
 This repo contains the source for the [mirrord docs site](https://metalbear.com/mirrord/docs) Documentation tab. It uses [GitBook](https://gitbook.com/) to generate documentation from markdown.
 
-> **NOTE** that the mirrord docs' Configuration tab is not governed by this repo, but by [its own separate repo](https://github.com/metalbear-co/docs-configuration). Changes made to `./docs/reference/configuration.md` are ignored. The Changelog tab also has [a separate repo](https://github.com/metalbear-co/docs-changelog), and is updated automatically by CI.
+> **NOTE** that the mirrord docs' Configuration tab is not governed by this repo, but by [the mirrord repo docs branch](https://github.com/metalbear-co/mirrord/tree/docs) and is updated automatically by mirrord's release workflow.
+
+> The Changelog tab also has [a separate repo](https://github.com/metalbear-co/docs-changelog), and is also updated automatically by CI.
 
 ### Structure
 
@@ -10,7 +12,7 @@ The root of the GitBook docs is `./docs`, as defined in `.gitbook.yaml`. See [th
 
 ### Development
 
-**When you open a PR with changes**, GitBook will publish a preview and display the link under the `Checks` section at the bottom of the page that will show your changes - it does so via the [GitBook bot](https://github.com/gitbook-bot) installed in this repo. Use the preview labelled "*GitBook - metalbear.com*".
+**When you open a PR with changes**, GitBook will publish a preview and display the link under the `Checks` section at the bottom of the page that will show your changes - it does so via the [GitBook bot](https://github.com/gitbook-bot) installed in this repo. Use the preview labeled "*GitBook - metalbear.com*".
 
 Changes to **content and basic structure** are possible in the repo, and other changes must be made via the [GitBook platform](https://app.gitbook.com). To do so, you will need access to the MetalBear organisation.
 
