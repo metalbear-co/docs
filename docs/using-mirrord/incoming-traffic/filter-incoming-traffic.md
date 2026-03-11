@@ -15,9 +15,9 @@ tags:
 description: Steal a subset of incoming traffic using HTTP header, path, or method filters
 ---
 
-By default, mirrord mirrors **all** incoming traffic into the remote target, and sends a copy to your local process. But in most cases, you don’t need *every* request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment. 
+By default, mirrord mirrors **all** traffic coming into the remote target, and sends a copy to your local process. But in most cases, you don’t need _every_ request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment.
 
-[AI agents using mirrord](../../using-mirrord-with-ai/README.md) can also take advantage of the same mechanism by setting filters, allowing them to safely target and test only the requests relevant to the changes they’re working on. This way both developers and autonomous AI agents can safely test using the same shared Kubernetes environment.
+[AI agents using mirrord](../../using-mirrord-with-ai/README.md) can also take advantage of the same mechanism by setting filters, allowing them to safely target and test only the requests relevant to the changes they’re working on. This way any number of AI agents can concurrently test their code using the same shared Kubernetes environment.
 
 Filtering is the same idea whether you’re mirroring or stealing. Declare which HTTP requests you care about, and only those will be delivered to your local process. The difference is what happens to the original request:
 
@@ -138,7 +138,6 @@ To avoid filtering requests sent to URIs starting with "/health/", you can set t
 This is common in APIs where different methods on the same endpoint serve different purposes (e.g., `GET /api/items` vs. `POST /api/items`).
 If you filter only by path, you might capture a large amount of traffic unintentionally. For example, if your goal is to intercept only `POST` and `PUT` requests while excluding `GET` requests that use the same path, you can apply a method filter like this:
 
-
 ```json
 {
   "feature": {
@@ -146,7 +145,7 @@ If you filter only by path, you might capture a large amount of traffic unintent
       "incoming": {
         "mode": "steal", // can also be "mirror"
         "http_filter": {
-          "method_filter": ["POST","PUT"]
+          "method_filter": ["POST", "PUT"]
         }
       }
     }
@@ -154,17 +153,19 @@ If you filter only by path, you might capture a large amount of traffic unintent
 }
 ```
 
-
 The `method_filter` is case-insensitive and supports all standard HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `CONNECT`, `OPTIONS`, `TRACE`, `PATCH`) as well as non-standard methods.
 
 ### Grouping Filters: Match All or Any
 
 You can group multiple simple filters together using the `all_of` or `any_of` fields:
-* `all_of`: the request must match all nested filters.
-* `any_of`: the request must match at least one nested filter.
-It has the following rules:
+
+- `all_of`: the request must match all nested filters.
+- `any_of`: the request must match at least one nested filter.
+  It has the following rules:
+
 1. Exactly one top-level filter, `http_filter` must contain exactly one of these fields: `header_filter`, `path_filter`, `method_filter`,`all_of`, `any_of`.
 2. Combinators must contain a non-empty array of nested filters, example:
+
 ```json
 "http_filter": {
   "all_of": [ // or "any_of"
@@ -173,7 +174,9 @@ It has the following rules:
   ]
 }
 ```
+
 3. Each nested filter (`header`, `path`, `method`) must contain exactly one value, example:
+
 ```json
 "http_filter": {
   "all_of": [

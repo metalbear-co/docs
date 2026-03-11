@@ -6,11 +6,11 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-AI coding models don’t have the full context of your application. The code they generate might look correct, but things often break once you try integrating it with the rest of your system.
+AI coding models don’t have the full context of your application — external dependencies, environment variables, and the way services interact in production. The code they generate might look correct in isolation, but things often break once you try integrating it with the rest of your system.
 
-If you're using tools like Claude Code, Cursor, or OpenAI Codex, mirrord lets you safely test AI-generated code in a real, production-like Kubernetes environment in seconds, instead of relying on mocks or waiting for CI/CD to reveal integration issues.
+If you're using tools like Claude Code, Cursor, or Codex, mirrord lets you safely test AI-generated code in a real, production-like Kubernetes environment in seconds, instead of relying on mocks or waiting for CI/CD to reveal integration issues.
 
-You can also configure AI agents to verify their own changes. By instructing them to use mirrord as part of their workflow, they can run code against a real environment, catch issues early, and iterate until the feature actually works end-to-end.
+Agents can even do this autonomously. By instructing them to use mirrord as part of their workflow, they can run code against a real environment, catch issues early, and iterate until the feature actually works end-to-end. They can even use mirrord to explore the staging environment before writing code, giving them better visibility into how things are configured and service dependencies so they write more accurate code to begin with.
 
 The workflow: the agent writes code, runs it with mirrord against the cluster, checks the result, and iterates. Feedback cycles drop from minutes to seconds.
 
@@ -198,7 +198,8 @@ As your services evolve, re-run the meta-prompt. New services get new configs an
 **Safety note**
 
 When working with AI agents and live Kubernetes environments:
+
 - Keep your AI assistant in approval mode so you can review changes before they run
 - Never target production clusters. Use staging or development environments only
 - Start with one service at a time until you're comfortable with the workflow
-{% endhint %}
+  {% endhint %}
