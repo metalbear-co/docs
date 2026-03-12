@@ -41,6 +41,8 @@
 * [Running Without a Target](using-mirrord/targetless.md)
 * [Copying a Target](using-mirrord/copy-target.md)
 * [Local Containers](using-mirrord/local-container.md)
+* [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
+  * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
 
 ## Sharing the Cluster
 
