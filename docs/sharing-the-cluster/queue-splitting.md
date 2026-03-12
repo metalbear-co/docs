@@ -604,12 +604,12 @@ Filter definition contains two fields:
 * `queue_type` — `SQS` or `Kafka`
 * `message_filter` — mapping from message attribute (SQS) or header (Kafka) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
-* `jq_filter` — supported only for `SQS`.
+* `jq_filter` — supported only for `queue_type` of `SQS`.
   It runs a jq program on the JSON representation of the SQS `Message` object, and a message matches if the jq program outputs `true`.
   This can be used to filter by message body content or by message attributes exposed through the SQS message JSON.
   See the [SQS `Message` object reference](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html).
 
-If both `message_filter` and `jq_filter` are specified for the same SQS queue, both must match.
+If both `message_filter` and `jq_filter` are specified for the same SQS queue, both must match for a message to be matched.
 
 {% hint style="info" %}
 When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
