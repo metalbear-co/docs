@@ -605,6 +605,10 @@ Filter definition contains two fields:
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
 
 {% hint style="info" %}
+When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code. If your framework does not support propagating the message attributes or headers you need for queue splitting, let us know and we might be able to help.
+{% endhint %}
+
+{% hint style="info" %}
 An empty `message_filter` is treated as a match-none directive.
 {% endhint %}
 
@@ -623,8 +627,8 @@ See example configurations below:
       "meme-queue": {
         "queue_type": "SQS",
         "message_filter": {
-          "author": "^me$",
-          "level": "^(beginner|intermediate)$"
+          "baggage": ".*mirrord-session=alice.*",
+          "tenant": "^(beginner|intermediate)$"
         }
       },
       "ad-queue": {
@@ -634,8 +638,8 @@ See example configurations below:
       "views-topic": {
         "queue_type": "Kafka",
         "message_filter": {
-          "author": "^me$",
-          "source": "^my-session-"
+          "baggage": ".*mirrord-session=alice.*",
+          "tenant": "^(beginner|intermediate)$"
         }
       }
     }
@@ -646,10 +650,10 @@ See example configurations below:
 In the example above, the local application:
 
 * Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
-  All received messages will have an attribute `author` with the value `me`, AND an attribute `level` with value either `beginner` or `intermediate`.
+  All received messages will have an SQS attribute `baggage` containing `mirrord-session=alice`, AND an attribute `tenant` with value either `beginner` or `intermediate`.
 * Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
 * Will receive a subset of messages from Kafka queue with ID `views-topic`.
-  All received messages will have an attribute `author` with the value `me`, AND an attribute `source` with value starting with `my-session-` (e.g `my-session-844cb78789-2fmsw`).
+  All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`, AND a header `tenant` with value either `beginner` or `intermediate`.
 
 {% endtab %}
 {% tab title="SQS with wildcard" %}
@@ -663,7 +667,7 @@ In the example above, the local application:
       "*": {
         "queue_type": "SQS",
         "message_filter": {
-          "author": "^me$",
+          "baggage": ".*mirrord-session=pr-123.*"
         }
       },
     }
@@ -672,7 +676,7 @@ In the example above, the local application:
 ```
 
 In the example above, the local application will receive a subset of message from **all** SQS queues described in the registry.
-All received messages will have an attribute `author` with the value `me`.
+All received messages will have an SQS attribute `baggage` containing `mirrord-session=pr-123`.
 `*` is a special queue ID for SQS queues, and resolves to all queues described in the registry.
 
 {% endtab %}

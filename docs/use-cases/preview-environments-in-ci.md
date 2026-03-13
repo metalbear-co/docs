@@ -45,22 +45,22 @@ Post a comment on the PR that includes:
 | Field | Example |
 |-------|---------|
 | **Preview URL** | `https://myapp.example.com` |
-| **Header** | `X-PG-Tenant: pr-123` |
+| **Header** | `baggage: mirrord-session=pr-123` |
 
 Also include instructions for reviewers:
 
 - Use the [mirrord Browser Extension](../using-mirrord/incoming-traffic/debug-from-browser.md) to set the header for the preview URL, or
-- Use `curl -H "X-PG-Tenant: pr-123" https://myapp.example.com/api/...`
+- Use `curl -H "baggage: mirrord-session=pr-123" https://myapp.example.com/api/...`
 
 **Best practice:** Find an existing comment (e.g. by a marker like `## mirrord Preview Environment`) and update it on each push, instead of creating a new comment every time. This keeps the PR tidy.
 
 ## Header Propagation for Backend Testing
 
-When your frontend calls a backend, and the backend calls other services (databases, APIs, queues), the preview header must be propagated so downstream traffic is routed correctly.
+When your frontend calls a backend, and the backend calls other services (databases, APIs, queues), the preview header must be propagated so downstream traffic is routed correctly. In many stacks, the best first step is to enable W3C context propagation in the observability or tracing library you already use, since most modern frameworks and OpenTelemetry-based integrations can forward `baggage` and `tracestate` automatically.
 
 ### 1. Configure the Header Filter in mirrord
 
-In your `mirrord-preview.json`, use `{{ key }}` in the HTTP filter so only requests with the matching header hit the preview pod:
+In your `mirrord-preview.json`, use `{{ key }}` in the W3C `baggage` header so only requests with the matching value hit the preview pod. This is usually better than inventing a custom header because existing tracing and proxy layers are more likely to preserve it:
 
 ```json
 {
@@ -77,7 +77,7 @@ In your `mirrord-preview.json`, use `{{ key }}` in the HTTP filter so only reque
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "header_filter": "X-PG-Tenant: {{ key }}"
+          "header_filter": "^baggage: .*mirrord-session={{ key }}.*"
         }
       }
     }
@@ -87,28 +87,30 @@ In your `mirrord-preview.json`, use `{{ key }}` in the HTTP filter so only reque
 
 ### 2. Propagate the Header in Your Application
 
-Read the header from the incoming request, store it in request context, and forward it on all outgoing calls:
+First, check whether your existing tracing or observability library can propagate W3C headers for you. If it can, prefer enabling that instead of adding custom propagation code.
 
-- **HTTP:** Add the header to outgoing `http.Request` objects.
-- **gRPC:** Add it to `metadata` in the outgoing context.
+If your stack does not already propagate these headers, read `baggage` from the incoming request, store the preview key in request context, and forward it on all outgoing calls:
+
+- **HTTP:** Add the `baggage` header to outgoing `http.Request` objects.
+- **gRPC:** Add `baggage` to `metadata` in the outgoing context.
 - **Kafka:** Add it to message headers.
 - **SQS:** Add it to message attributes.
 
-Example (Go with Gin): read `X-PG-Tenant`, set it in context, then add it to outgoing HTTP and gRPC calls:
+Example (Go with Gin): read `baggage`, set it in context, then add it to outgoing HTTP and gRPC calls:
 
 ```go
-tenant := c.GetHeader("x-pg-tenant")
-if tenant != "" {
-    c.Set("x-pg-tenant", tenant)
+baggage := c.GetHeader("baggage")
+if baggage != "" {
+    c.Set("baggage", baggage)
 }
 // Later, when making outgoing HTTP request:
-req.Header.Set("x-pg-tenant", tenant)
+req.Header.Set("baggage", baggage)
 // Or for gRPC:
-md := metadata.Pairs("x-pg-tenant", tenant)
+md := metadata.Pairs("baggage", baggage)
 ctx := metadata.NewOutgoingContext(c, md)
 ```
 
-If you don't propagate the header, downstream services won't know which preview environment the request belongs to, and traffic may not reach the correct preview pods.
+If you don't propagate `baggage`, downstream services won't know which preview environment the request belongs to, and traffic may not reach the correct preview pods. If your platform already routes on `tracestate`, the same pattern works there as well, and many tracing integrations can handle that automatically once propagation is enabled.
 
 ## mirrord Configuration
 

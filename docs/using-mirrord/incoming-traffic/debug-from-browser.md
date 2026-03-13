@@ -1,6 +1,6 @@
 ---
 title: "Debug from Browser"
-description: "Use the Chrome extension to route browser traffic to your local process"
+description: "Use the Chrome extension to route browser traffic to your local process with baggage or tracestate"
 date: 2024-07-07T09:39:44+01:00
 lastmod: 2026-02-03T00:00:00+00:00
 draft: false
@@ -11,7 +11,7 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-The mirrord Browser Extension injects custom HTTP headers into your browser requests. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
+The mirrord Browser Extension injects HTTP headers into your browser requests. The recommended setup is to inject W3C `baggage` or `tracestate` values, then use the same header in your mirrord traffic filter. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ The mirrord Browser Extension injects custom HTTP headers into your browser requ
 
 For use with mirrord CLI sessions, you also need:
 
-3. Header propagation set up in your app.
+3. Header propagation set up in your app. Prefer enabling W3C context propagation in your existing tracing or observability library first, since many frameworks already forward `baggage` or `tracestate` automatically. Only add manual forwarding if your stack does not already do it.
 4. A valid HTTP header filter defined in your `mirrord.json` under `feature.network.incoming.http_filter.header_filter` with `mode` set to `steal`.
 5. Browser extension config enabled in your `mirrord.json`.
    **Note:** This feature is experimental.
@@ -31,7 +31,7 @@ For use with mirrord CLI sessions, you also need:
          "incoming": {
            "mode": "steal",
            "http_filter": {
-             "header_filter": "X-My-Header: my-header-value"
+             "header_filter": "^baggage: .*mirrord-session=browser-debug.*"
            }
          }
        }
@@ -48,7 +48,7 @@ The extension can be used standalone or together with mirrord CLI.
 
 **Standalone:**
 
-Open the extension popup, configure the header name, value, and URL scope, and click Save. The extension will start injecting the header into matching browser requests. No `mirrord.json` or CLI session is required.
+Open the extension popup, configure the header name, value, and URL scope, and click Save. In most setups, use `baggage` as the header name and a value such as `mirrord-session=browser-debug`. The extension will start injecting the header into matching browser requests. No `mirrord.json` or CLI session is required.
 
 **With mirrord CLI session:**
 1. Run `mirrord exec` with the configured `mirrord.json`, mirrord will then:
@@ -75,7 +75,7 @@ The extension popup lets you see which header is currently being injected into y
 ![Configure Header](browser-extension/images/configure-header.png)
 
 Allows you to edit the header configuration directly from the popup:
-- **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
+- **Header Name**: The HTTP header name to inject (recommended: `baggage` or `tracestate`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
 - **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
 - **Save**: Applies your changes immediately and updates the active header
@@ -103,6 +103,13 @@ The scope uses Chrome's [match patterns](https://developer.chrome.com/docs/exten
 The mirrord Browser Extension will automatically inject the `header_filter` defined in `mirrord.json`.
 In case `header_filter` is configured with a regex pattern, you will be prompted in the browser to enter a header that matches it:
 `Please enter a header that matches pattern $HEADER_PATTERN`
+
+For example, if your filter is `^baggage: .*mirrord-session=browser-debug.*`, set:
+
+- Header name: `baggage`
+- Header value: `mirrord-session=browser-debug`
+
+If your platform standardizes on `tracestate`, use the same pattern with `tracestate` instead.
 
 ## More details
 
