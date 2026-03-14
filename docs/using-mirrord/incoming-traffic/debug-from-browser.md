@@ -75,7 +75,7 @@ The extension popup lets you see which header is currently being injected into y
 ![Configure Header](browser-extension/images/configure-header.png)
 
 Allows you to edit the header configuration directly from the popup:
-- **Header Name**: The HTTP header name to inject (recommended: `baggage` or `tracestate`)
+- **Header Name**: The HTTP header name to inject (e.g. `baggage`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
 - **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
 - **Save**: Applies your changes immediately and updates the active header

@@ -12,7 +12,7 @@ tags:
   - open source
   - team
   - enterprise
-description: Steal a subset of incoming traffic using W3C baggage or tracestate, plus path or method filters
+description: Steal a subset of incoming traffic using HTTP header, W3C baggage or tracestate, path or method filters
 ---
 
 By default, mirrord mirrors **all** traffic coming into the remote target, and sends a copy to your local process. But in most cases, you don’t need _every_ request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment.
@@ -47,7 +47,7 @@ Run your process with mirrord using the steal configuration, then send a request
 
 ## Filtering a subset of traffic with `mirror` or `steal` mode
 
-For HTTP-based traffic, the recommended way to isolate requests is to match on the W3C trace propagation headers: `baggage` first, or `tracestate` when that better fits your stack. Custom headers still work, but `baggage` and `tracestate` are usually the clearest option because many browsers, gateways, service meshes, and tracing libraries already know how to preserve them across service boundaries.
+For HTTP-based traffic, the recommended way to isolate requests is to match on the W3C trace propagation headers: `baggage` or `tracestate`. Custom headers still work, but `baggage` and `tracestate` are usually the clearest option because many browsers, gateways, service meshes, and tracing libraries already know how to preserve them across service boundaries.
 
 For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports filtering a subset of the remote target's traffic. You can do this by specifying a filter on either an HTTP header or path. To control whether traffic is duplicated (mirror) or redirected (steal), set the mode field:
 `mirror`: the remote target still handles the request, and your local process gets a copy.
