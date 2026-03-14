@@ -627,8 +627,7 @@ See example configurations below:
       "meme-queue": {
         "queue_type": "SQS",
         "message_filter": {
-          "baggage": ".*mirrord-session=alice.*",
-          "tenant": "^(beginner|intermediate)$"
+          "baggage": ".*mirrord-session=alice.*"
         }
       },
       "ad-queue": {
@@ -638,8 +637,7 @@ See example configurations below:
       "views-topic": {
         "queue_type": "Kafka",
         "message_filter": {
-          "baggage": ".*mirrord-session=alice.*",
-          "tenant": "^(beginner|intermediate)$"
+          "baggage": ".*mirrord-session=alice.*"
         }
       }
     }
@@ -650,10 +648,10 @@ See example configurations below:
 In the example above, the local application:
 
 * Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
-  All received messages will have an SQS attribute `baggage` containing `mirrord-session=alice`, AND an attribute `tenant` with value either `beginner` or `intermediate`.
+  All received messages will have an SQS attribute `baggage` containing `mirrord-session=alice`.
 * Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
 * Will receive a subset of messages from Kafka queue with ID `views-topic`.
-  All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`, AND a header `tenant` with value either `beginner` or `intermediate`.
+  All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`.
 
 {% endtab %}
 {% tab title="SQS with wildcard" %}
