@@ -70,23 +70,6 @@ To specify a filter on a header, use the `feature.network.incoming.http_filter.h
 }
 ```
 
-The same approach works with `tracestate` when that is the header your platform already forwards:
-
-```json
-{
-  "feature": {
-    "network": {
-      "incoming": {
-        "mode": "steal",
-        "http_filter": {
-          "header_filter": "^tracestate: .*mirrord-session=local-dev-123.*"
-        }
-      }
-    }
-  }
-}
-```
-
 Note that, with the configuration above, mirrord applies the HTTP header filter on ports 80 and 8080, while stealing from all other eligible ports without filtering.
 To prevent mirrord from stealing unwanted ports, set `feature.network.incoming.ports` to an explicit list.
 

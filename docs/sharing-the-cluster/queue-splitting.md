@@ -605,7 +605,7 @@ Filter definition contains two fields:
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
 
 {% hint style="info" %}
-When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code. If your framework does not support propagating the message attributes or headers you need for queue splitting, let us know and we might be able to help.
+When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
 {% endhint %}
 
 {% hint style="info" %}

@@ -60,7 +60,7 @@ When your frontend calls a backend, and the backend calls other services (databa
 
 ### 1. Configure the Header Filter in mirrord
 
-In your `mirrord-preview.json`, use `{{ key }}` in the W3C `baggage` header so only requests with the matching value hit the preview pod. This is usually better than inventing a custom header because existing tracing and proxy layers are more likely to preserve it:
+In your `mirrord-preview.json`, set the HTTP filter to match on a header of your choice so only requests with the matching value hit the preview pod. The example below uses the W3C `baggage` header, but any header works:
 
 ```json
 {
@@ -77,7 +77,7 @@ In your `mirrord-preview.json`, use `{{ key }}` in the W3C `baggage` header so o
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "header_filter": "^baggage: .*mirrord-session={{ key }}.*"
+          "header_filter": "^baggage: .*mirrord-session=pr-123.*"
         }
       }
     }
@@ -89,7 +89,7 @@ In your `mirrord-preview.json`, use `{{ key }}` in the W3C `baggage` header so o
 
 First, check whether your existing tracing or observability library can propagate W3C headers for you. If it can, prefer enabling that instead of adding custom propagation code.
 
-If your stack does not already propagate these headers, read `baggage` from the incoming request, store the preview key in request context, and forward it on all outgoing calls:
+If you (or your observability library) don't propagate the header, read it from the incoming request, store the preview key in request context, and forward it on all outgoing calls:
 
 - **HTTP:** Add the `baggage` header to outgoing `http.Request` objects.
 - **gRPC:** Add `baggage` to `metadata` in the outgoing context.
