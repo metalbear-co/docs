@@ -82,14 +82,14 @@ bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 
 mirrord can steal network traffic, i.e. intercept it and send it to the local process instead of the remote pod. This means that all incoming traffic is only handled by the local process.
 
-Example - running `user-service` with mirrord and `--tcp-steal` on:
+Example - running `user-service` with mirrord and `--steal` on:
 
 
 #### Window 1
 
 ```bash
 bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
---tcp-steal --target pod/metalbear-deployment-85c754c75f-6k7mg 
+--steal --target pod/metalbear-deployment-85c754c75f-6k7mg
 python3 user-service/service.py 
  * Serving Flask app 'service' (lazy loading)
  * Environment: production
