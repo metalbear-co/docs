@@ -55,8 +55,6 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 6. subscription_id (generated uuid)
 7. organization_id (generated uuid)
 
-**What is NOT sent:** No source code, application traffic, environment variables, secrets, file contents, Kubernetes resource definitions, or any PII. mirrord never sees or transmits the content of your workloads.
-
 In the Enterprise offering, this communication can be disabled entirely.
 
 ## Are you SOC2/ISO27001 compliant?
