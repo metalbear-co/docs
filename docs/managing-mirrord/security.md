@@ -28,7 +28,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see below) which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)) which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
