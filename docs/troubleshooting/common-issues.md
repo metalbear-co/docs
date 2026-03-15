@@ -202,6 +202,6 @@ By excluding `NX_NEXT_DIR` and `NODE_ENV`, you stop the remote environment from 
 
 ## Didn't find your issue here?
 
-- Search or ask on [Discord](https://discord.gg/metalbear)
+- Search or ask on our [Slack community](https://metalbear.com/slack)
 - Open an issue on [GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml)
 - Email us at [hi@metalbear.com](mailto:hi@metalbear.com)
