@@ -11,7 +11,7 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-The mirrord Browser Extension injects custom HTTP headers into your browser requests. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
+The mirrord Browser Extension injects HTTP headers into your browser requests. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ The mirrord Browser Extension injects custom HTTP headers into your browser requ
 
 For use with mirrord CLI sessions, you also need:
 
-3. Header propagation set up in your app.
+3. Header propagation set up in your app. Prefer enabling W3C context propagation in your existing tracing or observability library first, since many frameworks already forward `baggage` or `tracestate` automatically. Only add manual forwarding if your stack does not already do it.
 4. A valid HTTP header filter defined in your `mirrord.json` under `feature.network.incoming.http_filter.header_filter` with `mode` set to `steal`.
 5. Browser extension config enabled in your `mirrord.json`.
    **Note:** This feature is experimental.
@@ -31,7 +31,7 @@ For use with mirrord CLI sessions, you also need:
          "incoming": {
            "mode": "steal",
            "http_filter": {
-             "header_filter": "X-My-Header: my-header-value"
+             "header_filter": "^baggage: .*mirrord-session=browser-debug.*"
            }
          }
        }
@@ -75,7 +75,7 @@ The extension popup lets you see which header is currently being injected into y
 ![Configure Header](browser-extension/images/configure-header.png)
 
 Allows you to edit the header configuration directly from the popup:
-- **Header Name**: The HTTP header name to inject (e.g., `X-My-Header`)
+- **Header Name**: The HTTP header name to inject (e.g. `baggage`)
 - **Header Value**: The value to set for the header and will be added to outgoing requests
 - **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
 - **Save**: Applies your changes immediately and updates the active header

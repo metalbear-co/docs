@@ -122,28 +122,28 @@ spec:
   network:
     incoming:
       httpFilter:
-        headerFilter: "^username: .+"
+        headerFilter: "^baggage: .+"
 ```
 
-If the policy is set with `headerFilter: "^username: .+"` at least one header filter must match the `^username: .+` regex when user is using the steal mode for incoming traffic.
+If the policy is set with `headerFilter: "^baggage: .+"` at least one header filter must match the `^baggage: .+` regex when user is using the steal mode for incoming traffic.
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "header_filter": "username: foobar" } } } } }
+{ "feature": { "network": { "incoming": { "http_filter": { "header_filter": "^baggage: .*mirrord-session=alice.*" } } } } }
 ```
 
 this also works _any of_ or _all of_ patterns
 
 ```json
 { "feature": { "network": { "incoming": { "http_filter": { "all_of": [
-  { "header": "username: foobar" },
+  { "header": "^baggage: .*mirrord-session=alice.*" },
   { "path": "/api.*" }
 ] } } } } }
 ```
 
 ```json
 { "feature": { "network": { "incoming": { "http_filter": { "any_of": [
-  { "header": "username: foobar" },
-  { "header": "username: baz2000" }
+  { "header": "^baggage: .*mirrord-session=alice.*" },
+  { "header": "^tracestate: .*mirrord-session=alice.*" }
 ] } } } } }
 ```
 

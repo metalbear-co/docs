@@ -42,13 +42,13 @@ from the operator side.
 
 
 In this example, we can see that the session has an active steal on port 80,
-filtering HTTP traffic with the following filter: `X-PG-Tenant: Avi.+`
+filtering HTTP traffic with the following filter: `baggage: .*mirrord-session=Avi.+`
 
 ```
 +------------------+-----------------------------+-----------+---------------------------------------------------------------+----------------------------------------------------------+------------------+
 | Session ID       | Target                      | Namespace | User                                                          | Ports                                                    | Session Duration |
 +------------------+-----------------------------+-----------+---------------------------------------------------------------+----------------------------------------------------------+------------------+
-| C527FE7D9C30979E | deployment/ip-visit-counter | default   | Aviram Hassan/aviram@metalbear.co@avirams-macbook-pro-2.local | Port: 80, Type: steal, Filter: header=X-PG-Tenant: Avi.+ | 13s              |
+| C527FE7D9C30979E | deployment/ip-visit-counter | default   | Aviram Hassan/aviram@metalbear.co@avirams-macbook-pro-2.local | Port: 80, Type: steal, Filter: header=baggage: .*mirrord-session=Avi.+ | 13s              |
 +------------------+-----------------------------+-----------+---------------------------------------------------------------+----------------------------------------------------------+------------------+
 ```
 
