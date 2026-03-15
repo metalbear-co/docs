@@ -93,3 +93,7 @@ mirrord mirrors environmental inputs of your Kubernetes workload, such as enviro
 When you run your service locally with mirrord, your application starts from the same inputs as the in-cluster version. If your application’s startup logic fetches secrets from AWS and then caches them in memory, the local version will run that same logic and fetch the secrets again. mirrord’s job is to provide your local process with the same environment and the same access paths, not to copy running state from the remote process.
 
 If you prefer to avoid calling external secret providers during local development, you will need to mock or override that behavior within your application. mirrord does not intercept or alter application logic related to secret retrieval, and it does not supply cached in-memory data from remote pods.
+
+---
+
+Ready to try mirrord? Get started in under 2 minutes with our [Quick Start guide](../getting-started/quick-start.md).
