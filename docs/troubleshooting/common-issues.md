@@ -197,3 +197,11 @@ Then run your Nx target with mirrord:
 mirrord exec -f .mirrord/mirrord.json -- pnpm nx serve my-service
 ```
 By excluding `NX_NEXT_DIR` and `NODE_ENV`, you stop the remote environment from interfering with your local build configuration. This ensures the custom server uses the correct local build path and runs in development mode, while mirrord continues to mirror traffic and other environment variables.
+
+---
+
+## Didn't find your issue here?
+
+- Search or ask on [Discord](https://discord.gg/metalbear)
+- Open an issue on [GitHub](https://github.com/metalbear-co/mirrord/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml)
+- Email us at [hi@metalbear.com](mailto:hi@metalbear.com)
