@@ -35,6 +35,8 @@ By proxying all of your local process' input and output points in this way, mirr
 2. Without going through lengthy CI and deployment processes
 3. Without deploying untested code to the cloud environment - the stable version of the code is still running in the cluster and handling requests - letting multiple users test on the same cluster without queueing to use it or breaking the cluster for everyone else.
 
+> **Ready to try it?** Get started in under 2 minutes with the [Quick Start guide](../getting-started/quick-start.md).
+
 ## Is mirrord free?
 
 mirrord is free and open source (MIT License). Our paid offering, mirrord for Teams, includes a Kubernetes operator that acts as a control plane for mirrord. You can read more about it [here](../managing-mirrord/operator.md).
@@ -94,6 +96,4 @@ When you run your service locally with mirrord, your application starts from the
 
 If you prefer to avoid calling external secret providers during local development, you will need to mock or override that behavior within your application. mirrord does not intercept or alter application logic related to secret retrieval, and it does not supply cached in-memory data from remote pods.
 
----
 
-Ready to try mirrord? Get started in under 2 minutes with our [Quick Start guide](../getting-started/quick-start.md).
