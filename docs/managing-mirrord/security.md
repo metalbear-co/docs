@@ -26,9 +26,25 @@ Love using mirrord but need help getting your security team on board? Talk to on
 
 You can also visit our [Trust Center](https://trust.metalbear.com) for an overview of MetalBear's security posture, certifications, and compliance documentation.
 
+## Data sent from mirrord Operator to MetalBear cloud
+
+mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and anonymous usage metrics. The fields shared are:
+
+1. User ID (randomly generated hash, stored on user machine)
+2. Duration of session
+3. Organization name
+4. mirrord License Hash (of organization)
+5. instance_id (generated on runtime per Operator pod)
+6. subscription_id (generated uuid)
+7. organization_id (generated uuid)
+
+**What is NOT sent:** No source code, application traffic, environment variables, secrets, file contents, Kubernetes resource definitions, or any PII. mirrord never sees or transmits the content of your workloads.
+
+In the Enterprise offering, this communication can be disabled entirely.
+
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see above) which can be customized or disabled upon request.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
@@ -142,15 +158,3 @@ _NB: If you are using a certificate manager, make sure you set up reminders for 
 
 Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](../reference/configuration.md#agent.ephemeral)).
 
-### Data sent from mirrord Operator to MetalBear cloud
-
-mirrord Operator communicates with MetalBear servers over an encrypted TLS connection to obtain licenses for use and share metrics. The fields shared are:
-1. User ID (randomly generated hash, stored on user machine)
-2. Duration of session
-3. Organization name
-4. mirrord License Hash (of organization)
-5. instance_id (generated on runtime per Operator pod)
-6. subscription_id (generated uuid)
-7. organization_id (generated uuid)
-
-In enterprise offering, this communication can be disabled.

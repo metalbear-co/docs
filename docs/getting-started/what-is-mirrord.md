@@ -20,6 +20,8 @@ No VPN, no root access, no deployment. Your local process behaves as if it's run
 
 For the full architecture, see the [Architecture reference](../reference/architecture.md).
 
+> **Try mirrord now** — it takes less than 2 minutes. Follow the [Quick Start guide](quick-start.md) to run your first local process in a cloud context.
+
 ## mirrord for Teams
 
 mirrord's core functionality is free and open source. Individual developers can install it and start using it immediately.
