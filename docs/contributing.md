@@ -9,7 +9,7 @@ mirrord is open source and we welcome contributions!
 
 - **Source code**: [github.com/metalbear-co/mirrord](https://github.com/metalbear-co/mirrord)
 - **Issues**: [GitHub Issues](https://github.com/metalbear-co/mirrord/issues)
-- **Discord**: [discord.gg/metalbear](https://discord.gg/metalbear)
+- **Slack**: [Join our community](https://metalbear.com/slack)
 
 ## How to Contribute
 
