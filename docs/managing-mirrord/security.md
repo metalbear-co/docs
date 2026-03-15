@@ -26,7 +26,24 @@ Love using mirrord but need help getting your security team on board? Talk to on
 
 You can also visit our [Trust Center](https://trust.metalbear.com) for an overview of MetalBear's security posture, certifications, and compliance documentation.
 
-## Data sent from mirrord Operator to MetalBear cloud
+## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
+
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see below) which can be customized or disabled upon request.
+* mirrord does not require root permissions on the user's machine.
+* mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
+* Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
+* mirrord for Teams defines a new CRD that can be used to limit access and use of mirrord, with plans of more fine-grained permissions in the future.
+* The operator requires permissions to create a pod with the following capabilities in its Kubernetes namespace:
+  * `CAP_NET_ADMIN` - for modifying routing tables
+  * `CAP_SYS_PTRACE` - for reading the target pod's environment variables
+  * `CAP_SYS_ADMIN` - for joining the target pod's network namespace
+* The operator requires exclusions from the following gatekeeper policies:
+  * `runAsNonRoot` - to access target pod's filesystem
+  * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
+* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
+* Missing anything? Feel free to ask us on Discord or hi@metalbear.com
+
+## What data does the mirrord Operator send to MetalBear cloud?
 
 mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and anonymous usage metrics. The fields shared are:
 
@@ -41,23 +58,6 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 **What is NOT sent:** No source code, application traffic, environment variables, secrets, file contents, Kubernetes resource definitions, or any PII. mirrord never sees or transmits the content of your workloads.
 
 In the Enterprise offering, this communication can be disabled entirely.
-
-## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
-
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see above) which can be customized or disabled upon request.
-* mirrord does not require root permissions on the user's machine.
-* mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
-* Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
-* mirrord for Teams defines a new CRD that can be used to limit access and use of mirrord, with plans of more fine-grained permissions in the future.
-* The operator requires permissions to create a pod with the following capabilities in its Kubernetes namespace:
-  * `CAP_NET_ADMIN` - for modifying routing tables
-  * `CAP_SYS_PTRACE` - for reading the target pod's environment variables
-  * `CAP_SYS_ADMIN` - for joining the target pod's network namespace
-* The operator requires exclusions from the following gatekeeper policies:
-  * `runAsNonRoot` - to access target pod's filesystem
-  * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
-* Missing anything? Feel free to ask us on Discord or hi@metalbear.com
 
 ## Are you SOC2/ISO27001 compliant?
 
