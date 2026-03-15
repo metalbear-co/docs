@@ -41,7 +41,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
 * mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
-* Missing anything? Feel free to ask us on Discord or hi@metalbear.com
+* Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
 
 ## What data does the mirrord Operator send to MetalBear cloud?
 
