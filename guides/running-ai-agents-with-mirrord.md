@@ -4,7 +4,7 @@ Most codebases already have E2E tests that protect critical happy paths. When an
 
 ---
 
-**_Tip:_** This guide builds on [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md), which covers why mocks fail for AI-generated code and how mirrord connects your local process to staging. Start there if you haven't read it yet.
+**Tip:** This guide builds on [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md), which covers why mocks fail for AI-generated code and how mirrord connects your local process to staging. Start there if you haven't read it yet.
 
 ---
 

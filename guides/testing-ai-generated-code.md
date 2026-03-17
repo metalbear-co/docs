@@ -4,7 +4,7 @@ AI coding tools generate code in minutes. But validating that code still takes h
 
 ---
 
-**_Tip:_** This guide assumes familiarity with mirrord basics. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
+**Tip:** This guide assumes familiarity with mirrord basics. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
 
 ---
 

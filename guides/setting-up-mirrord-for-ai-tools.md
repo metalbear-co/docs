@@ -4,7 +4,7 @@ This guide walks through configuring mirrord with the best AI coding tools engin
 
 ---
 
-**_Tip:_** This guide assumes familiarity with mirrord basics. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
+**Tip:** This guide assumes familiarity with mirrord basics. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
 
 ---
 
