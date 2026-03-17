@@ -1,5 +1,5 @@
 ---
-description: Step-by-step guides for debugging microservices and queue consumers in Kubernetes with mirrord
+description: Step-by-step guides for debugging microservices, testing AI-generated code, and running AI agents in Kubernetes with mirrord
 layout:
   pagination:
     visible: false
@@ -32,6 +32,16 @@ Debug queue consumers with mirrord's copy target and queue splitting features.
 |-------|-------|
 | **Kafka** | [How to Debug Kafka Consumers](how-to-debug-kafka-consumers.md) |
 | **SQS** | [How to Debug SQS Consumers](how-to-debug-sqs-consumers.md) |
+
+## mirrord for AI
+
+Use mirrord to test AI-generated code and run AI coding agents against real Kubernetes services.
+
+| Guide | Description |
+|-------|-------------|
+| **[Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md)** | Why mocks fail for AI-generated code and how to validate against real services |
+| **[Running AI Agents with mirrord](running-ai-agents-with-mirrord.md)** | The full agent loop: E2E guardrails, AGENTS.md setup, and safety patterns |
+| **[Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md)** | Per-tool setup for Cursor, Claude Code, Copilot, Codex, and Windsurf |
 
 ***
 

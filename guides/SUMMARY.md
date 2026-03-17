@@ -17,3 +17,9 @@
 
 * [Kafka](how-to-debug-kafka-consumers.md)
 * [SQS](how-to-debug-sqs-consumers.md)
+
+## mirrord for AI
+
+* [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md)
+* [Running AI Agents with mirrord](running-ai-agents-with-mirrord.md)
+* [Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md)
