@@ -39,9 +39,9 @@ Use mirrord to test AI-generated code and run AI coding agents against real Kube
 
 | Guide | Description |
 |-------|-------------|
-| **[Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md)** | Why mocks fail for AI-generated code and how to validate against real services |
-| **[Running AI Agents with mirrord](running-ai-agents-with-mirrord.md)** | The full agent loop: E2E guardrails, AGENTS.md setup, and safety patterns |
-| **[Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md)** | Per-tool setup for Cursor, Claude Code, Copilot, Codex, and Windsurf |
+| **[How to Test AI Code with mirrord](testing-ai-generated-code.md)** | Validate AI-generated code against real Kubernetes services |
+| **[How to Run AI Agents with mirrord](running-ai-agents-with-mirrord.md)** | Set up the agent loop with E2E guardrails and AGENTS.md |
+| **[How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md)** | Configure Cursor, Claude Code, Copilot, Codex, and Windsurf |
 
 ***
 

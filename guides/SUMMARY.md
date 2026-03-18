@@ -20,6 +20,6 @@
 
 ## mirrord for AI
 
-* [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md)
-* [Running AI Agents with mirrord](running-ai-agents-with-mirrord.md)
-* [Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md)
+* [Test AI Code](testing-ai-generated-code.md)
+* [Run AI Agents](running-ai-agents-with-mirrord.md)
+* [Set Up AI Tools](setting-up-mirrord-for-ai-tools.md)

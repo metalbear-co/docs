@@ -1,28 +1,12 @@
-# Running AI Agents with mirrord
+# How to Run AI Agents with mirrord
 
-Most codebases already have E2E tests that protect critical happy paths. When an AI agent makes changes, those existing tests are the best guardrails you have, but only if they run against real infrastructure. mirrord lets agents run your existing E2E suite against your staging cluster after every change, so new code is held to the same standard as code written by your team. The agent writes code, your tests catch regressions, and the PR arrives with proof that nothing broke.
-
----
-
-**Tip:** This guide builds on [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md), which covers why mocks fail for AI-generated code and how mirrord connects your local process to staging. Start there if you haven't read it yet.
+In this guide, we'll cover how to set up an AI coding agent to test its own changes against real Kubernetes services using mirrord. You'll configure per-service mirrord configs, helper scripts, and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
 
 ---
 
-## The test-after-every-change loop
+**Tip:** This guide builds on [How to Test AI Code with mirrord](testing-ai-generated-code.md). Start there if you haven't set up mirrord for AI workflows yet.
 
-The key insight: your existing E2E tests already encode the happy paths that must keep working. Run them after every significant change, not just at the end. The agent doesn't need to write new tests, it just needs to not break the ones you already have.
-
-```console
-Agent makes change #1 → runs E2E tests via mirrord → GREEN → continue
-Agent makes change #2 → runs E2E tests via mirrord → RED → fix immediately
-Agent makes change #3 → runs E2E tests via mirrord → GREEN → continue
-...
-All changes pass → agent opens PR with test results attached
-```
-
-Each test run is a checkpoint. When something breaks, the agent knows exactly which change caused it and fixes it immediately, instead of spiraling through cascading errors and delivering a broken PR.
-
-Without this autonomous dev feedback loop, most coding agents stop at code generation. They write changes, maybe run unit tests, and open a PR. But unit tests only verify isolated logic. The engineer then has to deploy to staging, run integration tests, discover the AI broke something, send the agent back to fix it, and repeat. With mirrord, the agent runs integration testing itself before a human ever sees the PR.
+---
 
 ![The Agent Testing Loop](running-ai-agents-with-mirrord/agent-testing-loop.png)
 
@@ -209,21 +193,6 @@ Agent: All tests pass. Opening PR with test results attached.
 
 The agent caught and fixed the bug without human intervention. Nobody wrote new tests for this change. The existing E2E tests acted as **guardrails**, the agent could change the code freely, but the happy paths that the team already validated were protected. The engineer reviews a PR that already includes proof nothing broke.
 
-## Why test after every change, not just at the end
-
-Without guardrails, an agent makes change after change on top of a bad assumption. By the time it runs tests, errors have compounded and it's impossible to tell which change caused the break.
-
-With E2E tests after every change:
-
-- The agent catches breaks immediately
-- Each fix is small and targeted
-- The agent stays on track instead of spiraling
-- Less time spent unwinding cascading errors
-
-Running against real services also catches performance regressions that mocks hide. When every mock call returns in 0ms, you'd never notice a response time jump from 200ms to 2 seconds. With mirrord, your E2E test timeouts catch that immediately.
-
-For a detailed comparison of what real infrastructure catches that mocks miss, see the [Testing AI-Generated Code](testing-ai-generated-code.md#what-you-catch-that-mocks-miss) guide.
-
 ## Architecture patterns for safe autonomous agents
 
 ### Scoped permissions
@@ -252,27 +221,9 @@ For agents that shouldn't modify data, configure your staging environment with r
 
 **Warning:** Keep your AI agent in approval mode until you're comfortable with the workflow. Start with one service at a time. Never target production clusters.
 
-## CI/CD comparison: agent with mirrord vs traditional pipeline
-
-The [MetalBear playground](https://github.com/metalbear-co/playground) runs the same E2E tests two ways in CI/CD to demonstrate the difference:
-
-| | Traditional (kind cluster) | mirrord (existing staging) |
-|--|---------------------------|---------------------------|
-| Timeout | 45 minutes | 15 minutes |
-| Setup | Create cluster, build images, deploy Redis, Kafka, all services | Install mirrord, configure kubeconfig |
-| Test execution | Tests hit locally-deployed services | Tests hit real staging services |
-| Teardown | Delete kind cluster | Stop mirrord session |
-| Infrastructure cost | Ephemeral compute for full cluster | Zero, uses existing staging |
-
-An autonomous agent using mirrord gets the same validation as the full CI/CD pipeline without provisioning any AI agent infrastructure.
-
-## Conclusion
-
-The difference between an AI agent that generates code and one that ships working code is a real feedback signal. mirrord provides that signal by connecting the agent to your staging cluster, so every test run hits real services, real databases, and real APIs. By running integration tests after every change (not just at the end), your existing test suite becomes guardrails that keep the agent on track. Combined with an `AGENTS.md` that enforces the test-before-ship workflow, you get an autonomous dev feedback loop where the agent catches and fixes its own mistakes before a human ever reviews the PR.
-
 ## Next steps
 
-- [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md): the foundational "why" behind testing with real services
-- [Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md): per-tool setup for Cursor, Claude Code, Copilot, and Codex
+- [How to Test AI Code with mirrord](testing-ai-generated-code.md): test AI-generated code against real services step by step
+- [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md): per-tool config for Cursor, Claude Code, Copilot, and Codex
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
 - [Sharing the Cluster](https://metalbear.com/mirrord/docs/sharing-the-cluster/overview): manage concurrent agent sessions with mirrord for Teams

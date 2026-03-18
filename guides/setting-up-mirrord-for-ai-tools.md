@@ -1,24 +1,14 @@
-# Setting Up mirrord for Your AI Coding Tool
+# How to Set Up AI Tools with mirrord
 
-This guide walks through configuring mirrord with the best AI coding tools engineers use today, Cursor, Claude Code, GitHub Copilot, Codex, and Windsurf. Each tool has a different way of receiving instructions, but the core workflow is the same: the coding agent runs your code through mirrord so it can test against real staging services instead of mocks. Whether you're doing React development, building Python APIs, or working on Node.js services, the setup is the same.
-
----
-
-**Tip:** This guide assumes familiarity with mirrord basics. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
+In this guide, we'll cover how to configure mirrord with Cursor, Claude Code, GitHub Copilot, Codex, and Windsurf. Each tool reads instructions differently, but the setup is the same: a mirrord config, an instructions file, and optionally a helper script.
 
 ---
 
-## Where mirrord fits in the AI dev productivity stack
+**Tip:** You can use [mirrord](https://metalbear.com/mirrord/) to test AI-generated code locally with Kubernetes context, without needing to build or deploy each time. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
 
-Most AI agent devtools focus on code generation. mirrord sits in the validation layer of the software development toolkit, it's what makes AI-generated code trustworthy before it reaches CI/CD.
+---
 
 ![Where mirrord fits in the AI Dev Stack](setting-up-mirrord-for-ai-tools/ai-stack.png)
-
-The setup for every tool follows the same pattern:
-
-1. **mirrord config**: tells mirrord which Kubernetes deployment to target
-2. **Instructions file**: tells the AI agent to use mirrord when testing
-3. **Helper scripts** (optional): wrap mirrord commands with pre-flight checks
 
 ## Common setup: mirrord config
 
@@ -255,12 +245,8 @@ After configuring any tool, test the integration:
 
 If the agent skips the mirrord step, strengthen the language in your instructions file, use "MUST", "ALWAYS", "NEVER" instead of "should" or "please".
 
-## Conclusion
-
-Every AI code assistant has a way to receive instructions. The setup is the same regardless of tool: a mirrord config targeting your deployment, an instructions file telling the agent to verify AI code against real infrastructure, and optionally a helper script with pre-flight checks. Once configured, the coding agent validates every change against real staging services before marking it complete.
-
 ## Next steps
 
-- [Testing AI-Generated Code Against Real Services](testing-ai-generated-code.md): why testing against real services matters for AI workflows
-- [Running AI Agents with mirrord](running-ai-agents-with-mirrord.md): the full agent loop, E2E guardrails, AGENTS.md setup, and safety patterns
+- [How to Test AI Code with mirrord](testing-ai-generated-code.md): test AI-generated code against real services step by step
+- [How to Run AI Agents with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): the meta-prompt and detailed setup reference
