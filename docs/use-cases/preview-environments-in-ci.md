@@ -110,7 +110,7 @@ md := metadata.Pairs("baggage", baggage)
 ctx := metadata.NewOutgoingContext(c, md)
 ```
 
-If you don't propagate `baggage`, downstream services won't know which preview environment the request belongs to, and traffic may not reach the correct preview pods. If your platform already propagates routing context on a different header, you can use that instead.
+If you (or your observability library) don't propagate the header, downstream services won't know which preview environment the request belongs to, and traffic may not reach the correct preview pods.
 
 ## mirrord Configuration
 
