@@ -92,7 +92,7 @@ An AI agent adds a `/discount` endpoint to an order service. Without mirrord, yo
 ```bash
 # AI generates the code
 # Run locally with staging context
-mirrord exec -t deployment/order-service -- <start command>
+mirrord exec --config-file .mirrord/mirrord.json -- <start command>
 ```
 
 ```bash

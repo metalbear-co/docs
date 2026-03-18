@@ -220,7 +220,7 @@ If you use mirrord's IDE plugins (VS Code or JetBrains), your AI agent's code ru
 
 ### VS Code and Cursor
 
-If you're comparing Cursor vs VS Code for AI-assisted development, the mirrord extension works in both. Cursor is built on VS Code, so the same extension is compatible.
+The mirrord extension works in both VS Code and Cursor. Cursor is built on VS Code, so the same extension is compatible.
 
 1. Install the [mirrord extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord)
 2. Enable mirrord from the status bar

@@ -207,9 +207,20 @@ For teams running multiple agents concurrently, use separate namespaces or mirro
 
 The `http_filter` in mirrord configs controls which traffic is stolen from the remote pod. Only requests matching the header are redirected to the local process, everything else flows to the remote pod normally. Your E2E tests hit `localhost` directly, so they reach the local process regardless of the header, but including the header in test requests is good practice for consistency.
 
+In your mirrord config, set a unique header per agent run:
+
 ```json
-"http_filter": {
-  "header_filter": "X-Agent-Session: agent-task-1234"
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "X-Agent-Session: agent-task-1234"
+        }
+      }
+    }
+  }
 }
 ```
 
