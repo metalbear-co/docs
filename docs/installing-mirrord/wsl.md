@@ -60,7 +60,7 @@ Ubuntu (Default)
 
 - If you're not seeing any Linux Distribution listed, please refer back to the
  [Microsoft guide](https://learn.microsoft.com/en-us/windows/wsl/install), or join our
- [Discord server](https://discord.gg/metalbear) and we'll be happy to help you.
+ [Slack community](https://metalbear.com/slack) and we'll be happy to help you.
 
 To start a session in WSL, now enter the `wsl` command:
 
