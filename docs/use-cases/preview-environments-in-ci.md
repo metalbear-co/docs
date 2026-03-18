@@ -91,8 +91,8 @@ First, check whether your existing tracing or observability library can propagat
 
 If you (or your observability library) don't propagate the header, read it from the incoming request, store the preview key in request context, and forward it on all outgoing calls:
 
-- **HTTP:** Add the `baggage` header to outgoing `http.Request` objects.
-- **gRPC:** Add `baggage` to `metadata` in the outgoing context.
+- **HTTP:** Add the header to outgoing `http.Request` objects.
+- **gRPC:** Add it to `metadata` in the outgoing context.
 - **Kafka:** Add it to message headers.
 - **SQS:** Add it to message attributes.
 
