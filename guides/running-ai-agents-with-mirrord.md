@@ -1,4 +1,4 @@
-# How to Run AI Agents with mirrord
+# How to Validate AI Agent Changes with mirrord
 
 In this guide, we'll cover how to set up an AI coding agent to test its own changes against real Kubernetes services using mirrord. You'll configure per-service mirrord configs, helper scripts, and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
 
@@ -19,7 +19,7 @@ In this guide, we'll cover how to set up an AI coding agent to test its own chan
 
 ## Step 1: Set up mirrord configs per service
 
-Create a mirrord config for each service an agent might work on. If you already have a config from the [Testing AI-Generated Code](testing-ai-generated-code.md#1-create-a-mirrord-config) guide, you can reuse it. For multi-service repos, create one config per service in `.mirrord/`:
+Create a mirrord config for each service an agent might work on. If you already have a config from the [How to Test AI Code with mirrord](testing-ai-generated-code.md#step-1-create-a-mirrord-config) guide, you can reuse it. For multi-service repos, create one config per service in `.mirrord/`:
 
 `.mirrord/mirrord-order-service.json`:
 
@@ -120,7 +120,7 @@ curl http://localhost:<port>/health
 - If mirrord fails to start, check kubectl access and deployment status
 ```
 
-**Tip:** For per-tool setup (Claude Code, Cursor, Copilot, Windsurf), see [Setting Up mirrord for Your AI Coding Tool](setting-up-mirrord-for-ai-tools.md).
+**Tip:** For per-tool setup (Claude Code, Cursor, Copilot, Windsurf), see [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md).
 
 ## Example: AI agent testing an order service
 

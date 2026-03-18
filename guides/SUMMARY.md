@@ -21,5 +21,5 @@
 ## AI Guides
 
 * [Test AI Code](testing-ai-generated-code.md)
-* [Run AI Agents](running-ai-agents-with-mirrord.md)
+* [Validate AI Agent Changes](running-ai-agents-with-mirrord.md)
 * [Set Up AI Tools](setting-up-mirrord-for-ai-tools.md)

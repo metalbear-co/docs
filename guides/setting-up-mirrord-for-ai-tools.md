@@ -248,5 +248,5 @@ If the agent skips the mirrord step, strengthen the language in your instruction
 ## Next steps
 
 - [How to Test AI Code with mirrord](testing-ai-generated-code.md): test AI-generated code against real services step by step
-- [How to Run AI Agents with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
+- [How to Validate AI Agent Changes with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): the meta-prompt and detailed setup reference
