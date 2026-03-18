@@ -12,7 +12,7 @@ tags:
   - open source
   - team
   - enterprise
-description: Steal a subset of incoming traffic using HTTP header, path, or method filters
+description: Steal a subset of incoming traffic using HTTP header, W3C baggage or tracestate, path or method filters
 ---
 
 By default, mirrord mirrors **all** traffic coming into the remote target, and sends a copy to your local process. But in most cases, you don’t need _every_ request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment.
@@ -47,6 +47,8 @@ Run your process with mirrord using the steal configuration, then send a request
 
 ## Filtering a subset of traffic with `mirror` or `steal` mode
 
+For HTTP-based traffic, the recommended way to isolate requests is to match on the W3C trace propagation headers: `baggage` or `tracestate`. Custom headers still work, but `baggage` and `tracestate` are usually the clearest option because many browsers, gateways, service meshes, and tracing libraries already know how to preserve them across service boundaries.
+
 For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports filtering a subset of the remote target's traffic. You can do this by specifying a filter on either an HTTP header or path. To control whether traffic is duplicated (mirror) or redirected (steal), set the mode field:
 `mirror`: the remote target still handles the request, and your local process gets a copy.
 `steal`: the request is redirected to your local process, and the remote target does not handle it.
@@ -59,7 +61,7 @@ To specify a filter on a header, use the `feature.network.incoming.http_filter.h
       "incoming": {
         "mode": "steal", // can also be "mirror"
         "http_filter": {
-          "header_filter": "X-My-Header: my-header-value",
+          "header_filter": "^baggage: .*mirrord-session=local-dev-123.*",
           "ports": [80, 8080]
         }
       }
@@ -95,7 +97,7 @@ To specify a filter on a path, use the `feature.network.incoming.http_filter.pat
 }
 ```
 
-Note that both `header_filter` and `path_filter` take regex value, so for example `"header_filter": "X-Header-.+: header-value-.+"` would work.
+Note that both `header_filter` and `path_filter` take regex value, so for example `"header_filter": "^baggage: .*mirrord-session=[^,]+.*"` would work.
 
 ### Filtering out healthchecks using a negative look-ahead
 
@@ -169,8 +171,8 @@ You can group multiple simple filters together using the `all_of` or `any_of` fi
 ```json
 "http_filter": {
   "all_of": [ // or "any_of"
-    { "header": "..." },
-    { "method": "..." }
+    { "header": "^baggage: .*mirrord-session=local-dev-123.*" },
+    { "method": "POST" }
   ]
 }
 ```
@@ -179,10 +181,9 @@ You can group multiple simple filters together using the `all_of` or `any_of` fi
 
 ```json
 "http_filter": {
-  "all_of": [
-    { "method": "POST" }
-    { "method": "GET" }
-    { "path": "/api/v1/orders" }
+  "any_of": [
+    { "header": "^baggage: .*mirrord-session=local-dev-123.*" },
+    { "header": "^tracestate: .*mirrord-session=local-dev-123.*" }
   ]
 }
 ```
