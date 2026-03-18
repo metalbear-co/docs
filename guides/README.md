@@ -33,7 +33,7 @@ Debug queue consumers with mirrord's copy target and queue splitting features.
 | **Kafka** | [How to Debug Kafka Consumers](how-to-debug-kafka-consumers.md) |
 | **SQS** | [How to Debug SQS Consumers](how-to-debug-sqs-consumers.md) |
 
-## mirrord for AI
+## AI Guides
 
 Use mirrord to test AI-generated code and run AI coding agents against real Kubernetes services.
 
