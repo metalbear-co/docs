@@ -117,8 +117,6 @@ By default, mirrord does the following:
 
 Your remote pod continues running normally — nothing is disrupted.
 
-This configuration works for most use cases. To customize it, see the [configuration reference](../reference/configuration.md).
-
 ## Configuration
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
