@@ -92,22 +92,43 @@ mirrord preview stop --key <environment-key>
 
 ### Github Action
 We also provide a Github Action [`metalbear-co/mirrord-preview`](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your Github Actions pipeline.
+This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
 
-Example usage:
 ```yaml
-- name: Start preview
-  id: preview
-  uses: metalbear-co/mirrord-preview
-  with:
-    action: start
-    target: deployment/my-app
-    image: myrepo/myapp:latest
-    filter: 'baggage: mirrord-session={{ key }}'
-    key: pr-${{ github.event.pull_request.number }}
+name: Preview Environment
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  preview-start:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ... configure kubeconfig for your cluster ...
+      - uses: metalbear-co/mirrord-preview@main
+        with:
+          action: start
+          target: deployment/my-app
+          namespace: staging
+          image: myrepo/myapp:${{ github.sha }}
+          filter: 'baggage: mirrord-session={{ key }}'
+          key: pr-${{ github.event.pull_request.number }}
+
+  preview-stop:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # ... configure kubeconfig for your cluster ...
+      - uses: metalbear-co/mirrord-preview@main
+        with:
+          action: stop
+          key: pr-${{ github.event.pull_request.number }}
 ```
 
-Refer to the [repo](https://github.com/metalbear-co/mirrord-preview) for more detailed examples and docs.
-
+Each PR gets an isolated preview keyed by its number. The {{ key }} template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
+For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
 
 ## Preview Environment Workflow
 
