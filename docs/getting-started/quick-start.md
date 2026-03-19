@@ -110,7 +110,7 @@ By default, mirrord does the following:
 | Feature | Default behavior |
 |---------|-----------------|
 | **Incoming traffic** | Mirrored — your local process receives a copy of traffic hitting the remote pod |
-| **Outgoing traffic** | Sent from the remote pod, responses routed back to your local process |
+| **Outgoing traffic** | Tunneled through the remote pod, so your local process can access cluster-internal services |
 | **Environment variables** | Imported from the remote pod into your local process |
 | **File reads** | Read from the remote pod's filesystem |
 | **DNS** | Resolved on the remote pod |
