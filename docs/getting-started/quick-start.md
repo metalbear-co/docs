@@ -121,7 +121,7 @@ Your remote pod continues running normally — nothing is disrupted.
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
 
-Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](../reference/configuration.md).
+Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config).
 
 {% hint style="info" %}
 The VS Code extension provides autocomplete for mirrord config files.
