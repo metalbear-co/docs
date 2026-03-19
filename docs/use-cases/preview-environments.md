@@ -90,6 +90,25 @@ mirrord preview status
 mirrord preview stop --key <environment-key>
 ```
 
+### Github Action
+We also provide a Github Action [`metalbear-co/mirrord-preview`](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your Github Actions pipeline.
+
+Example usage:
+```yaml
+- name: Start preview
+  id: preview
+  uses: metalbear-co/mirrord-preview
+  with:
+    action: start
+    target: deployment/my-app
+    image: myrepo/myapp:latest
+    filter: 'baggage: mirrord-session={{ key }}'
+    key: pr-${{ github.event.pull_request.number }}
+```
+
+Refer to the [repo](https://github.com/metalbear-co/mirrord-preview) for more detailed examples and docs.
+
+
 ## Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](preview-environments/create-env.svg)
