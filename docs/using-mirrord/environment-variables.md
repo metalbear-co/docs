@@ -115,5 +115,5 @@ To ensure a remote variable is *not* present in your local process at all:
 
 **"I want to test with a feature flag enabled"** Use `override` to set the flag value, regardless of what the remote pod has.
 
-For the full list of environment variable settings, see the [configuration reference](../reference/configuration.md#feature.env).
+For the full list of environment variable settings, see the [configuration reference](https://metalbear.com/mirrord/docs/config#feature.env).
 For a technical explanation of how environment variables work under the hood, see the [Environment Variables reference](../reference/env.md).

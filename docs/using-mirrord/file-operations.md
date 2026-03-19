@@ -85,5 +85,5 @@ If the default `read` mode pulls in remote files that conflict with your local s
 
 **"I only need one remote config file, everything else should be local"** Use `localwithoverrides` with the specific path.
 
-For the full list of file operation settings, see the [configuration reference](../reference/configuration.md#feature.fs).
+For the full list of file operation settings, see the [configuration reference](https://metalbear.com/mirrord/docs/config#feature.fs).
 For a technical explanation of how file operations work under the hood, see the [File Operations reference](../reference/fileops.md).
