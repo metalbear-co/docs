@@ -117,6 +117,10 @@ By default, mirrord does the following:
 
 Your remote pod continues running normally — nothing is disrupted.
 
+{% hint style="info" %}
+**Working with a team?** [mirrord for Teams](https://app.metalbear.com) adds access control, traffic policies, and concurrent session management so your whole team can use mirrord safely.
+{% endhint %}
+
 ## Configuration
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
