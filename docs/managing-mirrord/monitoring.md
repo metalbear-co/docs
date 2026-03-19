@@ -47,7 +47,7 @@ Fields:
 | session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirror` `Port Release` `Session Start` `Session End` |
 | session\_duration | the session's duration in seconds                                                                                                                                            | `Session End`                                                                |
 | port              | port number                                                                                                                                                                  | `Port Steal` `Port Mirror` `Port Release`                                  |
-| http\_filter      | the client's configured [HTTP Filter](../reference/configuration.md#feature.network) | `Port Steal`                                                                  |
+| http\_filter      | the client's configured [HTTP Filter](https://metalbear.com/mirrord/docs/config#feature.network) | `Port Steal`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
 ## Prometheus
