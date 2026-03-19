@@ -90,8 +90,8 @@ mirrord preview status
 mirrord preview stop --key <environment-key>
 ```
 
-### Github Action
-We also provide the [`metalbear-co/mirrord-preview` Github Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your Github Actions pipeline.
+### GitHub Action
+We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline.
 This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
 
 ```yaml
