@@ -91,7 +91,7 @@ mirrord preview stop --key <environment-key>
 ```
 
 ### Github Action
-We also provide a Github Action [`metalbear-co/mirrord-preview`](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your Github Actions pipeline.
+We also provide the [`metalbear-co/mirrord-preview` Github Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your Github Actions pipeline.
 This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
 
 ```yaml
@@ -127,7 +127,7 @@ jobs:
           key: pr-${{ github.event.pull_request.number }}
 ```
 
-Each PR gets an isolated preview keyed by its number. The {{ key }} template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
+Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
 For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
 
 ## Preview Environment Workflow
