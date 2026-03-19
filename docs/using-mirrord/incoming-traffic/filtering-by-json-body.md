@@ -102,7 +102,7 @@ mirrord applies two safeguards when reading request bodies for JSON filtering:
     Configure with `agent.max_body_buffer_timeout`.
     If the body is not fully received in time, the filter does not match.
 
-Both settings follow the same configuration mechanism as other agent parameters and can be set through the operator or in the [mirrord.json configuration](../../reference/configuration.md#:~:text=%22-,agent,-%22%3A%20%7B) file.
+Both settings follow the same configuration mechanism as other agent parameters and can be set through the operator or in the [mirrord.json configuration](https://metalbear.com/mirrord/docs/config#:~:text=%22-,agent,-%22%3A%20%7B) file.
 These limits ensure predictable performance and prevent excessive memory usage.
 
 ## Configuration Example

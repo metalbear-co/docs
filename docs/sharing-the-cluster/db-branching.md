@@ -86,7 +86,7 @@ If name is ommited, the override URL just points to the database server; the app
 
 ## Running With DB Branches
 
-1. Run your app with mirrord and set the `db_branches` field in [the mirrord configuration file](../reference/configuration.md).
+1. Run your app with mirrord and set the `db_branches` field in [the mirrord configuration file](https://metalbear.com/mirrord/docs/config).
 
 2. mirrord will spin up a database branch according to the following rules:
  - Reusing an existing branch:
