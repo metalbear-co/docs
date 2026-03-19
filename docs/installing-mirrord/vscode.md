@@ -51,13 +51,13 @@ mirrord's target can be specified in two ways:
 
 1. with the target selection quick pick
    * The quick pick will only appear if the mirrord config does not specify the target.
-   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](../reference/configuration.md#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
+   * The quick pick will initially show targets in the namespace specified in the mirrord config ([`.target.namespace`](https://metalbear.com/mirrord/docs/config#target.namespace)). If the namespace is not specified, your Kubernetes user's default namespace will be used.
    * If you want to see targets in a different namespace, there is an option to "Select Another Namespace".
-2. in the mirrord config's [target section](../reference/configuration.md#target)
+2. in the mirrord config's [target section](https://metalbear.com/mirrord/docs/config#target)
 
 ## Using the mirrord config
 
-The extension allows for using the [mirrord config](../reference/configuration.md). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
+The extension allows for using the [mirrord config](https://metalbear.com/mirrord/docs/config). For any run/debug session, the mirrord config to be used can be specified in multiple ways:
 
 ### Active config
 
