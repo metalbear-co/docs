@@ -237,6 +237,7 @@ spec:
         envVar: INCOMING_MEME_QUEUE_NAME
       tags:
         tool: mirrord
+      sns: true
     ad-queue:
       queueType: SQS
       nameSource:
