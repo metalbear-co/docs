@@ -37,7 +37,7 @@ Before configuring any AI tool, create a mirrord config at `.mirrord/mirrord.jso
 
 For repos with multiple services, create one config per service: `.mirrord/mirrord-<service>.json`.
 
-**Tip:** You can auto-generate configs, helper scripts, and agent instructions for your entire repo using the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai). The sections below show what to set up manually if you prefer.
+**Tip:** You can auto-generate configs and agent instructions for your entire repo using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) for any tool. The sections below show what to set up manually if you prefer.
 
 ## Claude Code
 
@@ -148,7 +148,7 @@ Cursor will generate the code, run `mirrord exec`, and verify the result.
 
 ## GitHub Copilot
 
-GitHub Copilot CLI and Copilot Workspace read instructions from `.github/copilot-instructions.md`.
+GitHub Copilot and the Copilot Coding Agent read instructions from `.github/copilot-instructions.md`.
 
 ### Setup
 
@@ -208,8 +208,7 @@ Instead of writing configs manually, you can paste the meta-prompt from [Using m
 1. Scan your repo to discover services
 2. Ask you which deployments to target
 3. Generate `.mirrord/mirrord-<service>.json` configs
-4. Generate `scripts/mirrord-<service>.sh` helper scripts
-5. Generate an `AGENTS.md` with instructions for your specific setup
+4. Generate an `AGENTS.md` with instructions for your specific setup
 
 This works with Claude Code, Cursor, Copilot CLI, and Gemini CLI.
 

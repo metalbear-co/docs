@@ -1,6 +1,6 @@
 # Autonomous AI Workflows with mirrord
 
-In this guide, we'll cover how to set up an AI coding agent to test its own changes against your Kubernetes cluster using mirrord. You'll configure per-service mirrord configs, helper scripts, and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
+In this guide, we'll cover how to set up an AI coding agent to test its own changes against your Kubernetes cluster using mirrord. You'll configure per-service mirrord configs and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
 
 ---
 
@@ -44,7 +44,7 @@ Create a mirrord config for each service an agent might work on. If you already 
 }
 ```
 
-**Tip:** You can auto-generate configs and helper scripts for every service using the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai).
+**Tip:** You can auto-generate configs for every service using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) for any tool.
 
 ## Step 2: Write AGENTS.md for autonomous operation
 
