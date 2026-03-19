@@ -104,7 +104,7 @@ You can define [policies](../sharing-the-cluster/policies.md) that prevent steal
 
 When the mirrord CLI starts, it checks if an Operator is installed in the cluster and uses it if it's available. However, if the user lacks access to the Operator or if the Operator doesn't exist, mirrord attempts to create an agent directly.
 
-To prevent clients from attempting to create an agent without the Operator, you can add the [following key](../reference/configuration.md#operator) to the mirrord configuration file:
+To prevent clients from attempting to create an agent without the Operator, you can add the [following key](https://metalbear.com/mirrord/docs/config#operator) to the mirrord configuration file:
 
 ```json
 {
@@ -140,7 +140,7 @@ _NB: If you are using a certificate manager, make sure you set up reminders for 
 
 ### Set up network policies for communication
 
-Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](../reference/configuration.md#agent.ephemeral)).
+Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](https://metalbear.com/mirrord/docs/config#agent.ephemeral)).
 
 ### Data sent from mirrord Operator to MetalBear cloud
 
