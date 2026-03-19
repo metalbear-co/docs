@@ -1,10 +1,10 @@
-# How to Validate AI Agent Changes with mirrord
+# Autonomous AI Workflows with mirrord
 
-In this guide, we'll cover how to set up an AI coding agent to test its own changes against real Kubernetes services using mirrord. You'll configure per-service mirrord configs, helper scripts, and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
+In this guide, we'll cover how to set up an AI coding agent to test its own changes against your Kubernetes cluster using mirrord. You'll configure per-service mirrord configs, helper scripts, and an `AGENTS.md` so the agent runs your existing E2E tests after every change.
 
 ---
 
-**Tip:** This guide builds on [How to Test AI Code with mirrord](testing-ai-generated-code.md). Start there if you haven't set up mirrord for AI workflows yet.
+**Tip:** This guide builds on [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md). Start there if you haven't set up mirrord for AI workflows yet.
 
 ---
 
@@ -19,7 +19,7 @@ In this guide, we'll cover how to set up an AI coding agent to test its own chan
 
 ## Step 1: Set up mirrord configs per service
 
-Create a mirrord config for each service an agent might work on. If you already have a config from the [How to Test AI Code with mirrord](testing-ai-generated-code.md#step-1-create-a-mirrord-config) guide, you can reuse it. For multi-service repos, create one config per service in `.mirrord/`:
+Create a mirrord config for each service an agent might work on. If you already have a config from the [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md#step-1-create-a-mirrord-config) guide, you can reuse it. For multi-service repos, create one config per service in `.mirrord/`:
 
 `.mirrord/mirrord-order-service.json`:
 
@@ -38,41 +38,15 @@ Create a mirrord config for each service an agent might work on. If you already 
         "http_filter": {
           "header_filter": "X-Agent-Session: autonomous"
         }
-      },
-      "outgoing": true
-    },
-    "fs": {
-      "mode": "read"
-    },
-    "env": true
+      }
+    }
   }
 }
 ```
 
 **Tip:** You can auto-generate configs and helper scripts for every service using the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai).
 
-## Step 2: Create helper scripts
-
-Wrapper scripts add pre-flight checks so the agent doesn't waste time debugging environment issues:
-
-```bash
-#!/usr/bin/env bash
-# scripts/mirrord-order-service.sh
-set -euo pipefail
-
-# Pre-flight checks
-command -v mirrord >/dev/null || { echo "FAIL: mirrord not installed"; exit 1; }
-kubectl get deployment order-service -n shop >/dev/null 2>&1 || {
-  echo "FAIL: deployment/order-service not found in namespace shop"; exit 1
-}
-
-echo "Starting order-service with mirrord (targeting deployment/order-service in shop)"
-mirrord exec --config-file .mirrord/mirrord-order-service.json -- "$@"
-```
-
-The agent calls `./scripts/mirrord-order-service.sh npm start` instead of dealing with raw mirrord commands.
-
-## Step 3: Write AGENTS.md for autonomous operation
+## Step 2: Write AGENTS.md for autonomous operation
 
 The `AGENTS.md` file is what turns a code-generation agent into an autonomous one. Use strong imperative language, agents respond more reliably to direct instructions.
 
@@ -86,9 +60,9 @@ before opening a PR. Do NOT rely on mocks or unit tests alone.
 
 ## Services
 
-| Service | Config | Helper Script | Test Command |
-|---------|--------|---------------|--------------|
-| order-service | `.mirrord/mirrord-order-service.json` | `scripts/mirrord-order-service.sh` | `./ci/demo_e2e.sh` |
+| Service | Config | Test Command |
+|---------|--------|--------------|
+| order-service | `.mirrord/mirrord-order-service.json` | `./ci/demo_e2e.sh` |
 
 ## Workflow
 
@@ -96,7 +70,7 @@ before opening a PR. Do NOT rely on mocks or unit tests alone.
 2. Make code changes
 3. Start the service with mirrord in the background:
 
-   ./scripts/mirrord-order-service.sh <start command> &
+   mirrord exec --config-file .mirrord/mirrord-order-service.json -- <start command> &
 
 4. Wait for the service to be ready, then run E2E tests:
 
@@ -163,35 +137,37 @@ This script tests the happy path: create an order, verify it's confirmed. It run
 
 **Task:** "Add a `discount_cents` field to the order response based on order total."
 
+Here's what the autonomous loop looks like, regardless of which AI coding agent you use:
+
 ```console
-Agent: Reading AGENTS.md and codebase...
-Agent: I see order-service returns orders from POST /orders.
-       I'll add discount_cents calculation to the order handler.
+> Reading AGENTS.md and codebase...
+> I see order-service returns orders from POST /orders.
+  I'll add discount_cents calculation to the order handler.
 
-Agent: Making changes to order-service/src/handlers/orders.ts...
-       Added calculateDiscount() function and discount_cents to response.
+> Making changes to order-service/src/handlers/orders.ts...
+  Added calculateDiscount() function and discount_cents to response.
 
-Agent: Starting service with mirrord in the background...
-       $ ./scripts/mirrord-order-service.sh npm start &
-       OK: Service started with mirrord
+> Starting service with mirrord in the background...
+  $ mirrord exec --config-file .mirrord/mirrord-order-service.json -- npm start &
+  OK: Service started with mirrord
 
-Agent: Running E2E tests...
-       $ ./ci/demo_e2e.sh
-       FAIL: ERROR: expected status 'confirmed', got 'pending'
+> Running E2E tests...
+  $ ./ci/demo_e2e.sh
+  FAIL: ERROR: expected status 'confirmed', got 'pending'
 
-Agent: Stopping service. The discount calculation is triggering an async
-       payment re-check. Fixing: add discount after payment confirmation,
-       not before.
+> Stopping service. The discount calculation is triggering an async
+  payment re-check. Fixing: add discount after payment confirmation,
+  not before.
 
-Agent: Restarting service and re-running tests...
-       $ ./scripts/mirrord-order-service.sh npm start &
-       $ ./ci/demo_e2e.sh
-       OK: E2E tests passed
+> Restarting service and re-running tests...
+  $ mirrord exec --config-file .mirrord/mirrord-order-service.json -- npm start &
+  $ ./ci/demo_e2e.sh
+  OK: E2E tests passed
 
-Agent: All tests pass. Opening PR with test results attached.
+> All tests pass. Opening PR with test results attached.
 ```
 
-The agent caught and fixed the bug without human intervention. Nobody wrote new tests for this change. The existing E2E tests acted as **guardrails**, the agent could change the code freely, but the happy paths that the team already validated were protected. The engineer reviews a PR that already includes proof nothing broke.
+The agent caught and fixed the bug without human intervention. Nobody wrote new tests for this change. The existing E2E tests acted as **guardrails** — the agent could change the code freely, but the happy paths that the team already validated were protected. The engineer reviews a PR that already includes proof nothing broke.
 
 ## Architecture patterns for safe autonomous agents
 
@@ -226,15 +202,15 @@ In your mirrord config, set a unique header per agent run:
 
 Use unique session identifiers per agent run to prevent collisions.
 
-### Read-only database access
+### Database branching
 
-For agents that shouldn't modify data, configure your staging environment with read-only database credentials. The agent can still test query logic against real schema and data without risk of corruption.
+For agents that need to write to the database without affecting shared staging data, use mirrord's [database branching](https://metalbear.com/mirrord/docs/sharing-the-cluster/db-branching). Each agent session gets an isolated copy of the database, so writes are safe and won't corrupt shared state. This lets agents test full read/write flows against real schema and data.
 
 **Warning:** Keep your AI agent in approval mode until you're comfortable with the workflow. Start with one service at a time. Never target production clusters.
 
 ## Next steps
 
-- [How to Test AI Code with mirrord](testing-ai-generated-code.md): test AI-generated code against real services step by step
+- [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md): test AI-generated code against your Kubernetes cluster step by step
 - [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md): per-tool config for Cursor, Claude Code, Copilot, and Codex
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
 - [Sharing the Cluster](https://metalbear.com/mirrord/docs/sharing-the-cluster/overview): manage concurrent agent sessions with mirrord for Teams

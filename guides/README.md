@@ -35,13 +35,13 @@ Debug queue consumers with mirrord's copy target and queue splitting features.
 
 ## AI Guides
 
-Use mirrord to test AI-generated code and run AI coding agents against real Kubernetes services.
+Use mirrord to test AI-generated code and run AI coding agents against your Kubernetes cluster.
 
 | Guide | Description |
 |-------|-------------|
-| **[How to Test AI Code with mirrord](testing-ai-generated-code.md)** | Validate AI-generated code against real Kubernetes services |
-| **[How to Validate AI Agent Changes with mirrord](running-ai-agents-with-mirrord.md)** | Set up E2E guardrails so agents validate their own changes |
 | **[How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md)** | Configure Cursor, Claude Code, Copilot, Codex, and Windsurf |
+| **[How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md)** | Validate AI-generated code against your Kubernetes cluster |
+| **[Autonomous AI Workflows with mirrord](running-ai-agents-with-mirrord.md)** | Set up E2E guardrails so agents validate their own changes |
 
 ***
 

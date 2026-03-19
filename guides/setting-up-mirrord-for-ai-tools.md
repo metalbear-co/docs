@@ -29,13 +29,8 @@ Before configuring any AI tool, create a mirrord config at `.mirrord/mirrord.jso
         "http_filter": {
           "header_filter": "X-Test-Agent: dev"
         }
-      },
-      "outgoing": true
-    },
-    "fs": {
-      "mode": "read"
-    },
-    "env": true
+      }
+    }
   }
 }
 ```
@@ -178,15 +173,19 @@ The mirrord config at `.mirrord/mirrord.json` targets the staging deployment.
 Traffic filtering ensures only your test requests are intercepted.
 ```
 
-## Codex / Windsurf
+## Codex
 
-OpenAI Codex reads from `AGENTS.md`. Windsurf reads from `.windsurfrules`.
+OpenAI Codex reads from `AGENTS.md`.
 
-### Setup for Codex
+### Setup
 
-Use the same `AGENTS.md` format as Claude Code above. Codex follows the same conventions.
+Use the same `AGENTS.md` format as [Claude Code](#claude-code) above. Codex follows the same conventions.
 
-### Setup for Windsurf
+## Windsurf
+
+Windsurf reads from `.windsurfrules`.
+
+### Setup
 
 Create `.windsurfrules`:
 
@@ -218,9 +217,9 @@ This works with Claude Code, Cursor, Copilot CLI, and Gemini CLI.
 
 If you use mirrord's IDE plugins (VS Code or JetBrains), your AI agent's code runs with mirrord context automatically when you hit Run or Debug, no `mirrord exec` needed.
 
-### VS Code and Cursor
+### VS Code, Cursor, Windsurf, and other forks
 
-The mirrord extension works in both VS Code and Cursor. Cursor is built on VS Code, so the same extension is compatible.
+The mirrord extension works for VS Code and all its forks like Cursor, Windsurf, etc.
 
 1. Install the [mirrord extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord)
 2. Enable mirrord from the status bar
@@ -247,6 +246,6 @@ If the agent skips the mirrord step, strengthen the language in your instruction
 
 ## Next steps
 
-- [How to Test AI Code with mirrord](testing-ai-generated-code.md): test AI-generated code against real services step by step
-- [How to Validate AI Agent Changes with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
+- [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md): test AI-generated code against your Kubernetes cluster step by step
+- [Autonomous AI Workflows with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): the meta-prompt and detailed setup reference

@@ -20,6 +20,6 @@
 
 ## AI Guides
 
-* [Test AI Code](testing-ai-generated-code.md)
-* [Validate AI Agent Changes](running-ai-agents-with-mirrord.md)
-* [Set Up AI Tools](setting-up-mirrord-for-ai-tools.md)
+* [Test AI-Generated Code](testing-ai-generated-code.md)
+* [Autonomous AI Workflows](running-ai-agents-with-mirrord.md)
+* [Configure Agents to Use mirrord](setting-up-mirrord-for-ai-tools.md)

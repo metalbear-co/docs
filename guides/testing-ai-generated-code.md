@@ -1,6 +1,6 @@
-# How to Test AI Code with mirrord
+# How to Test AI-Generated Code with mirrord
 
-In this guide, we'll cover how to test AI-generated code against real Kubernetes services using mirrord. You'll learn how to run your local process with staging context so you can validate changes in seconds instead of waiting for CI/CD pipelines.
+In this guide, we'll cover how to test AI-generated code against your Kubernetes cluster using mirrord. You'll learn how to run your local process with staging context so you can validate changes in seconds instead of waiting for CI/CD pipelines.
 
 ---
 
@@ -33,13 +33,8 @@ Create `.mirrord/mirrord.json` targeting the service you're working on:
         "http_filter": {
           "header_filter": "X-Test-Agent: dev"
         }
-      },
-      "outgoing": true
-    },
-    "fs": {
-      "mode": "read"
-    },
-    "env": true
+      }
+    }
   }
 }
 ```
@@ -109,28 +104,8 @@ The request reaches your local code, but when your code queries the database or 
 - Do auth tokens and permissions work correctly?
 - Is the response format compatible with the frontend?
 
-## Integrating with AI coding tools
-
-Add mirrord to your agent's instructions so it validates automatically. In your `AGENTS.md`, `CLAUDE.md`, or `.cursor/rules/`:
-
-```markdown
-## Validating code changes
-
-ALWAYS validate code changes against the staging cluster before opening a PR.
-
-1. Start the service with mirrord:
-   
-   mirrord exec --config-file .mirrord/mirrord.json -- <start command>
-   
-2. Send test requests to verify the change works
-3. If the service fails to start or requests fail, fix the issue and retry
-4. NEVER assume code works without testing against real infrastructure
-```
-
-**Tip:** For a complete auto-generated setup including helper scripts and per-service configs, see [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai).
-
 ## Next steps
 
-- [How to Validate AI Agent Changes with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
+- [Autonomous AI Workflows with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
 - [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md): per-tool config for Cursor, Claude Code, Copilot, and Codex
 - [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
