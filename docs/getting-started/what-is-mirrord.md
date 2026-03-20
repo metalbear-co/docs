@@ -22,9 +22,9 @@ For the full architecture, see the [Architecture reference](../reference/archite
 
 > **Try mirrord now** — it takes less than 2 minutes. Follow the [Quick Start guide](quick-start.md) to run your first local process in a cloud context.
 
-> {% hint style="info" %}
-> **Using an AI coding agent?** See [Using mirrord with AI agents](../using-mirrord-with-ai/) to set up autonomous testing against your cluster with Claude Code, Cursor, Codex, and more.
-> {% endhint %}
+{% hint style="info" %}
+**Using an AI coding agent?** See [Using mirrord with AI agents](../using-mirrord-with-ai/) to set up autonomous testing against your cluster with Claude Code, Cursor, Codex, and more.
+{% endhint %}
 
 ## mirrord for Teams
 
