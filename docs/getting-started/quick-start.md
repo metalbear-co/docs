@@ -22,7 +22,7 @@ Get mirrord running in under 5 minutes. You'll need:
 - **Locally:** macOS (Intel/Apple Silicon), Linux (x86_64), or Windows (x86_64/WSL). `kubectl` configured and pointing at your cluster.
 - **In the cluster:** A deployment or pod running the service you want to work with. Linux kernel 4.20+, Docker or containerd runtime.
 
-## Install
+# Install
 
 {% tabs %}
 {% tab title="CLI (macOS/Linux)" %}
@@ -68,11 +68,11 @@ You can also download it from the [JetBrains Marketplace](https://plugins.jetbra
 {% endtab %}
 {% endtabs %}
 
-## Try it
+# Try it
 
-### CLI
+## CLI
 
-Plug a local process into a remote target:
+To run a local process in the context of the remote target:
 
 ```bash
 mirrord exec --target <target-path> <command to run locally>
@@ -103,7 +103,7 @@ Then start a debug session. You'll be prompted to select a pod — pick the one 
 **Send a request to your remote target** — you should see it arriving at your local process as well!
 {% endhint %}
 
-## What just happened?
+# What just happened?
 
 By default, mirrord does the following:
 
