@@ -114,7 +114,7 @@ jobs:
           namespace: staging
           image: myrepo/myapp:${{ github.sha }}
           filter: 'baggage: mirrord-session={{ key }}'
-          key: pr-${{ github.event.pull_request.number }}
+          key: pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
 
   preview-stop:
     if: github.event.action == 'closed'
@@ -124,7 +124,7 @@ jobs:
       - uses: metalbear-co/mirrord-preview@main
         with:
           action: stop
-          key: pr-${{ github.event.pull_request.number }}
+          key: pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
 ```
 
 Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
