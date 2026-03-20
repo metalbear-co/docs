@@ -20,7 +20,7 @@ description: How to (very) quickly start using mirrord
 Get mirrord running in under 5 minutes. You'll need:
 
 - **Locally:** macOS (Intel/Apple Silicon), Linux (x86_64), or Windows (x86_64/WSL). `kubectl` configured and pointing at your cluster.
-- **In the cluster:** A running workload (deployment, pod, StatefulSet, [etc.](../reference/targets.md)) you want to work with. Linux kernel 4.20+, Docker or containerd runtime.
+- **In the cluster:** A running workload (deployment, pod, [etc.](../reference/targets.md)) you want to work with. Linux kernel 4.20+, Docker or containerd runtime.
 
 # Install
 
