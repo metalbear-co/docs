@@ -22,7 +22,7 @@ Get mirrord running in under 5 minutes. You'll need:
 - **Locally:** macOS (Intel/Apple Silicon), Linux (x86_64), or Windows (x86_64/WSL). `kubectl` configured and pointing at your cluster.
 - **In the cluster:** A running workload (deployment, pod, [etc.](../reference/targets.md)) you want to work with. Linux kernel 4.20+, Docker or containerd runtime.
 
-## Install
+# Install
 
 {% tabs %}
 {% tab title="CLI (macOS/Linux)" %}
@@ -68,9 +68,9 @@ You can also download it from the [JetBrains Marketplace](https://plugins.jetbra
 {% endtab %}
 {% endtabs %}
 
-## Try it
+# Try it
 
-### CLI
+## CLI
 
 To run a local process in the context of the remote target:
 
@@ -92,7 +92,7 @@ mirrord container --target pod/app-pod-01 -- docker run nginx
 
 Use `mirrord exec --help` or `mirrord container --help` for all options.
 
-### IDE Extensions
+## IDE Extensions
 
 1. **VS Code:** Click **Enable mirrord** in the status bar at the bottom of the window.
 2. **JetBrains:** Click the **mirrord icon** in the navigation toolbar (top right).
@@ -103,7 +103,7 @@ Then start a debug session. You'll be prompted to select a pod — pick the one 
 **Send a request to your remote target** — you should see it arriving at your local process as well!
 {% endhint %}
 
-## What just happened?
+# What just happened?
 
 By default, mirrord does the following:
 
@@ -121,7 +121,7 @@ Your remote pod continues running normally — nothing is disrupted.
 **Working with a team?** [mirrord for Teams](https://app.metalbear.com) adds access control, traffic policies, and concurrent session management so your whole team can use mirrord safely.
 {% endhint %}
 
-## Configuration
+# Configuration
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
 
@@ -131,7 +131,7 @@ Run `mirrord wizard` to generate a config file interactively, or see the full [c
 The IDE extensions provide autocomplete for mirrord config files.
 {% endhint %}
 
-## Next Steps
+# Next Steps
 
 **What are you trying to do?**
 
