@@ -128,7 +128,7 @@ mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports 
 Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config).
 
 {% hint style="info" %}
-The VS Code extension provides autocomplete for mirrord config files.
+The IDE extensions provide autocomplete for mirrord config files.
 {% endhint %}
 
 ## Next Steps
