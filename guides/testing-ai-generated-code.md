@@ -4,7 +4,7 @@ In this guide, we'll cover how to test AI-generated code against your Kubernetes
 
 ---
 
-**Tip:** You can use [mirrord](https://metalbear.com/mirrord/) to test AI-generated code locally with Kubernetes context, without needing to build or deploy each time. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
+**Tip:** You can use mirrord to test AI-generated code locally with Kubernetes context, without needing to build or deploy each time. If you're new to mirrord, start with the [Quick Start](https://metalbear.com/mirrord/docs/getting-started/quick-start).
 
 ---
 
@@ -56,7 +56,7 @@ Instead of the build, deploy, test cycle, the workflow becomes:
    ```
 4. See real responses from real services, no mocks, no deploy
 
-If something is wrong, fix it and re-run. Each iteration takes seconds, not minutes.
+If something is wrong, fix it and re-run.
 
 ## Step 3: Run your test suite through mirrord
 
@@ -78,7 +78,7 @@ mirrord exec --config-file .mirrord/mirrord.json -- <start command>
 ./ci/e2e_test.sh
 ```
 
-Either way, your tests hit real infrastructure. No mock setup, no Docker Compose, no fake data.
+In both cases, your tests and service run locally but with access to real dependencies in the cluster.
 
 ## Example: validating a new endpoint
 
