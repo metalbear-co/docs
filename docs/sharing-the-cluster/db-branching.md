@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to **MySQL, PostgreSQL, MongoDB** databases for remote usage, and **Redis** database for local development.
+Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB** databases for remote usage, and **Redis** database for local development.
 
 **When is this useful?**
 
@@ -38,6 +38,7 @@ Before you start, make sure you have:
 1. Minimum versions installed: 
   - MySQL: Operator `3.129.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
   - PostgreSQL: Operator `3.131.0`, mirrord CLI `3.175.0` and operator Helm chart `1.40.2` with `operator.pgBranching` value set to `true`.
+  - MSSQL: Operator `3.148.0`, mirrord CLI `3.194.0` and operator Helm chart `1.55.0` with `operator.mssqlBranching` value set to `true`.
   - MongoDB: Operator `3.137.0`, mirrord CLI `3.183.0` and operator Helm chart `1.44.0` with `operator.mongoBranching` value set to `true`.
   - Redis: mirrord CLI `3.180.0` (no operator or chart version requirements, since Redis is supported only via a local DB branch).
 2. Your local application is using environment variables or Kubernetes Secrets to store DB connection strings or individual connection parameters.  
@@ -52,13 +53,12 @@ Developers define branches in their `mirrord.json`:
     {
       "id": "users-mysql-db",             // Optional
       "location": "remote",               // Optional, default is "remote", Available options [remote | local]
-      "type": "mysql",                    // Available options [mysql | pg | mongodb | redis]
+      "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
       "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
       "connection": {
-        "type": "env",
         "url": "DATABASE_URL"
       },
       "copy": {
@@ -72,8 +72,8 @@ Developers define branches in their `mirrord.json`:
 ### Key Fields
 
 1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse)
-2. `location`: Supported values are `remote` and `local`. The default is `remote`. `remote` applies only when the `type` field is set to `mysql`, `pg`, or `mongodb`, while `local` applies only when `type` is set to `redis`.
-3. `type`: Supported values are `"mysql"`, `"pg"`, `"mongodb"`, and `"redis"`.
+2. `location`: Supported values are `remote` and `local`. The default is `remote`. `remote` applies only when the `type` field is set to `mysql`, `pg`, `mssql`, or `mongodb`, while `local` applies only when `type` is set to `redis`.
+3. `type`: Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, and `"redis"`.
 4. `version`: Database engine version.
 5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
