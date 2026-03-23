@@ -194,6 +194,40 @@ You can group multiple simple filters together using the `all_of` or `any_of` fi
 
 However, in some cases the traffic is only decrypted by the target service itself. Using an HTTP filter in this case requires some additional setup. Check out the [HTTPS stealing guide](steal-https.md) for more information. Note that this HTTPS stealing requires mirrord Operator, which is part of mirrord for Teams.
 
+### Filtering using JQ on headers
+For cases when simple regex-based header filters are not enough, mirrord also supports using JQ expressions on headers for filtering. This works by converting the headers into a `HeaderKey: HeaderValue` format (same as regex filters) and feeding it into a user-provided JQ program. The filter is considered to match if the JQ expression evaluates to `true`. Since JQ is a turing-complete language, this feature can be used to implement arbitrary filtering logic using headers.
+
+#### Example: parsing a JWT and extracting fields
+Suppose our app receives JWTs in a standard HTTP authorization header, i.e. `Authorization: Bearer <jwt>`. We can use JQ's string processing functionality to isolate the payload, decode it from base64, extract out a specific field and finally compare it to a known value. As an example, consider JWTs with payloads that follow this schema:
+
+```json
+{
+  "user": "liron",
+  "admin": true
+}
+```
+
+We can use the following mirrord config to parse out the `user` field and compare it against a known value (`liron`), such that only requests with JWTs that have the `user` field set to `liron` will match the filter:
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "header_filter": {
+            "query": "sub(\"^Bearer\\\\s+\"; \"\") | split(\".\") | .[1] | gsub(\"-\"; \"+\") | gsub(\"_\"; \"/\") | . as $s | $s + (\"=\" * ((4 - ($s|length % 4)) % 4)) | @base64d | fromjson | .user | test(\"^liron$\")"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+
+
+
 ## What's next?
 
 1. If your local process reads from a queue, you might want to test out the [copy target feature](../copy-target.md), which temporarily creates a copy of the mirrord session target. With its `scaledown` flag it allows you to temporarily delete all replicas in your targeted rollout or deployment, so that none competes with your local process for queue messages.
