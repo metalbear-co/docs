@@ -604,13 +604,19 @@ Filter definition contains two fields:
 * `queue_type` — `SQS` or `Kafka`
 * `message_filter` — mapping from message attribute (SQS) or header (Kafka) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
+* `jq_filter` — supported only for `queue_type` of `SQS`.
+  It runs a jq program on the JSON representation of the SQS `Message` object, and a message matches if the jq program outputs `true`.
+  This can be used to filter by message body content or by message attributes exposed through the SQS message JSON.
+  See the [SQS `Message` object reference](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html).
+
+If both `message_filter` and `jq_filter` are specified for the same SQS queue, both must match for a message to be matched.
 
 {% hint style="info" %}
 When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
 {% endhint %}
 
 {% hint style="info" %}
-An empty `message_filter` is treated as a match-none directive.
+An empty `message_filter` without a `jq_filter` is treated as a match-none directive.
 {% endhint %}
 
 See example configurations below:
@@ -631,6 +637,10 @@ See example configurations below:
           "baggage": ".*mirrord-session=alice.*"
         }
       },
+      "orders-queue": {
+        "queue_type": "SQS",
+        "jq_filter": ".Body | fromjson | .important == true"
+      },
       "ad-queue": {
         "queue_type": "SQS",
         "message_filter": {}
@@ -650,9 +660,64 @@ In the example above, the local application:
 
 * Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
   All received messages will have an SQS attribute `baggage` containing `mirrord-session=alice`.
+* Will receive a subset of messages from SQS queues described in the registry under ID `orders-queue`.
+  All received messages will have a JSON body with `"important": true`.
 * Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
 * Will receive a subset of messages from Kafka queue with ID `views-topic`.
   All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`.
+
+{% endtab %}
+{% tab title="SQS with jq_filter" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "orders-queue": {
+        "queue_type": "SQS",
+        "jq_filter": ".Body | fromjson | .client == \"a\""
+      },
+      "fifo-orders-queue": {
+        "queue_type": "SQS",
+        "jq_filter": ".MessageAttributes.client.StringValue | test(\"^a$\")"
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application:
+
+* Will receive messages from SQS queue `orders-queue` only when the message body is valid JSON and contains `"client": "a"`.
+* Will receive messages from SQS queue `fifo-orders-queue` only when the SQS message attribute `client` has the value `a`.
+
+{% endtab %}
+{% tab title="SQS with attribute and jq filters" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "orders-queue": {
+        "queue_type": "SQS",
+        "message_filter": {
+          "client": "^a$"
+        },
+        "jq_filter": ".Body | fromjson | .important == true"
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application will receive messages from SQS queue `orders-queue` only when both of these conditions hold:
+
+* The SQS message attribute `client` has the value `a`.
+* The JSON message body contains `"important": true`.
 
 {% endtab %}
 {% tab title="SQS with wildcard" %}
