@@ -192,20 +192,18 @@ mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/
 This feature requires at least mirrord-operator-license-server Helm chart version **1.56.0**.
 {% endhint %}
 
-The license server has an endpoint that can be used to retrieve reports about operator errors collected from the mirrord operator. These reports help administrators investigate issues affecting mirrord usage in their cluster.
+The license server has an endpoint that can be used to retrieve reports about errors collected from mirrord oeperator. These reports help administrators investigate issues affecting mirrord usage in their cluster.
 
 Currently, these reports include operator system errors such as agent spawn failures.
-
-Unlike the usage report endpoint, this endpoint returns a JSON response and does not produce an Excel spreadsheet.
 
 The reports include:
 
 * **Failure events** for the timeframe specified in query parameters
   * Timestamp of the failure event
   * Error message
-  * Operator version, when available
+  * Operator version
   * License hash
-  * Instance ID, when available
+  * Instance ID
 
 **Query params**
 
