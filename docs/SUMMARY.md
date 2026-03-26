@@ -87,4 +87,4 @@
 
 * [Third-party](reference/third-party.md)
 * [Contributing](contributing.md)
-* [Coming Soon!](reference/coming-soon.md)
+* [Coming Soon](reference/coming-soon.md)
