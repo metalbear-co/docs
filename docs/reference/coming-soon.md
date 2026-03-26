@@ -93,4 +93,7 @@ Configuration follows the same pattern as other supported databases:
 ```
 
 ## Interested in what's coming?
-    Check back here for updates as each one of the new feature ships, or [Subscribe to our newsletter to get updates](https://metalbear.com/#newsletter) and be notified when these features are available.
+Check back here for updates as each one of the new feature ships, or [Subscribe to our newsletter to get updates](https://metalbear.com/#newsletter) and be notified when these features are available.
+
+Have a specific use case in mind you'd like us to consider? We'd love to hear from you - reach out on our [Slack community](https://join.slack.com/t/metalbear/shared_invite/zt-1owqpc4tu-2sMrVb6fD8fqN3GPyYEqKQ) or
+use the [contact form on our website](https://metalbear.com/contact/).
