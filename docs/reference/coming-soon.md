@@ -83,13 +83,14 @@ Configuration follows the same pattern as other supported databases:
 {
     "feature": {
         "database_branching": {
-        "connection": {
             "type": "mssql",
-            "connection_string": "Server=my-server;Database=my-db;..."
-        }
+            "connection": {
+                "url": "DB_CONNECTION_URL"
+            }
         }
     }
 }
+    
 ```
 
 ## Interested in what's coming?
