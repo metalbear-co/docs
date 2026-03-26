@@ -38,7 +38,7 @@ Before you start, make sure you have:
 1. Minimum versions installed: 
   - MySQL: Operator `3.129.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
   - PostgreSQL: Operator `3.131.0`, mirrord CLI `3.175.0` and operator Helm chart `1.40.2` with `operator.pgBranching` value set to `true`.
-  - MSSQL: Operator `3.148.0`, mirrord CLI `3.194.0` and operator Helm chart `1.55.0` with `operator.mssqlBranching` value set to `true`.
+  - MSSQL: Operator `3.150.0`, mirrord CLI `3.195.0` and operator Helm chart `1.55.0` with `operator.mssqlBranching` value set to `true`.
   - MongoDB: Operator `3.137.0`, mirrord CLI `3.183.0` and operator Helm chart `1.44.0` with `operator.mongoBranching` value set to `true`.
   - Redis: mirrord CLI `3.180.0` (no operator or chart version requirements, since Redis is supported only via a local DB branch).
 2. Your local application is using environment variables or Kubernetes Secrets to store DB connection strings or individual connection parameters.  
