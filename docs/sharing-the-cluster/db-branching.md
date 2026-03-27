@@ -107,6 +107,9 @@ If name is ommited, the override URL just points to the database server; the app
 
 ---
 
+## Portforwards
+When DB branching is enabled, mirrord will also automatically set up portforwards to the branch pod while the session is active. This can be used to, for example, access the branch database with a GUI SQL client like DBeaver or DataGrip. To list currently active DB branch portforwards, run `mirrord db-branches connections`.
+
 ## Local Redis
 
 mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
