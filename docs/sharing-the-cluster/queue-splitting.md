@@ -85,6 +85,14 @@ If the filters defined by the two users both match some message, one of the user
 
 {% endtab %}
 
+{% tab title="RabbitMQ" %}
+
+First, we have a consumer app reading messages from a RabbitMQ queue:
+
+![A K8s application that consumes messages from an RabbitMQ queue](queue-splitting/before-splitting-rmq.svg)
+
+{% endtab %}
+
 {% endtabs %}
 
 Temporary queues are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
@@ -640,21 +648,23 @@ spec:
         optional: true
 ```
 
+You must create at least one `MirrordPropertyList` with our Cluster properties inside of it
+
 #### Cluster Properties
 
-| Property              | Description                                                         | Required | Type                                                             | Default                            |
-| --------------------- | :-----------------------------------------------------------------: | :------: | :---------------------------------------------------------------:|:----------------------------------:|
-| `scheme`              | Protocol used for the connection                                    |          | 'amqp' or 'amqps'                                                | 'amqp'                             |
-| `host`                | Hostname or IP address of the message broker                        |     ✓    |                                                                  |                                    |
-| `port`                | Network port the broker is listening on                             |          | integer                                                          | 5671 or 5672 according to `scheme` |
-| `username`            | Credential used to authenticate the connection                      |          |                                                                  |                                    |
-| `password`            | Secret key or password for the specified user                       |          |                                                                  |                                    |
-| `vhost`               | A logical isolation unit (virtual host) within the broker           |          |                                                                  | '/'                                |
-| `sasl.mechanism`      | Authentication strategy used during the handshake                   |          | `amqplain`, `anonymous`, `external`, `plain` or `rabbit-cr-demo` |                                    |
-| `tls.crt`             | public certificate (PEM format) used for client authentication      |          |                                                                  |                                    |
-| `tls.key`             | private key (PEM format) matching the client certificate            |          |                                                                  |                                    |
-| `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          |                                                                  |                                    |
-| `client.*`            |Custom metadata or properties sent to the broker                     |          |                                                                  |                                    |
+| Property              | Description                                                         | Required | Type                                                          | Default                            |
+| --------------------- | :-----------------------------------------------------------------: | :------: | :------------------------------------------------------------:|:----------------------------------:|
+| `scheme`              | Protocol used for the connection                                    |          | `amqp` or `amqps`                                             | `amqp`                             |
+| `host`                | Hostname or IP address of the message broker                        |     ✓    |                                                               |                                    |
+| `port`                | Network port the broker is listening on                             |          | integer                                                       | 5671 or 5672 according to `scheme` |
+| `username`            | Credential used to authenticate the connection                      |          |                                                               |                                    |
+| `password`            | Secret key or password for the specified user                       |          |                                                               |                                    |
+| `vhost`               | A logical isolation unit (virtual host) within the broker           |          |                                                               | '/'                                |
+| `sasl.mechanism`      | Authentication strategy used during the handshake                   |          | `amqplain` `anonymous` `external` `plain` or `rabbit-cr-demo` |                                    |
+| `tls.crt`             | public certificate (PEM format) used for client authentication      |          |                                                               |                                    |
+| `tls.key`             | private key (PEM format) matching the client certificate            |          |                                                               |                                    |
+| `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          |                                                               |                                    |
+| `client.*`            | Custom metadata or properties sent to the broker                    |          |                                                               |                                    |
 
 {% endstep %}
 {% step %}
