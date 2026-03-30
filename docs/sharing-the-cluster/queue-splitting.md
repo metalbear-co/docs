@@ -25,7 +25,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/) and [Kafka](https://kafka.apache.org/). Pretty soon we'll support RabbitMQ as well.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/) and [RabbitMQ](https://www.rabbitmq.com). Pretty soon we'll support RabbitMQ as well.
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka.
 {% endhint %}
 
@@ -592,6 +592,151 @@ This allows for skipping the subsequent restart in case the next Kafka splitting
 is started before the TTL elapses. Specified in seconds.
 
 {% endtab %}
+{% tab title="RabbitMQ" %}
+
+{% stepper %}
+{% step %}
+
+### Enable RabbitMQ splitting in the Helm chart
+
+Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
+
+{% endstep %}
+{% step %}
+
+### Cluster Declaration
+
+The mirrord operator will need a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters when in use.
+As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. With this resource you can define Cluster and Queue parameters we will use for splitting queues.
+The `MirrordPropertyList` is inspired by `env` and `envFrom` fields in pod's container definition and thus supports declareing the values in the list itself or to load some ConfigMap or Secret keys with specific mapping or wholsale. For specific mapping you can specify `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef` instead of specifing `value` item directly in `properties` field, and for wholesale inclusion you can specify `configMapRef` or `secretRef` where all keys from ConfigMap or Secret as properties (optionally a prefix can be specified that will be appended to keys).
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: meme-rmq-cluster
+  namespace: meme
+spec:
+  properties:
+    - name: host
+      value: meme-rmq.meme.svc
+    - name: username
+      valueFrom:
+        configMapKeyRef:
+          name: meme-rmq-config
+          key: rmq_user
+    - name: password
+      valueFrom:
+        secretKeyRef:
+          name: meme-rmq-secret
+          key: rmq_password
+  propertiesFrom:
+    - secretRef:
+        prefix: 'client.'
+        name: meme-rmq-client-properties
+        optional: true
+    - configMapRef:
+        name: meme-rmq-common-properties
+        optional: true
+```
+
+#### Cluster Properties
+
+| Property              | Description                                                         | Required | Type                                                             | Default                            |
+| --------------------- | :-----------------------------------------------------------------: | :------: | :---------------------------------------------------------------:|:----------------------------------:|
+| `scheme`              | Protocol used for the connection                                    |          | 'amqp' or 'amqps'                                                | 'amqp'                             |
+| `host`                | Hostname or IP address of the message broker                        |     ✓    |                                                                  |                                    |
+| `port`                | Network port the broker is listening on                             |          | integer                                                          | 5671 or 5672 according to `scheme` |
+| `username`            | Credential used to authenticate the connection                      |          |                                                                  |                                    |
+| `password`            | Secret key or password for the specified user                       |          |                                                                  |                                    |
+| `vhost`               | A logical isolation unit (virtual host) within the broker           |          |                                                                  | '/'                                |
+| `sasl.mechanism`      | Authentication strategy used during the handshake                   |          | `amqplain`, `anonymous`, `external`, `plain` or `rabbit-cr-demo` |                                    |
+| `tls.crt`             | public certificate (PEM format) used for client authentication      |          |                                                                  |                                    |
+| `tls.key`             | private key (PEM format) matching the client certificate            |          |                                                                  |                                    |
+| `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          |                                                                  |                                    |
+| `client.*`            |Custom metadata or properties sent to the broker                     |          |                                                                  |                                    |
+
+{% endstep %}
+{% step %}
+
+### Provide application context
+
+On operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
+type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence
+with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
+Before you can run sessions with RabbitMQ splitting, you must create a queue registry for the desired target.
+This is because the queue registry contains additional application context required by the mirrord operator.
+For example, the operator needs to know which environment variables contain the names of the RabbitMQ queues to split.
+
+See an example queue registry defined for a deployment `meme-app` living in namespace `meme`:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1alpha
+kind: MirrordWorkloadQueueRegistry
+metadata:
+  name: meme-app-q-registry
+  namespace: meme
+spec:
+  consumer:
+    name: meme-app
+    workloadType: Deployment
+    container: main
+  queues:
+    meme-queue:
+      clusterName: meme-rmq-cluster
+      queueType: RMQ
+      nameSource:
+        envVar: INCOMING_MEME_QUEUE_NAME
+    ad-queue:
+      clusterName: meme-rmq-cluster
+      queueType: RMQ
+      nameSource:
+        envVar: AD_QUEUE_NAME
+```
+
+The registry above says that:
+1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
+2. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
+3. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
+4. When creating a temporary queue derived from either of the two queues.
+
+#### Link the registry to the deployed consumer
+
+The queue registry is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
+The reference is specified with `spec.consumer`:
+* `name` — name of the Kubernetes workload of the deployed consumer.
+* `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
+* `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
+
+#### Desribe consumed queues in the registry
+
+The queue registry describes RabbitMQ queues consumed by the referenced consumer.
+The queues are described in entries of the `spec.queues` object.
+
+The entry's key can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
+
+The entry's value is an object describing single or multiple RabbitMQ queues consumed by the workload:
+
+* `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
+  * `envVar` stores a name of a single environment variables.
+  * `regexPattern` selects multiple environment variables based on a regular expression.
+* `fallbackName` stores an optional fallback name/URL, in case `nameSource` is not found in the workload spec.
+  `nameSource` will still be used to inject the name/URL of the temporary queue.
+* `namesFromJsonMap` specifies how to process the values of environment variables that contain queue names/URLs.
+  If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
+  If set to `false`, values of all variables will be treated directly as queue names/URLs.
+  Defaults to `false`.
+
+
+{% hint style="warning" %}
+The mirrord operator can only read consumer's environment variables if they are either:
+1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
+2. loaded from config maps using `envFrom`.
+{% endhint %}
+
+{% endstep %}
+{% endstepper %}
+{% endtab %}
 {% endtabs %}
 
 ## Setting a Filter for a mirrord Run
@@ -601,8 +746,8 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains two fields:
-* `queue_type` — `SQS` or `Kafka`
-* `message_filter` — mapping from message attribute (SQS) or header (Kafka) name to a regex for its value.
+* `queue_type` — `SQS`, `Kafka` or `RMQ`
+* `message_filter` — mapping from message attribute (SQS) or header (Kafka and RabbitMQ) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
 * `jq_filter` — supported only for `queue_type` of `SQS`.
   It runs a jq program on the JSON representation of the SQS `Message` object, and a message matches if the jq program outputs `true`.
