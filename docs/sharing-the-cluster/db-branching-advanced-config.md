@@ -19,16 +19,13 @@ These settings give additional flexibility in how mirrord handles database branc
   "db_branches": [
     {
       "id": "users-mysql-db",            // Optional
-      "type": "mysql",                    // Available options [mysql|pg|mongodb]
+      "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
       "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
       "connection": {
-        "url": {
-          "type": "env",
-          "variable": "DB_CONNECTION_URL" // Required
-        }
+        "url": "DB_CONNECTION_URL"
       },
       "copy": {
         "mode": "empty"                   // Optional, Defaults to "empty" if not specified
@@ -57,15 +54,14 @@ Provide a single environment variable that contains the full database connection
 ```json
 {
   "connection": {
-    "type": "env",
     "url": "DATABASE_URL"
   }
 }
 ```
 
-The `type` field controls where the environment variable is read from (applies to both URL and params modes):
+The optional `type` field controls where the environment variable is read from (applies to both URL and params modes). It defaults to `"env"` when omitted.
 
-- `"env"`: Direct `env` entry in the target pod spec.
+- `"env"` (default): Direct `env` entry in the target pod spec.
 - `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
 
 ### Individual Connection Parameters (Params)
@@ -77,7 +73,6 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
 ```json
 {
   "connection": {
-    "type": "env",
     "params": {
       "host": "DB_HOST",
       "port": "DB_PORT",
@@ -98,7 +93,6 @@ Instead of a plain string (env var name), use an object with `secret` and `key`:
 ```json
 {
   "connection": {
-    "type": "env",
     "params": {
       "host": "DB_HOST",
       "password": { "secret": "rds-credentials", "key": "password" },
@@ -114,9 +108,9 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
-# Copy Modes (MySQL & PostgreSQL)
+# Copy Modes (MySQL, PostgreSQL & MSSQL)
 
-The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL and PostgreSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
+The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
 
 1. ### Empty Database
 
@@ -238,7 +232,7 @@ Uses the standard AWS environment variables already present in the target pod.
     {
       "type": "pg",
       "version": "16",
-      "connection": { "url": { "type": "env", "variable": "DATABASE_URL" } },
+      "connection": { "url": "DATABASE_URL" },
       "iam_auth": { "type": "aws_rds" }
     }
   ]
@@ -283,7 +277,7 @@ Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
     {
       "type": "pg",
       "version": "17",
-      "connection": { "url": { "type": "env", "variable": "DATABASE_URL" } },
+      "connection": { "url": "DATABASE_URL" },
       "iam_auth": { "type": "gcp_cloud_sql" }
     }
   ]
