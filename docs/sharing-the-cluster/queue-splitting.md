@@ -706,12 +706,12 @@ spec:
     container: main
   queues:
     meme-queue:
-      clusterName: meme-rmq-cluster
+      clusterProperties: meme-rmq-cluster
       queueType: RMQ
       nameSource:
         envVar: INCOMING_MEME_QUEUE_NAME
     ad-queue:
-      clusterName: meme-rmq-cluster
+      clusterProperties: meme-rmq-cluster
       queueType: RMQ
       nameSource:
         envVar: AD_QUEUE_NAME
@@ -719,9 +719,10 @@ spec:
 
 The registry above says that:
 1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
-2. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
-3. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
-4. When creating a temporary queue derived from either of the two queues.
+2. The cluster where the queue is in has it's properties defined in `meme-rmq-cluster` MirrordPropertyList (in the `meme` namespace).
+3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
+4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
+5. When creating a temporary queue derived from either of the two queues.
 
 #### Link the registry to the deployed consumer
 
@@ -740,6 +741,7 @@ The entry's key can be arbitrary, as it will only be [referenced](queue-splittin
 
 The entry's value is an object describing single or multiple RabbitMQ queues consumed by the workload:
 
+* `clusterProperties` the name of MirrordPropertyList containing properties for the connection to the RabbitMQ Cluster field is required.
 * `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
   * `envVar` stores a name of a single environment variables.
   * `regexPattern` selects multiple environment variables based on a regular expression.
@@ -749,6 +751,7 @@ The entry's value is an object describing single or multiple RabbitMQ queues con
   If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
   If set to `false`, values of all variables will be treated directly as queue names/URLs.
   Defaults to `false`.
+* `queueProperties` the name of MirrordPropertyList that contains parameters for the queue definition (durable, queue type or any other attribute)
 
 
 {% hint style="warning" %}
