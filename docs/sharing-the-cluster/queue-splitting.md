@@ -91,6 +91,19 @@ First, we have a consumer app reading messages from a RabbitMQ queue:
 
 ![A K8s application that consumes messages from an RabbitMQ queue](queue-splitting/before-splitting-rmq.svg)
 
+When the first mirrord RabbitMQ splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
+and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
+
+![One RabbitMQ splitting session](queue-splitting/1-user-rmq.svg)
+
+If a second user then starts a mirrord RabbitMQ splitting session on the same queue, a third temporary queue is created (for the second user's local application).
+The mirrord operator includes the new queue and the second user's filter in the routing logic.
+
+![Two RabbitMQ splitting sessions](queue-splitting/2-users-rmq.svg)
+
+If the filters defined by the two users both match some message, one of the users will receive the messages at random.
+
+
 {% endtab %}
 
 {% endtabs %}
