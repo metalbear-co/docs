@@ -671,7 +671,7 @@ You must create at least one `MirrordPropertyList` with your cluster properties 
 
 {% hint style="info" %}
 
-If your application expects specific queue attributes (e.g. durable, or arguments like x-queue-type), create a MirrordPropertyList with those queue declaration properties.
+If your application expects specific queue attributes (e.g. `durable`, or arguments like `x-queue-type`), create a MirrordPropertyList with those queue declaration properties.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
