@@ -714,7 +714,6 @@ spec:
 | `auto_delete`         | If true, the queue is deleted automatically when the last consumer unsubscribes                                   |          | boolean                  | false     |
 | `arguments.*`         | Custom properties sent in queue declaration                                                                       |          | object / key-value pairs |           |
 
-
 {% endstep %}
 {% step %}
 
