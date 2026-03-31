@@ -103,7 +103,6 @@ The mirrord operator includes the new queue and the second user's filter in the 
 
 If the filters defined by the two users both match some message, one of the users will receive the messages at random.
 
-
 {% endtab %}
 
 {% endtabs %}
@@ -629,7 +628,11 @@ Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](
 
 The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters.
 As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting.
-The `MirrordPropertyList` is inspired by `env` and `envFrom` fields in pod's container definition and thus supports declaring the values in the list itself or to load some ConfigMap or Secret keys with specific mapping or wholesale. For specific mapping you can specify `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef` instead of specifying `value` item directly in `properties` field, and for wholesale inclusion you can specify `configMapRef` or `secretRef` where all keys from ConfigMap or Secret as properties (optionally a prefix can be specified that will be appended to keys).
+`MirrordPropertyList` is modeled after the `env` and `envFrom` fields in a pod's container spec. You can:                                                          
+* Set values directly in the `properties` field using `value`.                                                                                                     
+* Reference a single key from a ConfigMap or Secret using `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef`.                                                 
+* Include all keys from a ConfigMap or Secret using `configMapRef` or `secretRef` under `propertiesFrom`. An optional `prefix` is prepended to each key.
+
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
