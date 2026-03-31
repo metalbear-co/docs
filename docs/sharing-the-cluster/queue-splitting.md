@@ -633,6 +633,9 @@ As part of operator installation with `operator.rmqSplitting` enabled, a new [`C
 * Reference a single key from a ConfigMap or Secret using `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef`.                                                 
 * Include all keys from a ConfigMap or Secret using `configMapRef` or `secretRef` under `propertiesFrom`. An optional `prefix` is prepended to each key.
 
+{% hint style="warning" %}
+If you set `properties` field using `value` then it must always be string `value: '1'` instead of `value: 1`.
+{% endhint %}
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
@@ -665,6 +668,26 @@ spec:
 ```
 
 You must create at least one `MirrordPropertyList` with your cluster properties inside of it
+
+{% hint style="info" %}
+
+If you have any attributes like `durable` or queue type (`x-queue-type` argument) that your app expects the queue to have then you should create a `MirrordPropertyList` with said queue declaration properties.
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: meme-quorum-queue
+  namespace: meme
+spec:
+  properties:
+    - name: durable
+      value: 'true'
+    - name: arguments.x-queue-type
+      value: quorum
+```
+
+{% endhint %}
 
 #### Cluster Properties
 
@@ -735,7 +758,6 @@ The registry above says that:
 2. The cluster where the queue is in has its properties defined in `meme-rmq-cluster` MirrordPropertyList (in the `meme` namespace).
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
-5. When creating a temporary queue derived from either of the two queues.
 
 #### Link the registry to the deployed consumer
 
@@ -754,7 +776,7 @@ The entry's key can be arbitrary, as it will only be [referenced](queue-splittin
 
 The entry's value is an object describing single or multiple RabbitMQ queues consumed by the workload:
 
-* `clusterProperties` the name of MirrordPropertyList containing properties for the connection to the RabbitMQ Cluster field is required.
+* `clusterProperties` the name of `MirrordPropertyList` containing properties for the connection to the RabbitMQ Cluster field is required.
 * `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
   * `envVar` stores a name of a single environment variables.
   * `regexPattern` selects multiple environment variables based on a regular expression.
@@ -764,8 +786,7 @@ The entry's value is an object describing single or multiple RabbitMQ queues con
   If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
   If set to `false`, values of all variables will be treated directly as queue names/URLs.
   Defaults to `false`.
-* `queueProperties` the name of MirrordPropertyList that contains parameters for the queue definition (durable, queue type or any other attribute)
-
+* `queueProperties` the name of `MirrordPropertyList` that contains parameters for the queue definition (durable, queue type or any other attribute)
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
