@@ -25,7 +25,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/) and [RabbitMQ](https://www.rabbitmq.com). Pretty soon we'll support RabbitMQ as well.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/) and [RabbitMQ](https://www.rabbitmq.com).
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka.
 {% endhint %}
 
@@ -89,7 +89,7 @@ If the filters defined by the two users both match some message, one of the user
 
 First, we have a consumer app reading messages from a RabbitMQ queue:
 
-![A K8s application that consumes messages from an RabbitMQ queue](queue-splitting/before-splitting-rmq.svg)
+![A K8s application that consumes messages from a RabbitMQ queue](queue-splitting/before-splitting-rmq.svg)
 
 When the first mirrord RabbitMQ splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application),
 and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run):
@@ -627,9 +627,9 @@ Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](
 
 ### Cluster Declaration
 
-The mirrord operator will need a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters when in use.
-As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. With this resource you can define Cluster and Queue parameters we will use for splitting queues.
-The `MirrordPropertyList` is inspired by `env` and `envFrom` fields in pod's container definition and thus supports declareing the values in the list itself or to load some ConfigMap or Secret keys with specific mapping or wholsale. For specific mapping you can specify `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef` instead of specifing `value` item directly in `properties` field, and for wholesale inclusion you can specify `configMapRef` or `secretRef` where all keys from ConfigMap or Secret as properties (optionally a prefix can be specified that will be appended to keys).
+The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters.
+As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting.
+The `MirrordPropertyList` is inspired by `env` and `envFrom` fields in pod's container definition and thus supports declaring the values in the list itself or to load some ConfigMap or Secret keys with specific mapping or wholesale. For specific mapping you can specify `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef` instead of specifying `value` item directly in `properties` field, and for wholesale inclusion you can specify `configMapRef` or `secretRef` where all keys from ConfigMap or Secret as properties (optionally a prefix can be specified that will be appended to keys).
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
@@ -661,7 +661,7 @@ spec:
         optional: true
 ```
 
-You must create at least one `MirrordPropertyList` with our Cluster properties inside of it
+You must create at least one `MirrordPropertyList` with your cluster properties inside of it
 
 #### Cluster Properties
 
@@ -729,7 +729,7 @@ spec:
 
 The registry above says that:
 1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
-2. The cluster where the queue is in has it's properties defined in `meme-rmq-cluster` MirrordPropertyList (in the `meme` namespace).
+2. The cluster where the queue is in has its properties defined in `meme-rmq-cluster` MirrordPropertyList (in the `meme` namespace).
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 5. When creating a temporary queue derived from either of the two queues.
@@ -742,7 +742,7 @@ The reference is specified with `spec.consumer`:
 * `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
 * `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
 
-#### Desribe consumed queues in the registry
+#### Describe consumed queues in the registry
 
 The queue registry describes RabbitMQ queues consumed by the referenced consumer.
 The queues are described in entries of the `spec.queues` object.
