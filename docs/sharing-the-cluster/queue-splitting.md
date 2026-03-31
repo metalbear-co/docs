@@ -667,11 +667,11 @@ spec:
         optional: true
 ```
 
-You must create at least one `MirrordPropertyList` with your cluster properties inside of it
+You must create at least one `MirrordPropertyList` with your cluster properties inside of it.
 
 {% hint style="info" %}
 
-If you have any attributes like `durable` or queue type (`x-queue-type` argument) that your app expects the queue to have then you should create a `MirrordPropertyList` with said queue declaration properties.
+If your application expects specific queue attributes (e.g. durable, or arguments like x-queue-type), create a MirrordPropertyList with those queue declaration properties.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
@@ -774,16 +774,16 @@ The queues are described in entries of the `spec.queues` object.
 
 The entry's key can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 
-The entry's value is an object describing single or multiple RabbitMQ queues consumed by the workload:
+The entry's value is an object describing one or more RabbitMQ queues consumed by the workload:
 
-* `clusterProperties` the name of `MirrordPropertyList` containing properties for the connection to the RabbitMQ Cluster field is required.
+* `clusterProperties` (required) is the name of `MirrordPropertyList` containing connection properties for the RabbitMQ cluster.
 * `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
-  * `envVar` stores a name of a single environment variables.
+  * `envVar` stores a name of a single environment variable.
   * `regexPattern` selects multiple environment variables based on a regular expression.
 * `fallbackName` stores an optional fallback name/URL, in case `nameSource` is not found in the workload spec.
   `nameSource` will still be used to inject the name/URL of the temporary queue.
 * `namesFromJsonMap` specifies how to process the values of environment variables that contain queue names/URLs.
-  If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
+  If set to `true`, values of all variables will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
   If set to `false`, values of all variables will be treated directly as queue names/URLs.
   Defaults to `false`.
 * `queueProperties` the name of `MirrordPropertyList` that contains parameters for the queue definition (durable, queue type or any other attribute)
