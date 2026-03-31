@@ -668,16 +668,26 @@ You must create at least one `MirrordPropertyList` with our Cluster properties i
 | Property              | Description                                                         | Required | Type                                                          | Default                            |
 | --------------------- | :-----------------------------------------------------------------: | :------: | :------------------------------------------------------------:|:----------------------------------:|
 | `scheme`              | Protocol used for the connection                                    |          | `amqp` or `amqps`                                             | `amqp`                             |
-| `host`                | Hostname or IP address of the message broker                        |     ✓    |                                                               |                                    |
+| `host`                | Hostname or IP address of the message broker                        |     ✓    | string                                                        |                                    |
 | `port`                | Network port the broker is listening on                             |          | integer                                                       | 5671 or 5672 according to `scheme` |
-| `username`            | Credential used to authenticate the connection                      |          |                                                               |                                    |
-| `password`            | Secret key or password for the specified user                       |          |                                                               |                                    |
-| `vhost`               | A logical isolation unit (virtual host) within the broker           |          |                                                               | '/'                                |
+| `username`            | Credential used to authenticate the connection                      |          | string                                                        |                                    |
+| `password`            | Secret key or password for the specified user                       |          | string                                                        |                                    |
+| `vhost`               | A logical isolation unit (virtual host) within the broker           |          | string                                                        | '/'                                |
 | `sasl.mechanism`      | Authentication strategy used during the handshake                   |          | `amqplain` `anonymous` `external` `plain` or `rabbit-cr-demo` |                                    |
-| `tls.crt`             | public certificate (PEM format) used for client authentication      |          |                                                               |                                    |
-| `tls.key`             | private key (PEM format) matching the client certificate            |          |                                                               |                                    |
-| `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          |                                                               |                                    |
-| `client.*`            | Custom metadata or properties sent to the broker                    |          |                                                               |                                    |
+| `tls.crt`             | public certificate (PEM format) used for client authentication      |          | string (PEM)                                                  |                                    |
+| `tls.key`             | private key (PEM format) matching the client certificate            |          | string (PEM)                                                  |                                    |
+| `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          | string (PEM)                                                  |                                    |
+| `client.*`            | Custom metadata or properties sent to the broker                    |          | object / key-value pairs                                      |                                    |
+
+#### Queue Declare Properties
+
+| Property              | Description                                                                                                       | Required | Type                     | Default   |
+| --------------------- | :---------------------------------------------------------------------------------------------------------------: | :------: | :-----------------------:|:---------:|
+| `durable`             | If true, the queue survives a broker restart                                                                      |          | boolean                  | false     |
+| `exclusive`           | If true, the queue can only be accessed by the current connection and will be deleted when that connection closes |          | boolean                  | false     |
+| `auto_delete`         | If true, the queue is deleted automatically when the last consumer unsubscribes                                   |          | boolean                  | false     |
+| `arguments.*`         | Custom properties sent in queue declaration                                                                       |          | object / key-value pairs |           |
+
 
 {% endstep %}
 {% step %}
