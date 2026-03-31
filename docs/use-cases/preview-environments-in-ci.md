@@ -95,6 +95,7 @@ If you (or your observability library) don't propagate the header, read it from 
 - **gRPC:** Add it to `metadata` in the outgoing context.
 - **Kafka:** Add it to message headers.
 - **SQS:** Add it to message attributes.
+- **RabbitMQ:** Add it to message headers.
 
 Example (Go with Gin): read `baggage`, set it in context, then add it to outgoing HTTP and gRPC calls:
 

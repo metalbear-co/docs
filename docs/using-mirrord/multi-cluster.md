@@ -99,9 +99,9 @@ If the Primary cluster is also the Default cluster, no synchronization is requir
 
 ---
 
-## SQS Queue Splitting in Multi-Cluster
+## Queue Splitting in Multi-Cluster
 
-[SQS queue splitting](queue-splitting.md) works the same way in multi-cluster as it does in single-cluster. The Primary cluster sends the queue splitting config to every child session during setup, and each Workload cluster creates its own temporary queues and patches the target workload on its own.
+[Queue splitting](queue-splitting.md) (SQS, Kafka, and RabbitMQ) works the same way in multi-cluster as it does in single-cluster. The Primary cluster sends the queue splitting config to every child session during setup, and each Workload cluster creates its own temporary queues and patches the target workload on its own.
 
 {% hint style="info" %}
 Create your `MirrordWorkloadQueueRegistry` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.

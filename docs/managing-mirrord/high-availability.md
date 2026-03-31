@@ -45,7 +45,8 @@ The table below summarizes the current state of development.
 
 | Feature         | HA | Chart version |
 | --------------- | ---| ------------- |
-| SQS splitting   | ✅ | `1.40.3`      |
-| Kafka splitting | ❌ |               |
+| SQS splitting      | ✅ | `1.40.3`      |
+| Kafka splitting    | ❌ |               |
+| RabbitMQ splitting | ❌ |               |
 | Copy target     | ❌ |               |
 | DB branching    | ❌ |               |
