@@ -114,3 +114,8 @@ To use a specific mirrord binary from your filesystem:
 ## WSL
 
 The guide on how to use the extension with remote development on WSL can be found [here](wsl.md#using-mirrord-in-vs-code).
+
+## Viewing extension logs
+
+To view mirrord extension logs in VS Code, open the **Output** panel and select **mirrord** from the dropdown menu.
+
