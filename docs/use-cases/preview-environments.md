@@ -71,12 +71,6 @@ Example output:
 
 - If `-k` is omitted, mirrord generates a new key and prints it in the output.
 
-### Targetless Mode
-
-If no target is defined in the mirrord configuration, Preview Environments run in **targetless mode**.
-
-In this mode, mirrord creates a fresh, isolated pod that still participates in traffic filtering via the environment key, without mirroring an existing workload.
-
 ---
 
 ### Managing Preview Environments
