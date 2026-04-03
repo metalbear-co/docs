@@ -48,6 +48,28 @@ helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
 
+#### Feature-specific images
+
+These images are only pulled when the corresponding feature is enabled:
+
+| Image | Default | Description | Override |
+|-------|---------|-------------|----------|
+| Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image` |
+| MSSQL tools | `ghcr.io/metalbear-co/mssql-tools:latest` | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`). | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
+
+#### DB branching default database images
+
+DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
+
+| Engine | Default image | Override |
+|--------|---------------|----------|
+| PostgreSQL | `docker.io/library/postgres:{version}` | `operator.pgBranchConfig` - `dbPod.image` |
+| MySQL | `docker.io/library/mysql:{version}` | `operator.mysqlBranchConfig` - `dbPod.image` |
+| MongoDB | `docker.io/library/mongo:{version}` | `operator.mongodbBranchConfig` - `dbPod.image` |
+| MSSQL | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image` |
+
+#### Copying images
+
 We recommend [regctl](https://regclient.org/) for copying multi-arch images:
 
 ```sh
