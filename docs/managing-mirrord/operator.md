@@ -52,10 +52,10 @@ Using an internal registry reduces startup time, ingress costs, and removes depe
 
 These images are only pulled when the corresponding feature is enabled:
 
-| Image | Default | Description | Override |
-|-------|---------|-------------|----------|
-| Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image` |
-| MSSQL tools | `ghcr.io/metalbear-co/mssql-tools:latest` | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`). | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
+| Image | Default | Tag | Description | Override |
+|-------|---------|-----|-------------|----------|
+| Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image` |
+| MSSQL tools | `ghcr.io/metalbear-co/mssql-tools` | `latest` | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`). | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
 
 #### DB branching default database images
 
