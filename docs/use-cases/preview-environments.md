@@ -5,10 +5,6 @@ description: Ephemeral, isolated environments connected to your cluster
 
 ---
 
-{% hint style="success" %}
-Preview Environments are now available!
-{% endhint %}
-
 Preview Environments let teams collaborate, validate, and review new code using real traffic, without affecting live services.
 
 A Preview Environment runs **only the new or changed services** in isolated pods inside your Kubernetes cluster. All other dependencies (for example, databases, queues, and upstream services) continue to run in the main cluster, such as staging, and are accessed via mirrord.
@@ -129,3 +125,7 @@ For the full list of inputs and configuration options, see the [action documenta
 ![Preview Environment Creation Workflow](preview-environments/create-env.svg)
 
 ![Preview Environment Modification Workflow](preview-environments/modify-env.svg)
+
+### Readiness
+
+Pods created by preview environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
