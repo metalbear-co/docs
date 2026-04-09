@@ -108,6 +108,28 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
+### Literal Value
+
+You can provide a connection parameter as a literal value directly in the config. This is useful when the credential is injected at runtime by an external system and does not appear in the pod spec where mirrord can read it.
+
+Use a field with `value`:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": "DB_HOST",
+      "port": "DB_PORT",
+      "user": "DB_USER",
+      "password": { "value": "my-db-password" },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+The CLI sends the literal value to the operator, which stores it in a Kubernetes Secret. The branch pod's init container reads the password from that Secret to connect to the source database.
+
 # Copy Modes (MySQL, PostgreSQL & MSSQL)
 
 The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
