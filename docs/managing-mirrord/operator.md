@@ -166,7 +166,7 @@ matchingCriteria:
         path: /var
 ```
 
-Note that some Operator configurations might produce mirrord-agent pods that don't match this specification.
+**Note:** some Operator configurations might produce mirrord-agent pods that don't match this specification.
 In this case you will see mirrord-agent spawn errors in the Operator logs.
 To have the correct WorkloadAllowlist embedded in these logs, merge this snippet into your mirrord Operator `values.yaml`:
 
