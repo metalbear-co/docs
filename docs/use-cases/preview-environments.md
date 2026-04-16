@@ -1,6 +1,6 @@
 ---
 title: Preview Environments
-lastmod: 2026-01-22T08:48:45.000Z
+lastmod: 2026-04-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
 
 ---
@@ -58,7 +58,7 @@ If no key is provided, mirrord generates one automatically
 
 ---
 
-## Starting a Preview Environment
+# Starting a Preview Environment
 
 Create a new Preview Environment using a mirrord configuration file and a container image:
 ```bash
@@ -81,7 +81,7 @@ Example output:
 
 ---
 
-### Managing Preview Environments
+## Managing Preview Environments
 
 1. **Status:** Check the current state of Preview Environments, including which environments are active, which preview pods they contain, and how long they will remain available.
 ```bash
@@ -92,7 +92,7 @@ mirrord preview status
 mirrord preview stop --key <environment-key>
 ```
 
-### GitHub Action
+## GitHub Action
 We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline.
 This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
 
@@ -132,16 +132,26 @@ jobs:
 Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
 For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
 
-## Preview Environment Workflow
+# Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](preview-environments/create-env.svg)
 
 ![Preview Environment Modification Workflow](preview-environments/modify-env.svg)
 
-### Readiness
+---
+
+# Details
+
+## Readiness
 
 Pods created by Preview Environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
 
-### Resources
+## Resources
 
 Preview Environments consist of a Deployment, to manage and maintain the underlying pods, and a [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), to route traffic to the dynamic set of pods. Because the Service doesn't have a Cluster IP, exhaustion of IP addresses when deploying a large number of Preview Environments is not a concern.
+
+## Interaction with `mirrord exec`
+
+If you start a local `mirrord exec` session against the same target and with the same Environment Key as an active Preview Environment, the local session takes precedence.
+
+In that case, mirrord temporarily pauses the conflicting Preview Environment so the local session can receive the matching traffic. When the local session ends, the Preview Environment is resumed automatically.
