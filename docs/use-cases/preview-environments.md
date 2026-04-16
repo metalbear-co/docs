@@ -1,6 +1,6 @@
 ---
 title: Preview Environments
-lastmod: 2026-01-22T08:48:45.000Z
+lastmod: 2026-04-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
 
 ---
@@ -43,6 +43,14 @@ Each Preview Environment is identified by an **environment key**. The key is use
 - Share access to the same environment with other developers
 
 If no key is provided, mirrord generates one automatically
+
+---
+
+## Interaction with `mirrord exec`
+
+If you start a local `mirrord exec` session against the same target and with the same environment key as an active Preview Environment, the local session takes precedence.
+
+In that case, mirrord temporarily pauses the conflicting Preview Environment so the local session can receive the matching traffic. When the local session ends, the Preview Environment is resumed automatically.
 
 ---
 
