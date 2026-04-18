@@ -19,6 +19,22 @@ mirrord container -- docker run nginx
 
 In addition to Docker, Podman and nerdctl are also supported.
 
+## Emulated local containers
+
+If the local container you're running with `mirrord container` needs to run under emulation, set its platform explicitly.
+
+This usually comes up on Apple Silicon hosts when you need to run an `amd64` container locally. In that case, set `container.platform` so the container runtime starts the local container with the expected architecture instead of defaulting to the host architecture.
+
+```json5
+{
+  "container": {
+    "platform": "linux/amd64"
+  }
+}
+```
+
+For example, if your machine is `arm64` but the local container image needs to run as `linux/amd64`, this setting tells the container runtime to start that local container as `amd64`.
+
 Local container execution is currently only supported in the mirrord CLI tool. IDE extension support will be added in the future.
 
 ## What's next?
