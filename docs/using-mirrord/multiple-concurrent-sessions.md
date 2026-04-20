@@ -12,12 +12,12 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 # Introduction
-`mirrord up` allows creating and running multiple related mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
+`mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
 
 # Getting started
 Start by creating a `mirrord-up.yaml`:
 ```yaml
-defaults:
+common:
   accept_invalid_certificates: true
   operator: true
   telemetry: true
@@ -54,19 +54,24 @@ services:
       command: ["bash", "-c", "cd / && python -m http.server 9090"]
 ```
 
-This file is the single source of configuration for all running sessions. Each entry in `services` defines a mirrord session that will run as part of the `mirrord up` session. The configuration for each service is generated based on the corresponding entry, as well as `defaults` (this applies to all services).
+This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord exec`/`mirrord container` process that will run as part of the `mirrord up` session. The configuration for each service is generated based on the corresponding entry, as well as `defaults` (this applies to all services).
 
-Now, in the same directory, run `mirrord up`. This will start all defined sessions, and they will run in parallel. The `mirrord up` session will be stopped once when interrupted (`ctrl-c`) or one of the running mirrord sessions shuts down.
+Now, in the same directory of the `mirrord-up.yaml` file, run
+```sh
+$ mirrord up
+```
+
+This will start all defined sessions, and they will run in parallel. The `mirrord up` session will be stopped once when interrupted (`ctrl-c`) or one of the running mirrord sessions shuts down.
 
 # Configuration
 
 ## Config file (`mirrord-up.yaml`)
 
-### `defaults`
+### `common`
 Common configuration options, applied to all defined services. Currently 3 options are supported:
-- `accept_invalid_certificates`
-- `operator`
-- `telemetry`
+- [`accept_invalid_certificates`](https://metalbear.com/mirrord/docs/config/options#root-accept_invalid_certificates)
+- [`operator`](https://metalbear.com/mirrord/docs/config/options#root-operator)
+- [`telemetry`](https://metalbear.com/mirrord/docs/config/options#root-telemetry)
 
 All 3 map directly to their `mirrord.json` counterparts.
 
@@ -77,17 +82,17 @@ A map from service ids to a `ServiceConfig`. Each entry in this map defines and 
 Specifies the target of the session. Has 2 fields: `path` and `namespace`, which map directly to their `mirrord.json` counterparts.
 
 #### `services.*.env`
-Specifies the environment variable configuration for the given service. Maps directly (1:1) to `feature.env`
+Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
 
 #### `services.*.mode`
 So far, only `split` is supported. The incoming mode is set to `steal` with http filter.
 User-provided filter is used if provided, otherwise defaulting to `baggage: .*mirrord-session={key}.*`.
 
 #### `services.*.http_filter`
-Specifies the HTTP filtering configuration for the given service. Maps directly to `feature.network.incoming.http_filter`
+Specifies the HTTP filtering configuration for the given service. Maps directly to [`feature.network.incoming.http_filter`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
 #### `services.*.ignore_ports` 
-List of ports that should be ignored in incoming traffic. Maps directly to `feature.network.incoming.ignore_ports`
+List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
 #### `services.*.messages` 
 Specifies queue splitting configuration (Not supported as of now).
