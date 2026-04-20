@@ -187,16 +187,21 @@ If both are specified, mirrord ignores the `tables` configuration.
 
 # MongoDB Copy Modes
 
-MongoDB supports two copy modes:
+MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
+When combined with [collection filters](#mongodb-collection-filters), the mode determines what happens to collections that are _not_ listed in the filter. Filtered collections always receive only the matching documents.
 
 1. ### Empty Database
 
 `"mode": "empty"` Creates an empty database. This is the default value when the `copy` attribute is not specified.
 Best for workflows where your application initializes the collections or runs migrations as part of startup.
 
+When combined with collection filters: only the filtered collections are created (with matching documents). All other collections are **not created**.
+
 2. ### Complete Database
 
 `"mode": "all"` Copies all collections and data from the source database.
+
+When combined with collection filters: all collections are fully copied, but filtered collections receive **only matching documents** instead of the full data.
 
 {% hint style="warning" %}
 Use this option with caution.
@@ -205,12 +210,21 @@ Copying large datasets can significantly increase branch creation time and stora
 {% endhint %}
 
 {% hint style="info" %}
-MongoDB does not support a `"schema"` copy mode. MongoDB is schema-less, so `"empty"` and `"all"` are the available options.
+MongoDB does not support a `"schema"` copy mode. In relational databases, `"schema"` copies table structures without data. MongoDB is schema-less and collections don't have a predefined structure separate from their documents, so `"empty"` and `"all"` are the available options.
 {% endhint %}
 
 ### MongoDB Collection Filters
 
-Developers can customize which collections are copied and apply MongoDB query filters per collection:
+Developers can customize which collections are copied and apply MongoDB query filters per collection.
+
+The copy mode controls the **baseline** (what happens to collections not mentioned in your filters):
+
+| Mode | Unfiltered collections | Filtered collections |
+|------|----------------------|---------------------|
+| `"empty"` | Not created | Created with matching documents only |
+| `"all"` | Fully copied (all documents) | Copied with matching documents only |
+
+#### Example: `"mode": "all"` with filters
 
 ```json
 {
@@ -228,11 +242,24 @@ Developers can customize which collections are copied and apply MongoDB query fi
 }
 ```
 
-#### In this example
-
 All collections are copied, but the `users` collection includes only documents for alice and bob, and the `orders` collection includes only documents created after the given timestamp.
 
-Collection filters can also be combined with `"mode": "empty"`, in which case only the specified collections (and their filtered data) are copied.
+#### Example: `"mode": "empty"` with filters
+
+```json
+{
+  "copy": {
+    "mode": "empty",
+    "collections": {
+      "users": {
+        "filter": "{\"name\": {\"$in\": [\"alice\", \"bob\"]}}"
+      }
+    }
+  }
+}
+```
+
+Only the `users` collection is created, containing documents for alice and bob. All other collections are not created. This is useful when you only need a subset of reference data and your application handles the rest through migrations.
 
 # IAM Authentication
 
