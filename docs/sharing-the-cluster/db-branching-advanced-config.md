@@ -121,7 +121,7 @@ Use a field with `value`:
       "host": "DB_HOST",
       "port": "DB_PORT",
       "user": "DB_USER",
-      "password": { "value": "my-db-password" },
+      "password": { "env_var_name": "DB_PASSWORD", "value": "my-db-password" },
       "database": "DB_NAME"
     }
   }
