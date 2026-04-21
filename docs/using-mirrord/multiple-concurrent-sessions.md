@@ -54,7 +54,7 @@ services:
       command: ["bash", "-c", "cd / && python -m http.server 9090"]
 ```
 
-This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord exec`/`mirrord container` process that will run as part of the `mirrord up` session. The configuration for each service is generated based on the corresponding entry, as well as `defaults` (this applies to all services).
+This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord exec`/`mirrord container` process that will run as part of the `mirrord up` session. The configuration for each service is generated based on the corresponding entry, as well as `common` (this applies to all services).
 
 Now, in the same directory of the `mirrord-up.yaml` file, run
 ```sh
