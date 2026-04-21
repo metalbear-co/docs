@@ -88,14 +88,18 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
 
 Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
 
-Instead of a plain string (env var name), use an object with `secret` and `key`:
+Instead of a plain string (env var name), use an object with `secret`, `key`, and `env_var_name`. The operator reads the Secret and injects the value under `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) regardless of whether the target pod exposes it:
 
 ```json
 {
   "connection": {
     "params": {
       "host": "DB_HOST",
-      "password": { "secret": "rds-credentials", "key": "password" },
+      "password": {
+        "secret": "rds-credentials",
+        "key": "password",
+        "env_var_name": "DB_PASSWORD"
+      },
       "database": "DB_NAME"
     }
   }
@@ -128,7 +132,7 @@ Use a field with `value`:
 }
 ```
 
-The CLI sends the literal value to the operator, which stores it in a Kubernetes Secret. The branch pod's init container reads the password from that Secret to connect to the source database.
+Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
 # Copy Modes (MySQL, PostgreSQL & MSSQL)
 
