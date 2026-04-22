@@ -134,6 +134,86 @@ Use a field with `value`:
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
+### Composite Environment Variables
+
+Some applications pack multiple connection details into a single environment variable. For example, a target pod might expose:
+
+```yaml
+- name: DB_SERVER
+  value: "prod-db.internal:5432"
+```
+
+Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_pattern` to specify which part of the value belongs to which parameter. The pattern works on both `params` fields and `url` sources.
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": {
+        "env_var_name": "DB_SERVER",
+        "value_pattern": "^(?P<host>[^:]+):(?P<port>\\d+)$"
+      },
+      "port": {
+        "env_var_name": "DB_SERVER",
+        "value_pattern": "^(?P<host>[^:]+):(?P<port>\\d+)$"
+      },
+      "user": "DB_USER",
+      "password": "DB_PASSWORD",
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+Both `host` and `port` point at the same `DB_SERVER` env var. During a session, only the matched part of the value is swapped out (just the host, or just the port). The rest of the string stays the same, so your app still sees `DB_SERVER` in the `host:port` shape it expects.
+
+To pick which piece of the regex to replace, the first capture group from this list is used:
+
+1. A group named after the parameter, like `(?P<host>...)` when the parameter is `host`. Use this when one regex covers several parameters at once (the `DB_SERVER` example above).
+2. A group named `(?P<value>...)`. Useful as a generic name when the regex is only meant for one parameter.
+3. A plain unnamed group, like `([^:]+)`. If the regex has exactly one, that one is used.
+4. If there are several unnamed groups, the first one is used.
+
+The regex must have at least one capture group, otherwise the configuration is rejected.
+
+### Multiple Sources for the Same Parameter
+
+Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection (for example, separate read/write URLs):
+
+```json
+{
+  "connection": {
+    "url": ["DATABASE_WRITE_URL", "DATABASE_READ_URL"]
+  }
+}
+```
+
+The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
+
+Arrays also compose with `value_pattern` for composite setups. For example, when both `WRITE_SERVER` and `READ_SERVER` hold `host:port`:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": [
+        { "env_var_name": "WRITE_SERVER", "value_pattern": "^([^:]+):" },
+        { "env_var_name": "READ_SERVER", "value_pattern": "^([^:]+):" }
+      ],
+      "port": [
+        { "env_var_name": "WRITE_SERVER", "value_pattern": ":(\\d+)$" },
+        { "env_var_name": "READ_SERVER", "value_pattern": ":(\\d+)$" }
+      ],
+      "user": ["DB_USER", "DB_READ_USER"],
+      "password": ["DB_PASSWORD", "DB_READ_PASSWORD"],
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+`WRITE_SERVER` (the first entry) is used to extract the source connection. During the session, `WRITE_SERVER`, `READ_SERVER`, both user vars, and both password vars are all rewritten to point at the branch.
+
 # Copy Modes (MySQL, PostgreSQL & MSSQL)
 
 The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
