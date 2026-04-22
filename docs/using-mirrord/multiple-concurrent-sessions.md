@@ -78,6 +78,25 @@ A map from service ids to a `ServiceConfig`. Each entry in this map defines and 
 
 #### `services.*.target`
 Specifies the target of the session. Has 2 fields: `path` and `namespace`, which map directly to their `mirrord.json` counterparts.
+Examples:
+```yaml
+# Specify both namespace and path
+target:
+  path: deployment/test-app
+  namespace: test-namespace
+```
+
+```yaml
+# Namespace only, will be targetless
+target:
+  namespace: test-namespace
+```
+
+```yaml
+# Path only, will use default namespace
+target:
+  path: deployment/test-app
+```
 
 #### `services.*.env`
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
@@ -99,6 +118,19 @@ Specifies queue splitting configuration (Not supported as of now).
 Specifies the command that should be run with mirrord. Has 2 fields:
 - `command`: Array of strings containing the command to be run and its CLI arguments.
 - `type`: can be either `exec` or `container`, defaults to `exec`. Specifies how mirrord should be run (i.e. with `mirrord exec` or `mirrord container`)
+
+Examples:
+```yaml
+run:
+  type: container
+  command: ["docker", "run", "my-app"]
+```
+
+```yaml
+run:
+  # `type` defaults to `exec`, no need to specify explicitly
+  command: ["node", "app.js"]
+```
 
 
 ## CLI args
