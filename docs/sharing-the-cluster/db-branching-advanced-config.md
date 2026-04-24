@@ -19,16 +19,13 @@ These settings give additional flexibility in how mirrord handles database branc
   "db_branches": [
     {
       "id": "users-mysql-db",            // Optional
-      "type": "mysql",                    // Available options [mysql|pg|mongodb]
+      "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
       "version": "8.0",
       "name": "users-database-name",      // Optional
       "ttl_secs": 60,                     // Optional
       "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
       "connection": {
-        "url": {
-          "type": "env",
-          "variable": "DB_CONNECTION_URL" // Required
-        }
+        "url": "DB_CONNECTION_URL"
       },
       "copy": {
         "mode": "empty"                   // Optional, Defaults to "empty" if not specified
@@ -57,15 +54,14 @@ Provide a single environment variable that contains the full database connection
 ```json
 {
   "connection": {
-    "type": "env",
     "url": "DATABASE_URL"
   }
 }
 ```
 
-The `type` field controls where the environment variable is read from (applies to both URL and params modes):
+The optional `type` field controls where the environment variable is read from (applies to both URL and params modes). It defaults to `"env"` when omitted.
 
-- `"env"`: Direct `env` entry in the target pod spec.
+- `"env"` (default): Direct `env` entry in the target pod spec.
 - `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
 
 ### Individual Connection Parameters (Params)
@@ -77,7 +73,6 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
 ```json
 {
   "connection": {
-    "type": "env",
     "params": {
       "host": "DB_HOST",
       "port": "DB_PORT",
@@ -93,15 +88,18 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
 
 Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
 
-Instead of a plain string (env var name), use an object with `secret` and `key`:
+Instead of a plain string (env var name), use an object with `secret`, `key`, and `env_var_name`. The operator reads the Secret and injects the value under `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) regardless of whether the target pod exposes it:
 
 ```json
 {
   "connection": {
-    "type": "env",
     "params": {
       "host": "DB_HOST",
-      "password": { "secret": "rds-credentials", "key": "password" },
+      "password": {
+        "secret": "rds-credentials",
+        "key": "password",
+        "env_var_name": "DB_PASSWORD"
+      },
       "database": "DB_NAME"
     }
   }
@@ -114,9 +112,31 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
-# Copy Modes (MySQL & PostgreSQL)
+### Literal Value
 
-The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL and PostgreSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
+You can provide a connection parameter as a literal value directly in the config. This is useful when the credential is injected at runtime by an external system and does not appear in the pod spec where mirrord can read it.
+
+Use a field with `value`:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": "DB_HOST",
+      "port": "DB_PORT",
+      "user": "DB_USER",
+      "password": { "env_var_name": "DB_PASSWORD", "value": "my-db-password" },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
+
+# Copy Modes (MySQL, PostgreSQL & MSSQL)
+
+The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
 
 1. ### Empty Database
 
@@ -171,16 +191,21 @@ If both are specified, mirrord ignores the `tables` configuration.
 
 # MongoDB Copy Modes
 
-MongoDB supports two copy modes:
+MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
+When combined with [collection filters](#mongodb-collection-filters), the mode determines what happens to collections that are _not_ listed in the filter. Filtered collections always receive only the matching documents.
 
 1. ### Empty Database
 
 `"mode": "empty"` Creates an empty database. This is the default value when the `copy` attribute is not specified.
 Best for workflows where your application initializes the collections or runs migrations as part of startup.
 
+When combined with collection filters: only the filtered collections are created (with matching documents). All other collections are **not created**.
+
 2. ### Complete Database
 
 `"mode": "all"` Copies all collections and data from the source database.
+
+When combined with collection filters: all collections are fully copied, but filtered collections receive **only matching documents** instead of the full data.
 
 {% hint style="warning" %}
 Use this option with caution.
@@ -189,12 +214,21 @@ Copying large datasets can significantly increase branch creation time and stora
 {% endhint %}
 
 {% hint style="info" %}
-MongoDB does not support a `"schema"` copy mode. MongoDB is schema-less, so `"empty"` and `"all"` are the available options.
+MongoDB does not support a `"schema"` copy mode. In relational databases, `"schema"` copies table structures without data. MongoDB is schema-less and collections don't have a predefined structure separate from their documents, so `"empty"` and `"all"` are the available options.
 {% endhint %}
 
 ### MongoDB Collection Filters
 
-Developers can customize which collections are copied and apply MongoDB query filters per collection:
+Developers can customize which collections are copied and apply MongoDB query filters per collection.
+
+The copy mode controls the **baseline** (what happens to collections not mentioned in your filters):
+
+| Mode | Unfiltered collections | Filtered collections |
+|------|----------------------|---------------------|
+| `"empty"` | Not created | Created with matching documents only |
+| `"all"` | Fully copied (all documents) | Copied with matching documents only |
+
+#### Example: `"mode": "all"` with filters
 
 ```json
 {
@@ -212,11 +246,24 @@ Developers can customize which collections are copied and apply MongoDB query fi
 }
 ```
 
-#### In this example
-
 All collections are copied, but the `users` collection includes only documents for alice and bob, and the `orders` collection includes only documents created after the given timestamp.
 
-Collection filters can also be combined with `"mode": "empty"`, in which case only the specified collections (and their filtered data) are copied.
+#### Example: `"mode": "empty"` with filters
+
+```json
+{
+  "copy": {
+    "mode": "empty",
+    "collections": {
+      "users": {
+        "filter": "{\"name\": {\"$in\": [\"alice\", \"bob\"]}}"
+      }
+    }
+  }
+}
+```
+
+Only the `users` collection is created, containing documents for alice and bob. All other collections are not created. This is useful when you only need a subset of reference data and your application handles the rest through migrations.
 
 # IAM Authentication
 
@@ -238,7 +285,7 @@ Uses the standard AWS environment variables already present in the target pod.
     {
       "type": "pg",
       "version": "16",
-      "connection": { "url": { "type": "env", "variable": "DATABASE_URL" } },
+      "connection": { "url": "DATABASE_URL" },
       "iam_auth": { "type": "aws_rds" }
     }
   ]
@@ -283,7 +330,7 @@ Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
     {
       "type": "pg",
       "version": "17",
-      "connection": { "url": { "type": "env", "variable": "DATABASE_URL" } },
+      "connection": { "url": "DATABASE_URL" },
       "iam_auth": { "type": "gcp_cloud_sql" }
     }
   ]

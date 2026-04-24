@@ -5,10 +5,6 @@ description: Ephemeral, isolated environments connected to your cluster
 
 ---
 
-{% hint style="success" %}
-Preview Environments are now available!
-{% endhint %}
-
 Preview Environments let teams collaborate, validate, and review new code using real traffic, without affecting live services.
 
 A Preview Environment runs **only the new or changed services** in isolated pods inside your Kubernetes cluster. All other dependencies (for example, databases, queues, and upstream services) continue to run in the main cluster, such as staging, and are accessed via mirrord.
@@ -71,12 +67,6 @@ Example output:
 
 - If `-k` is omitted, mirrord generates a new key and prints it in the output.
 
-### Targetless Mode
-
-If no target is defined in the mirrord configuration, Preview Environments run in **targetless mode**.
-
-In this mode, mirrord creates a fresh, isolated pod that still participates in traffic filtering via the environment key, without mirroring an existing workload.
-
 ---
 
 ### Managing Preview Environments
@@ -90,8 +80,52 @@ mirrord preview status
 mirrord preview stop --key <environment-key>
 ```
 
+### GitHub Action
+We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline.
+This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
+
+```yaml
+name: Preview Environment
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  preview-start:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ... configure kubeconfig for your cluster ...
+      - uses: metalbear-co/mirrord-preview@main
+        with:
+          action: start
+          target: deployment/my-app
+          namespace: staging
+          image: myrepo/myapp:${{ github.sha }}
+          filter: 'baggage: mirrord-session={{ key }}'
+          key: pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
+
+  preview-stop:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      # ... configure kubeconfig for your cluster ...
+      - uses: metalbear-co/mirrord-preview@main
+        with:
+          action: stop
+          key: pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
+```
+
+Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
+For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
+
 ## Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](preview-environments/create-env.svg)
 
 ![Preview Environment Modification Workflow](preview-environments/modify-env.svg)
+
+### Readiness
+
+Pods created by preview environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).

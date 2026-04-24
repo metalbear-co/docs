@@ -43,6 +43,7 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
+* [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 
 ## Sharing the Cluster
 

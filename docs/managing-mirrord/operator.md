@@ -48,6 +48,28 @@ helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
 
+#### Feature-specific images
+
+These images are only pulled when the corresponding feature is enabled:
+
+| Image | Default | Tag | Description | Override |
+|-------|---------|-----|-------------|----------|
+| Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image` |
+| MSSQL tools | `ghcr.io/metalbear-co/mssql-tools` | `latest` | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`). | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
+
+#### DB branching default database images
+
+DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
+
+| Engine | Default image | Override |
+|--------|---------------|----------|
+| PostgreSQL | `docker.io/library/postgres:{version}` | `operator.pgBranchConfig` - `dbPod.image` |
+| MySQL | `docker.io/library/mysql:{version}` | `operator.mysqlBranchConfig` - `dbPod.image` |
+| MongoDB | `docker.io/library/mongo:{version}` | `operator.mongodbBranchConfig` - `dbPod.image` |
+| MSSQL | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image` |
+
+#### Copying images
+
 We recommend [regctl](https://regclient.org/) for copying multi-arch images:
 
 ```sh
@@ -92,6 +114,66 @@ seLinuxContext:
 users:
   - system:serviceaccount:mirrord:mirrord-operator
   - system:serviceaccount:mirrord:default
+```
+
+### GKE Autopilot
+
+In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
+
+Apply the following [WorkloadAllowlist](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-privileged-allowlists):
+
+```yaml
+apiVersion: auto.gke.io/v1
+kind: WorkloadAllowlist
+metadata:
+  name: mirrord-agent
+  annotations:
+    autopilot.gke.io/no-connect: "true"
+exemptions:
+  - autogke-default-linux-capabilities
+  - autogke-disallow-hostnamespaces
+  - autogke-no-write-mode-hostpath
+  - autogke-node-affinity-selector-limitation
+matchingCriteria:
+  hostPID: true
+  containers:
+    - name: mirrord-agent
+      image: ghcr.io/metalbear-co/mirrord
+      command:
+        - ./mirrord-agent
+      args:
+        - "^.*$"
+      env:
+        - name: "^.*$"
+      securityContext:
+        capabilities:
+          add:
+            - SYS_ADMIN
+            - SYS_PTRACE
+            - NET_ADMIN
+        privileged: false
+      volumeMounts:
+        - name: hostrun
+          mountPath: /host/run
+        - name: hostvar
+          mountPath: /host/var
+  volumes:
+    - name: hostrun
+      hostPath:
+        path: /run
+    - name: hostvar
+      hostPath:
+        path: /var
+```
+
+**Note:** some Operator configurations might produce mirrord-agent pods that don't match this specification.
+When that happens, you'll see agent spawn errors in the Operator logs.
+To get the correct WorkloadAllowlist embedded in those error messages, merge this snippet into your mirrord Operator `values.yaml`:
+
+```yaml
+agent:
+  annotations:
+    cloud.google.com/generate-allowlist: "true"
 ```
 
 ## Verifying the Installation

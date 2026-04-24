@@ -33,7 +33,7 @@ You can enable it with the following configuration in the `mirrord.json` file:
 }
 ```
 
-You can see all the agent configuration options [here](../reference/configuration.md#agent).
+You can see all the agent configuration options [here](https://metalbear.com/mirrord/docs/config#agent).
 
 # Latency Diagnose
 The `mirrord diagnose latency` command helps identify network latency issues between your local environment and the target workload. It measures round-trip time (RTT) across multiple iterations and reports latency statistics, making it useful when mirrord feels slow or requests take longer than expected.
