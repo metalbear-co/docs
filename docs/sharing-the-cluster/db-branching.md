@@ -49,23 +49,25 @@ Before you start, make sure you have:
 Developers define branches in their `mirrord.json`:
 ```json
 {
-  "db_branches": [
-    {
-      "id": "users-mysql-db",             // Optional
-      "location": "remote",               // Optional, default is "remote", Available options [remote | local]
-      "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
-      "version": "8.0",
-      "name": "users-database-name",      // Optional
-      "ttl_secs": 60,                     // Optional
-      "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
-      "connection": {
-        "url": "DATABASE_URL"
-      },
-      "copy": {
-        "mode": "empty"                   // Defaults to "empty" if not specified
+  "feature": {
+    "db_branches": [
+      {
+        "id": "users-mysql-db",             // Optional
+        "location": "remote",               // Optional, default is "remote", Available options [remote | local]
+        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
+        "version": "8.0",
+        "name": "users-database-name",      // Optional
+        "ttl_secs": 60,                     // Optional
+        "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
+        "connection": {
+          "url": "DATABASE_URL"
+        },
+        "copy": {
+          "mode": "empty"                   // Defaults to "empty" if not specified
+        }
       }
-    }
-  ]
+    ]
+  }
 }
 ```
 
@@ -116,22 +118,24 @@ mirrord can spin up a local Redis instance, automatically redirecting your app's
 
 ```json
 {
-  "db_branches": [
-    {
-      "type": "redis",
-      "location": "local",                     // "local" spawns Redis, "remote" is no-op (default)
-      "connection": {
-        // Use "host" if your app reads Redis as host:port (e.g. REDIS_ADDR=redis:6379)
-        // Use "url" if your app reads a full Redis URL (e.g. REDIS_URL=redis://user:pass@redis:6379/0)
-        "host": { "type": "env", "variable": "REDIS_ADDR" }
-      },
-      "local": {                               // Optional runtime config
-        "port": 6379,                          // Custom port (default: 6379)
-        "runtime": "container",                // "container" (default), "redis_server", or "auto"
-        "container_runtime": "docker"          // "docker" (default), "podman", or "nerdctl"
+  "feature": {
+    "db_branches": [
+      {
+        "type": "redis",
+        "location": "local",                     // "local" spawns Redis, "remote" is no-op (default)
+        "connection": {
+          // Use "host" if your app reads Redis as host:port (e.g. REDIS_ADDR=redis:6379)
+          // Use "url" if your app reads a full Redis URL (e.g. REDIS_URL=redis://user:pass@redis:6379/0)
+          "host": { "type": "env", "variable": "REDIS_ADDR" }
+        },
+        "local": {                               // Optional runtime config
+          "port": 6379,                          // Custom port (default: 6379)
+          "runtime": "container",                // "container" (default), "redis_server", or "auto"
+          "container_runtime": "docker"          // "docker" (default), "podman", or "nerdctl"
+        }
       }
-    }
-  ]
+    ]
+  }
 }
 ```
 
