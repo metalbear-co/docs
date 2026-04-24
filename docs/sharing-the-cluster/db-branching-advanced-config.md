@@ -151,11 +151,11 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
     "params": {
       "host": {
         "env_var_name": "DB_SERVER",
-        "value_pattern": "^(?P<host>[^:]+):(?P<port>\\d+)$"
+        "value_pattern": "^(?P<host>[^:]+):\\d+$"
       },
       "port": {
         "env_var_name": "DB_SERVER",
-        "value_pattern": "^(?P<host>[^:]+):(?P<port>\\d+)$"
+        "value_pattern": "^[^:]+:(?P<port>\\d+)$"
       },
       "user": "DB_USER",
       "password": "DB_PASSWORD",
