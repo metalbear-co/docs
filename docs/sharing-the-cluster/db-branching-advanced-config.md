@@ -176,7 +176,10 @@ For single-parameter patterns you can also use `(?P<value>...)` as a generic nam
 
 ### Multiple Sources for the Same Parameter
 
-Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection (for example, separate read/write URLs):
+Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection. For example, separate read/write URLs.
+
+> **Rule:** the **first entry** in the array is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod.
+> 
 
 ```json
 {
