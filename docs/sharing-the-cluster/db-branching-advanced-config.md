@@ -134,6 +134,92 @@ Use a field with `value`:
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
+### Composite Environment Variables
+
+Some applications pack multiple connection details into a single environment variable. For example, a target pod might expose:
+
+```yaml
+- name: DB_SERVER
+  value: "prod-db.internal:5432"
+```
+
+Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_pattern` to specify which part of the value belongs to which parameter. The pattern works on both `params` fields and `url` sources.
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": {
+        "env_var_name": "DB_SERVER",
+        "value_pattern": "^(?P<host>[^:]+):\\d+$"
+      },
+      "port": {
+        "env_var_name": "DB_SERVER",
+        "value_pattern": "^[^:]+:(?P<port>\\d+)$"
+      },
+      "user": "DB_USER",
+      "password": "DB_PASSWORD",
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
+
+### Choosing the capture group
+The capture group name follows the parameter name - `(?P<host>...)` for the `host` variable, `(?P<port>...)` for the `port` variable.
+
+For single-parameter patterns you can also use `(?P<value>...)` as a generic name, or a plain unnamed group like ([^:]+). If the regex contains more than one unnamed group, the first one is used.
+
+> The regex must contain at least one capture group, otherwise the configuration is rejected.
+
+### Multiple Sources for the Same Parameter
+
+Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection. For example, separate read/write URLs.
+
+> **Rule:** the **first entry** in the array is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod.
+> 
+
+```json
+{
+  "connection": {
+    "url": ["DATABASE_WRITE_URL", "DATABASE_READ_URL"]
+  }
+}
+```
+
+The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
+
+### Combining arrays with `value_pattern`
+If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. 
+
+As with plain arrays, the first entry is used as the source. Even if `WRITE_SERVER` and `READ_SERVER` point to different databases, only `WRITE_SERVER` is cloned. During the session, all entries are rewritten to point at the branch.
+
+For example, when both `WRITE_SERVER` and `READ_SERVER ` hold a `host:port` pair:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": [
+        { "env_var_name": "WRITE_SERVER", "value_pattern": "^([^:]+):" },
+        { "env_var_name": "READ_SERVER", "value_pattern": "^([^:]+):" }
+      ],
+      "port": [
+        { "env_var_name": "WRITE_SERVER", "value_pattern": ":(\\d+)$" },
+        { "env_var_name": "READ_SERVER", "value_pattern": ":(\\d+)$" }
+      ],
+      "user": ["DB_USER", "DB_READ_USER"],
+      "password": ["DB_PASSWORD", "DB_READ_PASSWORD"],
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+The same rule applies: `WRITE_SERVER` (the first entry) is used to extract the source connection. During the session, all entries - `WRITE_SERVER`, `READ_SERVER`, both user vars, and both password vars - are rewritten to point at the branch.
+
 # Copy Modes (MySQL, PostgreSQL & MSSQL)
 
 The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
