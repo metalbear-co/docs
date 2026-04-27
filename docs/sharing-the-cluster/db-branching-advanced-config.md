@@ -212,7 +212,7 @@ Arrays also compose with `value_pattern` for composite setups. For example, when
 }
 ```
 
-`WRITE_SERVER` (the first entry) is used to extract the source connection. During the session, `WRITE_SERVER`, `READ_SERVER`, both user vars, and both password vars are all rewritten to point at the branch.
+The same rule applies: `WRITE_SERVER` (the first entry) is used to extract the source connection. During the session, all entries - `WRITE_SERVER`, `READ_SERVER`, both user vars, and both password vars - are rewritten to point at the branch.
 
 # Copy Modes (MySQL, PostgreSQL & MSSQL)
 
