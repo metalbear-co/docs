@@ -167,14 +167,12 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
 
 During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
 
-To pick which piece of the regex to replace, the first capture group from this list is used:
+### Choosing the capture group
+The capture group name follows the parameter name - `(?P<host>...)` for the `host` variable, `(?P<port>...)` for the `port` variable.
 
-1. A group named after the parameter, like `(?P<host>...)` when the parameter is `host`. Use this when one regex covers several parameters at once (the `DB_SERVER` example above).
-2. A group named `(?P<value>...)`. Useful as a generic name when the regex is only meant for one parameter.
-3. A plain unnamed group, like `([^:]+)`. If the regex has exactly one, that one is used.
-4. If there are several unnamed groups, the first one is used.
+For single-parameter patterns you can also use `(?P<value>...)` as a generic name, or a plain unnamed group like ([^:]+). If the regex contains more than one unnamed group, the first one is used.
 
-The regex must have at least one capture group, otherwise the configuration is rejected.
+> The regex must contain at least one capture group, otherwise the configuration is rejected.
 
 ### Multiple Sources for the Same Parameter
 
