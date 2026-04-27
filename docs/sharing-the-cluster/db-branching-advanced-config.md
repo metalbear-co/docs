@@ -165,7 +165,7 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
 }
 ```
 
-Both `host` and `port` point at the same `DB_SERVER` env var. During a session, only the matched part of the value is swapped out (just the host, or just the port). The rest of the string stays the same, so your app still sees `DB_SERVER` in the `host:port` shape it expects.
+During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
 
 To pick which piece of the regex to replace, the first capture group from this list is used:
 
