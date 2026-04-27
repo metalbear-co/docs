@@ -192,7 +192,11 @@ Both `url` and individual `params` fields accept either a single value or an arr
 The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
 
 ### Combining arrays with `value_pattern`
-If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. For example, when both `WRITE_SERVER` and `READ_SERVER ` hold a `host:port` pair:
+If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. 
+
+As with plain arrays, the first entry is used as the source. Even if `WRITE_SERVER` and `READ_SERVER` point to different databases, only `WRITE_SERVER` is cloned. During the session, all entries are rewritten to point at the branch.
+
+For example, when both `WRITE_SERVER` and `READ_SERVER ` hold a `host:port` pair:
 
 ```json
 {
