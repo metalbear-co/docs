@@ -79,7 +79,7 @@ Developers define branches in their `mirrord.json`:
 4. `version`: Database engine version.
 5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
-6. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes. The maximum allowed is 15 minutes. If you set a value above 15, mirrord will automatically fall back to 15 minutes.
+6. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes.
 7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
