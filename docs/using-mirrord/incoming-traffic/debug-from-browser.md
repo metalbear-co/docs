@@ -2,7 +2,7 @@
 title: "Debug from Browser"
 description: "Use the Chrome extension to route browser traffic to your local process"
 date: 2024-07-07T09:39:44+01:00
-lastmod: 2026-02-03T00:00:00+00:00
+lastmod: 2026-04-28T00:00:00+00:00
 draft: false
 menu:
   docs:
@@ -11,101 +11,128 @@ toc: true
 tags: ["team", "enterprise"]
 ---
 
-The mirrord Browser Extension injects HTTP headers into your browser requests. It can be used as a standalone tool for anyone who needs header injection, or together with mirrord CLI sessions for automatic configuration. Depending on the URL scope, it can inject into all requests or only those matching specific URL patterns.
+The mirrord browser extension injects HTTP headers into your browser's outgoing requests so that traffic which hits your cluster matches a mirrord HTTP filter and gets routed to your local process. With it, you can hit a staging URL in Chrome and have your local code answer, without changing any application code or configuring proxies.
+
+There are two ways to use it:
+
+- **With operator sessions.** Pick a teammate's running mirrord session (or one of your own) from the popup and click Join. The extension figures out which header to inject from that session's HTTP filter and starts injecting on every browser request. This is the recommended path on a cluster running the [mirrord operator](../../managing-mirrord/operator.md).
+- **Standalone (Manual).** Configure a header name, value, and optional URL scope yourself. No CLI session required.
 
 ## Prerequisites
 
-1. Google Chrome installed.
-2. [mirrord Browser Extension for Chrome](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) installed.
+1. Google Chrome.
+2. The [mirrord browser extension](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) installed.
 
-For use with mirrord CLI sessions, you also need:
+For operator sessions, additionally:
 
-3. Header propagation set up in your app. Prefer enabling W3C context propagation in your existing tracing or observability library first, since many frameworks already forward `baggage` or `tracestate` automatically. Only add manual forwarding if your stack does not already do it.
-4. A valid HTTP header filter defined in your `mirrord.json` under `feature.network.incoming.http_filter.header_filter` with `mode` set to `steal`.
-5. Browser extension config enabled in your `mirrord.json`.
-   **Note:** This feature is experimental.
-   ```json
-   {
-     "feature": {
-       "network": {
-         "incoming": {
-           "mode": "steal",
-           "http_filter": {
-             "header_filter": "^baggage: .*mirrord-session=browser-debug.*"
-           }
-         }
-       }
-     },
-     "experimental": {
-       "browser_extension_config": true
-     }
-   }
-   ```
+3. A recent mirrord CLI (the `ui` subcommand needs to exist).
+4. A kubeconfig pointing at a cluster running the [mirrord operator](../../managing-mirrord/operator.md). The operator must be a version that exposes session metadata (3.157.1 or newer).
 
-## Using mirrord Browser Extension
+## Quick start with `mirrord ui`
 
-The extension can be used standalone or together with mirrord CLI.
+Run the local UI daemon in a terminal:
 
-**Standalone:**
+```bash
+mirrord ui
+```
 
-Open the extension popup, configure the header name, value, and URL scope, and click Save. The extension will start injecting the header into matching browser requests. No `mirrord.json` or CLI session is required.
+It binds to localhost, prints a URL, and opens it in your default browser:
 
-**With mirrord CLI session:**
-1. Run `mirrord exec` with the configured `mirrord.json`, mirrord will then:
-   - Print the configuration URL to the screen.
-   - Open the URL automatically in a Chrome tab.
-2. The extension injects the active session's header into browser requests (based on URL scope).
-3. You can check the current header and status in the extension popup by clicking the Chrome extension icon at any time.
-4. To stop header injection, click the extension icon and remove the header from the popup.
+```
+  mirrord session monitor
+    Web UI: http://[::1]:59281?token=...
+```
 
-## Extension Popup
+The Web UI page does an automatic handshake with the extension (over Chrome's `externally_connectable` mechanism) and hands it the daemon's address and a one-shot token. You should see this confirmation:
 
-The extension popup lets you see which header is currently being injected into your browser requests and adjust it when needed, without restarting your mirrord session.
+![mirrord ui connected](browser-extension/images/mirrord-ui-connected.png)
 
-### Current Header Status
+Close the tab. Open the extension popup from the Chrome toolbar — the **Sessions** tab now lists every operator session your kubeconfig can see. Pick one and click **Join**:
 
-![Active Header](browser-extension/images/active-header.png)
+![Sessions tab — joined](browser-extension/images/sessions-tab-joined.png)
 
-- Header name and value currently being injected
-- URL scope (which URLs the header applies to)
-- An **Active** or **Inactive** indicator on the extension icon
+While you're joined, the extension injects the session's HTTP-filter-matching header into every request your browser makes. The session live banner shows the joined session key; click **Leave** to stop.
 
-### Edit Header Configuration
+For more on `mirrord ui` itself, see [Local UI](../local-ui.md).
 
-![Configure Header](browser-extension/images/configure-header.png)
+## When the popup is empty
 
-Allows you to edit the header configuration directly from the popup:
-- **Header Name**: The HTTP header name to inject (e.g. `baggage`)
-- **Header Value**: The value to set for the header and will be added to outgoing requests
-- **URL Scope**: Restrict header injection to specific URL patterns (see [Limiting injection scope by URL](#limiting-injection-scope-by-url) below)
-- **Save**: Applies your changes immediately and updates the active header
-- **Reset to Default**: Restores the header configuration from the `mirrord.json` file associated with the currently active session, when available.
+If you haven't run `mirrord ui` yet, the Sessions tab shows a hint card telling you what to do:
 
-### Full Popup View
+![Sessions tab — not configured](browser-extension/images/sessions-tab-not-configured.png)
 
-| Active | Inactive |
-|--------|----------|
-| ![Extension Popup - Active](browser-extension/images/extension-popup.png) | ![Extension Popup - Inactive](browser-extension/images/extension-popup-inactive.png) |
+This is also what you'll see if `mirrord ui` was running but you closed it. Re-running brings the operator session list back.
+
+## Standalone (Manual) mode
+
+If you don't want to use `mirrord ui` (or the cluster doesn't run the operator), the **Manual** tab lets you configure header injection directly.
+
+![Manual tab — active](browser-extension/images/manual-tab-active.png)
+
+- **Header Name** — the HTTP header to set (e.g. `baggage`, `x-mirrord-user`).
+- **Header Value** — the value to set on the header for every matching outgoing request.
+- **URL Scope** — restrict injection to URLs matching this pattern. Empty means inject on every request. See [Limiting injection scope by URL](#limiting-injection-scope-by-url).
+- **Active** toggle — pause injection without losing your configuration.
+- **Save** — apply changes immediately and update the active rule.
+- **Reset to Default** — revert to the configuration baked into the most recent CLI session, if any.
+
+Saving on the Manual tab replaces whatever rule the extension is currently injecting, including a rule from a Sessions-tab join.
+
+## Using it together with `mirrord exec`
+
+The browser extension was originally driven by `mirrord exec` printing a configure URL on stdout, and that path still works. To opt in, declare it in your `mirrord.json`:
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "^baggage: .*mirrord-session=browser-debug.*"
+        }
+      }
+    }
+  },
+  "experimental": {
+    "browser_extension_config": true
+  }
+}
+```
+
+When you run `mirrord exec` against this config, the CLI prints a `chrome-extension://...` URL and opens it. The extension's configure page reads the embedded backend and token and stores them. After that the popup behaves the same as in the `mirrord ui` flow.
+
+You'll also want HTTP context propagation set up in your app so the header survives across service hops. Most tracing libraries already forward `baggage` or `tracestate` automatically; only add manual forwarding if your stack does not.
+
+This experimental feature still requires the extension to be installed before you run `mirrord exec`. If it isn't, Chrome will block the configure URL and show an error page.
 
 ## Limiting injection scope by URL
 
-By default, the extension injects the header into **all browser requests** when the URL scope is empty. You can restrict this to specific URLs using scope patterns:
+By default, the extension injects on every browser request when the URL Scope field is empty. To restrict:
 
-- **All URLs**: Leave the scope empty or set to `*` to inject on every request.
-- **Specific patterns**: Use URL patterns to limit injections, For example:
-  - `https://api.example.com/*`: Inject only for requests to `api.example.com`
-  - `https://*.example.com/*`: Inject for any subdomain of `example.com`
+- **All URLs** — leave the scope empty or set it to `*`.
+- **Specific patterns** — use Chrome's [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax. Examples:
+  - `https://api.example.com/*` — only requests to `api.example.com`.
+  - `https://*.example.com/*` — any subdomain of `example.com`.
 
-The scope uses Chrome's [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax.
+Restricting the scope is the right move when you only want one specific app to talk to your local process and want everything else to keep going to staging normally.
 
-## Header Filter
+## Header filter regex
 
-The mirrord Browser Extension will automatically inject the `header_filter` defined in `mirrord.json`.
-In case `header_filter` is configured with a regex pattern, you will be prompted in the browser to enter a header that matches it:
-`Please enter a header that matches pattern $HEADER_PATTERN`
+If your `header_filter` in `mirrord.json` is a strict regex, the extension auto-derives a header name and value that satisfies it (for example, `baggage: mirrord-session=browser-debug` from a regex matching that prefix). When the extension can't derive a unique value from your regex, it'll prompt you in the browser for a header that matches — paste in any header line your filter would accept.
 
-## More details
+## Verifying it works
 
-- If the mirrord Browser Extension is not installed prior to running `mirrord exec` with the configured `mirrord.json`, the URL will fail to open. Google Chrome will display an error page showing the URL is blocked.
-- If the Browser Extension is enabled in `mirrord.json` but no HTTP header filter is configured, mirrord will not initiate the extension in Google Chrome and will display a warning in the terminal.
-- The extension stores your default configuration from the CLI session. If you edit the header or scope in the popup, you can always use **Reset to Default** to revert to the original values.
+Once joined or active, open Chrome DevTools → Network on a request that hits your cluster. Look for the injected header on the outgoing request. If it's there and the operator's HTTP filter matches, the request will be served by your local process; check your local logs to confirm.
+
+## Tips
+
+- The extension stores its configuration per browser profile in `chrome.storage.local`, so quitting the popup, closing Chrome, and reopening keeps your join state. Closing `mirrord ui` doesn't wipe the join — it just means the popup can't refresh the session list. Re-run `mirrord ui` to get it back.
+- Use **Reset to Default** on the Manual tab to revert to whatever `mirrord exec` last pushed in.
+- Saving on Manual after a Sessions-tab join overwrites the joined rule. Use **Leave** on the live banner first if you want to switch cleanly.
+
+## What's next?
+
+- [Local UI](../local-ui.md) — full reference for `mirrord ui`.
+- [Filtering Incoming Traffic](filter-incoming-traffic.md) — the operator-side HTTP filter the extension's headers are matching against.
+- [Managing Sessions](../../sharing-the-cluster/sessions.md) — listing and stopping operator sessions from the CLI.
