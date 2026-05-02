@@ -82,7 +82,7 @@ target:
 #### `services.*.env`
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
 
-#### `services.*.mode`
+#### `services.*.default_mode`
 So far, only `split` is supported. The incoming mode is set to `steal` with http filter.
 User-provided filter is used if provided, otherwise defaulting to `baggage: .*mirrord-session={key}.*`.
 
@@ -118,6 +118,12 @@ run:
 
 ### `-f`, `--config-file`
 Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom.yaml`
+
+### `-m`, `--mode`
+Specifies the network mode for all defined services, overriding `default_mode`. Available options:
+- `split`:
+
+Defaults to `split`. For more details, see `services.*.defualt_mode`.
 
 ### `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.
