@@ -57,7 +57,7 @@ Developers define branches in their `mirrord.json`:
         "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
         "version": "8.0",
         "name": "users-database-name",      // Optional
-        "ttl_secs": 60,                     // Optional
+        "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
         "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
         "connection": {
           "url": "DATABASE_URL"
@@ -79,7 +79,7 @@ Developers define branches in their `mirrord.json`:
 4. `version`: Database engine version.
 5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
-6. `ttl_secs`: Override for branch time-to-live (TTL). The default is 5 minutes.
+6. `ttl_secs` / `ttl_mins`: Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes.
 7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.

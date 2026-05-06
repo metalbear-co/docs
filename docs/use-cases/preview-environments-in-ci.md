@@ -70,7 +70,7 @@ In your `mirrord-preview.json`, set the HTTP filter to match on a header of your
   },
   "feature": {
     "preview": {
-      "ttl_mins": 120,
+      "ttl_mins": 120,                   // Or `ttl_secs` — pick whichever unit is more convenient
       "creation_timeout_secs": 600
     },
     "network": {
