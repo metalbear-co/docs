@@ -25,8 +25,8 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/) and [RabbitMQ](https://www.rabbitmq.com).
-The word "queue" in this doc is used to also refer to "topic" in the context of Kafka.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), and [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus).
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus.
 {% endhint %}
 
 ## How It Works
@@ -102,6 +102,20 @@ The mirrord operator includes the new queue and the second user's filter in the 
 ![Two RabbitMQ splitting sessions](queue-splitting/2-users-rmq.svg)
 
 If the filters defined by the two users both match some message, one of the users will receive the messages at random.
+
+{% endtab %}
+
+{% tab title="Azure Service Bus" %}
+
+Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both.
+
+First, we have a consumer app reading messages from an Azure Service Bus queue (or topic subscription):
+
+When the first mirrord Azure Service Bus splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). Routing is based on AMQP application properties set on each message.
+
+If a second user then starts a mirrord Azure Service Bus splitting session on the same queue, a third temporary queue is created (for the second user's local application). The mirrord operator includes the new queue and the second user's filter in the routing logic.
+
+If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
 {% endtab %}
 
@@ -796,6 +810,207 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 {% endtab %}
+{% tab title="Azure Service Bus" %}
+
+{% stepper %}
+{% step %}
+
+### Enable Azure Service Bus splitting in the Helm chart
+
+Enable the `operator.azureServiceBusSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
+
+{% endstep %}
+{% step %}
+
+### Authenticate the mirrord operator
+
+The mirrord operator needs to connect to your Azure Service Bus namespace to consume and re-route messages. You have three options for authentication:
+
+**Option A: Workload Identity / Managed Identity (recommended for AKS)**
+
+If your AKS cluster has Workload Identity enabled, the operator can authenticate automatically without storing any keys. Assign the **Azure Service Bus Data Owner** role (or a custom role with Send, Listen, and Manage rights) to the operator's managed identity on the Service Bus namespace.
+
+**Option B: Connection string (SAS key)**
+
+The simplest approach for quick setup. Obtain a connection string from your Service Bus namespace in the Azure portal. The key needs **Manage**, **Send**, and **Listen** claims on the namespace.
+
+**Option C: Service Principal with client secret**
+
+Register an Azure AD application, create a client secret, and assign it the **Azure Service Bus Data Owner** role on the Service Bus namespace. You'll provide the `tenant_id`, `client_id`, and `client_secret` as properties.
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordPropertyList
+
+As part of operator installation with `operator.azureServiceBusSplitting` enabled, the `MirrordPropertyList` custom resource type is available in your cluster. Create one with your Service Bus connection details.
+
+{% tabs %}
+
+{% tab title="Workload Identity / Managed Identity" %}
+
+Only the fully qualified namespace is needed. The operator uses `DefaultAzureCredential` which automatically picks up Workload Identity, Managed Identity, or other environment-based Azure credentials:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: servicebus-config
+  namespace: meme
+spec:
+  properties:
+    - name: fully_qualified_namespace
+      value: myns.servicebus.windows.net
+```
+
+{% endtab %}
+
+{% tab title="Connection String (SAS)" %}
+
+Store your connection string in a Kubernetes Secret and reference it:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: servicebus-credentials
+  namespace: meme
+type: Opaque
+stringData:
+  connection-string: "Endpoint=sb://myns.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-key>"
+
+---
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: servicebus-config
+  namespace: meme
+spec:
+  properties:
+    - name: connection_string
+      valueFrom:
+        secretKeyRef:
+          name: servicebus-credentials
+          key: connection-string
+```
+
+{% endtab %}
+
+{% tab title="Service Principal" %}
+
+Store the client secret in a Kubernetes Secret and provide all four properties:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: servicebus-sp-credentials
+  namespace: meme
+type: Opaque
+stringData:
+  client-secret: "<your-client-secret>"
+
+---
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: servicebus-config
+  namespace: meme
+spec:
+  properties:
+    - name: fully_qualified_namespace
+      value: myns.servicebus.windows.net
+    - name: tenant_id
+      value: "<your-tenant-id>"
+    - name: client_id
+      value: "<your-client-id>"
+    - name: client_secret
+      valueFrom:
+        secretKeyRef:
+          name: servicebus-sp-credentials
+          key: client-secret
+```
+
+{% endtab %}
+
+{% endtabs %}
+
+#### Property Reference
+
+| Property | Description | Required |
+| -------- | :---------: | :------: |
+| `connection_string` | Full connection string including SAS key | One of `connection_string` or `fully_qualified_namespace` |
+| `fully_qualified_namespace` | FQNS like `myns.servicebus.windows.net` | One of `connection_string` or `fully_qualified_namespace` |
+| `tenant_id` | Azure AD tenant (directory) ID | Only with service principal |
+| `client_id` | Azure AD app (client) ID | Only with service principal |
+| `client_secret` | Azure AD app client secret | Only with service principal |
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordSplitConfig
+
+Create a `MirrordSplitConfig` resource for the target workload. Azure Service Bus uses `kind: AzureServiceBus` in queue entries and supports both the Queue model and the Topic/Subscription model.
+
+**Queue model** (point-to-point):
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: meme-app-split
+  namespace: meme
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: meme-app
+  clientConfigs:
+    azureServiceBus: servicebus-config
+  queues:
+    - id: orders-queue
+      kind: AzureServiceBus
+      appConfig:
+        serviceBusQueue:
+          - env: SERVICE_BUS_QUEUE_NAME
+```
+
+**Topic/Subscription model** (pub/sub):
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: meme-app-split
+  namespace: meme
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: meme-app
+  clientConfigs:
+    azureServiceBus: servicebus-config
+  queues:
+    - id: events-topic
+      kind: AzureServiceBus
+      appConfig:
+        serviceBusTopic:
+          - env: SERVICE_BUS_TOPIC_NAME
+        serviceBusSubscription:
+          - env: SERVICE_BUS_SUBSCRIPTION_NAME
+```
+
+The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
+
+{% hint style="warning" %}
+The mirrord operator can only read the consumer's environment variables if they are either:
+1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
+2. loaded from config maps using `envFrom`.
+{% endhint %}
+
+{% endstep %}
+{% endstepper %}
+{% endtab %}
 {% endtabs %}
 
 ## Setting a Filter for a mirrord Run
@@ -805,15 +1020,15 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains two fields:
-* `queue_type` — `SQS`, `Kafka` or `RMQ`
-* `message_filter` — mapping from message attribute (SQS) or header (Kafka and RabbitMQ) name to a regex for its value.
-  The local application will only see queue messages that have **all** of the specified message attributes/headers.
-* `jq_filter` — supported only for `queue_type` of `SQS`.
-  It runs a jq program on the JSON representation of the SQS `Message` object, and a message matches if the jq program outputs `true`.
-  This can be used to filter by message body content or by message attributes exposed through the SQS message JSON.
-  See the [SQS `Message` object reference](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html).
+* `queue_type` — `SQS`, `Kafka`, `RMQ`, or `AzureServiceBus`
+* `message_filter` — mapping from message attribute (SQS), header (Kafka and RabbitMQ), or application property (Azure Service Bus) name to a regex for its value.
+  The local application will only see queue messages that have **all** of the specified message attributes/headers/properties.
+* `jq_filter` — supported for `SQS` and `AzureServiceBus` queue types.
+  It runs a jq program on the JSON representation of the message, and a message matches if the jq program outputs `true`.
+  For SQS, see the [SQS `Message` object reference](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html).
+  For Azure Service Bus, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
 
-If both `message_filter` and `jq_filter` are specified for the same SQS queue, both must match for a message to be matched.
+If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
 {% hint style="info" %}
 When choosing which SQS attributes or Kafka headers to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
@@ -946,6 +1161,49 @@ In the example above, the local application will receive messages from SQS queue
 In the example above, the local application will receive a subset of message from **all** SQS queues described in the registry.
 All received messages will have an SQS attribute `baggage` containing `mirrord-session=pr-123`.
 `*` is a special queue ID for SQS queues, and resolves to all queues described in the registry.
+
+{% endtab %}
+{% tab title="Azure Service Bus" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app",
+  "feature": {
+    "split_queues": {
+      "orders-queue": {
+        "queue_type": "AzureServiceBus",
+        "message_filter": {
+          "tenant": "^alice$"
+        }
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application will receive messages from the Azure Service Bus queue described under ID `orders-queue` in the `MirrordSplitConfig`, but only messages whose AMQP application property `tenant` has the exact value `alice`.
+
+You can also use `jq_filter` to match on message body content:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app",
+  "feature": {
+    "split_queues": {
+      "orders-queue": {
+        "queue_type": "AzureServiceBus",
+        "jq_filter": ".body | fromjson | .priority == \"high\""
+      }
+    }
+  }
+}
+```
+
+This routes only messages whose JSON body contains `"priority": "high"` to the local application.
+
+Both `message_filter` and `jq_filter` can be combined - a message must match both to be routed to the local application.
 
 {% endtab %}
 {% endtabs %}
@@ -1105,3 +1363,42 @@ value in the operator's helm chart, to set a timeout for the draining of the tem
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
 lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
+
+## Troubleshooting Azure Service Bus splitting
+
+If you are having issues with Azure Service Bus splitting, start with these general steps:
+
+1. Make sure a `MirrordSplitConfig` exists for the target workload and that it has queue entries with `kind: AzureServiceBus`:
+   ```shell
+   kubectl get mirrordsplitconfigs.queues.mirrord.metalbear.co -n <target-namespace> -o yaml
+   ```
+2. Make sure the queue IDs in your mirrord configuration match the IDs defined in the `MirrordSplitConfig`.
+3. Make sure the `MirrordPropertyList` referenced by `clientConfigs.azureServiceBus` (or by individual queue entries) exists and contains the correct connection details:
+   ```shell
+   kubectl get mirrordpropertylists.mirrord.metalbear.co -n <target-namespace> -o yaml
+   ```
+4. Get the operator logs:
+   ```shell
+   kubectl logs -n mirrord -l app==mirrord-operator --tail -1 > /tmp/mirrord-operator-$(date +"%Y-%m-%d_%H-%M-%S").log
+   ```
+   For more detailed logs, set the log level for the queue splitting module:
+   ```shell
+   helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_queue_splitting::azure_service_bus=trace" metalbear/mirrord-operator
+   ```
+
+#### Messages are not reaching the local application
+
+Check that:
+- The producer is setting AMQP application properties on messages. The operator routes based on these properties when `message_filter` is used.
+- Your `message_filter` regex patterns match the actual property values. Property values are compared as plain strings.
+- If using `jq_filter`, verify the message body is valid JSON and the jq expression returns `true` for your test messages.
+
+#### Authentication errors in operator logs
+
+- **Connection string auth**: verify the connection string is correct and the SAS key has Manage, Send, and Listen claims.
+- **Workload Identity / Managed Identity**: verify the managed identity has the **Azure Service Bus Data Owner** role on the namespace. Check that AKS Workload Identity is properly configured and the operator's service account has the correct annotations.
+- **Service Principal**: verify that `tenant_id`, `client_id`, and `client_secret` are all present in the `MirrordPropertyList` and that the app registration has the correct role assignment.
+
+#### Temporary queues are not being cleaned up
+
+After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.
