@@ -941,6 +941,7 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
   * `env` - exact environment variable name containing the subscription ID.
   * `envLike` - regex matching environment variable names.
   * `fallback` - fallback subscription name if the variable is not found.
+  * `valueSelector` - a jq expression to extract the subscription name from the variable's value. Useful when the env var contains JSON or a compound string rather than a plain name.
   * `containers` - limit to specific containers (optional, defaults to all).
 * `appConfig.projectId` - how the application discovers the GCP project ID. Uses the same structure as `subscription`.
 * `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`.
