@@ -905,7 +905,7 @@ spec:
     kind: Deployment
     name: event-processor
   # Optional. Controls the prefix of temporary resource names.
-  # The value below is the default; only set this if you need a custom prefix.
+  # The value below is the default; only set this if you need to customize it differently.
   tmpNameTemplate: "mirrord-tmp-{{RANDOM}}{{FALLBACK}}{{ORIGINAL}}"
   queues:
     - id: user-events
@@ -1176,7 +1176,7 @@ In the example above, the local application will receive messages from the Pub/S
 
 In the example above, the local application will receive a subset of messages from **all** Pub/Sub subscriptions described in the target's `MirrordSplitConfig`.
 All received messages will have a Pub/Sub attribute `env` with the value `dev`.
-`*` resolves to all queues defined in the `MirrordSplitConfig` for the target workload. If no `MirrordSplitConfig` exists, the wildcard is silently ignored.
+`*` resolves to all queues defined in the `MirrordSplitConfig` for the target workload. If no `MirrordSplitConfig` exists, the wildcard is silently ignored. [Check the operator logs](https://github.com/metalbear-co/docs/blob/main/docs/sharing-the-cluster/queue-splitting.md#troubleshooting-sqs-splitting) if messages are not being filtered as expected.
 
 {% endtab %}
 {% endtabs %}
