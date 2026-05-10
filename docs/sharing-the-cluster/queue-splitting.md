@@ -880,7 +880,7 @@ A good starting point is to assign the `roles/pubsub.editor` role to the operato
 
 ### Authorize deployed consumers
 
-In order to be targeted with Pub/Sub splitting, a deployed consumer must be able to read from the temporary subscriptions created by mirrord. If the consumer's IAM permissions are scoped to specific subscription names, you will need to extend them to cover subscriptions with the `mirrord-tmp-` prefix (or whichever prefix you configure in `tmpNameTemplate`).
+In order to be targeted with Pub/Sub splitting, a deployed consumer must be able to read from the temporary subscriptions created by mirrord. If the consumer's IAM permissions are scoped to specific subscription names, you will need to extend them to cover subscriptions with the `mirrord-tmp-` prefix. This prefix is customizable via the `spec.tmpNameTemplate` field in your `MirrordSplitConfig` resource.
 
 {% endstep %}
 {% step %}
@@ -904,6 +904,9 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: event-processor
+  # Optional. Controls the prefix of temporary resource names.
+  # The value below is the default; only set this if you need a custom prefix.
+  tmpNameTemplate: "mirrord-tmp-{{RANDOM}}{{FALLBACK}}{{ORIGINAL}}"
   queues:
     - id: user-events
       kind: GooglePubSub
@@ -920,9 +923,10 @@ spec:
 
 The `MirrordSplitConfig` above says that:
 1. It targets the deployment `event-processor` in namespace `events`.
-2. The deployment consumes one Pub/Sub subscription, whose name is in environment variable `PUBSUB_SUBSCRIPTION` in container `consumer`.
-3. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
-4. The subscription can be referenced in a mirrord config under ID `user-events`.
+2. Temporary resources will be named with the `mirrord-tmp-` prefix (this is the default, shown here for clarity). You can change this prefix to scope IAM permissions.
+3. The deployment consumes one Pub/Sub subscription, whose name is in environment variable `PUBSUB_SUBSCRIPTION` in container `consumer`.
+4. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
+5. The subscription can be referenced in a mirrord config under ID `user-events`.
 
 #### Link the config to the deployed consumer
 
