@@ -22,7 +22,7 @@ These settings give additional flexibility in how mirrord handles database branc
       "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
       "version": "8.0",
       "name": "users-database-name",      // Optional
-      "ttl_secs": 60,                     // Optional
+      "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
       "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
       "connection": {
         "url": "DB_CONNECTION_URL"
