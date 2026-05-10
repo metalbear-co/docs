@@ -38,7 +38,42 @@ Download the accompanying `values.yaml`:
 curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
 ```
 
-Set `license.key` to your key, then install:
+**Team license:** Set `license.key` to your key, then install:
+
+```bash
+helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
+```
+
+Alternatively, create a Kubernetes secret with your license key and reference it via `license.keyRef` in `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-license \
+  --namespace mirrord \
+  --from-literal=OPERATOR_LICENSE_KEY=<your license key>
+```
+
+**Enterprise license (certificate):** If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:
+
+```yaml
+license:
+  file:
+    secret:
+      data:
+        license.pem: |
+          -----BEGIN CERTIFICATE-----
+          <contents of your license.pem file>
+          -----END CERTIFICATE-----
+```
+
+Alternatively, create a Kubernetes secret and reference it via `license.pemRef` in `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-license-pem \
+  --namespace mirrord \
+  --from-file=license.pem=/path/to/license.pem
+```
+
+Then install:
 
 ```bash
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
