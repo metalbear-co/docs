@@ -1,7 +1,7 @@
 ---
 title: Queue Splitting
 date: 2024-08-31T13:37:00.000Z
-lastmod: 2024-08-31T13:37:00.000Z
+lastmod: 2026-05-11T14:26:00.000Z
 draft: false
 menu:
   docs:
@@ -225,6 +225,12 @@ If the queue messages are encrypted, the operator's IAM role should also have th
 * `kms:Decrypt`
 * `kms:GenerateDataKey`
 
+If you enable `s3Event` for an SQS queue registry entry, the operator will also fetch S3 object metadata for jq filtering.
+In that case, grant the operator:
+
+* `s3:GetObject` on the relevant buckets / object prefixes.
+* `s3:ListBucket` on the relevant buckets if you want S3 to return `404 Not Found` for deleted or missing objects instead of `403 Forbidden`.
+
 {% endstep %}
 {% step %}
 
@@ -317,6 +323,22 @@ The entry's value is an object describing single or multiple SQS queues consumed
   as SNS notification attributes are found in the SQS message body.
   If set to `false`, message attributes will be used matched against users' filters.
   Defaults to `false`.
+* `s3Event` specifies whether the operator should try to parse incoming message JSON as an S3
+  event notification and, when parsing succeeds, fetch user-defined S3 object metadata for the
+  referenced object and expose it to `jq_filter` as `S3Metadata`.
+  If S3 event notifications reach the queue through SNS, set both `sns: true` and `s3Event: true`.
+  Defaults to `false`.
+
+For example, a queue registry entry for S3 event notifications delivered through SNS can look like this:
+
+```yaml
+uploads-queue:
+  queueType: SQS
+  nameSource:
+    envVar: UPLOAD_EVENTS_QUEUE_NAME
+  sns: true
+  s3Event: true
+```
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
@@ -974,6 +996,9 @@ Filter definition contains the following fields:
   The local application will only see queue messages that have **all** of the specified message attributes/headers.
 * `jq_filter` - supported for `SQS` and `GCPPubSub` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
+    For queues configured with `s3Event: true`, jq filters can also inspect `S3Metadata`.
+    It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
+    and metadata is fetched successfully.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * A message matches if the jq program outputs `true`.
 
@@ -1060,6 +1085,26 @@ In the example above, the local application:
 
 * Will receive messages from SQS queue `orders-queue` only when the message body is valid JSON and contains `"client": "a"`.
 * Will receive messages from SQS queue `fifo-orders-queue` only when the SQS message attribute `client` has the value `a`.
+
+{% endtab %}
+{% tab title="SQS with S3 metadata jq_filter" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "uploads-queue": {
+        "queue_type": "SQS",
+        "jq_filter": ".S3Metadata.client == \"a\""
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application will receive messages from SQS queue `uploads-queue` only when the S3 object referenced by the event has `S3Metadata.client == "a"`.
 
 {% endtab %}
 {% tab title="SQS with attribute and jq filters" %}
