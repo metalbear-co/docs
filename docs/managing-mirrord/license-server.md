@@ -35,10 +35,10 @@ The license server is installable via Helm. First, add the MetalBear Helm reposi
 helm repo add metalbear https://metalbear-co.github.io/charts
 ```
 
-Next, save the following yaml as `values.yaml` on your machine.
+Next, save the following yaml as `license-server-values.yaml` on your machine.
 
 ```yaml
-# ./values.yaml
+# ./license-server-values.yaml
 createNamespace: true
 
 service:
@@ -66,7 +66,7 @@ _NOTE: The license server needs to be accessible to any mirrord operators you wa
 Next, install the license server on your cluster:
 
 ```bash
-helm install metalbear/mirrord-operator-license-server -f ./values.yaml --wait
+helm install metalbear/mirrord-operator-license-server -f ./license-server-values.yaml --wait
 ```
 
 To make sure it's been installed successfully and is running:
@@ -79,10 +79,10 @@ If your operator(s) are running in a different cluster, make sure the `mirrord-o
 
 #### Using a Cluster Secret
 
-You can set the license key in a cluster secret within the operator's namespace (`mirrord` by default), and reference it in the license server helm chart via `license.keyRef`. For example, with the following `values.yaml`:
+You can set the license key in a cluster secret within the operator's namespace (`mirrord` by default), and reference it in the license server helm chart via `license.keyRef`. For example, with the following `license-server-values.yaml`:
 
 ```yaml
-# ./values.yaml
+# ./license-server-values.yaml
 createNamespace: true
 
 service:
@@ -109,7 +109,7 @@ kubectl create secret generic my-cluster-secret -n mirrord --from-literal OPERAT
 You can fetch the license file from GSM by providing the secret path and service account credentials as follows:
 
 ```yaml
-# ./values.yaml
+# ./license-server-values.yaml
 createNamespace: true
 
 service:
@@ -131,12 +131,16 @@ sa:
 
 #### Connecting Operators to the License Server
 
-First update your operator `values.yaml` file ([see this page](../getting-started/quick-start.md#helm) for quickstart helm setup for operator):
+{% hint style="warning" %}
+This is a **separate** `values.yaml` file for the **mirrord operator** Helm chart — not the license server chart configured above. Use a different filename (e.g. `operator-values.yaml`) to avoid confusion.
+{% endhint %}
+
+Create a new file `operator-values.yaml` ([see this page](../getting-started/quick-start.md#helm) for quickstart helm setup for operator):
 
 ```yaml
-# ./values.yaml
+# ./operator-values.yaml
 license:
-  key: secret
+  key: secret          # must match the key set in license-server-values.yaml
   licenseServer: http://<license-server-addr>
 ```
 
@@ -145,7 +149,7 @@ _NOTE: The server value must contain the protocol and the prefix for any ingress
 Then run:
 
 ```bash
-helm install metalbear/mirrord-operator -f ./values.yaml --wait
+helm install metalbear/mirrord-operator -f ./operator-values.yaml --wait
 ```
 
 ## Getting a Utilisation Report from the License Server
