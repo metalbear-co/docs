@@ -17,7 +17,7 @@ description: Default sizing, concurrent session guidance, and capacity validatio
 ---
 
 {% hint style="info" %}
-This discussion is only relevant for users on the Team and Enterprise pricing plans.
+This page is relevant for users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The mirrord Operator ships with default CPU and memory settings in MetalBear's public [Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This page documents those defaults and provides guidance for validating capacity in your environment.
