@@ -43,7 +43,7 @@ As described in [High Availability](high-availability.md), the default replica c
 
 ## Concurrent sessions
 
-The Helm chart includes in-line commentary suggesting the defaults may be sufficient for on the order of ~200 concurrent sessions. This is engineering guidance in the chart's configuration comments, not a universal capacity guarantee.
+The default resource envelope supports approximately 200 concurrent sessions. This is based on internal testing with the default CPU and memory limits, not a universal capacity guarantee.
 
 - It is reasonable to use ~200 concurrent sessions as a starting-point expectation for the default resource envelope.
 - Your actual ceiling depends on session churn (how frequently sessions are created and destroyed), which optional features are active, and your cluster's control-plane capacity.
@@ -63,31 +63,4 @@ Key [Prometheus metrics](monitoring.md#exposed-metrics) to watch:
 
 Combine these with standard Kubernetes signals: CPU and memory usage vs. requests/limits, pod restart counts, and node-level contention.
 
-## Validating capacity
-
-The appropriate way to answer "how far can we push this?" is a controlled test in a non-production cluster that is representative of production from a control-plane and networking perspective.
-
-### Define the workload model
-
-Before testing, document:
-
-- **Target peak concurrent sessions** and a ramp schedule (e.g. 25 → 50 → 100 → 200).
-- **Session churn** — sessions created and destroyed per minute. Churn stresses lifecycle paths differently than static sessions.
-- **Preview usage** (if applicable) — how many previews exist concurrently, how frequently they are created and torn down.
-- **Optional features in scope** — database branching, queue splitting, etc. Hold these constant per test run so results are interpretable.
-
-### Ramp and soak
-
-1. Start at a low concurrency level and hold for a fixed interval (e.g. 10–15 minutes per step).
-2. Increase concurrency stepwise until stop conditions are reached.
-3. After identifying the highest passing concurrency level, run a longer soak (typically multi-hour) with realistic churn to catch slower resource leaks or delayed degradation.
-
-### Stop conditions
-
-Treat a step as failed if you observe sustained:
-
-- Elevated session-start failures correlated with load.
-- Operator instability (`OOMKilled`, crash loops) or sustained CPU throttling at limits.
-- Kubernetes API instability attributable to test intensity (timeouts, rate limiting).
-
-The last passing step is your observed capacity envelope for that environment and workload model.
+If you need to validate capacity for your specific environment, we recommend running a controlled ramp test in a non-production cluster with [monitoring](monitoring.md) enabled, gradually increasing concurrent sessions while observing the metrics above. [Contact us](https://metalbear.com/contact/) if you need guidance on capacity planning for your deployment.
