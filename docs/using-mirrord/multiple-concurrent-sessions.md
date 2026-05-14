@@ -1,8 +1,8 @@
 ---
 title: "mirrord up (multiple concurrent sessions)"
 description: "How to use mirrord up"
-date: 2026-04-014T16:25:00+04:00
-lastmod: 2026-04-014T16:25:00+04:00 
+date: 2026-04-24T16:25:00+04:00
+lastmod: 2026-04-24T16:25:00+04:00
 draft: false
 menu:
   docs:
@@ -123,7 +123,7 @@ Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom
 Specifies the network mode for all defined services, overriding `default_mode`. Available options:
 - `split`:
 
-Defaults to `split`. For more details, see `services.*.defualt_mode`.
+Defaults to `split`. For more details, see `services.*.default_mode`.
 
 ### `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.

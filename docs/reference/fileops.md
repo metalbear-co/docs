@@ -89,7 +89,7 @@ Read from a file on the remote pod.
 Example:
 
 ```py
-fd = os.open("/tmp/test, os.O_RDWR | os.O_NONBLOCK | os.O_CLOEXEC)
+fd = os.open("/tmp/test", os.O_RDWR | os.O_NONBLOCK | os.O_CLOEXEC)
 read = os.read(fd, 1024)
 ```
 
