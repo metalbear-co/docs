@@ -40,7 +40,7 @@ It binds to localhost, prints a URL, and opens it in your default browser:
 
 ```
   mirrord session monitor
-    Web UI: http://[::1]:59281?token=...
+    Web UI: http://127.0.0.1:59281?token=...
 ```
 
 The Web UI page does an automatic handshake with the extension (over Chrome's `externally_connectable` mechanism) and hands it the daemon's address and a one-shot token. You should see this confirmation:

@@ -16,22 +16,24 @@ These settings give additional flexibility in how mirrord handles database branc
 
 ```json
 {
-  "db_branches": [
-    {
-      "id": "users-mysql-db",            // Optional
-      "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
-      "version": "8.0",
-      "name": "users-database-name",      // Optional
-      "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
-      "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
-      "connection": {
-        "url": "DB_CONNECTION_URL"
-      },
-      "copy": {
-        "mode": "empty"                   // Optional, Defaults to "empty" if not specified
+  "feature": {
+    "db_branches": [
+      {
+        "id": "users-mysql-db",            // Optional
+        "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
+        "version": "8.0",
+        "name": "users-database-name",      // Optional
+        "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
+        "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified
+        "connection": {
+          "url": "DB_CONNECTION_URL"
+        },
+        "copy": {
+          "mode": "empty"                   // Optional, Defaults to "empty" if not specified
+        }
       }
-    }
-  ]
+    ]
+  }
 }
 ```
 
@@ -367,14 +369,16 @@ Uses the standard AWS environment variables already present in the target pod.
 
 ```json
 {
-  "db_branches": [
-    {
-      "type": "pg",
-      "version": "16",
-      "connection": { "url": "DATABASE_URL" },
-      "iam_auth": { "type": "aws_rds" }
-    }
-  ]
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "version": "16",
+        "connection": { "url": "DATABASE_URL" },
+        "iam_auth": { "type": "aws_rds" }
+      }
+    ]
+  }
 }
 ```
 
@@ -412,14 +416,16 @@ Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 
 ```json
 {
-  "db_branches": [
-    {
-      "type": "pg",
-      "version": "17",
-      "connection": { "url": "DATABASE_URL" },
-      "iam_auth": { "type": "gcp_cloud_sql" }
-    }
-  ]
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "version": "17",
+        "connection": { "url": "DATABASE_URL" },
+        "iam_auth": { "type": "gcp_cloud_sql" }
+      }
+    ]
+  }
 }
 ```
 

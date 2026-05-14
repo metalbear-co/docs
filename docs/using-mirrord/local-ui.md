@@ -36,7 +36,7 @@ The CLI starts an HTTP + WebSocket server bound to localhost, generates a one-sh
 
 ```
   mirrord session monitor
-    Web UI: http://[::1]:59281?token=...
+    Web UI: http://127.0.0.1:59281?token=...
 ```
 
 The token is required on every API request, so there's no need to expose the dashboard beyond your machine. Each invocation generates a fresh token.
