@@ -11,6 +11,10 @@ If you develop your application in Visual Studio Code, you can debug it with mir
 The mirrord extension is also available for all VS Code forks like Cursor, Windsurf, Antigravity, PearAI, and Trae.
 {% endhint %}
 
+{% hint style="info" %}
+The extension runs natively on Windows since mirrord-vscode `3.69.0`. WSL is still supported as an alternative — see [WSL](wsl.md#using-mirrord-in-vs-code).
+{% endhint %}
+
 2. Enable mirrord using the "mirrord" button on the bottom toolbar 
 
 ![mirrord button](vscode/images/enabler.png)
