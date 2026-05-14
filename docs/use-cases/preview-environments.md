@@ -21,6 +21,12 @@ This enables realistic validation workflows without cloning an entire environmen
 Preview Environments are available to users on the **Enterprise** pricing plan.
 {% endhint %}
 
+## Prerequisites
+
+- **Operator 3.142.0 or later** — the feature was introduced in this version.
+- **CLI 3.189.0 or later** — the `mirrord preview` subcommand was introduced in this version.
+- **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`).
+
 # What Is a Preview Environment?
 
 Today, mirrord sessions are tightly coupled to a developer's local process. When that process stops, the testing environment disappears.
