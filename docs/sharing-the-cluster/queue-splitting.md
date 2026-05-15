@@ -767,7 +767,7 @@ spec:
 
 The registry above says that:
 1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
-2. The cluster connection parameters are defined in the `meme-rmq-cluster` MirrordPropertyList, which must live in the same namespace as this registry (`meme`). The operator only resolves PropertyList references within the registry's namespace.
+2. The cluster connection parameters are defined in the `meme-rmq-cluster` `MirrordPropertyList`, which must live in the same namespace as this registry (`meme`).
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
