@@ -640,7 +640,7 @@ Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](
 ### Cluster Declaration
 
 The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters.
-As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting.
+As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting. A `MirrordPropertyList` must live in the same namespace as the consumer workload (and the `MirrordWorkloadQueueRegistry`), which may very well be different than your RabbitMQ broker's namespace.
 `MirrordPropertyList` is modeled after the `env` and `envFrom` fields in a pod's container spec. You can:                                                          
 * Set values directly in the `properties` field using `value`.                                                                                                     
 * Reference a single key from a ConfigMap or Secret using `valueFrom.configMapKeyRef` or `valueFrom.secretKeyRef`.                                                 
@@ -767,7 +767,7 @@ spec:
 
 The registry above says that:
 1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
-2. The cluster where the queue is in has its properties defined in `meme-rmq-cluster` MirrordPropertyList (in the `meme` namespace).
+2. The cluster connection parameters are defined in the `meme-rmq-cluster` `MirrordPropertyList`, which must live in the same namespace as this registry (`meme`).
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
