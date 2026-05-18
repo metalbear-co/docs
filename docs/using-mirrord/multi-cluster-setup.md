@@ -35,7 +35,7 @@ No Kubernetes Secret is needed - authentication is entirely through IAM.
 
 ### AKS Workload Identity (`authType: aks`)
 
-For Azure AKS clusters. The Primary operator generates tokens by exchanging its projected ServiceAccount token with Azure AD. No secrets to manage - tokens are generated and refreshed automatically every ~30 minutes.
+For Azure AKS clusters. The Primary operator generates tokens by exchanging its projected ServiceAccount token with Azure AD. No secrets to manage - tokens are generated and refreshed automatically at the halfway point of the token's lifetime (~12 hours for a typical 24-hour Azure AD token).
 
 On the Primary cluster, the operator pod gets Azure credentials through [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (`sa.azureClientId`). The Workload Identity webhook injects a projected SA token file and environment variables into the pod. The operator exchanges this SA token with Azure AD for an access token scoped to the AKS API server. The downstream AKS cluster validates the token with Azure AD, then maps the identity to a Kubernetes group via Azure RBAC or a ClusterRoleBinding.
 
@@ -249,7 +249,7 @@ The Primary operator pod needs to talk to downstream AKS clusters. To do that, i
 
 2. **The pod creates a token** - the operator reads the projected SA token from the file and sends it to Azure AD, asking for an access token scoped to the AKS API server (app ID `6dae42f8-4368-4678-94ff-3960e28e3630`).
 
-3. **Azure AD validates and issues a token** - Azure AD checks the SA token's signature against the Primary cluster's OIDC issuer, verifies it matches a Federated Identity Credential, and returns an access token (~1 hour lifetime).
+3. **Azure AD validates and issues a token** - Azure AD checks the SA token's signature against the Primary cluster's OIDC issuer, verifies it matches a Federated Identity Credential, and returns an access token (~24 hour lifetime).
 
 4. **The downstream cluster validates the token** - when the downstream AKS cluster receives this token, it validates it with Azure AD. Azure AD confirms the identity.
 
@@ -397,8 +397,11 @@ On the Primary cluster, set `sa.azureClientId` so the Workload Identity webhook 
 
 ```bash
 # Get the downstream cluster's CA certificate (base64 encoded)
+TMPKUBE=$(mktemp)
 az aks get-credentials --name <DOWNSTREAM_CLUSTER> --resource-group <RESOURCE_GROUP> \
-  --file /dev/stdout | grep certificate-authority-data | awk '{print $2}'
+  --admin --file "$TMPKUBE"
+grep certificate-authority-data "$TMPKUBE" | awk '{print $2}'
+rm -f "$TMPKUBE"
 ```
 
 ```yaml
