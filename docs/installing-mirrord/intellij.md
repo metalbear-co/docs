@@ -9,6 +9,10 @@ If you develop your application in one of the JetBrains' IDEs (e.g PyCharm, Inte
 2. Enable mirrord using the toolbar button (next to "mirrord" popup menu) ![Select Active Config action](intellij/images/enabler.png)
 3. Run or debug your application as you usually do
 
+{% hint style="info" %}
+The plugin runs natively on Windows since mirrord-intellij `3.73.0` for these scenarios: Rider Run + Debug, IntelliJ IDEA Build-System Run + Debug, and IDEA Gradle/Maven Build-System Run + Debug. Other run configurations on Windows still require [WSL](wsl.md#using-mirrord-in-intellij).
+{% endhint %}
+
 When you start a debugging session with mirrord enabled, you'll be prompted with a target selection dialog. This dialog will allow you to select the target in your Kubernetes cluster that you want to impersonate.
 
 > **Note**: For some projects, the plugin might not be able to present the target selection dialog.
@@ -77,4 +81,4 @@ You can also pin the binary version in the plugin settings (`Settings -> Tools -
 
 ## WSL
 
-The guide on how to use the plugin with remote development on WSL can be found [here](wsl.md#root-project-intellij).
+The guide on how to use the plugin with remote development on WSL can be found [here](wsl.md#using-mirrord-in-intellij).

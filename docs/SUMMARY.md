@@ -44,6 +44,7 @@
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
 * [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
+* [Local UI](using-mirrord/local-ui.md)
 
 ## Sharing the Cluster
 
@@ -63,6 +64,7 @@
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
+* [Scalability](managing-mirrord/scalability.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
 * [Jira Integration](managing-mirrord/jira-integration.md)

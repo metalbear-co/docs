@@ -17,7 +17,6 @@ For your local machine, you may use any of:
 - MacOS (Intel, Apple Silicon)
 - Linux (x86_64)
 - Windows (x86_64), WSL (x86_64)
-  - IDE plugins support for native mirrord for Windows is currently not supported
 
 kubectl needs to be configured on the local machine.
 

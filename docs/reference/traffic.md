@@ -111,11 +111,11 @@ python3 user-service/service.py
 #### Window 2
 
 ```bash
-// Before running mirrord with `--tcp-steal`
+// Before running mirrord with `--steal`
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 [{"Last":"Bear","Name":"Metal"}]
 
-// After running with mirrord and `--tcp-steal` - local process responds
+// After running with mirrord and `--steal` - local process responds
  instead of the remote
 bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
 []
