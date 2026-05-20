@@ -950,7 +950,7 @@ spec:
 
 ### Create a MirrordSplitConfig
 
-Create a `MirrordSplitConfig` resource for the target workload. Azure Service Bus uses `kind: AzureServiceBus` in queue entries and supports both the Queue model and the Topic/Subscription model.
+Create a `MirrordSplitConfig` resource for the target workload. Azure Service Bus uses `kind: azureServiceBus` in queue entries and supports both the Queue model and the Topic/Subscription model.
 
 **Queue model** (point-to-point):
 
@@ -969,9 +969,9 @@ spec:
     azureServiceBus: servicebus-config
   queues:
     - id: orders-queue
-      kind: AzureServiceBus
+      kind: azureServiceBus
       appConfig:
-        serviceBusQueue:
+        queue:
           - env: SERVICE_BUS_QUEUE_NAME
 ```
 
@@ -992,21 +992,135 @@ spec:
     azureServiceBus: servicebus-config
   queues:
     - id: events-topic
-      kind: AzureServiceBus
+      kind: azureServiceBus
       appConfig:
-        serviceBusTopic:
+        topic:
           - env: SERVICE_BUS_TOPIC_NAME
-        serviceBusSubscription:
+        subscription:
           - env: SERVICE_BUS_SUBSCRIPTION_NAME
 ```
 
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
+
+#### AppConfig reference fields
+
+Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that describes how to find the resource name in the workload's environment:
+
+| Field | Description | Required |
+| ----- | :---------: | :------: |
+| `env` | Exact environment variable name | One of `env` or `envLike` |
+| `envLike` | Regex pattern matching multiple environment variable names | One of `env` or `envLike` |
+| `fallback` | Fallback value if the variable is not found (only with `env`) | No |
+| `valueSelector` | JSON selector to extract value(s) from the variable content (e.g. `.key`, `.[]`) | No |
+| `containers` | Limit resolution to specific containers. Defaults to all containers. | No |
+
+Example with multiple options:
+
+```yaml
+queues:
+  - id: orders-queue
+    kind: azureServiceBus
+    appConfig:
+      queue:
+        - env: SERVICE_BUS_QUEUE_NAME
+          fallback: orders
+          containers:
+            - main
+        - envLike: "^SB_QUEUE_.*"
+```
+
+#### Per-queue client configuration
+
+To use a different `MirrordPropertyList` for a specific queue entry (instead of the default from `clientConfigs.azureServiceBus`), set the `clientConfig` field:
+
+```yaml
+queues:
+  - id: orders-queue
+    kind: azureServiceBus
+    clientConfig: orders-servicebus-config
+    appConfig:
+      queue:
+        - env: SERVICE_BUS_QUEUE_NAME
+```
+
+#### Wildcard queue ID
+
+You can use `*` as a queue ID in the mirrord config to apply a filter to all queues defined in the `MirrordSplitConfig`:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "*": {
+        "queue_type": "AzureServiceBus",
+        "message_filter": {
+          "baggage": ".*mirrord-session=alice.*"
+        }
+      }
+    }
+  }
+}
+```
+
+This resolves to all queue IDs from the `MirrordSplitConfig`. If you also have explicit per-queue filters, they take precedence over the wildcard.
 
 {% hint style="warning" %}
 The mirrord operator can only read the consumer's environment variables if they are either:
 1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
 2. loaded from config maps using `envFrom`.
 {% endhint %}
+
+{% endstep %}
+{% step %}
+
+### Additional options
+
+The `MirrordSplitConfig` supports several optional fields that control restart behavior, temporary resource naming, and drain timing.
+
+#### Restart policy
+
+Controls how the workload is restarted when patched for queue splitting:
+
+```yaml
+spec:
+  restart:
+    strategy: standard
+    timeout: 120
+    waitForPods: all
+```
+
+| Field | Description | Default |
+| ----- | :---------: | :-----: |
+| `strategy` | `standard` or `isolatePods` | Global operator setting |
+| `timeout` | Seconds to wait for pods to become ready after restart | 60 |
+| `waitForPods` | Number of patched pods required before sessions may start, or `"all"` | 1 |
+
+#### Drain timeout
+
+After all splitting sessions end, the operator waits for the fallback queue to drain before deleting temporary resources. Set `drainTimeout` (in seconds) to cap how long this wait lasts:
+
+```yaml
+spec:
+  drainTimeout: 60
+```
+
+Set to `0` to skip draining entirely (temporary queues are deleted immediately). If omitted, the default is 30 seconds.
+
+#### Temporary resource name template
+
+You can customize the naming format of temporary queues/topics created by the operator:
+
+```yaml
+spec:
+  tmpNameTemplate: "mirrord-tmp-{{RANDOM}}{{FALLBACK}}{{ORIGINAL}}"
+```
+
+The template must contain all three placeholders:
+* `{{RANDOM}}` - random alphabetic characters for uniqueness.
+* `{{FALLBACK}}` - resolves to `-main-` for the fallback queue or `-` for user queues.
+* `{{ORIGINAL}}` - name of the original queue/topic being split.
+
+Azure Service Bus resource names can be up to 260 characters. If the rendered name exceeds this limit, the original portion is truncated with a hash suffix.
 
 {% endstep %}
 {% endstepper %}
@@ -1368,7 +1482,7 @@ lingering `MirrordSqsSession` objects, and if possible, restart the mirrord oper
 
 If you are having issues with Azure Service Bus splitting, start with these general steps:
 
-1. Make sure a `MirrordSplitConfig` exists for the target workload and that it has queue entries with `kind: AzureServiceBus`:
+1. Make sure a `MirrordSplitConfig` exists for the target workload and that it has queue entries with `kind: azureServiceBus`:
    ```shell
    kubectl get mirrordsplitconfigs.queues.mirrord.metalbear.co -n <target-namespace> -o yaml
    ```
