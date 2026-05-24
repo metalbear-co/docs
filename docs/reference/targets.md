@@ -16,7 +16,7 @@ tags:
 description: Possible targets for mirrord and how to set them
 ---
 
-A **target** is the Kubernetes resource whose context the local process will impersonate — its network namespace (for incoming/outgoing traffic and DNS), its filesystem (for fs operations), and its environment variables. When a target is specified, the [mirrord-agent](architecture.md#mirrord-agent) runs on the same node as the target pod and joins its namespaces.
+A **target** is the Kubernetes resource whose context the local process will impersonate: its network namespace (for incoming/outgoing traffic and DNS), its filesystem (for fs operations), and its environment variables. When a target is specified, the [mirrord-agent](architecture.md#mirrord-agent) runs on the same node as the target pod and joins its namespaces.
 
 This page covers what kinds of resources are valid targets, the resource path syntax, how the agent maps workload kinds to actual pods, and how to specify a target across the different mirrord interfaces.
 
@@ -29,11 +29,11 @@ For the targetless mode, see [Targetless](../using-mirrord/targetless.md). For t
 | `pod` | ✅ | ✅ | The leaf resource. All other kinds resolve to pods. |
 | `deployment` | ✅ | ✅ | In OSS: random replica. In Teams: all replicas. |
 | `rollout` | ✅ | ✅ | Argo Rollouts. Same replica behavior as deployment. |
-| `statefulset` | — | ✅ | Same replica behavior as deployment. |
-| `replicaset` | — | ✅ | Same replica behavior as deployment. |
-| `service` | — | ✅ | Resolved to backing pods via the Service's selector. |
-| `job` | — | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
-| `cronjob` | — | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
+| `statefulset` | none | ✅ | Same replica behavior as deployment. |
+| `replicaset` | none | ✅ | Same replica behavior as deployment. |
+| `service` | none | ✅ | Resolved to backing pods via the Service's selector. |
+| `job` | none | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
+| `cronjob` | none | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
 | `targetless` | ✅ | ✅ | No impersonation. See [Targetless](../using-mirrord/targetless.md). |
 
 ### Replica handling
@@ -41,7 +41,7 @@ For the targetless mode, see [Targetless](../using-mirrord/targetless.md). For t
 When a workload has multiple replicas:
 
 - **OSS** picks one random pod replica for the duration of the session.
-- **Teams** binds to all replicas — incoming traffic from any replica can match your filter, and the agent runs alongside one of them but knows about the rest. This is what enables sharing.
+- **Teams** binds to all replicas. Incoming traffic from any replica can match your filter, and the agent runs alongside one of them but knows about the rest. This is what enables sharing.
 
 ### Container selection
 
@@ -129,7 +129,7 @@ mirrord exec -- my-app
 
 ### IDE dialog
 
-If none of the above is set, the VS Code and JetBrains extensions show a target picker. To skip the dialog and run targetless, set the config explicitly to `"target": "targetless"` — leaving `target` unset triggers the dialog.
+If none of the above is set, the VS Code and JetBrains extensions show a target picker. To skip the dialog and run targetless, set the config explicitly to `"target": "targetless"`. Leaving `target` unset triggers the dialog.
 
 ## Namespaces
 
@@ -143,7 +143,7 @@ These are independent. You can target a pod in `app-prod` while running the agen
 ## What happens when you specify a target
 
 1. The CLI resolves the resource via the Kubernetes API and chooses a pod (random for OSS workloads, all for Teams).
-2. The agent is scheduled on the same node as the chosen pod (so it can join that pod's namespaces — namespace joining is a node-local operation).
+2. The agent is scheduled on the same node as the chosen pod (so it can join that pod's namespaces; namespace joining is a node-local operation).
 3. The agent joins the target's network namespace (`CAP_SYS_ADMIN`), gaining the same view of cluster networking the pod has.
 4. The agent reads the target container's PID from the runtime, so it can access the container's filesystem via `/proc/<pid>/root` and its environment via `/proc/<pid>/environ`.
 5. The session's lifetime is tied to the agent pod. When the session ends (CLI exits, IDE stops, idle timeout), the agent is removed.
@@ -152,7 +152,7 @@ See [Architecture](architecture.md) for the full session flow.
 
 ## Related
 
-- [`target` config reference](https://metalbear.com/mirrord/docs/config#target) — full schema
-- [Targetless](../using-mirrord/targetless.md) — running without a target
-- [Copy Target](../using-mirrord/copy-target.md) — creating a copy of the target pod (required for `job`/`cronjob` targeting)
-- [Sharing the cluster](../sharing-the-cluster/overview.md) — how Teams enables multiple users to target the same workload
+- [`target` config reference](https://metalbear.com/mirrord/docs/config#target): full schema
+- [Targetless](../using-mirrord/targetless.md): running without a target
+- [Copy Target](../using-mirrord/copy-target.md): creating a copy of the target pod (required for `job`/`cronjob` targeting)
+- [Sharing the cluster](../sharing-the-cluster/overview.md): how Teams enables multiple users to target the same workload

@@ -49,9 +49,9 @@ For the quick how-to, see [Using mirrord → Environment Variables](../using-mir
 
 Once the layer has the map, it applies four post-fetch transformations in this order:
 
-1. **`env_file`** — merge variables from the dotenv file specified by `env_file` (overrides remote values).
-2. **`mapping`** — apply regex-based value replacement.
-3. **`override`** — apply user-specified key/value overrides (final word).
+1. **`env_file`**: merge variables from the dotenv file specified by `env_file` (overrides remote values).
+2. **`mapping`**: apply regex-based value replacement.
+3. **`override`**: apply user-specified key/value overrides (final word).
 4. The resulting environment is set on the process before its entry point runs.
 
 For frameworks where the env can't be modified from inside the process (notably Go), `unset` runs from the CLI/extension before exec.
@@ -80,12 +80,12 @@ For frameworks where the env can't be modified from inside the process (notably 
 
 | Field | Type | Default | Behavior |
 |---|---|---|---|
-| `include` | string \| array | — | Allowlist. Supports `*` and `?` wildcards. Mutually exclusive with `exclude`. |
-| `exclude` | string \| array | — | Denylist applied on top of the [built-in always-excluded list](#always-excluded-variables). Mutually exclusive with `include`. |
-| `override` | object | — | Key/value pairs set on the local process. Wins over remote values and `env_file`. |
-| `env_file` | path | — | Dotenv file merged into the remote env. Values override the remote ones. |
-| `mapping` | object | — | Regex → replacement applied to **values** (not keys). Capture groups allowed. |
-| `unset` | string \| array | — | Variables removed entirely. Case-insensitive. Required for Go (env can't be modified post-start). |
+| `include` | string \| array | none | Allowlist. Supports `*` and `?` wildcards. Mutually exclusive with `exclude`. |
+| `exclude` | string \| array | none | Denylist applied on top of the [built-in always-excluded list](#always-excluded-variables). Mutually exclusive with `include`. |
+| `override` | object | none | Key/value pairs set on the local process. Wins over remote values and `env_file`. |
+| `env_file` | path | none | Dotenv file merged into the remote env. Values override the remote ones. |
+| `mapping` | object | none | Regex → replacement applied to **values** (not keys). Capture groups allowed. |
+| `unset` | string \| array | none | Variables removed entirely. Case-insensitive. Required for Go (env can't be modified post-start). |
 | `load_from_process` | bool | `false` | Fetch env after the user process starts instead of before. WSL+IntelliJ workaround when the remote env is very large. |
 
 ### `include` and `exclude` are mutually exclusive
@@ -98,8 +98,8 @@ When neither is set, the layer requests `*` (all remote variables).
 
 `include` and `exclude` use `wildmatch` (not regex):
 
-- `*` — zero or more of any character
-- `?` — exactly one of any character
+- `*`: zero or more of any character
+- `?`: exactly one of any character
 
 Use the `mapping` field if you need full regex on values.
 
@@ -130,13 +130,13 @@ CATALINA_HOME                        DOTNET_EnableDiagnostics
 CLASSPATH                            DOTNET_STARTUP_HOOKS
 ```
 
-User-supplied `exclude` patterns are **added to** this list — they do not replace it.
+User-supplied `exclude` patterns are **added to** this list; they do not replace it.
 
 The canonical list lives in `mirrord-agent/src/env.rs`.
 
 ## How the agent reads the env
 
-The agent enters the target container's PID namespace and reads `/proc/<target-pid>/environ` (NUL-delimited `KEY=VALUE` pairs). It does **not** spawn anything in the container — there's no exec, no shell evaluation. What you get is exactly what was set on the process at start (so runtime `os.setenv()` calls inside the pod won't show up).
+The agent enters the target container's PID namespace and reads `/proc/<target-pid>/environ` (NUL-delimited `KEY=VALUE` pairs). It does **not** spawn anything in the container: no exec, no shell evaluation. What you get is exactly what was set on the process at start (so runtime `os.setenv()` calls inside the pod won't show up).
 
 This is also why containers running things like nginx, which rewrite `/proc/self/environ` after start, can return surprising results.
 
@@ -153,6 +153,6 @@ Each config field has a matching env var, useful from CLI/CI:
 
 ## Related
 
-- [`feature.env` config reference](https://metalbear.com/mirrord/docs/config#feature.env) — full schema
-- [Architecture](architecture.md) — layer/intproxy/agent message flow
-- [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md) — quick how-to
+- [`feature.env` config reference](https://metalbear.com/mirrord/docs/config#feature.env): full schema
+- [Architecture](architecture.md): layer/intproxy/agent message flow
+- [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md): quick how-to

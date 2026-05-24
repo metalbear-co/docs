@@ -66,7 +66,7 @@ mirrord runs the user's local process unchanged, but rewires its syscalls so fil
 
 ### `mirrord-cli`
 
-The user-facing binary. Resolves the target via the Kubernetes API, decides whether to connect through the operator or directly (`operator: false`), launches the intproxy, sets up environment variables (`LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` pointing at the layer library, intproxy address, config-derived feature flags), and `exec`s the user's command. Also fronts the IDE extensions — VS Code and JetBrains plugins call into the same CLI.
+The user-facing binary. Resolves the target via the Kubernetes API, decides whether to connect through the operator or directly (`operator: false`), launches the intproxy, sets up environment variables (`LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` pointing at the layer library, intproxy address, config-derived feature flags), and `exec`s the user's command. Also fronts the IDE extensions: VS Code and JetBrains plugins call into the same CLI.
 
 The CLI does **not** load the layer itself. Loading happens in the next step, driven by the OS dynamic linker.
 
@@ -103,7 +103,7 @@ Required Linux capabilities:
 
 You can drop any subset via [`agent.disabled_capabilities`](https://metalbear.com/mirrord/docs/config#agent.disabled_capabilities), which will disable the corresponding features.
 
-The agent is **not** privileged — it does not run as root in the cluster sense — and only operates on the targets the user is authorized to access (via Kubernetes RBAC or, for Teams, the operator's policy layer).
+The agent is **not** privileged (it does not run as root in the cluster sense) and only operates on the targets the user is authorized to access (via Kubernetes RBAC or, for Teams, the operator's policy layer).
 
 ### `mirrord-protocol`
 
@@ -111,7 +111,7 @@ Defines the messages exchanged between layer ↔ intproxy ↔ agent: `ClientMess
 
 Between the layer and the intproxy there's a separate, lighter local protocol (`mirrord-intproxy-protocol`) with `LayerToProxyMessage` / `ProxyToLayerMessage`.
 
-Backward compatibility is mandatory — the agent, layer, and intproxy ship and upgrade independently, so older clients must keep working against newer agents and vice versa within the supported version window.
+Backward compatibility is mandatory: the agent, layer, and intproxy ship and upgrade independently, so older clients must keep working against newer agents and vice versa within the supported version window.
 
 ### `mirrord-operator` (Teams)
 
@@ -127,28 +127,28 @@ In OSS, intproxy talks directly to the agent via `kubectl port-forward`. With th
 
 ### `mirrord-external-proxy` (container mode)
 
-For [`mirrord container`](../using-mirrord/local-container.md) and other scenarios where the user process runs inside a separate container/VM, an additional process — the external proxy — sits between the container boundary and the intproxy. The intproxy runs in the same network namespace as the user process; the external proxy stays on the host and forwards messages between intproxy and agent. Most users never interact with it directly.
+For [`mirrord container`](../using-mirrord/local-container.md) and other scenarios where the user process runs inside a separate container/VM, an additional process (the external proxy) sits between the container boundary and the intproxy. The intproxy runs in the same network namespace as the user process; the external proxy stays on the host and forwards messages between intproxy and agent. Most users never interact with it directly.
 
 ## Lifecycle of a `mirrord exec` session
 
-1. **CLI invocation** — `mirrord exec -t <target> -- <command>`. CLI loads config, validates it, and resolves the target via the Kubernetes API.
+1. **CLI invocation**: `mirrord exec -t <target> -- <command>`. CLI loads config, validates it, and resolves the target via the Kubernetes API.
 2. **Agent setup**:
    - **OSS path**: CLI creates the agent pod (a `Job`), waits for it to be ready, sets up a port-forward.
    - **Teams path**: CLI authenticates with the operator, opens a session, and gets back a connection.
-3. **intproxy start**: CLI spawns intproxy as a local subprocess. intproxy connects to the agent (port-forward or operator tunnel).
-4. **Layer load**: CLI sets `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` (pointing at the layer library), the intproxy address, and config-derived env vars, then `exec`s the user command. The OS dynamic linker loads the layer into the new process before its entry point runs; the layer's constructor installs hooks and opens a session with intproxy.
+3. **intproxy start**: CLI spawns intproxy as a local subprocess with the CLI's normal environment (no `LD_PRELOAD`). intproxy is a regular process; nothing is injected into it. It binds a local socket (TCP or Unix) and connects out to the agent (port-forward or operator tunnel).
+4. **Layer load**: CLI `exec`s the user command, passing a **per-exec** augmented environment: `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` (pointing at the layer library), `MIRRORD_INTPROXY_ADDR` (the address from step 3), and config-derived feature flags. These vars never live on the CLI's own process environment, so they don't leak into intproxy or any other sibling process. The OS dynamic linker reads `LD_PRELOAD` from the new process's environment and loads the layer into the user process before its entry point runs; the layer's constructor installs hooks and connects to intproxy at `MIRRORD_INTPROXY_ADDR`. (Any subprocess the user app later spawns inherits `LD_PRELOAD` from the user app's environment, so it also gets the layer loaded — and connects to the same intproxy.)
 5. **Initial fetch**: The layer fetches remote env vars from the agent (synchronous, before the user code runs) and sets them on the process.
 6. **Runtime operations**: Each hooked syscall becomes a `ClientMessage`. intproxy routes it to the agent, the agent executes, and the response (`DaemonMessage`) flows back. The layer translates the response into what the syscall's caller expects.
 7. **Teardown**: When the user process exits, the layer disconnects, intproxy shuts down, and (OSS) the agent pod is deleted, or (Teams) the operator closes the session.
 
 ## IDE extensions
 
-The [VS Code extension](../installing-mirrord/vscode.md) and [JetBrains plugin](../installing-mirrord/intellij.md) wrap the same CLI mechanism. They surface a target-picker dialog (when no target is in the config or env), set up the same `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` injection, and start the debugged process under that environment. From mirrord's perspective there's no difference between a CLI exec and an IDE-launched debug session — the IDE is just a different way of invoking the CLI machinery.
+The [VS Code extension](../installing-mirrord/vscode.md) and [JetBrains plugin](../installing-mirrord/intellij.md) wrap the same CLI mechanism. They surface a target-picker dialog (when no target is in the config or env), set up the same `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` injection, and start the debugged process under that environment. From mirrord's perspective there's no difference between a CLI exec and an IDE-launched debug session. The IDE is just a different way of invoking the CLI machinery.
 
 ## Related
 
-- [Targets](targets.md) — what kinds of resources can be impersonated
-- [Network Traffic](traffic.md) — how incoming, outgoing, and DNS routing work
-- [File Operations](fileops.md) — how fs syscalls are intercepted and routed
-- [Environment Variables](env.md) — how the env fetch works
-- [Sharing the cluster](../sharing-the-cluster/overview.md) — what the operator unlocks
+- [Targets](targets.md): what kinds of resources can be impersonated
+- [Network Traffic](traffic.md): how incoming, outgoing, and DNS routing work
+- [File Operations](fileops.md): how fs syscalls are intercepted and routed
+- [Environment Variables](env.md): how the env fetch works
+- [Sharing the cluster](../sharing-the-cluster/overview.md): what the operator unlocks

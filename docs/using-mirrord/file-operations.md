@@ -50,7 +50,7 @@ Some paths (language runtimes, package managers, home-directory state, temp file
 }
 ```
 
-Be careful — this modifies the actual remote pod's filesystem.
+Be careful: this modifies the actual remote pod's filesystem.
 
 **Keeping specific paths local even in `read` mode**
 
@@ -80,8 +80,8 @@ If your local home dir has files (`.aws/credentials`, `.gcloud/`) that hijack au
 
 ## Common scenarios
 
-- **App reads config from a mounted ConfigMap** — default `read` mode handles this; no config needed.
-- **App writes logs locally** — default already writes locally; no change needed.
-- **App watches files with `inotify` for ConfigMap updates** — won't work; mirrord doesn't intercept inotify. Poll mtime via `stat` instead.
+- **App reads config from a mounted ConfigMap**: default `read` mode handles this; no config needed.
+- **App writes logs locally**: default already writes locally; no change needed.
+- **App watches files with `inotify` for ConfigMap updates**: won't work; mirrord doesn't intercept inotify. Poll mtime via `stat` instead.
 
 For the full pattern resolution order, the complete list of intercepted syscalls, the default-override lists, path mapping (useful on Windows), and the readonly buffer setting, see the [file operations reference](../reference/fileops.md).

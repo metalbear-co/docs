@@ -32,7 +32,7 @@ mirrord exec -t pod/my-pod -- env | grep DATABASE_URL
 { "feature": { "env": { "exclude": "SECRET_*;LEGACY_*" } } }
 ```
 
-(`include` and `exclude` are mutually exclusive — pick one.)
+(`include` and `exclude` are mutually exclusive; pick one.)
 
 **Override a value locally**
 
@@ -56,7 +56,7 @@ This is the right fix when something like `AWS_PROFILE` from your shell makes th
 
 ## Gotchas
 
-- mirrord always strips toolchain variables (`PATH`, `HOME`, `JAVA_HOME`, `GOPATH`, `PYTHONPATH`, `CLASSPATH`, etc.) so your local interpreter doesn't break. You can't get these from the remote pod — they're considered local. See the [reference](../reference/env.md#always-excluded-variables) for the full list.
-- Variables set with `os.setenv()` (or equivalent) inside the running pod **won't appear** — mirrord reads `/proc/<pid>/environ`, which is fixed at process start.
+- mirrord always strips toolchain variables (`PATH`, `HOME`, `JAVA_HOME`, `GOPATH`, `PYTHONPATH`, `CLASSPATH`, etc.) so your local interpreter doesn't break. You can't get these from the remote pod; they're considered local. See the [reference](../reference/env.md#always-excluded-variables) for the full list.
+- Variables set with `os.setenv()` (or equivalent) inside the running pod **won't appear**: mirrord reads `/proc/<pid>/environ`, which is fixed at process start.
 
 For mechanism, full schema, post-fetch transformation order, and the complete excluded list, see the [environment variables reference](../reference/env.md).

@@ -16,7 +16,7 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-mirrord intercepts the local process's network operations and proxies them through the target pod. This page covers what mirrord does end-to-end for incoming traffic (mirror and steal), outgoing traffic (TCP/UDP/Unix sockets), and DNS resolution — including the configuration surface, defaults, and edge cases worth knowing.
+mirrord intercepts the local process's network operations and proxies them through the target pod. This page covers what mirrord does end-to-end for incoming traffic (mirror and steal), outgoing traffic (TCP/UDP/Unix sockets), and DNS resolution, including the configuration surface, defaults, and edge cases worth knowing.
 
 For the how-to versions, see [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md) and [Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md).
 
@@ -62,7 +62,7 @@ All regex filters use the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fan
 
 **Recommended pattern for isolating one developer's session:** match a W3C `baggage` or `tracestate` entry that the caller propagates, e.g. `header_filter: "^baggage: .*mirrord-session=alice.*"`. This works across proxies, service meshes, and tracing-aware clients without requiring custom headers.
 
-**Composite example — POST to a specific endpoint from a specific session:**
+**Composite example, POST to a specific endpoint from a specific session:**
 
 ```json
 {
@@ -143,9 +143,9 @@ Outgoing traffic is forwarded by default for both TCP and UDP. The local process
 | `tcp` | `true` | Forward outgoing TCP through the pod. |
 | `udp` | `true` | Forward outgoing UDP through the pod. Only works if the app binds a non-zero port and calls `connect()` before sending. |
 | `ignore_localhost` | `false` | Treat `127.0.0.1` traffic as local. |
-| `filter.remote` | — | Only matching destinations go through the pod; everything else stays local. |
-| `filter.local` | — | Only matching destinations stay local; everything else goes through the pod. (Mutually exclusive with `filter.remote`.) |
-| `unix_streams` | — | Regex (or list of regexes) on Unix socket paths. Matching connections are forwarded to the pod; non-matching stay local. |
+| `filter.remote` | none | Only matching destinations go through the pod; everything else stays local. |
+| `filter.local` | none | Only matching destinations stay local; everything else goes through the pod. (Mutually exclusive with `filter.remote`.) |
+| `unix_streams` | none | Regex (or list of regexes) on Unix socket paths. Matching connections are forwarded to the pod; non-matching stay local. |
 
 ### Outgoing filter syntax
 
@@ -160,11 +160,11 @@ Each filter entry: `[protocol]://[name|address|subnet/mask]:[port]`. All parts o
 
 ### The mirror + outgoing gotcha
 
-If `incoming.mode` is `mirror` (default) **and** outgoing is enabled (default) **and** your handler does writes (e.g. a DB insert), every mirrored request causes **two** writes — one from the remote pod, one from your local copy.
+If `incoming.mode` is `mirror` (default) **and** outgoing is enabled (default) **and** your handler does writes (e.g. a DB insert), every mirrored request causes **two** writes: one from the remote pod, one from your local copy.
 
 Three ways to avoid this:
 
-1. Switch to `steal` mode — only one process handles each request.
+1. Switch to `steal` mode: only one process handles each request.
 2. Disable outgoing traffic if the target services are cluster-internal.
 3. Use an outgoing filter to send specific destinations local-only.
 
@@ -207,8 +207,8 @@ Same format as outgoing, minus the protocol: `[name|address|subnet/mask][:port]`
 
 ## Related
 
-- [`feature.network` config reference](https://metalbear.com/mirrord/docs/config#feature.network) — full schema
-- [Architecture](architecture.md) — layer / intproxy / agent
+- [`feature.network` config reference](https://metalbear.com/mirrord/docs/config#feature.network): full schema
+- [Architecture](architecture.md): layer / intproxy / agent
 - [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md)
 - [Using mirrord → Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md)
-- [Steal HTTPS](../using-mirrord/incoming-traffic/steal-https.md) — for `tls_delivery`
+- [Steal HTTPS](../using-mirrord/incoming-traffic/steal-https.md): for `tls_delivery`
