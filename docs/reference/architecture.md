@@ -30,19 +30,7 @@ mirrord runs the user's local process unchanged, but rewires its syscalls so fil
 
 In OSS, intproxy talks directly to the agent via `kubectl port-forward`. With the operator, intproxy talks to the operator, which proxies to the agent.
 
-## Agent capabilities
-
-The agent is not privileged (it does not run as root in the cluster sense), but it does need Linux capabilities to impersonate the target pod:
-
-| Capability | Why |
-|---|---|
-| `CAP_NET_ADMIN`, `CAP_NET_RAW` | Modify routing tables, set up traffic mirroring/stealing |
-| `CAP_SYS_PTRACE` | Read the target pod's environment (`/proc/<pid>/environ`) |
-| `CAP_SYS_ADMIN` | Join the target pod's network and mount namespaces |
-
-You can drop any subset via [`agent.disabled_capabilities`](https://metalbear.com/mirrord/docs/config#agent.disabled_capabilities), which will disable the corresponding features.
-
-The agent only operates on the targets the user is authorized to access (via Kubernetes RBAC or, for Teams, the operator's policy layer).
+The agent is not privileged (it does not run as root in the cluster sense), but does need a small set of Linux capabilities to join the target pod's namespaces. See [Security](../managing-mirrord/security.md) for the full list, the RBAC posture, and how to drop individual capabilities via [`agent.disabled_capabilities`](https://metalbear.com/mirrord/docs/config#agent.disabled_capabilities).
 
 ## Related
 
