@@ -6,26 +6,34 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-By default, mirrord redirects most file reads from your local process to the remote pod. When your code opens `/etc/config/app.yaml`, it reads the remote pod's copy. Writes stay local. Your local process sees the same configuration files, certificates, and mounted volume data the deployed application does.
+By default, mirrord redirects most file access from your local process to the remote pod. When your code opens `/etc/config/app.yaml`, it reads the remote pod's copy. This means your local process sees the same configuration files, certificates, and data that the deployed application does.
 
-Some paths (language runtimes, package managers, home-directory state, temp files) are always read locally. See the [full default list](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) or the [reference](../reference/fileops.md#default-overrides).
+Some paths, like language runtimes, package managers, and temp files, are always read locally. See the [full default list](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) for details.
 
 ## Choosing a mode
 
-| Mode | Reads | Writes | Use when |
-|---|---|---|---|
-| `read` *(default)* | remote | local | You want remote config but don't want to risk writing to remote files |
-| `local` | local | local | You don't need any remote files |
-| `localwithoverrides` | local (except overrides) | local (except overrides) | You need just a few specific remote files |
-| `write` | remote | remote | Your app needs to write to a remote volume |
+mirrord supports four file system modes:
+
+| Mode | Behavior | Use when |
+|------|----------|----------|
+| `read` (default) | Reads from remote, writes locally | You want remote config but don't want to risk writing to remote files |
+| `local` | All file access stays local | You don't need any remote files |
+| `localwithoverrides` | All file access local, except paths you specify | You need just a few specific remote files |
+| `write` | Reads from remote, writes to remote | Your app needs to write to a remote volume |
 
 ```json
-{ "feature": { "fs": { "mode": "read" } } }
+{
+  "feature": {
+    "fs": {
+      "mode": "read"
+    }
+  }
+}
 ```
 
-## Common patterns
+## Reading specific files remotely
 
-**Reading specific files remotely (rest stay local)**
+Use `localwithoverrides` when you only need a handful of remote files, for example a config file or TLS certificate:
 
 ```json
 {
@@ -38,7 +46,11 @@ Some paths (language runtimes, package managers, home-directory state, temp file
 }
 ```
 
-**Writing to a specific remote path**
+Paths support regex patterns.
+
+## Writing files remotely
+
+If your application writes to files that need to land on the remote filesystem (e.g. uploading to a shared volume), use `read_write`:
 
 ```json
 {
@@ -50,9 +62,11 @@ Some paths (language runtimes, package managers, home-directory state, temp file
 }
 ```
 
-Be careful: this modifies the actual remote pod's filesystem.
+Be careful with remote writes. They modify the actual remote pod's filesystem.
 
-**Keeping specific paths local even in `read` mode**
+## Keeping specific files local
+
+If the default `read` mode pulls in remote files that conflict with your local setup (e.g. `/tmp` files, lock files), you can force them to stay local:
 
 ```json
 {
@@ -64,9 +78,9 @@ Be careful: this modifies the actual remote pod's filesystem.
 }
 ```
 
-**Hiding files that confuse a cluster-context process**
+## Hiding files that confuse a cluster-context process
 
-If your local home dir has files (`.aws/credentials`, `.gcloud/`) that hijack auth when the process expects cluster auth:
+If your local home dir has files (`.aws/credentials`, `.gcloud/`) that hijack auth when the process expects cluster auth, mark them as not-found so the application gets `ENOENT`:
 
 ```json
 {
@@ -80,8 +94,13 @@ If your local home dir has files (`.aws/credentials`, `.gcloud/`) that hijack au
 
 ## Common scenarios
 
-- **App reads config from a mounted ConfigMap**: default `read` mode handles this; no config needed.
-- **App writes logs locally**: default already writes locally; no change needed.
-- **App watches files with `inotify` for ConfigMap updates**: won't work; mirrord doesn't intercept inotify. Poll mtime via `stat` instead.
+**"My app reads config from a mounted ConfigMap"** The default `read` mode handles this. Your local process will read the ConfigMap contents from the remote pod.
 
-For the full pattern resolution order, the complete list of intercepted syscalls, the default-override lists, path mapping (useful on Windows), and the readonly buffer setting, see the [file operations reference](../reference/fileops.md).
+**"My app writes logs to a file and I don't want them on the remote pod"** Default `read` mode already writes locally. No change needed.
+
+**"I only need one remote config file, everything else should be local"** Use `localwithoverrides` with the specific path.
+
+**"My app watches files with `inotify` for ConfigMap updates"** Won't work; mirrord doesn't intercept inotify. Poll mtime via `stat` instead.
+
+For the full list of file operation settings, see the [configuration reference](https://metalbear.com/mirrord/docs/config#feature.fs).
+For a technical explanation of how file operations work under the hood, see the [File Operations reference](../reference/fileops.md).
