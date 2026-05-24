@@ -26,13 +26,19 @@ mirrord runs the user's local process unchanged, but rewires its syscalls so fil
 ┌────────────────────────────────────────────────────────────────────────┐
 │ LOCAL MACHINE                                                          │
 │                                                                        │
-│  ┌──────────────────────┐         ┌──────────────────────┐             │
-│  │ User application     │         │ mirrord CLI          │             │
-│  │ ┌──────────────────┐ │         │ - resolves target    │             │
-│  │ │  mirrord-layer   │◄┼─────────┤ - starts intproxy    │             │
-│  │ │  (LD_PRELOAD /   │ │         │ - sets env + injects │             │
-│  │ │   DYLD_INSERT)   │ │         │   layer              │             │
-│  │ └────────┬─────────┘ │         └──────────────────────┘             │
+│  ┌──────────────────────┐                                              │
+│  │ mirrord CLI          │  - resolves target                           │
+│  │                      │  - starts intproxy                           │
+│  │                      │  - sets LD_PRELOAD / DYLD_INSERT_LIBRARIES   │
+│  │                      │  - execs the user command                    │
+│  └──────────┬───────────┘                                              │
+│             │ exec()                                                   │
+│             ▼                                                          │
+│  ┌──────────────────────┐                                              │
+│  │ User application     │  OS dynamic linker sees LD_PRELOAD /         │
+│  │ ┌──────────────────┐ │  DYLD_INSERT_LIBRARIES and loads             │
+│  │ │  mirrord-layer   │ │  libmirrord_layer.so/.dylib into the         │
+│  │ └────────┬─────────┘ │  process before main() runs.                 │
 │  └──────────┼───────────┘                                              │
 │             │ local protocol (TCP / Unix)                              │
 │             │                                                          │
@@ -60,11 +66,15 @@ mirrord runs the user's local process unchanged, but rewires its syscalls so fil
 
 ### `mirrord-cli`
 
-The user-facing binary. Resolves the target via the Kubernetes API, decides whether to connect through the operator or directly (`operator: false`), launches the intproxy, sets up environment variables (`LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` for the layer, intproxy address), and execs the user's command. Also fronts the IDE extensions — VS Code and JetBrains plugins call into the same CLI.
+The user-facing binary. Resolves the target via the Kubernetes API, decides whether to connect through the operator or directly (`operator: false`), launches the intproxy, sets up environment variables (`LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` pointing at the layer library, intproxy address, config-derived feature flags), and `exec`s the user's command. Also fronts the IDE extensions — VS Code and JetBrains plugins call into the same CLI.
+
+The CLI does **not** load the layer itself. Loading happens in the next step, driven by the OS dynamic linker.
 
 ### `mirrord-layer` / `mirrord-layer-win`
 
-A dynamic library loaded into the user process. On Linux it's a `.so` injected via `LD_PRELOAD`; on macOS a `.dylib` via `DYLD_INSERT_LIBRARIES`; on Windows a `.dll` loaded into a frozen process before execution begins.
+A dynamic library, not a process. On Linux and macOS, when the CLI sets `LD_PRELOAD` / `DYLD_INSERT_LIBRARIES` and `exec`s the user command, the OS dynamic linker sees the env var and loads the layer library (`libmirrord_layer.so` / `.dylib`) into the new process's address space before its entry point runs. The layer's constructor then installs hooks and connects to intproxy.
+
+On Windows the same role is played by `mirrord-layer-win`: a `.dll` loaded into the user process via a separate injection mechanism (the process is started in a frozen state so the library is fully initialized before execution begins).
 
 The layer hooks libc functions (or the Windows-equivalent low-level APIs) for file, socket, DNS, and exec operations. Each intercepted call is either bypassed to the original implementation (for paths that should stay local) or converted into a protocol request and sent to the intproxy.
 
@@ -126,7 +136,7 @@ For [`mirrord container`](../using-mirrord/local-container.md) and other scenari
    - **OSS path**: CLI creates the agent pod (a `Job`), waits for it to be ready, sets up a port-forward.
    - **Teams path**: CLI authenticates with the operator, opens a session, and gets back a connection.
 3. **intproxy start**: CLI spawns intproxy as a local subprocess. intproxy connects to the agent (port-forward or operator tunnel).
-4. **Layer injection**: CLI sets `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES`, intproxy address, and config-derived env vars, then execs the user command. The layer initializes immediately on process start.
+4. **Layer load**: CLI sets `LD_PRELOAD`/`DYLD_INSERT_LIBRARIES` (pointing at the layer library), the intproxy address, and config-derived env vars, then `exec`s the user command. The OS dynamic linker loads the layer into the new process before its entry point runs; the layer's constructor installs hooks and opens a session with intproxy.
 5. **Initial fetch**: The layer fetches remote env vars from the agent (synchronous, before the user code runs) and sets them on the process.
 6. **Runtime operations**: Each hooked syscall becomes a `ClientMessage`. intproxy routes it to the agent, the agent executes, and the response (`DaemonMessage`) flows back. The layer translates the response into what the syscall's caller expects.
 7. **Teardown**: When the user process exits, the layer disconnects, intproxy shuts down, and (OSS) the agent pod is deleted, or (Teams) the operator closes the session.
