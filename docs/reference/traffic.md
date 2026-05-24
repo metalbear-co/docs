@@ -16,168 +16,199 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-## Incoming
+mirrord intercepts the local process's network operations and proxies them through the target pod. This page covers what mirrord does end-to-end for incoming traffic (mirror and steal), outgoing traffic (TCP/UDP/Unix sockets), and DNS resolution — including the configuration surface, defaults, and edge cases worth knowing.
 
-mirrord lets users debug incoming network traffic by mirroring or stealing the traffic sent to the remote pod.
+For the how-to versions, see [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md) and [Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md).
 
-### Mirroring
+## Incoming traffic
 
-mirrord's default configuration is to mirror incoming TCP traffic from the remote pod, i.e. run the local process in the context of cloud environment without disrupting incoming traffic for the remote pod. Any responses by the local process to the mirrored requests are dropped, and so whatever application is running on the remote pod continues to operate normally while the traffic is mirrored to the local process.
+Incoming traffic has three modes, set via `feature.network.incoming.mode`:
 
-Example - `user-service` a simple Kubernetes deployment and service that stores registered users.
+| Mode | Behavior |
+|---|---|
+| `mirror` (default) | The agent sniffs TCP traffic on the target's ports and sends a copy to the local process. The remote pod still receives and responds to every request. Responses from the local process are dropped. |
+| `steal` | The agent intercepts TCP traffic and redirects it to the local process. The remote pod stops receiving stolen requests. The local process is now responsible for responding. |
+| `off` | Incoming traffic is disabled. The local process doesn't receive cluster traffic on any port. |
 
-```bash
-bigbear@metalbear:~/mirrord$ minikube service list
-|-------------|-------------------|--------------|---------------------------|
-|  NAMESPACE  |       NAME        | TARGET PORT  |            URL            |
-|-------------|-------------------|--------------|---------------------------|
-| default     | kubernetes        | No node port |
-| default     | user-service      |           80 | http://192.168.49.2:32000 |
-| kube-system | kube-dns          | No node port |
-|-------------|-------------------|--------------|---------------------------|
+Shorthand: `"incoming": "steal"`, `"incoming": "mirror"`, `"incoming": false` (= `off`), `"incoming": true` (= `steal`).
 
-bigbear@metalbear:~/mirrord-demo$ curl -X POST -H "Content-type: application/json" -d "{\"Name\" : \"Metal\", \"Last\" : \"Bear\"}" http://192.168.49.2:32000/user
-{"Last":"Bear","Name":"Metal"}
+### Steal mode has two sub-modes
 
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:31000/index.html
-<html> <head>USERS</head><body><h1> MetalBear Users</h1><p>[{"Last":"Bear","Name":"Metal"}]</p></body></html>
+When `incoming.mode` is `steal`:
+
+1. **Port stealing** (no HTTP filter set): all TCP traffic on each port the local process listens on is stolen.
+2. **HTTP stealing** (HTTP filter set): the agent sniffs the first bytes of each new connection on the listened ports, and:
+   - If the connection looks like HTTP and the request matches the filter → stolen.
+   - If the connection looks like HTTP but the request does not match → forwarded to the remote pod.
+   - If the connection is not HTTP → forwarded to the remote pod.
+
+HTTP detection is best-effort and has a timeout (`MIRRORD_AGENT_HTTP_DETECTION_TIMEOUT`). If the connection sends no data before the timeout, the agent treats it as non-HTTP.
+
+### HTTP filter types
+
+Set under `feature.network.incoming.http_filter`. Only active when `incoming.mode` is `steal`.
+
+| Filter | Matches |
+|---|---|
+| `header_filter` | Regex matched against each header as `Header-Name: Header-Value`. Case-insensitive. |
+| `path_filter` | Regex matched against the request path, both with and without the query string. |
+| `method_filter` | The HTTP method. Case-insensitive. Supports standard and custom methods. |
+| `body_filter` | Currently only JSON: `{ "body": "json", "query": "<JSONPath>", "matches": "<regex>" }`. Returns true if any node selected by the JSONPath matches the regex. |
+| `header_filter_jq` | A jq expression evaluated against each `Header-Name: Header-Value`. Matches if the expression returns `true`. |
+| `all_of` / `any_of` | An array of the above as composite filters. `all_of` requires every entry to match; `any_of` requires at least one. |
+| `ports` | When set, the filter applies only to these ports. **When absent, the filter applies to all ports the local process listens on.** |
+
+All regex filters use the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fancy_regex/index.html) crate (supports lookarounds and backreferences).
+
+**Recommended pattern for isolating one developer's session:** match a W3C `baggage` or `tracestate` entry that the caller propagates, e.g. `header_filter: "^baggage: .*mirrord-session=alice.*"`. This works across proxies, service meshes, and tracing-aware clients without requiring custom headers.
+
+**Composite example — POST to a specific endpoint from a specific session:**
+
+```json
+{
+  "http_filter": {
+    "all_of": [
+      { "header": "^baggage: .*mirrord-session=alice.*" },
+      { "path":   "^/api/v1/orders$" },
+      { "method": "POST" }
+    ]
+  }
+}
 ```
 
-```bash
-bigbear@metalbear:~/mirrord$ kubectl get pods
-NAME                                        READY   STATUS    RESTARTS      AGE
-metalbear-bff-deployment-597cb4f957-485t5   1/1     Running   1 (15h ago)   16h
-metalbear-deployment-85c754c75f-6k7mg       1/1     Running   1 (15h ago)   16h
+### Other incoming options
+
+| Field | Default | Behavior |
+|---|---|---|
+| `port_mapping` | `[]` | `[[local, remote]]` pairs. Tells mirrord to mirror/steal remote port X and deliver to local port Y. Useful when local code listens on a different port than the cluster service. |
+| `listen_ports` | `[]` | `[[remote, local-bind]]` pairs. Forces the local in-process listener to bind to a specific port instead of a random fallback. Useful when listening on a privileged port (e.g. remote 80 → local 4480) without `sudo`. Independent of `port_mapping`. |
+| `ignore_ports` | `[]` | Ports to leave local. Common use: skip kubelet health probes when stealing. Mutually exclusive with `ports`. |
+| `ports` | unset | If set, only these ports are mirrored/stolen; others stay local. Mutually exclusive with `ignore_ports`. |
+| `ignore_localhost` | `false` | If `true`, traffic to `127.0.0.1` is treated as local. |
+| `on_concurrent_steal` | `abort` | (Operator only) What to do when another session already has a steal lock on the target: `abort` (fail), `continue` (proceed without stealing), `override` (force-close the existing lock). |
+| `tls_delivery` | unset | (Operator only) How mirrord delivers stolen TLS traffic to the local app. See [steal-https](../using-mirrord/incoming-traffic/steal-https.md). |
+
+### How a steal subscription works
+
+```
+┌──────────────────────────┐
+│ Local process            │
+│   listen(0.0.0.0:8080)   │
+│   ┌──────────────────┐   │
+│   │  mirrord-layer   │   │  Layer detects the listen()
+│   └────────┬─────────┘   │  and tells intproxy.
+└────────────┼─────────────┘
+             │ PortSubscribe
+┌────────────▼─────────────┐
+│ mirrord-intproxy         │
+└────────────┬─────────────┘
+             │ PortSubscribe(8080, filter?)
+┌────────────▼─────────────┐
+│ mirrord-agent            │  Adds an iptables redirection
+│   (target netns)         │  for port 8080 → agent port.
+│                          │  For each new conn: detects
+│                          │  HTTP if a filter is set,
+│                          │  applies the filter, then
+│                          │  forwards stolen traffic up
+│                          │  to the layer.
+└──────────────────────────┘
 ```
 
-To mirror traffic from remote services to the local development environment, run the services locally with mirrord
+The agent installs port redirections inside the target pod's network namespace. They are removed when the session ends. If the agent process is killed uncleanly, the operator (or the cluster's eventual pod restart) cleans them up.
 
-#### Window 1
+## Outgoing traffic
 
-```bash
-bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c
---no-outgoing --target pod/metalbear-deployment-85c754c75f-6k7mg python3
-user-service/service.py 
- * Serving Flask app 'service' (lazy loading)
- * Environment: production
-   WARNING: This is a development server. Do not use it in a production deployment.
-   Use a production WSGI server instead.
- * Debug mode: off
- * Running on all addresses (0.0.0.0)
-   WARNING: This is a development server. Do not use it in a production deployment.
- * Running on http://127.0.0.1:33695
- * Running on http://172.16.0.4:33695 (Press CTRL+C to quit)
- 127.0.0.1 - - [08/Sep/2022 15:34:34] "GET /users HTTP/1.1" 200
-// ^ Received mirrored traffic from the remote pod
+Outgoing traffic is forwarded by default for both TCP and UDP. The local process opens what looks like a normal socket; the layer hands it off to intproxy, which has the agent open the actual connection from inside the target pod and tunnels the bytes back.
+
+```json
+{
+  "feature": {
+    "network": {
+      "outgoing": {
+        "tcp": true,
+        "udp": true,
+        "ignore_localhost": false,
+        "filter": {
+          "local": ["tcp://127.0.0.1:5432", ":53"]
+        },
+        "unix_streams": "^/var/run/.+"
+      }
+    }
+  }
+}
 ```
 
-#### Window 2
+| Field | Default | Behavior |
+|---|---|---|
+| `tcp` | `true` | Forward outgoing TCP through the pod. |
+| `udp` | `true` | Forward outgoing UDP through the pod. Only works if the app binds a non-zero port and calls `connect()` before sending. |
+| `ignore_localhost` | `false` | Treat `127.0.0.1` traffic as local. |
+| `filter.remote` | — | Only matching destinations go through the pod; everything else stays local. |
+| `filter.local` | — | Only matching destinations stay local; everything else goes through the pod. (Mutually exclusive with `filter.remote`.) |
+| `unix_streams` | — | Regex (or list of regexes) on Unix socket paths. Matching connections are forwarded to the pod; non-matching stay local. |
 
-```bash
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[{"Last":"Bear","Name":"Metal"}]
-```                                                                                                                                             
+### Outgoing filter syntax
 
-### Stealing
+Each filter entry: `[protocol]://[name|address|subnet/mask]:[port]`. All parts optional.
 
-mirrord can steal network traffic, i.e. intercept it and send it to the local process instead of the remote pod. This means that all incoming traffic is only handled by the local process.
+| Entry | Meaning |
+|---|---|
+| `tcp://1.1.1.0/24:1337` | TCP only, that subnet, that port |
+| `1.1.5.0/24` | Both protocols, that subnet, any port |
+| `google.com:7331` | Both protocols, that hostname (resolved), that port |
+| `:53` | Both protocols, any host, port 53 |
 
-Example - running `user-service` with mirrord and `--steal` on:
+### The mirror + outgoing gotcha
 
+If `incoming.mode` is `mirror` (default) **and** outgoing is enabled (default) **and** your handler does writes (e.g. a DB insert), every mirrored request causes **two** writes — one from the remote pod, one from your local copy.
 
-#### Window 1
+Three ways to avoid this:
 
-```bash
-bigbear@metalbear:~/mirrord-demo$ ../mirrord/target/debug/mirrord exec -c 
---steal --target pod/metalbear-deployment-85c754c75f-6k7mg
-python3 user-service/service.py 
- * Serving Flask app 'service' (lazy loading)
- * Environment: production
-   WARNING: This is a development server. Do not use it in a production deployment.
-   Use a production WSGI server instead.
- * Debug mode: off
- * Running on all addresses (0.0.0.0)
-   WARNING: This is a development server. Do not use it in a production deployment.
- * Running on http://127.0.0.1:35215
- * Running on http://172.16.0.4:35215 (Press CTRL+C to quit) 
- 127.0.0.1 - - [08/Sep/2022 15:48:40] "GET /users HTTP/1.1" 200 -
- 127.0.0.1 - - [08/Sep/2022 15:50:40] "POST /user HTTP/1.1" 200 -
- 127.0.0.1 - - [08/Sep/2022 15:50:55] "GET /users HTTP/1.1" 200 -
- 127.0.0.1 - - [08/Sep/2022 16:57:51] "POST /user HTTP/1.1" 200 -
- 127.0.0.1 - - [08/Sep/2022 16:57:54] "GET /users HTTP/1.1" 200 -
- ^Cbigbear@metalbear:~/mirrord-demo$ 
+1. Switch to `steal` mode — only one process handles each request.
+2. Disable outgoing traffic if the target services are cluster-internal.
+3. Use an outgoing filter to send specific destinations local-only.
+
+## DNS resolution
+
+```json
+{
+  "feature": {
+    "network": {
+      "dns": {
+        "enabled": true,
+        "filter": {
+          "local": ["localhost", ":53"]
+        }
+      }
+    }
+  }
+}
 ```
 
-#### Window 2
+When enabled (default), `getaddrinfo` / `gethostbyname` calls in the local process are forwarded to the agent, which resolves them using the target pod's resolver. This is what makes `my-service.default.svc.cluster.local` work from your laptop.
 
-```bash
-// Before running mirrord with `--steal`
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[{"Last":"Bear","Name":"Metal"}]
+### DNS filter syntax
 
-// After running with mirrord and `--steal` - local process responds
- instead of the remote
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[]
-bigbear@metalbear:~/mirrord-demo$ curl -X POST -H 
-"Content-type: application/json" 
--d "{\"Name\" : \"Mehul\", \"Last\" : \"Arora\"}" http://192.168.49.2:32000/user
+Same format as outgoing, minus the protocol: `[name|address|subnet/mask][:port]`.
 
-{"Last":"Arora","Name":"Mehul"}
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[{"Last":"Arora","Name":"Mehul"}]
-bigbear@metalbear:~/mirrord-demo$ curl -X POST -H 
-"Content-type: application/json" 
--d "{\"Name\" : \"Alex\", \"Last\" : \"C\"}" http://192.168.49.2:32000/user
-{"Last":"C","Name":"Alex"}
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[{"Last":"Arora","Name":"Mehul"},{"Last":"C","Name":"Alex"}]
+| Field | Behavior |
+|---|---|
+| `filter.remote` | Only matching queries go to the pod's resolver; others use the local resolver. |
+| `filter.local` | Only matching queries stay local; others go to the pod's resolver. |
 
-// After sending SIGINT to the local process
-bigbear@metalbear:~/mirrord-demo$ curl http://192.168.49.2:32000/users
-[{"Last":"Bear","Name":"Metal"}]
-```
+### Limitations
 
-**Filtering Incoming Traffic by HTTP Headers**
+- **Only works with `getaddrinfo` / `gethostbyname`.** Frameworks that talk to a DNS server directly on port 53 (some Go DNS clients, some custom resolvers) bypass mirrord entirely. If you see resolution errors with such a framework, enable the `fs` feature with `read_only: ["/etc/resolv.conf"]` so the resolver reads the pod's DNS config from the (remote) file system.
+- DNS filter currently only applies to `getaddrinfo` / `gethostbyname` paths.
 
-mirrord lets you specify a regular expression to filter HTTP requests with. When specified, all the headers of each HTTP request that arrives at the remote target are checked against the regular expression. If any of the headers match, the request will be stolen, otherwise, it will be sent to the remote target. For each `Header-Name`, `Header-Value` pair, your regular expression will be matched against `Header-Name: Header-Value`. You can filter on any header, including the W3C trace propagation headers `baggage` or `tracestate` — for example `^baggage: .*mirrord-session=alice.*` (if you use OpenTelemetry or another tracing library, these headers are often propagated automatically). The regular expression is evaluated with the [fancy\_regex](https://docs.rs/fancy-regex/0.10.0/fancy_regex/index.html) rust crate.
+## IPv6
 
-**Specifying a Filter**
+`feature.network.ipv6` (default `false`). Enable if the local app listens on or connects to IPv6 addresses. Off by default because most clusters are IPv4 and turning it on adds extra socket bookkeeping.
 
-An HTTP filter can be specified in the mirrord configuration file by setting the incoming mode to `steal` and specifying a filter in [`feature.network.incoming.http_filter.header_filter`](https://metalbear.com/mirrord/docs/config#feature.network.incoming.http_filter.header_filter) or [`feature.network.incoming.http_filter.path_filter`](https://metalbear.com/mirrord/docs/config#feature.network.incoming.http_filter.path_filter).
+## Related
 
-**Setting Custom HTTP Ports**
-
-The configuration also allows specifying custom HTTP ports under `feature.network.incoming.http_filter.ports`. By default, ports 80 and 8080 are used as HTTP ports if a filter is specified, which means that the mirrord agent checks each new connection on those ports for HTTP, and if the connection has valid HTTP messages, they are filtered with the header filter.
-
-## Outgoing
-
-mirrord's outgoing traffic feature intercepts outgoing requests from the local process and sends them through the remote pod instead. Responses are then routed back to the local process. A simple use case of this feature is enabling the local process to make an API call to another service in the k8s cluster, for example, a database read/write.
-
-For UDP, outgoing traffic is currently only intercepted and forwarded by mirrord if the application binds a non-0 port and makes a `connect` call on the socket before sending out messages. Outgoing TCP and UDP forwarding are both enabled by default. It can be controlled individually for TCP and UDP or disabled altogether (see `mirrord exec --help`).
-
-> **Note:** If the handling of incoming requests by your app involves outgoing API calls to other services, and mirrord is configured to mirror incoming traffic, then it might be the case that both the remote pod and the local process (which receives mirrored requests) make an outgoing API call to another service for the same incoming request. If that call is a write operation to a database, this could lead e.g. to duplicate lines in the database. You can avoid such an effect by switching from [traffic mirroring](traffic.md#mirroring) to [traffic stealing](traffic.md#stealing) mode. Alternatively, if the service your application makes an API call to is only reachable from within the Kubernetes cluster, you can disable outgoing traffic forwarding, which would make it impossible for your local process to reach that service.
-
-## DNS Resolution
-
-mirrord can resolve DNS queries in the context of the remote pod
-
-Example - calling `getaddrinfo` to see if the query is resolved:
-
-```bash
-Python 3.8.10 (default, Jun 22 2022, 20:18:18) 
-[GCC 9.4.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import socket
->>> socket.getaddrinfo('localhost', None)
-2022-09-08T17:37:50.735532Z  INFO mirrord_layer::socket::ops: getaddrinfo -> result Ok(
-    0x00007f5508004760,
-)
-[(<AddressFamily.AF_INET6: 10>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('::7074:e00d:557f:0', 0, 0, 97)), (<AddressFamily.AF_INET6: 10>, <SocketKind.SOCK_DGRAM: 2>, 17, '', ('::', 0, 0, 0)), (<AddressFamily.AF_INET6: 10>, <SocketKind.SOCK_RAW: 3>, 0, '', ('::90bf:f401:0:0', 0, 0, 245652448)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('127.0.0.1', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_DGRAM: 2>, 17, '', ('127.0.0.1', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_RAW: 3>, 0, '', ('127.0.0.1', 0))]
->>> socket.getaddrinfo('user-service', None)
-2022-09-08T17:38:17.556108Z  INFO mirrord_layer::socket::ops: getaddrinfo -> result Ok(
-    0x00007f5508003610,
-)
-[(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('10.106.158.180', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_DGRAM: 2>, 17, '', ('10.106.158.180', 0)), (<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_RAW: 3>, 0, '', ('10.106.158.180', 0))]
->>> 
-```
+- [`feature.network` config reference](https://metalbear.com/mirrord/docs/config#feature.network) — full schema
+- [Architecture](architecture.md) — layer / intproxy / agent
+- [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md)
+- [Using mirrord → Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md)
+- [Steal HTTPS](../using-mirrord/incoming-traffic/steal-https.md) — for `tls_delivery`

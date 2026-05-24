@@ -16,93 +16,143 @@ tags:
 description: Possible targets for mirrord and how to set them
 ---
 
-## Overview
+A **target** is the Kubernetes resource whose context the local process will impersonate — its network namespace (for incoming/outgoing traffic and DNS), its filesystem (for fs operations), and its environment variables. When a target is specified, the [mirrord-agent](architecture.md#mirrord-agent) runs on the same node as the target pod and joins its namespaces.
 
-You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](https://metalbear.com/mirrord/docs/config). When a target is specified, a [mirrord-agent](architecture.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.
+This page covers what kinds of resources are valid targets, the resource path syntax, how the agent maps workload kinds to actual pods, and how to specify a target across the different mirrord interfaces.
 
-## Possible targets
+For the targetless mode, see [Targetless](../using-mirrord/targetless.md). For the `copy_target` feature, see [Copy Target](../using-mirrord/copy-target.md).
 
-mirrord OSS supports the following Kubernetes objects as targets:
+## Supported target kinds
 
-* Pods
-* Deployments
-* Argo Rollouts
+| Kind | OSS | Teams | Notes |
+|---|---|---|---|
+| `pod` | ✅ | ✅ | The leaf resource. All other kinds resolve to pods. |
+| `deployment` | ✅ | ✅ | In OSS: random replica. In Teams: all replicas. |
+| `rollout` | ✅ | ✅ | Argo Rollouts. Same replica behavior as deployment. |
+| `statefulset` | — | ✅ | Same replica behavior as deployment. |
+| `replicaset` | — | ✅ | Same replica behavior as deployment. |
+| `service` | — | ✅ | Resolved to backing pods via the Service's selector. |
+| `job` | — | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
+| `cronjob` | — | ✅ | Requires [`copy_target`](../using-mirrord/copy-target.md). |
+| `targetless` | ✅ | ✅ | No impersonation. See [Targetless](../using-mirrord/targetless.md). |
 
-In mirrord OSS, mirrord will always target a random pod when a workload with multiple pods is used as the remote target.
+### Replica handling
 
-mirrord for Teams adds support for the following workloads:
+When a workload has multiple replicas:
 
-* Jobs
-* CronJobs
-* StatefulSets
-* ReplicaSets
-* Services
+- **OSS** picks one random pod replica for the duration of the session.
+- **Teams** binds to all replicas — incoming traffic from any replica can match your filter, and the agent runs alongside one of them but knows about the rest. This is what enables sharing.
 
-In mirrord for Teams, mirrord will always target all pods when a workload with multiple pods is used as the remote target.
+### Container selection
 
-When targeting a Service, mirrord resolves the Service to its backing pods via the Service's selector. Jobs and CronJobs require [`copy_target`](../using-mirrord/copy-target.md) to be enabled.
+If you don't name a container, mirrord picks the **first container in the pod spec**, skipping containers that look like sidecars/service-mesh proxies (Istio, Linkerd, etc.).
 
-Both in mirrord OSS and mirrord for Teams, if you don't name any specific container to be targeted, mirrord will pick the first container from the pod spec. Some containers, like service mesh proxies, will be automatically ignored.
+To pin a specific container, append `/container/<name>` to the target path.
 
-You can specify a target namespace if the target should be found in that namespace instead of the namespace that is currently used by `kubectl`. See the different interfaces below for possible ways of specifying the target and its namespace.
+## Resource path syntax
+
+```
+<kind>/<name>[/container/<container-name>]
+```
+
+Examples:
+
+```
+pod/api-server-6f9b8c7d-x2mzq
+pod/api-server-6f9b8c7d-x2mzq/container/main
+deployment/api
+deploy/api                                  # short form
+rollout/api/container/main
+statefulset/postgres-primary
+service/checkout
+job/nightly-export                          # requires copy_target
+cronjob/billing-rollup/container/runner     # requires copy_target
+targetless
+```
+
+All resource kinds accept both their long and Kubernetes-short forms (`deployment`/`deploy`, `statefulset`/`sts`, etc.) consistent with `kubectl`.
 
 ## Specifying a target
 
-There are multiple ways to specify a target. In all the possible interfaces for specifying a target, the basic format is `<resource-type>/<resource-name>` optionally followed by `/container/<container-name>`. So for specifying a target without specifying a container you can pass
+There are four ways to specify a target. **Precedence**, highest to lowest:
 
+1. CLI argument (`-t`, `-n`)
+2. Environment variable (`MIRRORD_IMPERSONATED_TARGET`, `MIRRORD_TARGET_NAMESPACE`)
+3. Configuration file (`target.path`, `target.namespace`)
+4. IDE dialog prompt (only if none of the above are set)
+
+### Configuration file
+
+Short form:
+
+```json
+{ "target": "pod/lolz/container/main" }
 ```
-deploy/<YOUR-DEPLOYMENT-NAME>
-```
 
-e.g. `deploy/lolz`,
-
-or
-
-```
-pod/<YOUR-POD-NAME>
-```
-
-e.g. `pod/lolz-64698df9b7-6plq8`,
-
-And for also specifying a container, you just add `/container/<CONTAINER-NAME>` at the end, e.g. `pod/lolz-64698df9b7-6plq8/container/main-container`.
-
-### Using a [configuration file](https://metalbear.com/mirrord/docs/config)
-
-The target path from the last section is set under the [`target.path`](https://metalbear.com/mirrord/docs/config#target.path) field. The target's namespace can be set under [`target.namespace`](https://metalbear.com/mirrord/docs/config#target.namespace). By default, the namespace currently specified in the local `kubeconfig` is used.
+Full form (when you need a namespace):
 
 ```json
 {
   "target": {
-    "path": "pod/lolz-64698df9b7-6plq8/container/main-container",
+    "path": "pod/lolz/container/main",
     "namespace": "lolzspace"
   }
 }
 ```
 
-### Using an IDE's dialog
-
-If you are running one of mirrord's IDE extensions and you didn't specify a target via a configuration file, a dialog will pop up for you to pick a target. If you want to choose a target from a different namespace you can set a target namespace in the [configuration file](targets.md#using-a-configuration-file), and the dialog will then contain targets in that namespace. Choose the `No Target ("targetless")` option in the dialog in order to run without a target.
-
-### Using a command line argument
-
-If you are running mirrord from the command line, you can specify the target via `-t` and its namespace via `-n`, e.g. `mirrord exec -t deploy/lolz -n lolzspace my-app`. Values specified by command line arguments will be used even if other values are set in a configuration file or in environment variables.
-
-### Using an environment variable
-
-You can set the target using the environment variable `MIRRORD_IMPERSONATED_TARGET` and the target's namespace using the environment variable `MIRRORD_TARGET_NAMESPACE`. Values specified by environment variables will be used even if other values are set in a configuration file.
-
-## Running without a target
-
-When no target is specified, mirrord will start a _targetless_ agent. That can be useful when you want to connect to services from within the cluster, but you don't have any target that you want to "impersonate" - like when running an external utility or a new microservice. When running targetless, mirrord will forward any connections initiated by your application to be sent out of the cluster, but it will not mirror or steal incoming traffic, as a targetless agent is not connected to any Kubernetes service and does not expose any ports. This means that if your application binds a port and listens on it, that will all happen locally, on your machine. So if you're using a management program that exposes a web interface, you can have it listen for connections on `localhost`, and connect to remote services in the cluster.
-
-If you're using a mirrord configuration file and want to run targetless, you can either leave the `target` key out completely or specify it explicitly. Note that if you want to skip the target dialog in the IDE plugins, you have to specify it explicitly. You can do it with the following configuration:
+Targetless with a namespace (for remote networking from a specific namespace):
 
 ```json
 {
-  "target": "targetless"
+  "target": {
+    "path": "targetless",
+    "namespace": "bear-namespace"
+  }
 }
 ```
 
-In your IDE you can pick the `No Target ("targetless")` option in the target selection dialog (or just not make a selection). Moreover, you should make sure [the environment variable used to specify a target](targets.md#using-an-environment-variable) isn't set (or is set to an empty value).
+The path field maps to [`target.path`](https://metalbear.com/mirrord/docs/config#target.path); the namespace field maps to [`target.namespace`](https://metalbear.com/mirrord/docs/config#target.namespace). When omitted, the namespace defaults to the one in your current `kubectl` context.
 
-> **Note:** In order to set the namespace the agent is going to be created in, set the agent namespace, not the target namespace. That value can be set via the [`agent.namespace` configuration file field](https://metalbear.com/mirrord/docs/config#agent.namespace), the `-a` CLI argument, or the `MIRRORD_AGENT_NAMESPACE` environment variable.
+### CLI
+
+```bash
+mirrord exec -t deploy/api -n production -- my-app
+```
+
+### Environment variables
+
+```bash
+export MIRRORD_IMPERSONATED_TARGET=deploy/api
+export MIRRORD_TARGET_NAMESPACE=production
+mirrord exec -- my-app
+```
+
+### IDE dialog
+
+If none of the above is set, the VS Code and JetBrains extensions show a target picker. To skip the dialog and run targetless, set the config explicitly to `"target": "targetless"` — leaving `target` unset triggers the dialog.
+
+## Namespaces
+
+| What | Set via | Default |
+|---|---|---|
+| Target namespace (where the target lives) | `target.namespace`, `-n`, `MIRRORD_TARGET_NAMESPACE` | The current `kubectl` context namespace |
+| Agent namespace (where the agent pod runs) | [`agent.namespace`](https://metalbear.com/mirrord/docs/config#agent.namespace), `-a`, `MIRRORD_AGENT_NAMESPACE` | The target's namespace |
+
+These are independent. You can target a pod in `app-prod` while running the agent in `mirrord-agents` if your cluster RBAC is set up that way.
+
+## What happens when you specify a target
+
+1. The CLI resolves the resource via the Kubernetes API and chooses a pod (random for OSS workloads, all for Teams).
+2. The agent is scheduled on the same node as the chosen pod (so it can join that pod's namespaces — namespace joining is a node-local operation).
+3. The agent joins the target's network namespace (`CAP_SYS_ADMIN`), gaining the same view of cluster networking the pod has.
+4. The agent reads the target container's PID from the runtime, so it can access the container's filesystem via `/proc/<pid>/root` and its environment via `/proc/<pid>/environ`.
+5. The session's lifetime is tied to the agent pod. When the session ends (CLI exits, IDE stops, idle timeout), the agent is removed.
+
+See [Architecture](architecture.md) for the full session flow.
+
+## Related
+
+- [`target` config reference](https://metalbear.com/mirrord/docs/config#target) — full schema
+- [Targetless](../using-mirrord/targetless.md) — running without a target
+- [Copy Target](../using-mirrord/copy-target.md) — creating a copy of the target pod (required for `job`/`cronjob` targeting)
+- [Sharing the cluster](../sharing-the-cluster/overview.md) — how Teams enables multiple users to target the same workload

@@ -16,76 +16,143 @@ tags:
 description: Reference to including remote environment variables
 ---
 
-## Overview
+mirrord makes the target pod's environment available to the local process. This page describes how the feature works end-to-end, the full configuration surface, the always-excluded variables, and the gotchas worth knowing.
 
-mirrord lets you run a local process in the context of remote environment i.e. environment variables present in the remote pod will be loaded into the local process.
+For the quick how-to, see [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md).
 
-For example, if you want your local process to access a remote database, the connection string configured in the remote pod's environment variable can be used by your local process.
+## How it works
 
-## How does it work?
+![mirrord - env vars](env/mirrord-env-vars.png)
 
-![mirrord - fileops](env/mirrord-env-vars.png)
-
-mirrord-layer sends a message to mirrord-agent requesting remote environment variables, which are then set before the local process starts.
-
-## Usage
-
-To include/exclude environment variables selectively, use the `--override-env-vars-include` flag to include and `--override-env-vars-exclude` to exclude with environment variables specified in a `semicolon` separated list.
-
-> **Note:** These flags are mutually exclusive. For example, if one chooses to exclude using the `--override-env-vars-exclude` flag, then there is no need to use `--override-env-vars-include="*"` to include all other environment variables.
-
-By default, all environment variables are included.
-
-**Example**
-
-If on our target pod, we have the environment variable `ENV_VAR1` with the value `remote-value` and on our local machine we have `ENV_VAR1` with value `local-value`, then Running the python interpreter with mirrord would look like this:
-
-```bash
-MIRRORD_AGENT_IMAGE=test MIRRORD_AGENT_RUST_LOG=trace RUST_LOG=debug target/debug/mirrord exec -c --target pod/py-serv-deployment-ff89b5974-x9tjx python3
-
-Python 3.9.13 (v3.9.13:6de2ca5339, May 17 2022, 11:23:25)
-[Clang 6.0 (clang-600.0.57)] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
->>> import os
->>> print(os.environ['ENV_VAR1'])
-remote-value
+```
+┌──────────────────────────┐
+│ Local process            │
+│ ┌──────────────────────┐ │
+│ │ mirrord-layer        │ │  Before the process starts, the
+│ │   fetch_env_vars()   │ │  layer asks the agent for the
+│ └──────────┬───────────┘ │  target pod's env.
+└────────────┼─────────────┘
+             │ GetEnvVarsRequest
+             │   { env_vars_select, env_vars_filter }
+┌────────────▼─────────────┐
+│ mirrord-intproxy         │  Routes the request to the agent.
+└────────────┬─────────────┘
+             │
+┌────────────▼─────────────┐
+│ mirrord-agent            │  Reads `/proc/<pid>/environ` of the
+│   select_env_vars()      │  target container's main process,
+└────────────┬─────────────┘  applies include + exclude filters.
+             │ GetEnvVarsResponse
+             ▼
+        full env map
 ```
 
-Logs
+Once the layer has the map, it applies four post-fetch transformations in this order:
 
-```bash
-❯ MIRRORD_AGENT_IMAGE=test MIRRORD_AGENT_RUST_LOG=trace RUST_LOG=debug target/debug/mirrord exec -c --target pod/py-serv-deployment-ff89b5974-x9tjx python3
-...
-2022-07-01T17:18:33.744996Z DEBUG mirrord_layer: ClientMessage::GetEnvVarsRequest codec_result Ok(
-    (),
-)
-2022-07-01T17:18:33.754270Z DEBUG mirrord_layer: DaemonMessage::GetEnvVarsResponse Ok(
-    {
-        "KUBERNETES_PORT": "tcp://10.96.0.1:443",
-        "LANG": "C.UTF-8",
-        "KUBERNETES_SERVICE_PORT": "443",
-        "PY_SERV_PORT": "tcp://10.96.139.36:80",
-        "KUBERNETES_PORT_443_TCP": "tcp://10.96.0.1:443",
-        "PY_SERV_SERVICE_PORT": "80",
-        "KUBERNETES_SERVICE_PORT_HTTPS": "443",
-        "PYTHON_SETUPTOOLS_VERSION": "58.1.0",
-        "PY_SERV_PORT_80_TCP_ADDR": "10.96.139.36",
-        "PYTHON_GET_PIP_SHA256": "ba3ab8267d91fd41c58dbce08f76db99f747f716d85ce1865813842bb035524d",
-        "ENV_VAR1": "remote-value",
-        "KUBERNETES_SERVICE_HOST": "10.96.0.1",
-        "KUBERNETES_PORT_443_TCP_PORT": "443",
-        "HOSTNAME": "py-serv-deployment-ff89b5974-x9tjx",
-        "KUBERNETES_PORT_443_TCP_ADDR": "10.96.0.1",
-        "GPG_KEY": "E3FF2839C048B25C084DEBE9B26995E310250568",
-        "PYTHON_GET_PIP_URL": "https://github.com/pypa/get-pip/raw/6ce3639da143c5d79b44f94b04080abf2531fd6e/public/get-pip.py",
-        "PY_SERV_PORT_80_TCP": "tcp://10.96.139.36:80",
-        "KUBERNETES_PORT_443_TCP_PROTO": "tcp",
-        "PYTHON_VERSION": "3.9.13",
-        "PY_SERV_PORT_80_TCP_PROTO": "tcp",
-        "PY_SERV_PORT_80_TCP_PORT": "80",
-        "PY_SERV_SERVICE_HOST": "10.96.139.36",
-        "PYTHON_PIP_VERSION": "22.0.4",
-    },
-)!
-...
+1. **`env_file`** — merge variables from the dotenv file specified by `env_file` (overrides remote values).
+2. **`mapping`** — apply regex-based value replacement.
+3. **`override`** — apply user-specified key/value overrides (final word).
+4. The resulting environment is set on the process before its entry point runs.
+
+For frameworks where the env can't be modified from inside the process (notably Go), `unset` runs from the CLI/extension before exec.
+
+## Configuration surface
+
+```json
+{
+  "feature": {
+    "env": {
+      "include": "DATABASE_URL;PUBLIC_*",
+      "exclude": "SECRET_*",
+      "override": {
+        "REGION": "us-east-1"
+      },
+      "env_file": "./.env.local",
+      "mapping": {
+        ".+_TIMEOUT": "10000"
+      },
+      "unset": ["AWS_PROFILE"],
+      "load_from_process": false
+    }
+  }
+}
 ```
+
+| Field | Type | Default | Behavior |
+|---|---|---|---|
+| `include` | string \| array | — | Allowlist. Supports `*` and `?` wildcards. Mutually exclusive with `exclude`. |
+| `exclude` | string \| array | — | Denylist applied on top of the [built-in always-excluded list](#always-excluded-variables). Mutually exclusive with `include`. |
+| `override` | object | — | Key/value pairs set on the local process. Wins over remote values and `env_file`. |
+| `env_file` | path | — | Dotenv file merged into the remote env. Values override the remote ones. |
+| `mapping` | object | — | Regex → replacement applied to **values** (not keys). Capture groups allowed. |
+| `unset` | string \| array | — | Variables removed entirely. Case-insensitive. Required for Go (env can't be modified post-start). |
+| `load_from_process` | bool | `false` | Fetch env after the user process starts instead of before. WSL+IntelliJ workaround when the remote env is very large. |
+
+### `include` and `exclude` are mutually exclusive
+
+Setting both causes the layer to panic at startup. Use one or the other.
+
+When neither is set, the layer requests `*` (all remote variables).
+
+### Wildcard syntax
+
+`include` and `exclude` use `wildmatch` (not regex):
+
+- `*` — zero or more of any character
+- `?` — exactly one of any character
+
+Use the `mapping` field if you need full regex on values.
+
+### `mapping` operates on values, not keys
+
+The pattern is matched against each variable's **value**; the replacement becomes the new value. Capture groups are supported via standard Rust `regex` `replace` syntax (`$1`, `${name}`).
+
+## Always-excluded variables
+
+The agent always strips these from the response, regardless of what `include` requests. This prevents the remote pod's toolchain paths from breaking the local interpreter/runtime.
+
+```
+BUNDLER_ORIG_BUNDLER_ORIG_MANPATH    GEM_HOME            PATH
+BUNDLER_ORIG_BUNDLER_VERSION         GEM_PATH            PWD
+BUNDLER_ORIG_BUNDLE_BIN_PATH         GOMODCACHE          PYTHONPATH
+BUNDLER_ORIG_BUNDLE_GEMFILE          GOPATH              RUBYLIB
+BUNDLER_ORIG_GEM_HOME                HOME                RUBYOPT
+BUNDLER_ORIG_MANPATH                 HOMEPATH            RUST_LOG
+BUNDLER_ORIG_PATH                    JAVA_EXE            _JAVA_OPTIONS
+BUNDLER_ORIG_RB_USER_INSTALL         JAVA_HOME
+BUNDLER_ORIG_RUBYLIB                 JAVA_TOOL_OPTIONS
+BUNDLER_ORIG_RUBYOPT
+BUNDLER_VERSION
+BUNDLE_APP_CONFIG / _BIN_PATH /
+  _FORCE_RUBY_PLATFORM / _GEMFILE /
+  _GEM_PATH / _PATH / _WITHOUT
+CATALINA_HOME                        DOTNET_EnableDiagnostics
+CLASSPATH                            DOTNET_STARTUP_HOOKS
+```
+
+User-supplied `exclude` patterns are **added to** this list — they do not replace it.
+
+The canonical list lives in `mirrord-agent/src/env.rs`.
+
+## How the agent reads the env
+
+The agent enters the target container's PID namespace and reads `/proc/<target-pid>/environ` (NUL-delimited `KEY=VALUE` pairs). It does **not** spawn anything in the container — there's no exec, no shell evaluation. What you get is exactly what was set on the process at start (so runtime `os.setenv()` calls inside the pod won't show up).
+
+This is also why containers running things like nginx, which rewrite `/proc/self/environ` after start, can return surprising results.
+
+## Equivalent environment variables
+
+Each config field has a matching env var, useful from CLI/CI:
+
+| Config | Env var |
+|---|---|
+| `feature.env.include` | `MIRRORD_OVERRIDE_ENV_VARS_INCLUDE` |
+| `feature.env.exclude` | `MIRRORD_OVERRIDE_ENV_VARS_EXCLUDE` |
+| `feature.env.env_file` | `MIRRORD_OVERRIDE_ENV_VARS_FILE` |
+| `feature.env.load_from_process` | `MIRRORD_ENV_LOAD_FROM_PROCESS` |
+
+## Related
+
+- [`feature.env` config reference](https://metalbear.com/mirrord/docs/config#feature.env) — full schema
+- [Architecture](architecture.md) — layer/intproxy/agent message flow
+- [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md) — quick how-to

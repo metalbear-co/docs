@@ -13,123 +13,138 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
-## Overview
+mirrord intercepts file syscalls in the local process and routes them to the target pod, so the local app sees the same `/etc/`, `/var/`, mounted ConfigMaps, mounted Secrets, and volume contents the deployed pod does. This page covers what gets intercepted, the four fs modes, the override/pattern system, and the agent-side mechanism.
 
-mirrord will relay file access (except for some exceptions ([Unix](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) | [Windows](https://github.com/metalbear-co/mirrord/blob/main/mirrord/layer-lib/src/file/windows/read_local_by_default.rs))) to the
-target pod by default. This functionality is controlled by the `feature.fs.mode` configuration option (or the `--fs-mode` CLI flag).
-
-### Modes
-
-| Mode | Behavior |
-|------|----------|
-| `local` | All file operations happen on the local filesystem. mirrord doesn't touch fs syscalls. |
-| `localwithoverrides` | Mostly local, but mirrord still applies its built-in overrides for a small set of paths (the default exception lists linked above). |
-| `read` *(default)* | Reads go to the remote pod, writes go to the local filesystem. |
-| `write` | Both reads and writes go to the remote pod. |
-
-User overrides and mirrord's default overrides apply on top of the selected mode — for instance, `read` mode will still resolve a handful of paths locally (DNS files, the user's home directory, etc.).
-
-For example, the following python script calls the built-in `open` function which translate to something like
-`openat(AT_FDCWD, "/tmp/test", O_RDWR|O_CLOEXEC)` at a lower level:
-
-```py
-with open("/tmp/test", "r+") as rw_file:
-    read_str = rw_file.read(42)
-print(read_str)
-```
-
-When we run that python script with mirrord:
-
-```bash
-mirrord exec -c --target py-serv-deployment-cfc458fd4-bjzjx python3 test.py
-```
-
-mirrord overrides that `openat` call and opens `/tmp/test` on the remote pod.
-
-## How does it work?
+For the how-to version, see [Using mirrord → File Operations](../using-mirrord/file-operations.md).
 
 ![mirrord - fileops](/reference/fileops/mirrord-fileops.png)
 
-Once a request to open a new file is received by `mirrord-agent` from `mirrord-layer`, the agent forwards the request
-to the container in the remote pod in context of the provided path for the open system call, prefixed with path to the
-root directory of the container.
+## The four `fs` modes
 
-`mirrord-agent` uses APIs provided by docker and containerd runtimes to get the PID of the remote container, and
-refers to the root directory of the remote container through `/proc/container_pid/root`
+Set via `feature.fs.mode`:
 
-## Syscalls
+| Mode | Reads | Writes | Notes |
+|---|---|---|---|
+| `local` | local | local | mirrord does nothing — no fs syscalls are intercepted. Equivalent to `feature.fs: false`. |
+| `localwithoverrides` | local (except overrides) | local (except overrides) | Default behavior is local; only paths matching `read_only`, `read_write`, or the [pre-defined remote-by-default list](#default-overrides) go to the remote pod. |
+| `read` *(default)* | remote (except overrides) | local | Reads come from the pod; writes stay local. Safest mode — you can't accidentally modify the cluster. |
+| `write` | remote (except overrides) | remote | Reads and writes both go to the pod. Use with care — writes hit the real remote filesystem. |
 
-mirrord overrirdes calls to the following libc functions/system calls:
+Shorthand: `"fs": "read"`, `"fs": false` (= `local`), `"fs": true` (= `write`).
 
-### open
+## Configuration surface
 
-`int open(const char *pathname, int flags);`
-
-Open files on the remote pod. Functionality when opening with different types of paths might differ. In the case when
-`pathname` is specified to be a relative path, the call to open is sent to libc instead of the remote pod.
-
-Example:
-
-```py
-import os
-fd = os.open("/tmp/test", os.O_WRONLY | os.O_CREAT)
+```json
+{
+  "feature": {
+    "fs": {
+      "mode": "read",
+      "read_write":  [".+\\.json"],
+      "read_only":   ["/etc/config/.+"],
+      "local":       ["/tmp/.+", ".+\\.lock"],
+      "not_found":   ["\\.config/gcloud"],
+      "mapping": {
+        "^/home/(?<user>[^/]+)/dev/config/(?<app>[^/]+)": "/mnt/configs/${user}-${app}"
+      },
+      "readonly_file_buffer": 128000
+    }
+  }
+}
 ```
 
-### openat
+| Field | Behavior |
+|---|---|
+| `mode` | One of `local`, `localwithoverrides`, `read`, `write`. See above. |
+| `read_write` | Regex patterns. Matching paths always go to the remote pod, read and write. |
+| `read_only` | Regex patterns. Matching paths read from the remote pod; writes go local. |
+| `local` | Regex patterns. Matching paths always stay local, regardless of mode. |
+| `not_found` | Regex patterns. Matching paths return `ENOENT` to the application — useful for hiding files that exist locally but would confuse a cluster-context process (e.g. `~/.aws/credentials`). |
+| `mapping` | Regex → replacement applied to the path **before** routing. Capture groups are supported (`$1`, `${name}`). Useful when local paths don't match remote paths (common on Windows). |
+| `readonly_file_buffer` | Buffer size in bytes for read-only remote files. Default `128000` (128 kB). Set `0` to disable buffering. Hard limit 15 MB. |
 
-`int openat(int dirfd, const char *pathname, int flags);`
+All pattern lists are case-insensitive. If a path matches more than one list, the **first** match wins — order across lists is not guaranteed, so don't put the same path in two lists.
 
-`openat` works the same as `open` when `dirfd` is specified as `AT_FDCWD` or if the path is absolute. If a valid
-`dirfd` is provided, files relative to the directory referred to by the `dirfd` can be opened.
+## Resolution order
 
-Example:
+For each fs syscall the layer intercepts, mirrord resolves the routing in this order:
 
-```py
-dir = os.open("/tmp", os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_DIRECTORY)
+1. **`mapping`** — if the path matches a `mapping` entry, replace it before proceeding.
+2. **User pattern lists** — `read_write`, `read_only`, `local`, `not_found`. First match wins.
+3. **[Default overrides](#default-overrides)** — built-in lists that override the mode for specific paths regardless of user config.
+4. **`mode`** — the fallback routing for paths nothing else matched.
 
-os.open("test", os.O_RDWR | os.O_NONBLOCK | os.O_CLOEXEC, dir_fd=dir)
+## Default overrides
+
+mirrord ships built-in pattern lists that override the active mode. These exist so the local interpreter, package manager, and home-directory state aren't broken by remote-by-default routing.
+
+| List | Effect | Source |
+|---|---|---|
+| Local-by-default | Always read locally, regardless of mode | [`unix`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/unix/read_local_by_default.rs) · [`windows`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/windows/read_local_by_default.rs) |
+| Remote-by-default (when mode is `localwithoverrides`) | Read remotely even though mode says local | [`unix`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/unix/read_remote_by_default.rs) · [`windows`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/windows/read_remote_by_default.rs) |
+| Not-found-by-default (under `$HOME`, all modes except `local`) | Always `ENOENT` | [`unix`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/unix/not_found_by_default.rs) · [`windows`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer-lib/src/file/windows/not_found_by_default.rs) |
+
+To override a default — for example, to read `/etc/` remotely even though it's local-by-default — add it to the appropriate user list: `"read_only": ["^/etc/.+"]`.
+
+## Intercepted syscalls
+
+mirrord hooks the following libc functions on Linux/macOS. The layer intercepts each call, decides local vs. remote based on the [resolution order](#resolution-order), and either bypasses to the original libc function or sends a request to the agent.
+
+| Category | Hooked |
+|---|---|
+| Open | `open`, `open64`, `openat`, `opendir`, `dirfd` |
+| Read | `read`, `readv`, `pread`, `preadv`, `readlink`, `readdir`, `readdir64`, `readdir_r`, `readdir64_r` |
+| Write | `write`, `pwrite` |
+| Position | `lseek` |
+| Metadata | `access`, `stat`, `lstat`, `statx`, `statfs`, `statvfs`, `fstat`, `fstatat`, `fstatfs`, `fchmod`, `fchown`, `fsync` |
+| Directory | `mkdir`, `rmdir` |
+| Path | `rename`, `unlink`, `unlinkat` |
+
+On macOS the layer also hooks the `_NOCANCEL` and `$INODE64` variants where applicable. The full, current list lives in [`mirrord/layer/src/file/hooks.rs`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/layer/src/file/hooks.rs).
+
+Windows has its own equivalent hook set in `mirrord-layer-win`.
+
+### Relative path behavior
+
+When a hooked syscall receives a relative path with no anchoring directory fd, the call is **bypassed to libc** (i.e. resolved locally). This avoids ambiguity, since the layer can't know the remote pod's working directory.
+
+`openat` with a valid `dirfd` returned by a previous remote `open` follows the remote directory; with `AT_FDCWD` it behaves like `open`.
+
+### File descriptor disambiguation
+
+`read`, `write`, `lseek`, `stat`, etc. take an fd. The layer maintains a map of fds that belong to remote-opened files. If the fd is a remote one, the call is sent to the agent; otherwise it's bypassed to libc. This means closing and reopening a file with the same path can flip its routing if config or mode changed in between.
+
+## How the agent reads files
+
+```
+┌──────────────────────────┐
+│ Local process            │
+│ ┌──────────────────────┐ │
+│ │   mirrord-layer      │ │  Hooks open/read/write/...
+│ └──────────┬───────────┘ │  Sends FileRequest to intproxy.
+└────────────┼─────────────┘
+             │ FileRequest::Open / Read / Write / ...
+┌────────────▼─────────────┐
+│ mirrord-intproxy         │
+└────────────┬─────────────┘
+             │
+┌────────────▼─────────────┐
+│ mirrord-agent            │  Resolves the target container's
+│   (target netns + mntns) │  rootfs via `/proc/<pid>/root`
+│                          │  and performs the operation
+│                          │  against that path.
+└──────────────────────────┘
 ```
 
-### read
+The agent uses the container runtime's API (containerd, docker, CRI-O) to get the PID of the target container. It then accesses the container's filesystem through `/proc/<container-pid>/root`, which gives it the view of the mount namespace the container sees — including ConfigMap/Secret mounts and persistent volumes.
 
-`ssize_t read(int fd, void *buf, size_t count);`
+The agent does not exec inside the container; it reads/writes from the agent pod with the kernel doing the namespace translation. This is why the agent needs `CAP_SYS_ADMIN` (joining mount/PID namespaces).
 
-Read from a file on the remote pod.
+### inotify and file watches
 
-Example:
+mirrord does not currently intercept `inotify`/`fanotify` syscalls. Applications watching ConfigMap/Secret mounts for changes won't see remote modifications. Workaround: poll the file's mtime via `stat`.
 
-```py
-fd = os.open("/tmp/test", os.O_RDWR | os.O_NONBLOCK | os.O_CLOEXEC)
-read = os.read(fd, 1024)
-```
+## Related
 
-### write
-
-`ssize_t write(int fd, const void *buf, size_t count);`
-
-Write to a file on the remote pod.
-
-Example:
-
-```py
-with open("/tmp/test", "w") as file:
-    file.write(TEXT)
-```
-
-### lseek
-
-`off_t lseek(int fd, off_t offset, int whence);`
-
-Reposition the file offset of an open file on the remote pod. lseek through mirrord-layer supports all valid options
-for whence as specified in the Linux manpages.
-
-Example:
-
-```py
-with open("/tmp/test", "w") as file:
-    file.seek(10)
-    file.write(TEXT)
-```
-
-> **Note:** For read, write, and lseek if the provided `fd` is a valid file descriptor i.e. it refers to a file
-> opened on the remote pod then the call is forwarded to the remote pod, otherwise the call is sent to libc.
+- [`feature.fs` config reference](https://metalbear.com/mirrord/docs/config#feature.fs) — full schema
+- [Architecture](architecture.md) — layer / intproxy / agent
+- [Using mirrord → File Operations](../using-mirrord/file-operations.md) — quick how-to
