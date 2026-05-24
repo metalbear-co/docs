@@ -25,7 +25,13 @@ Preview Environments are available to users on the **Enterprise** pricing plan.
 
 - **Operator 3.142.0 or later** — the feature was introduced in this version.
 - **CLI 3.189.0 or later** — the `mirrord preview` subcommand was introduced in this version.
-- **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`).
+- **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`):
+
+  ```yaml
+  operator:
+    # Has to be set to `true` in order to use the preview environments feature.
+    previewEnv: true
+  ```
 
 # What Is a Preview Environment?
 
