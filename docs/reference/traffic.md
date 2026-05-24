@@ -16,7 +16,7 @@ tags:
 description: Reference to working with network traffic with mirrord
 ---
 
-mirrord intercepts the local process's network operations and proxies them through the target pod. This page covers what mirrord does end-to-end for incoming traffic (mirror and steal), outgoing traffic (TCP/UDP/Unix sockets), and DNS resolution, including the configuration surface, defaults, and edge cases worth knowing.
+mirrord intercepts the local process's network operations and proxies them through the target pod. This page covers incoming traffic (mirror and steal), outgoing traffic (TCP/UDP/Unix sockets), and DNS resolution.
 
 For the how-to versions, see [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md) and [Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md).
 
@@ -37,12 +37,9 @@ Shorthand: `"incoming": "steal"`, `"incoming": "mirror"`, `"incoming": false` (=
 When `incoming.mode` is `steal`:
 
 1. **Port stealing** (no HTTP filter set): all TCP traffic on each port the local process listens on is stolen.
-2. **HTTP stealing** (HTTP filter set): the agent sniffs the first bytes of each new connection on the listened ports, and:
-   - If the connection looks like HTTP and the request matches the filter → stolen.
-   - If the connection looks like HTTP but the request does not match → forwarded to the remote pod.
-   - If the connection is not HTTP → forwarded to the remote pod.
+2. **HTTP stealing** (HTTP filter set): the agent sniffs the first bytes of each new connection on the listened ports. HTTP requests that match the filter are stolen; everything else is forwarded to the remote pod.
 
-HTTP detection is best-effort and has a timeout (`MIRRORD_AGENT_HTTP_DETECTION_TIMEOUT`). If the connection sends no data before the timeout, the agent treats it as non-HTTP.
+HTTP detection is best-effort and has a timeout (`MIRRORD_AGENT_HTTP_DETECTION_TIMEOUT`).
 
 ### HTTP filter types
 
@@ -80,7 +77,7 @@ All regex filters use the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fan
 
 | Field | Default | Behavior |
 |---|---|---|
-| `port_mapping` | `[]` | `[[local, remote]]` pairs. Tells mirrord to mirror/steal remote port X and deliver to local port Y. Useful when local code listens on a different port than the cluster service. |
+| `port_mapping` | `[]` | `[[local, remote]]` pairs. Mirror/steal remote port X and deliver to local port Y. Useful when local code listens on a different port than the cluster service. |
 | `listen_ports` | `[]` | `[[remote, local-bind]]` pairs. Forces the local in-process listener to bind to a specific port instead of a random fallback. Useful when listening on a privileged port (e.g. remote 80 → local 4480) without `sudo`. Independent of `port_mapping`. |
 | `ignore_ports` | `[]` | Ports to leave local. Common use: skip kubelet health probes when stealing. Mutually exclusive with `ports`. |
 | `ports` | unset | If set, only these ports are mirrored/stolen; others stay local. Mutually exclusive with `ignore_ports`. |
@@ -88,37 +85,9 @@ All regex filters use the [`fancy-regex`](https://docs.rs/fancy-regex/latest/fan
 | `on_concurrent_steal` | `abort` | (Operator only) What to do when another session already has a steal lock on the target: `abort` (fail), `continue` (proceed without stealing), `override` (force-close the existing lock). |
 | `tls_delivery` | unset | (Operator only) How mirrord delivers stolen TLS traffic to the local app. See [steal-https](../using-mirrord/incoming-traffic/steal-https.md). |
 
-### How a steal subscription works
-
-```
-┌──────────────────────────┐
-│ Local process            │
-│   listen(0.0.0.0:8080)   │
-│   ┌──────────────────┐   │
-│   │  mirrord-layer   │   │  Layer detects the listen()
-│   └────────┬─────────┘   │  and tells intproxy.
-└────────────┼─────────────┘
-             │ PortSubscribe
-┌────────────▼─────────────┐
-│ mirrord-intproxy         │
-└────────────┬─────────────┘
-             │ PortSubscribe(8080, filter?)
-┌────────────▼─────────────┐
-│ mirrord-agent            │  Adds an iptables redirection
-│   (target netns)         │  for port 8080 → agent port.
-│                          │  For each new conn: detects
-│                          │  HTTP if a filter is set,
-│                          │  applies the filter, then
-│                          │  forwards stolen traffic up
-│                          │  to the layer.
-└──────────────────────────┘
-```
-
-The agent installs port redirections inside the target pod's network namespace. They are removed when the session ends. If the agent process is killed uncleanly, the operator (or the cluster's eventual pod restart) cleans them up.
-
 ## Outgoing traffic
 
-Outgoing traffic is forwarded by default for both TCP and UDP. The local process opens what looks like a normal socket; the layer hands it off to intproxy, which has the agent open the actual connection from inside the target pod and tunnels the bytes back.
+Outgoing traffic is forwarded by default for both TCP and UDP. The local process opens what looks like a normal socket; the agent opens the actual connection from inside the target pod and tunnels the bytes back.
 
 ```json
 {
@@ -187,14 +156,7 @@ Three ways to avoid this:
 
 When enabled (default), `getaddrinfo` / `gethostbyname` calls in the local process are forwarded to the agent, which resolves them using the target pod's resolver. This is what makes `my-service.default.svc.cluster.local` work from your laptop.
 
-### DNS filter syntax
-
-Same format as outgoing, minus the protocol: `[name|address|subnet/mask][:port]`.
-
-| Field | Behavior |
-|---|---|
-| `filter.remote` | Only matching queries go to the pod's resolver; others use the local resolver. |
-| `filter.local` | Only matching queries stay local; others go to the pod's resolver. |
+DNS filter syntax is the same as outgoing, minus the protocol: `[name|address|subnet/mask][:port]`. `filter.remote` sends only matching queries to the pod's resolver; `filter.local` keeps only matching queries local.
 
 ### Limitations
 
@@ -208,7 +170,6 @@ Same format as outgoing, minus the protocol: `[name|address|subnet/mask][:port]`
 ## Related
 
 - [`feature.network` config reference](https://metalbear.com/mirrord/docs/config#feature.network): full schema
-- [Architecture](architecture.md): layer / intproxy / agent
 - [Using mirrord → Incoming Traffic](../using-mirrord/incoming-traffic/README.md)
 - [Using mirrord → Outgoing Traffic](../using-mirrord/outgoing-traffic/README.md)
 - [Steal HTTPS](../using-mirrord/incoming-traffic/steal-https.md): for `tls_delivery`

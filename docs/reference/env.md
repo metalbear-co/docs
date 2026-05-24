@@ -16,47 +16,13 @@ tags:
 description: Reference to including remote environment variables
 ---
 
-mirrord makes the target pod's environment available to the local process. This page describes how the feature works end-to-end, the full configuration surface, the always-excluded variables, and the gotchas worth knowing.
+mirrord makes the target pod's environment available to the local process. Before the user process starts, the layer requests the env from the agent, which reads `/proc/<target-pid>/environ` inside the target container and returns the filtered set. The layer then applies any user-specified overrides and sets the result on the process.
 
 For the quick how-to, see [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md).
 
-## How it works
-
 ![mirrord - env vars](env/mirrord-env-vars.png)
 
-```
-┌──────────────────────────┐
-│ Local process            │
-│ ┌──────────────────────┐ │
-│ │ mirrord-layer        │ │  Before the process starts, the
-│ │   fetch_env_vars()   │ │  layer asks the agent for the
-│ └──────────┬───────────┘ │  target pod's env.
-└────────────┼─────────────┘
-             │ GetEnvVarsRequest
-             │   { env_vars_select, env_vars_filter }
-┌────────────▼─────────────┐
-│ mirrord-intproxy         │  Routes the request to the agent.
-└────────────┬─────────────┘
-             │
-┌────────────▼─────────────┐
-│ mirrord-agent            │  Reads `/proc/<pid>/environ` of the
-│   select_env_vars()      │  target container's main process,
-└────────────┬─────────────┘  applies include + exclude filters.
-             │ GetEnvVarsResponse
-             ▼
-        full env map
-```
-
-Once the layer has the map, it applies four post-fetch transformations in this order:
-
-1. **`env_file`**: merge variables from the dotenv file specified by `env_file` (overrides remote values).
-2. **`mapping`**: apply regex-based value replacement.
-3. **`override`**: apply user-specified key/value overrides (final word).
-4. The resulting environment is set on the process before its entry point runs.
-
-For frameworks where the env can't be modified from inside the process (notably Go), `unset` runs from the CLI/extension before exec.
-
-## Configuration surface
+## Configuration
 
 ```json
 {
@@ -78,34 +44,17 @@ For frameworks where the env can't be modified from inside the process (notably 
 }
 ```
 
-| Field | Type | Default | Behavior |
-|---|---|---|---|
-| `include` | string \| array | none | Allowlist. Supports `*` and `?` wildcards. Mutually exclusive with `exclude`. |
-| `exclude` | string \| array | none | Denylist applied on top of the [built-in always-excluded list](#always-excluded-variables). Mutually exclusive with `include`. |
-| `override` | object | none | Key/value pairs set on the local process. Wins over remote values and `env_file`. |
-| `env_file` | path | none | Dotenv file merged into the remote env. Values override the remote ones. |
-| `mapping` | object | none | Regex → replacement applied to **values** (not keys). Capture groups allowed. |
-| `unset` | string \| array | none | Variables removed entirely. Case-insensitive. Required for Go (env can't be modified post-start). |
-| `load_from_process` | bool | `false` | Fetch env after the user process starts instead of before. WSL+IntelliJ workaround when the remote env is very large. |
+| Field | Behavior |
+|---|---|
+| `include` | Allowlist. Supports `*` and `?` wildcards. Mutually exclusive with `exclude`. |
+| `exclude` | Denylist applied on top of the [built-in always-excluded list](#always-excluded-variables). Mutually exclusive with `include`. |
+| `override` | Key/value pairs set on the local process. Wins over remote values and `env_file`. |
+| `env_file` | Dotenv file merged into the remote env. Values override the remote ones. |
+| `mapping` | Regex → replacement applied to **values** (not keys). Capture groups allowed. |
+| `unset` | Variables removed entirely. Case-insensitive. Required for Go (env can't be modified post-start). |
+| `load_from_process` | Fetch env after the user process starts instead of before. WSL+IntelliJ workaround when the remote env is very large. Defaults to `false`. |
 
-### `include` and `exclude` are mutually exclusive
-
-Setting both causes the layer to panic at startup. Use one or the other.
-
-When neither is set, the layer requests `*` (all remote variables).
-
-### Wildcard syntax
-
-`include` and `exclude` use `wildmatch` (not regex):
-
-- `*`: zero or more of any character
-- `?`: exactly one of any character
-
-Use the `mapping` field if you need full regex on values.
-
-### `mapping` operates on values, not keys
-
-The pattern is matched against each variable's **value**; the replacement becomes the new value. Capture groups are supported via standard Rust `regex` `replace` syntax (`$1`, `${name}`).
+`include` and `exclude` are mutually exclusive; setting both causes the layer to panic at startup. When neither is set, the layer requests all variables.
 
 ## Always-excluded variables
 
@@ -132,13 +81,7 @@ CLASSPATH                            DOTNET_STARTUP_HOOKS
 
 User-supplied `exclude` patterns are **added to** this list; they do not replace it.
 
-The canonical list lives in `mirrord-agent/src/env.rs`.
-
-## How the agent reads the env
-
-The agent enters the target container's PID namespace and reads `/proc/<target-pid>/environ` (NUL-delimited `KEY=VALUE` pairs). It does **not** spawn anything in the container: no exec, no shell evaluation. What you get is exactly what was set on the process at start (so runtime `os.setenv()` calls inside the pod won't show up).
-
-This is also why containers running things like nginx, which rewrite `/proc/self/environ` after start, can return surprising results.
+The canonical list lives in [`mirrord-agent/src/env.rs`](https://github.com/metalbear-co/mirrord/blob/latest/mirrord/agent/src/env.rs).
 
 ## Equivalent environment variables
 
@@ -154,5 +97,4 @@ Each config field has a matching env var, useful from CLI/CI:
 ## Related
 
 - [`feature.env` config reference](https://metalbear.com/mirrord/docs/config#feature.env): full schema
-- [Architecture](architecture.md): layer/intproxy/agent message flow
 - [Using mirrord → Environment Variables](../using-mirrord/environment-variables.md): quick how-to
