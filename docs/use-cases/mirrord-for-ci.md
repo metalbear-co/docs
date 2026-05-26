@@ -112,6 +112,11 @@ mirrord ci start --config-file mirrord.json npm run
 # /var/opt/mirrord/npm-{unique run identifier}
 ```
 
+{% hint style="info" %}
+When running with the --foreground argument, application logs are streamed to the foreground 
+process’s `stdout` and `stderr` unless `ci.output_dir` is configured.
+{% endhint %}
+
 ## Stopping a mirrord CI session
 
 After the tests are done, you should stop the mirrord CI session using `mirrord ci stop`. It's recommended that you do it,
