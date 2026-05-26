@@ -29,6 +29,10 @@ it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
+{% hint style="info" %}
+This feature is available to users on the Enterprise pricing plan.
+{% endhint %}
+
 ## Prerequisites
 
 1. Minimum mirrord CLI version `3.181.0`.
