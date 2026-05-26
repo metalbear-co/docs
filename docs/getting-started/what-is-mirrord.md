@@ -46,6 +46,7 @@ Features marked with **[Teams]** in these docs require a mirrord for Teams licen
 The Enterprise plan adds:
 
 - **Preview Environments** - Deploy isolated, ephemeral pods in the cluster for async review and QA
+- **mirrord for CI** - Run end-to-end tests against a shared staging cluster without spinning up a dedicated test environment
 - **High availability** - Run the Operator in HA mode
 - **Premium support**
 
