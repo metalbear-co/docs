@@ -47,6 +47,8 @@ The Enterprise plan adds:
 
 - **Preview Environments** - Deploy isolated, ephemeral pods in the cluster for async review and QA
 - **mirrord for CI** - Run end-to-end tests against a shared staging cluster without spinning up a dedicated test environment
+- **Multi-cluster** - Intercept traffic across multiple clusters in a single mirrord session
+- **Air-gapped operation** - Run the [License Server](../managing-mirrord/license-server.md) on-prem to manage seats without sending telemetry to MetalBear
 - **High availability** - Run the Operator in HA mode
 - **Premium support**
 
