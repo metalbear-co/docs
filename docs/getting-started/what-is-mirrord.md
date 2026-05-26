@@ -26,7 +26,7 @@ For the full architecture, see the [Architecture reference](../reference/archite
 **Using an AI coding agent?** See [Using mirrord with AI agents](../using-mirrord-with-ai/) to set up autonomous testing against your cluster with Claude Code, Cursor, Codex, and more.
 {% endhint %}
 
-The same model powers **mirrord for CI** — automated test runs against a shared staging cluster without spinning up a dedicated test environment. See [mirrord for CI](../use-cases/mirrord-for-ci.md).
+The same model powers **mirrord for CI** — running integration and end-to-end tests against a shared staging cluster without spinning up a dedicated test environment. See [mirrord for CI](../use-cases/mirrord-for-ci.md).
 
 ## mirrord for Teams
 
@@ -48,7 +48,7 @@ Features marked with **[Teams]** in these docs require a mirrord for Teams licen
 The Enterprise plan adds:
 
 - **Preview Environments** - Deploy isolated, ephemeral pods in the cluster for async review and QA
-- **mirrord for CI** - Run end-to-end tests against a shared staging cluster without spinning up a dedicated test environment
+- **mirrord for CI** - Run integration and end-to-end tests against a shared staging cluster without spinning up a dedicated test environment
 - **Multi-cluster** - Intercept traffic across multiple clusters in a single mirrord session
 - **Air-gapped operation** - Run the [License Server](../managing-mirrord/license-server.md) on-prem to manage seats without sending telemetry to MetalBear
 - **High availability** - Run the Operator in HA mode
