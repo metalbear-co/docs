@@ -26,6 +26,8 @@ For the full architecture, see the [Architecture reference](../reference/archite
 **Using an AI coding agent?** See [Using mirrord with AI agents](../using-mirrord-with-ai/) to set up autonomous testing against your cluster with Claude Code, Cursor, Codex, and more.
 {% endhint %}
 
+The same model powers **mirrord for CI** — automated test runs against a shared staging cluster without spinning up a dedicated test environment. See [mirrord for CI](../use-cases/mirrord-for-ci.md).
+
 ## mirrord for Teams
 
 mirrord's core functionality is free and open source. Individual developers can install it and start using it immediately.
