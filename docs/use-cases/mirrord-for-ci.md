@@ -29,10 +29,6 @@ it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
-{% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan.
-{% endhint %}
-
 ## Prerequisites
 
 1. Minimum mirrord CLI version `3.181.0`.
@@ -49,7 +45,11 @@ CI runner that points to the target's cluster, and has the appropriate
 It's recommended that you create a Kubernetes
 [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
 
-## For mirrord for Teams users (Enterprise plan)
+## For mirrord for Teams users
+
+{% hint style="info" %}
+This feature is available to users on the Enterprise pricing plan.
+{% endhint %}
 
 To use mirrord ci with mirrord Operator, you'll need to generate a CI API key and store it
 as a **secret** environment variable. This will prevent your usage of mirrord in CI from expending your seats, which are counted using a machine-based ID.
