@@ -81,6 +81,14 @@ You can start multiple mirrord for CI sessions during a single CI job by running
 If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
 {% endhint %}
 
+## Starting a mirrord CI session in a container
+Use `mirrord ci container` when your CI job runs inside a local container runtime such as Docker.
+
+```sh
+mirrord ci container -- docker run my-image
+```
+
+
 ### Application logs
 
 By default, `stdout` and `stderr` outputs from your application are saved to a file in
@@ -131,5 +139,5 @@ mirrord ci stop
 mirrord will stop running itself, and the local app.
 
 {% hint style="info" %}
-A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job.
+A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job, including sessions started with `mirrord ci container`.
 {% endhint %}
