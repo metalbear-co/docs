@@ -35,9 +35,11 @@ By proxying all of your local process' input and output points in this way, mirr
 2. Without going through lengthy CI and deployment processes
 3. Without deploying untested code to the cloud environment - the stable version of the code is still running in the cluster and handling requests - letting multiple users test on the same cluster without queueing to use it or breaking the cluster for everyone else.
 
+> **Ready to try it?** Get started in under 2 minutes with the [Quick Start guide](../getting-started/quick-start.md).
+
 ## Is mirrord free?
 
-mirrord is free and open source (MIT License). Our paid offering, mirrord for Teams, includes a Kubernetes operator that acts as a control plane for mirrord. You can read more about it [here](../overview/teams.md).
+mirrord is free and open source (MIT License). Our paid offering, mirrord for Teams, includes a Kubernetes operator that acts as a control plane for mirrord. You can read more about it [here](../managing-mirrord/operator.md).
 
 ## Can I intercept traffic instead of duplicating it?
 
@@ -60,7 +62,7 @@ Yes! You can use the `mirrord container` command to run a local container in the
 
 ## What if I can't create containers with the capabilities mirrord requires in my cluster?
 
-mirrord works by creating an agent on a privileged pod in the remote cluster that accesses another pod's namespaces (read more about it [here](https://metalbear.com/blog/getting-started-with-ephemeral-containers/)). If you can't give your end users permissions to create pods with the capabilities mirrord needs, we suggest trying out [mirrord for Teams](../overview/teams.md). It adds a Kubernetes operator that acts as a control plane for mirrord clients, and lets them work with mirrord without creating pods themselves. If mirrord for Teams doesn't work for you either, [let us know](mailto:hello@metalbear.com) and we'll try to figure a solution that matches your security policies.
+mirrord works by creating an agent on a privileged pod in the remote cluster that accesses another pod's namespaces (read more about it [here](https://metalbear.com/blog/getting-started-with-ephemeral-containers/)). If you can't give your end users permissions to create pods with the capabilities mirrord needs, we suggest trying out [mirrord for Teams](../managing-mirrord/operator.md). It adds a Kubernetes operator that acts as a control plane for mirrord clients, and lets them work with mirrord without creating pods themselves. If mirrord for Teams doesn't work for you either, [let us know](mailto:hi@metalbear.com) and we'll try to figure a solution that matches your security policies.
 
 ## What kinds of Kubernetes objects can I use as a remote target?
 
@@ -84,7 +86,7 @@ Both in mirrord OSS and mirrord for Teams, if you don't name any specific contai
 
 ## If the target deployment restarts or is recreated in Kubernetes, will mirrord’s traffic stealing stop working?
 
-No, everything will continue working as expected if you’re using the [mirrord Operator](../overview/teams.md#operator). When the target deployment is redeployed or scaled, mirrord reconnects to the new pods, so you don’t need to restart anything. If you’re not using the Operator in your cluster, you’ll need to restart your local app with mirrord to reconnect to the new pods.
+No, everything will continue working as expected if you’re using the [mirrord Operator](../managing-mirrord/operator.md). When the target deployment is redeployed or scaled, mirrord reconnects to the new pods, so you don’t need to restart anything. If you’re not using the Operator in your cluster, you’ll need to restart your local app with mirrord to reconnect to the new pods.
 
 ### How mirrord Handles Secrets and In-Memory Application State
 
@@ -93,3 +95,5 @@ mirrord mirrors environmental inputs of your Kubernetes workload, such as enviro
 When you run your service locally with mirrord, your application starts from the same inputs as the in-cluster version. If your application’s startup logic fetches secrets from AWS and then caches them in memory, the local version will run that same logic and fetch the secrets again. mirrord’s job is to provide your local process with the same environment and the same access paths, not to copy running state from the remote process.
 
 If you prefer to avoid calling external secret providers during local development, you will need to mock or override that behavior within your application. mirrord does not intercept or alter application logic related to secret retrieval, and it does not supply cached in-memory data from remote pods.
+
+

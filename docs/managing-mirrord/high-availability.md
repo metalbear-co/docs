@@ -4,7 +4,7 @@ date: 2026-01-12T00:00:00.000Z
 lastmod: 2026-01-12T00:00:00.000Z
 draft: false
 images: []
-linktitle: High Availiability
+linktitle: High Availability
 menu: null
 docs: null
 teams: null
@@ -14,8 +14,6 @@ tags:
   - enterprise
 description: High availability for mirrord Operator in Enterprise Tier
 ---
-
-# High Availability
 
 Starting from chart version `1.40.1`, the mirrord Operator is by default highly available.
 This means that mirrord sessions should survive transient failures in the cluster,

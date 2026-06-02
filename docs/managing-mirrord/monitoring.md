@@ -16,8 +16,6 @@ tags:
 description: Monitoring with mirrord for Teams
 ---
 
-# Monitoring
-
 The mirrord Operator can produce logs in JSON format that can be digested by most popular logging solutions (DataDog, Dynatrace, etc). To enable JSON logging, set `operator.jsonLog` to `true` in the Operator Helm chart values. The log level is `INFO` by default, and can be changed by setting `operator.logLevel` in the Helm chart values, or alternatively by using the `RUST_LOG` environment variable in the Operator container, which takes values in the following format: `mirrord={log_level}` (e.g. `mirrord=debug`).
 
 {% hint style="info" %}
@@ -49,7 +47,7 @@ Fields:
 | session\_id       | unique id for individual mirrord sessions                                                                                                                                    | `Port Steal` `Port Mirror` `Port Release` `Session Start` `Session End` |
 | session\_duration | the session's duration in seconds                                                                                                                                            | `Session End`                                                                |
 | port              | port number                                                                                                                                                                  | `Port Steal` `Port Mirror` `Port Release`                                  |
-| http\_filter      | the client's configured [HTTP Filter](https://app.gitbook.com/s/Z7vBpFMZTH8vUGJBGRZ4/options#feature.network) | `Port Steal`                                                                  |
+| http\_filter      | the client's configured [HTTP Filter](https://metalbear.com/mirrord/docs/config#feature.network) | `Port Steal`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
 ## Prometheus
@@ -71,7 +69,7 @@ operator:
 | env                        | description              | type              | default        |
 | -------------------------- | ------------------------ | ----------------- | -------------- |
 | OPERATOR\_METRICS\_ENABLED | enable metrics endpoint  | "true" \| "false" | "false"        |
-| OPERATOR\_METRICS\_ADDR    | metrics http server addr | SocketAddr        | "0.0.0.0:9000" |
+| OPERATOR\_METRICS\_ADDR    | metrics http server addr | SocketAddr        | "[::]:9000"    |
 
 ### Exposed metrics
 
@@ -80,12 +78,16 @@ operator:
 | mirrord\_license\_valid\_seconds | Seconds until license expiration            |                                                         | operator 3.101.0 (helm chart 1.15.0)|                            
 | mirrord\_sessions\_create\_total | Count of created sessions                            | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) |
 | mirrord\_sessions\_duration      | Histogram for finished sessions duration | `client_hostname` `client_name` `client_user` `user_id` | operator 3.101.0 (helm chart 1.15.0) | 
+| mirrord_ci_sessions_create_total | Count of created CI sessions                            | `client_hostname` `client_name` `client_user` `user_id` | operator 3.163.0 |
+| mirrord_ci_sessions_duration  | Histogram for finished CI sessions duration | `client_hostname` `client_name` `client_user` `user_id` | operator 3.163.0 | 
 | mirrord\_operator\_ping\_latency | Histogram for round trip latency between the mirrord users and the Operator, helps identify infrastructure issues that may affect mirrord performance | `client_hostname` `client_name` `client_user` `user_id`                        | operator 3.122.0 (helm chart 1.35.0) |
 | mirrord\_stolen\_connections\_count     | Count of stolen TCP connections | `port` `namespace` `target` `user_id` | operator 3.122.0 (helm chart 1.35.0) |
 | mirrord\_stolen\_requests\_count      | Count of stolen HTTP requests | `port` `namespace` `target` `user_id`| operator 3.122.0 (helm chart 1.35.0) |
 | mirrord\_read\_sqs\_messages\_count | Count of SQS messages read from `original_queue`  | `original_queue`                                        | operator 3.125.0 (helm chart 1.38.0) |
 | mirrord\_sqs\_messages\_forwarded\_to\_user\_count | Count of SQS messages read from `original_queue`, forwarded to the local service of `k8s_user`, `local_username`.  | `k8s_user`, `local_username`, `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
 | mirrord\_unmatched\_sqs\_messages\_count | Count of SQS messages read from `original_queue` that weren't matched by any user's filter and were sent to the main output queue for the deployed application. | `original_queue` | operator 3.125.0 (helm chart 1.38.0) |
+| mirrord_previews_create_total | Count of created preview sessions | `target_namespace` `target_kind` `target_name` | operator 3.163.0 |
+| mirrord_previews_duration  | Histogram for finished preview sessions duration | `target_namespace` `target_kind` `target_name` | operator 3.163.0 | 
 
 ## OpenTelemetry
 

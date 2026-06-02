@@ -2,3 +2,47 @@ root: ./docs/
 
 structure:
   summary: ./SUMMARY.md
+
+redirects:
+  # Old PR #94 redirects
+  using-mirrord/vscode-extension: installing-mirrord/vscode
+  using-mirrord/intellij-plugin: installing-mirrord/intellij
+  using-mirrord/wsl: installing-mirrord/wsl
+
+  # Overview section → new locations
+  overview: getting-started/what-is-mirrord
+  overview/introduction: getting-started/what-is-mirrord
+  overview/quick-start: getting-started/quick-start
+  overview/onboarding-wizard: getting-started/onboarding-wizard
+  overview/teams: getting-started/what-is-mirrord#mirrord-for-teams
+  overview/contributing: contributing
+
+  # Using mirrord → new locations
+  using-mirrord/traffic-filtering: using-mirrord/incoming-traffic/filter-incoming-traffic
+  using-mirrord/filtering-by-json-body: using-mirrord/incoming-traffic/filtering-by-json-body
+  using-mirrord/browser-extension: using-mirrord/incoming-traffic/debug-from-browser
+  using-mirrord/steal-https: using-mirrord/incoming-traffic/steal-https
+  using-mirrord/traffic-inspection: using-mirrord/incoming-traffic/inspect-live-traffic
+  using-mirrord/outgoing-filter: using-mirrord/outgoing-traffic/filter-outgoing-traffic
+  using-mirrord/connecting-external-tools: using-mirrord/connecting-tools
+  using-mirrord/web-browsing: using-mirrord/connecting-tools/web-browsing
+  using-mirrord/postman: using-mirrord/connecting-tools/postman
+  using-mirrord/targetless: using-mirrord/targetless
+  using-mirrord/sessions: sharing-the-cluster/sessions
+  using-mirrord/sharing-the-cluster: sharing-the-cluster
+  using-mirrord/queue-splitting: sharing-the-cluster/queue-splitting
+  using-mirrord/db-branching: sharing-the-cluster/db-branching
+  using-mirrord/db-branch-management: sharing-the-cluster/db-branch-management
+  using-mirrord/db-branching-advanced-config: sharing-the-cluster/db-branching-advanced-config
+  using-mirrord/mirrord-for-ci: use-cases/mirrord-for-ci
+
+  # Managing mirrord → new locations
+  managing-mirrord/policies: sharing-the-cluster/policies
+  managing-mirrord/outgoing-traffic-policies: sharing-the-cluster/outgoing-traffic-policies
+  managing-mirrord/profiles: sharing-the-cluster/profiles
+
+  # Coming soon / old preview-env locations → new locations
+  coming-soon/preview-env/preview-env: use-cases/preview-environments
+  coming-soon/preview-env: use-cases/preview-environments
+  using-mirrord/preview-environments: sharing-the-cluster/preview-environments
+  using-mirrord/preview-environments-in-ci: sharing-the-cluster/preview-environments-in-ci

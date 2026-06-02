@@ -15,8 +15,6 @@ tags:
 description: License Server
 ---
 
-# License Server
-
 The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization.
 
 {% hint style="info" %}
@@ -68,7 +66,7 @@ _NOTE: The license server needs to be accessible to any mirrord operators you wa
 Next, install the license server on your cluster:
 
 ```bash
-helm install metalbear-co/mirrord-operator-license-server -f ./values.yaml --wait
+helm install metalbear/mirrord-operator-license-server -f ./values.yaml --wait
 ```
 
 To make sure it's been installed successfully and is running:
@@ -133,7 +131,7 @@ sa:
 
 #### Connecting Operators to the License Server
 
-First update your operator `values.yaml` file ([see this page](../overview/quick-start.md#helm) for quickstart helm setup for operator):
+First update your operator `values.yaml` file ([see this page](../getting-started/quick-start.md#helm) for quickstart helm setup for operator):
 
 ```yaml
 # ./values.yaml
@@ -147,7 +145,7 @@ _NOTE: The server value must contain the protocol and the prefix for any ingress
 Then run:
 
 ```bash
-helm install metalbear-co/mirrord-operator -f ./values.yaml --wait
+helm install metalbear/mirrord-operator -f ./values.yaml --wait
 ```
 
 ## Getting a Utilisation Report from the License Server
@@ -186,4 +184,72 @@ To get a report:
 
 ```bash
 mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/reports/usage?format=xlsx" --header 'x-license-key: <operator API license key>' --output report.xlsx
+```
+
+## Getting Operator Failure Reports from the License Server
+
+{% hint style="info" %}
+This feature requires at least mirrord-operator-license-server Helm chart version **1.56.0**.
+{% endhint %}
+
+The license server has an endpoint that can be used to retrieve reports about errors collected from mirrord oeperator. These reports help administrators investigate issues affecting mirrord usage in their cluster.
+
+Currently, these reports include operator system errors such as agent spawn failures.
+
+The reports include:
+
+* **Failure events** for the timeframe specified in query parameters
+  * Timestamp of the failure event
+  * Error message
+  * Operator version
+  * License hash
+  * Instance ID
+
+**Query params**
+
+* `from` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the beginning of the period for relevant failures.
+* `to` (optional): A date time, e.g. `"2025-08-20T00:00:00Z"`, to bound the end of the period for relevant failures.
+
+{% hint style="info" %}
+If the query parameters `to` and `from` are not specified, the data will be for all available retained history.
+{% endhint %}
+
+**Retention**
+
+Failure events are retained for a limited time.
+
+* By default, operator error logs are kept for **30 days**
+
+This can be configured via the Helm chart:
+
+```yaml
+server:
+  retention:
+    operatorErrors: 30
+````
+
+Expired error events are removed automatically by the license server based on the configured retention period.
+
+To get a report:
+
+* Ensure that the license server is accessible - by default it is installed as a `ClusterIP` so either expose it outside the cluster or access it from inside the cluster (for example, you can use `mirrord exec -- curl`).
+
+* Run `curl` by referencing the license server service by its domain name and ensuring that you use the correct API license key, for example with the service name `mirrord-operator-license-server` in the namespace `mirrord` with cluster domain `cluster.local`:
+
+```bash
+mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/reports/errors?from=2026-03-01T00:00:00Z&to=2026-03-02T00:00:00Z" --header 'x-license-key: <operator API license key>'
+```
+
+```json
+{
+  "entries": [
+    {
+      "timestamp": "2026-03-19T18:43:17Z",
+      "error": "failed to spawn agent: ...",
+      "operator_version": "3.130.0",
+      "license_hash": "abc123...",
+      "instance_id": "instance-1"
+    }
+  ]
+}
 ```
