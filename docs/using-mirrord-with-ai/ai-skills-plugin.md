@@ -32,4 +32,4 @@ Skills are reusable instruction modules that teach AI agents how to work with mi
 
 The mirrord skills are distributed as a plugin that you install into your AI coding assistant. Installation steps depend on your tool.
 
-Check the [mirrord skills repository](https://github.com/metalbear-co/mirrord-skills) for the latest installation instructions, supported assistants (Cursor, Claude Code and others), and any tool-specific requirements.
+Check the <a href="https://github.com/metalbear-co/skills/" target="_blank" rel="noopener noreferrer">mirrord skills repository</a> for the latest installation instructions...
