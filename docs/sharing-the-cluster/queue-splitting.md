@@ -38,6 +38,8 @@ Similarly, the local application is reconfigured to consume messages from its ow
 {% hint style="warning" %}
 Queue splitting requires that the application read the queue name from an environment variable.
 This lets the operator override the environment variable to change the queue that the application reads from.
+
+The exception is the **Azure Service Bus Topic/Subscription model**, which uses native subscription rules instead of swapping the topic. There the topic name does not need to come from an environment variable (only the subscription name does), so frameworks that generate topic names internally still work. See the Azure Service Bus tab above for details.
 {% endhint %}
 
 Once all temporary queues are prepared, the mirrord operator starts consuming messages from the original queue, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
@@ -119,15 +121,15 @@ If the filters defined by the two users both match some message, one of the user
 
 {% tab title="Azure Service Bus" %}
 
-Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both.
+Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both, but they are handled differently.
 
-First, we have a consumer app reading messages from an Azure Service Bus queue (or topic subscription):
+**Queue model.** When the first mirrord session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). The target workload's queue environment variable is patched to read from its temporary queue. A second user starting a session on the same queue gets a third temporary queue, and the operator includes it in the routing logic.
 
-When the first mirrord Azure Service Bus splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). Routing is based on AMQP application properties set on each message.
+**Topic/Subscription model.** Here the topic and the deployed app's subscription are never moved or renamed. The operator adds its own *ingest subscription* on the existing topic, reads every new message from it, runs your filter, and re-publishes each message back to the **same topic** with a routing marker (the `mirrord_route` application property). Native Service Bus subscription SQL rules then deliver each copy to the right place: messages that did not match any filter go to the deployed app's subscription, and messages that matched a user's filter go to that user's per-session subscription. Only the local application's subscription is swapped; the deployed app keeps reading its original subscription and is never patched or restarted.
 
-If a second user then starts a mirrord Azure Service Bus splitting session on the same queue, a third temporary queue is created (for the second user's local application). The mirrord operator includes the new queue and the second user's filter in the routing logic.
+This means the topic name does not have to come from an environment variable - which is important for frameworks like MassTransit that generate topic names internally from the message type. Because the operator still reads and filters every message in its own code, full body and `jq_filter` matching keeps working, unlike plain Service Bus SQL rules which can only look at message properties.
 
-If the filters defined by the two users both match some message, one of the users will receive the message at random.
+If the filters defined by two users both match some message, one of the users will receive the message at random.
 
 {% endtab %}
 
@@ -139,6 +141,7 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
+4. For the Azure Service Bus Topic/Subscription model, no temporary topic is created. The operator adds an ingest subscription and per-session subscriptions on the existing topic and uses native subscription rules plus a routing marker to fan messages out. The deployed app's subscription is left in place, so nothing is deleted from it while a target pod is still using it; when the split ends the operator restores that subscription's original accept-all rule.
 
 
 ## Enabling Queue Splitting in Your Cluster
@@ -1164,6 +1167,19 @@ spec:
           - env: SERVICE_BUS_SUBSCRIPTION_NAME
 ```
 
+The operator needs to know the topic name, but for the Topic/Subscription model it never overrides the topic on the deployed app, so the topic name does not have to be read from a live environment variable. If your framework generates the topic name internally (for example MassTransit, which derives it from the message type), point `env` at any variable name and give the known topic name as a `fallback`. When the variable is absent, the operator uses the fallback as the topic name:
+
+```yaml
+    - id: events-topic
+      kind: azureServiceBus
+      appConfig:
+        topic:
+          - env: SERVICE_BUS_TOPIC_NAME
+            fallback: "MyApp.Events~OrderSubmitted"
+        subscription:
+          - env: SERVICE_BUS_SUBSCRIPTION_NAME
+```
+
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
 
 #### AppConfig reference fields
@@ -1663,12 +1679,12 @@ First, some generally applicable steps:
 
    To get especially helpful logs, you can change the log level for SQS-splitting, then
    reproduce the issue to get the relevant logs. This can be achieved by reinstalling the helm chart and setting the
-   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`:
+   `operator.logLevel` helm value to `mirrord=info,operator=info,operator_envoy=trace`:
    ```shell
-   helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace" metalbear/mirrord-operator
+   helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_envoy=trace" metalbear/mirrord-operator
    ```
    or by setting
-   the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
+   the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_envoy=trace`,
    e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
 4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
    that target, are not yet supported, and can lead to a bad state for mirrord. 
