@@ -326,10 +326,22 @@ The entry's value is an object describing single or multiple SQS queues consumed
 * `s3Event` specifies whether the operator should try to parse incoming message JSON as an S3
   event notification and, when parsing succeeds, fetch user-defined S3 object metadata for the
   referenced object and expose it to `jq_filter` as `S3Metadata`.
-  If S3 event notifications reach the queue through SNS, set both `sns: true` and `s3Event: true`.
+  Supported delivery paths:
+  * **S3 → SQS** (direct): set only `s3Event: true`.
+  * **S3 → SNS → SQS**: set both `sns: true` and `s3Event: true`.
   Defaults to `false`.
 
-For example, a queue registry entry for S3 event notifications delivered through SNS can look like this:
+For example, a queue registry entry for S3 event notifications delivered directly to SQS:
+
+```yaml
+uploads-queue:
+  queueType: SQS
+  nameSource:
+    envVar: UPLOAD_EVENTS_QUEUE_NAME
+  s3Event: true
+```
+
+For S3 event notifications delivered through SNS:
 
 ```yaml
 uploads-queue:
@@ -998,7 +1010,8 @@ Filter definition contains the following fields:
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3Event: true`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
-    and metadata is fetched successfully.
+    and metadata is fetched successfully. `S3Metadata` follows the [AWS S3 user-defined metadata format](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata):
+    a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * A message matches if the jq program outputs `true`.
 
