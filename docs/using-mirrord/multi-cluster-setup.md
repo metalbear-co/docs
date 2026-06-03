@@ -49,7 +49,7 @@ Kubernetes does not auto-refresh mTLS client certificates. You are responsible f
 
 ### Fields per Auth Type
 
-| Field | `bearerToken` | `eks` | AKS | `mtls` |
+| Field | `bearerToken` | `eks` | `aks` | `mtls` |
 |-------|:---:|:---:|:---:|:---:|
 | `server` | Required | Required | Required | Required |
 | `caData` | Optional | Optional | Required | Optional |
