@@ -6,6 +6,10 @@ toc: true
 tags: ["open source", "team", "enterprise"]
 ---
 
+Agents can even do this autonomously. By instructing them to use mirrord as part of their workflow, they can run code against a real environment, catch issues early, and iterate until the feature actually works end-to-end. They can even use mirrord to explore the staging environment before writing code, giving them better visibility into how things are configured and service dependencies so they write more accurate code to begin with.
+
+The workflow: the agent writes code, runs it with mirrord against the cluster, checks the result, and iterates. Feedback cycles drop from minutes to seconds.
+
 ## How it works
 
 Most AI coding agents support an instructions file (e.g. `AGENTS.md`, `.cursorrules`) that tells the agent how to work in your repository. By adding mirrord instructions to this file, the agent automatically uses mirrord when testing changes.
