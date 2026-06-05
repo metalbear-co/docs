@@ -1427,7 +1427,6 @@ The operator connects to your Redis instance using properties from a `MirrordPro
 | `password` | Optional password |
 | `tls` | Set to `true` for `rediss://` |
 | `db` | Database index (default `0`) |
-| `cluster` | Set to `true` for Redis Cluster |
 
 Example:
 
@@ -1450,9 +1449,11 @@ spec:
 
 Redis Pub/Sub uses `kind: redisPubSub` in queue entries. Each queue entry must resolve at least one channel from the target workload's environment using one of:
 
-* `appConfig.channel` - exact channel name from an env var (e.g. `REDIS_CHANNEL`)
-* `appConfig.channelPattern` - pattern subscription (`PSUBSCRIBE`), e.g. `orders.*`
-* `appConfig.shardChannel` - sharded pub/sub channel (`SSUBSCRIBE` / `SPUBLISH`, requires Redis 7+ Cluster)
+* `appConfig.channel` - exact channel name from an env var (e.g. `REDIS_CHANNEL`). Uses `SUBSCRIBE` / `PUBLISH`.
+* `appConfig.channelPattern` - pattern subscription (`PSUBSCRIBE`), e.g. `orders.*`. Uses `PUBLISH` to concrete channel names.
+* `appConfig.shardChannel` - sharded pub/sub channel from an env var. Uses `SSUBSCRIBE` / `SPUBLISH` (Redis 7+, standalone or cluster). The local app must subscribe the same way (e.g. `SSubscribe` in go-redis).
+
+For pattern subscriptions, the operator preserves the channel suffix on temp output names (a message on `orders.created` is routed to `mirrord-tmp-<session>-orders.created`). The local process must `PSUBSCRIBE` the patched pattern, not `SUBSCRIBE` to a single exact name.
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1
@@ -1475,7 +1476,23 @@ spec:
           - env: REDIS_CHANNEL
 ```
 
-The operator patches the target workload's channel env var to a temporary channel name. Your local process receives the same patch when you start a mirrord session with a matching filter.
+Pattern subscription (`PSUBSCRIBE`):
+
+```yaml
+      appConfig:
+        channelPattern:
+          - env: REDIS_CHANNEL   # e.g. orders.*
+```
+
+Sharded pub/sub (`SSUBSCRIBE`):
+
+```yaml
+      appConfig:
+        shardChannel:
+          - env: REDIS_CHANNEL   # e.g. events.live
+```
+
+The operator patches the target workload's channel env var to a temporary channel name (or pattern). Your local process receives the same patch when you start a mirrord session with a matching filter.
 
 {% hint style="warning" %}
 Redis Pub/Sub is fire-and-forget. Messages published while no forwarder is running are not stored and cannot be replayed.
