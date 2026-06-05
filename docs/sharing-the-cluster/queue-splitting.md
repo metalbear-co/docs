@@ -873,11 +873,11 @@ Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm c
 
 The mirrord operator needs access to the Google Cloud Pub/Sub API to create and manage temporary topics and subscriptions.
 
-There are two ways to provide credentials:
+In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below.
 
 **Option A: Workload Identity (recommended)**
 
-[Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. You can annotate the operator's service account with the GCP service account email using the `sa.annotations` setting in the Helm chart:
+[Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. Annotate the operator's service account with the GCP service account email using the `sa.annotations` setting in the Helm chart:
 
 ```yaml
 sa:
@@ -885,9 +885,23 @@ sa:
     iam.gke.io/gcp-service-account: mirrord-operator@my-project.iam.gserviceaccount.com
 ```
 
+Then create a `MirrordPropertyList` with only the `project_id`. With no `credentials_json`, the operator authenticates using Application Default Credentials, which is what Workload Identity provides:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: gcp-pubsub-config
+  namespace: events
+spec:
+  properties:
+    - name: project_id
+      value: my-gcp-project
+```
+
 **Option B: Service account JSON key**
 
-You can provide a service account JSON key through a `MirrordPropertyList`. Store the key in a Kubernetes Secret, then reference it from the property list:
+If you are not using Workload Identity, provide a service account JSON key in the `MirrordPropertyList`. Store the key in a Kubernetes Secret, then reference it:
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
@@ -906,7 +920,19 @@ spec:
           key: credentials.json
 ```
 
-Then reference this property list from the `MirrordSplitConfig` either per-queue (`spec.queues[].clientConfig`) or as a default for all Pub/Sub queues (`spec.clientConfigs.googlePubSub`).
+Whichever option you choose, the operator needs to know which property list to use for each queue. It resolves the name in this order:
+
+1. `spec.queues[].clientConfig` on an individual queue entry in the `MirrordSplitConfig`.
+2. `spec.clientConfigs.googlePubSub` on the `MirrordSplitConfig`, used as the default for all Pub/Sub queues.
+3. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
+
+So either name your property list `default`, or point to it explicitly. For example, to share one property list across all Pub/Sub queues:
+
+```yaml
+spec:
+  clientConfigs:
+    googlePubSub: gcp-pubsub-config
+```
 
 Whichever method you choose, the IAM service account needs the following Pub/Sub permissions:
 
@@ -996,8 +1022,50 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
   * `valueSelector` - a jq expression to extract the subscription name from the variable's value. Useful when the env var contains JSON or a compound string rather than a plain name.
   * `containers` - limit to specific containers (optional, defaults to all).
 * `appConfig.projectId` - how the application discovers the GCP project ID. Uses the same structure as `subscription`.
-* `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`.
+* `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with additional configuration for temporary resources.
+
+**Subscriptions in multiple GCP projects**
+
+Each queue's project is resolved from its own `appConfig.projectId`, so different queues can live in different projects. If all projects share one identity (e.g. Workload Identity with cross-project access), one `MirrordPropertyList` is enough - just give each queue its own `projectId`:
+
+```yaml
+queues:
+  - id: queue-a
+    kind: googlePubSub
+    appConfig:
+      subscription:
+        - env: QUEUE_A_SUBSCRIPTION
+      projectId:
+        - env: QUEUE_A_PROJECT
+  - id: queue-b
+    kind: googlePubSub
+    appConfig:
+      subscription:
+        - env: QUEUE_B_SUBSCRIPTION
+      projectId:
+        - env: QUEUE_B_PROJECT
+```
+
+If each project needs different credentials, create one `MirrordPropertyList` per project and point to it per queue with `clientConfig`:
+
+```yaml
+queues:
+  - id: queue-a
+    kind: googlePubSub
+    clientConfig: gcp-project-a-config
+    appConfig:
+      subscription:
+        - env: QUEUE_A_SUBSCRIPTION
+  - id: queue-b
+    kind: googlePubSub
+    clientConfig: gcp-project-b-config
+    appConfig:
+      subscription:
+        - env: QUEUE_B_SUBSCRIPTION
+```
+
+With Workload Identity, make sure the operator's identity has Pub/Sub permissions in every project it needs to reach.
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
