@@ -875,10 +875,6 @@ The mirrord operator needs access to the Google Cloud Pub/Sub API to create and 
 
 In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below.
 
-{% hint style="warning" %}
-A `MirrordPropertyList` with a `project_id` is always required, including when you use Workload Identity. Workload Identity only lets you omit the `credentials_json` property. Without a property list, the operator fails with `MirrordPropertyList not found`.
-{% endhint %}
-
 **Option A: Workload Identity (recommended)**
 
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. Annotate the operator's service account with the GCP service account email using the `sa.annotations` setting in the Helm chart:
