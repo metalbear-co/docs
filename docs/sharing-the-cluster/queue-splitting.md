@@ -25,8 +25,8 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), and [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus).
-The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, and "subscription" in the context of Google Cloud Pub/Sub.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), and [Redis Pub/Sub](https://redis.io/docs/latest/develop/pubsub/).
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, and "channel" in the context of Redis Pub/Sub.
 {% endhint %}
 
 ## How It Works
@@ -128,6 +128,18 @@ When the first mirrord Azure Service Bus splitting session starts, two temporary
 If a second user then starts a mirrord Azure Service Bus splitting session on the same queue, a third temporary queue is created (for the second user's local application). The mirrord operator includes the new queue and the second user's filter in the routing logic.
 
 If the filters defined by the two users both match some message, one of the users will receive the message at random.
+
+{% endtab %}
+
+{% tab title="Redis Pub/Sub" %}
+
+First, we have a consumer app subscribed to a Redis Pub/Sub channel.
+
+When the first mirrord Redis Pub/Sub splitting session starts, the operator creates temporary channels (one for the target deployed in the cluster, one for the user's local application) and routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). Routing runs on JSON payloads: `message_filter` matches top-level JSON fields, and `jq_filter` can inspect the parsed object.
+
+If a second user then starts a mirrord Redis Pub/Sub splitting session on the same channel, an additional temporary channel is created for the second user's local application. The operator includes the new channel and the second user's filter in the routing logic.
+
+Redis Pub/Sub is not durable. Messages published while the operator forwarder is down are lost. After all sessions end, temporary channels are dropped; there is no broker-side cleanup because Redis does not persist pub/sub messages.
 
 {% endtab %}
 
@@ -1323,6 +1335,87 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 {% endstep %}
 {% endstepper %}
 {% endtab %}
+
+{% tab title="Redis Pub/Sub" %}
+
+{% stepper %}
+{% step %}
+
+### Enable Redis Pub/Sub splitting in the Helm chart
+
+Enable the `operator.redisPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordPropertyList
+
+The operator connects to your Redis instance using properties from a `MirrordPropertyList`. Supported keys:
+
+| Property | Description |
+| -------- | ----------- |
+| `url` | Full Redis URL, e.g. `redis://redis.example.svc:6379/0` |
+| `host` + `port` | Used when `url` is not set (default port `6379`) |
+| `password` | Optional password |
+| `tls` | Set to `true` for `rediss://` |
+| `db` | Database index (default `0`) |
+| `cluster` | Set to `true` for Redis Cluster |
+
+Example:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: redis-pubsub-config
+  namespace: orders
+spec:
+  properties:
+    - name: url
+      value: redis://redis.orders.svc.cluster.local:6379
+```
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordSplitConfig
+
+Redis Pub/Sub uses `kind: redisPubSub` in queue entries. Each queue entry must resolve at least one channel from the target workload's environment using one of:
+
+* `appConfig.channel` - exact channel name from an env var (e.g. `REDIS_CHANNEL`)
+* `appConfig.channelPattern` - pattern subscription (`PSUBSCRIBE`), e.g. `orders.*`
+* `appConfig.shardChannel` - sharded pub/sub channel (`SSUBSCRIBE` / `SPUBLISH`, requires Redis 7+ Cluster)
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: orders-split
+  namespace: orders
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-processor
+  clientConfigs:
+    redisPubSub: redis-pubsub-config
+  queues:
+    - id: orders-channel
+      kind: redisPubSub
+      appConfig:
+        channel:
+          - env: REDIS_CHANNEL
+```
+
+The operator patches the target workload's channel env var to a temporary channel name. Your local process receives the same patch when you start a mirrord session with a matching filter.
+
+{% hint style="warning" %}
+Redis Pub/Sub is fire-and-forget. Messages published while no forwarder is running are not stored and cannot be replayed.
+{% endhint %}
+
+{% endstep %}
+{% endstepper %}
+{% endtab %}
 {% endtabs %}
 
 ## Setting a Filter for a mirrord Run
@@ -1332,10 +1425,10 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, or `AzureServiceBus`
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), or application property (Azure Service Bus) name to a regex for its value.
-  The local application will only see queue messages that have **all** of the specified message attributes/headers/properties.
-* `jq_filter` - supported for `SQS`, `GCPPubSub`, and `AzureServiceBus` queue types.
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, or `RedisPubSub`
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), or top-level JSON field (Redis Pub/Sub) name to a regex for its value.
+  The local application will only see queue messages that have **all** of the specified message attributes/headers/properties/JSON fields.
+* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, and `RedisPubSub` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3Event: true`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -1343,6 +1436,7 @@ Filter definition contains the following fields:
     a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
+  * For **Redis Pub/Sub**, it runs a jq program on the JSON representation of the message payload. Non-JSON payloads never match attribute or jq filters and are routed to the main output channel.
   * A message matches if the jq program outputs `true`.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
@@ -1608,6 +1702,71 @@ You can also use `jq_filter` to match on message body content:
 This routes only messages whose JSON body contains `"priority": "high"` to the local application.
 
 Both `message_filter` and `jq_filter` can be combined - a message must match both to be routed to the local application.
+
+{% endtab %}
+
+{% tab title="Redis Pub/Sub" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/event-processor",
+  "feature": {
+    "split_queues": {
+      "orders-channel": {
+        "queue_type": "RedisPubSub",
+        "message_filter": {
+          "tenant": "^dev$"
+        }
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application receives JSON messages from the Redis channel described under ID `orders-channel` in the `MirrordSplitConfig`, but only when the top-level JSON field `tenant` matches `dev`.
+
+{% endtab %}
+
+{% tab title="Redis Pub/Sub with jq_filter" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/event-processor",
+  "feature": {
+    "split_queues": {
+      "orders-channel": {
+        "queue_type": "RedisPubSub",
+        "jq_filter": ".tenant == \"dev\" and .priority > 5"
+      }
+    }
+  }
+}
+```
+
+{% endtab %}
+
+{% tab title="Redis Pub/Sub with wildcard" %}
+
+```json
+{
+  "operator": true,
+  "target": "deployment/event-processor",
+  "feature": {
+    "split_queues": {
+      "*": {
+        "queue_type": "RedisPubSub",
+        "message_filter": {
+          "tenant": "^dev$"
+        }
+      }
+    }
+  }
+}
+```
+
+`*` resolves to all Redis channels defined in the target's `MirrordSplitConfig`.
 
 {% endtab %}
 {% endtabs %}
