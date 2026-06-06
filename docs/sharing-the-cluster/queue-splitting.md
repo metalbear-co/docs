@@ -1,7 +1,7 @@
 ---
 title: Queue Splitting
 date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-05-11T14:26:00.000Z
+lastmod: 2026-06-05T12:00:00.000Z
 draft: false
 menu:
   docs:
@@ -25,7 +25,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), and [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus).
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), and [Temporal](https://temporal.io/) task queues.
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, and "subscription" in the context of Google Cloud Pub/Sub.
 {% endhint %}
 
@@ -131,6 +131,30 @@ If the filters defined by the two users both match some message, one of the user
 
 {% endtab %}
 
+{% tab title="Temporal" %}
+
+Temporal does not work like a normal message broker. Workers don't read messages from a queue; instead each worker keeps asking the Temporal server "do you have a task for me?", and the server hands each task to whichever worker asks. Because tasks are handed out this way, mirrord cannot copy them into temporary queues like it does for SQS or Kafka.
+
+So the operator puts itself in the middle, between the workers and Temporal:
+
+1. **The operator becomes the only one talking to the real Temporal server.** It asks Temporal for tasks on the real task queue (for example `order-checkout`) and keeps them in memory.
+2. **The workers talk to the operator instead of Temporal.** mirrord points both the cluster worker and your local worker at the operator (default port `7233`). Each worker asks for tasks using its own *virtual* queue name, and the operator gives back only the tasks meant for it. When a worker finishes a task, the operator forwards the result to the real Temporal server.
+
+Virtual queue names are just labels mirrord uses to decide who gets which task. The Temporal server never sees them; it only knows the original queue.
+
+| Virtual queue | Who polls it |
+|---------------|--------------|
+| `mirrord-main-{workload}-{original-queue}` | Cluster deployment (patched on first session) |
+| `mirrord-session-{session}-{original-queue}` | Local mirrord worker |
+
+`{workload}` and `{session}` are short hashes. They keep the names unique so several workloads or sessions splitting the same task queue never collide.
+
+When a second user starts a splitting session, the operator adds their filter and a new virtual queue. Each task still goes to just one worker: the most recently connected session whose filter matches it, or the cluster worker if no filter matches.
+
+No temporary queues or topics are created in Temporal. When the last session ends (after `drainTimeout`), the operator stops asking Temporal for tasks and clears everything it was holding in memory.
+
+{% endtab %}
+
 {% endtabs %}
 
 Temporary queues are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
@@ -139,6 +163,7 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
+4. For Temporal, no broker-side resources are created. The cluster worker keeps using the virtual queue name and the operator proxy address until the last session ends and `drainTimeout` passes, after which its original settings are restored.
 
 
 ## Enabling Queue Splitting in Your Cluster
@@ -1391,6 +1416,121 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 {% endstep %}
 {% endstepper %}
 {% endtab %}
+{% tab title="Temporal" %}
+
+{% stepper %}
+{% step %}
+
+### Enable Temporal splitting in the Helm chart
+
+Enable `operator.temporalSplitting` in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This exposes port `operator.temporalProxyPort` (default `7233`) on the operator Service.
+
+Workers patched for splitting connect to this port instead of the upstream Temporal frontend.
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordPropertyList for the Temporal connection
+
+Create a `MirrordPropertyList` with the upstream Temporal frontend address and namespace. Reference it from `clientConfigs.temporal` in the split config:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: temporal-connection
+  namespace: my-app
+spec:
+  properties:
+    - name: address
+      value: temporal-frontend.temporal.svc.cluster.local:7233
+    - name: namespace
+      value: default
+```
+
+Optional properties: `tls` (`true`/`false`), `apiKey` (for Temporal Cloud).
+
+{% endstep %}
+{% step %}
+
+### Create a MirrordSplitConfig
+
+The split config tells the operator which deployment to patch, which env vars hold the task queue name and Temporal address, and which queue ID developers use in their mirrord config:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: activity-worker-split
+  namespace: my-app
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: activity-worker
+  clientConfigs:
+    temporal: temporal-connection
+  queues:
+    - id: checkout-activities
+      kind: Temporal
+      appConfig:
+        taskQueue:
+          - env: TEMPORAL_TASK_QUEUE
+        temporalAddress:
+          - env: TEMPORAL_ADDRESS
+        temporalNamespace:
+          - env: TEMPORAL_NAMESPACE
+```
+
+`appConfig` maps env vars on the target pod. The operator reads their current values to learn the real task queue name and to know which variables to patch.
+
+Optional `drainTimeout` (seconds) on the split config controls how long shared splitting infrastructure stays up after the last session disconnects. Default is 30 seconds.
+
+{% endstep %}
+{% step %}
+
+### What happens when a developer connects
+
+On the **first** mirrord session for this workload:
+
+1. The operator starts ingest pollers on the real task queue.
+2. A `MirrordClusterWorkloadPatchRequest` patches the deployment:
+   * `TEMPORAL_ADDRESS` → operator Service proxy (`{operator-service}.{namespace}.svc.cluster.local:7233`)
+   * `TEMPORAL_TASK_QUEUE` → `mirrord-main-{workload}-{original-queue}`
+3. The deployment restarts with the patched env vars.
+
+On **each** session (including the first):
+
+1. The operator registers a session filter and virtual queue `mirrord-session-{session}-{original-queue}`.
+2. The local worker receives env overrides for the session virtual queue (and the same proxy address).
+
+On **session disconnect**:
+
+1. Session filters and the session virtual queue are removed.
+2. Any tasks still buffered for that session are reassigned to the main virtual queue so the cluster worker can process them.
+
+When the **last** session ends and `drainTimeout` elapses, ingest stops, buffers are cleared, and the deployment patch is removed.
+
+{% endstep %}
+{% step %}
+
+### Mark test workflows in your application
+
+Filters route on task metadata at poll time. The usual approach is a predictable `workflow_id` prefix when starting test workflows:
+
+```typescript
+await client.workflow.start(CheckoutWorkflow, {
+  taskQueue: "order-checkout",
+  workflowId: `test-alice-${orderId}`,
+  args: [order],
+});
+```
+
+A mirrord filter `"workflow_id": "^test-alice-"` then routes those tasks to the local worker.
+
+{% endstep %}
+{% endstepper %}
+{% endtab %}
 {% endtabs %}
 
 ## Setting a Filter for a mirrord Run
@@ -1400,10 +1540,10 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, or `AzureServiceBus`
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), or application property (Azure Service Bus) name to a regex for its value.
-  The local application will only see queue messages that have **all** of the specified message attributes/headers/properties.
-* `jq_filter` - supported for `SQS`, `GCPPubSub`, and `AzureServiceBus` queue types.
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, or `Temporal`
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), or Temporal task metadata field (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`) to a regex for its value.
+  The local application will only see queue messages or tasks that have **all** of the specified attributes/headers/properties/metadata fields.
+* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, and `Temporal` (activity input JSON only) queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3Event: true`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -1411,9 +1551,21 @@ Filter definition contains the following fields:
     a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
+  * For **Temporal**, `jq_filter` runs on the activity's first input argument as JSON. It only works on activity tasks; workflow tasks ignore it.
   * A message matches if the jq program outputs `true`.
 
-If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
+For **Temporal** `message_filter` keys:
+
+| Key | Applies to | Meaning |
+|-----|------------|---------|
+| `workflow_id` | workflow and activity tasks | Regex on Temporal workflow ID |
+| `workflow_type` | workflow and activity tasks | Regex on workflow type name |
+| `activity_type` | activity tasks only | Regex on activity type name |
+| `workflow_namespace` | activity tasks only | Regex on the workflow namespace on the activity task |
+
+If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a task to be routed locally.
+
+For message brokers (SQS, Kafka, RabbitMQ, GCP Pub/Sub, Azure Service Bus), when multiple active sessions have filters that match the same message, one session is chosen at random. For **Temporal**, the **most recently connected** matching session receives the task.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
@@ -1678,6 +1830,54 @@ This routes only messages whose JSON body contains `"priority": "high"` to the l
 Both `message_filter` and `jq_filter` can be combined - a message must match both to be routed to the local application.
 
 {% endtab %}
+{% tab title="Temporal" %}
+
+Route by workflow ID prefix:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/activity-worker",
+  "feature": {
+    "split_queues": {
+      "checkout-activities": {
+        "queue_type": "Temporal",
+        "message_filter": {
+          "workflow_id": "^test-alice-"
+        }
+      }
+    }
+  }
+}
+```
+
+Route by workflow type and activity input (jq applies to activity tasks only):
+
+```json
+{
+  "operator": true,
+  "target": "deployment/activity-worker",
+  "feature": {
+    "split_queues": {
+      "checkout-activities": {
+        "queue_type": "Temporal",
+        "message_filter": {
+          "workflow_type": "^CheckoutWorkflow$"
+        },
+        "jq_filter": ".customer == \"alice\""
+      }
+    }
+  }
+}
+```
+
+`message_filter` matches task metadata. The keys you can use (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`) are listed in the filter reference table above.
+
+`jq_filter` looks at the activity's first input argument as JSON. In the example above the activity is called with an object like `{"customer": "alice"}`, so `.customer == "alice"` matches tasks for that customer. It only works on activity tasks; workflow tasks ignore it.
+
+The queue ID (`checkout-activities`) must match the `id` field in `MirrordSplitConfig`. The local worker receives matching tasks on `mirrord-session-{session}-{original-queue}`. All other tasks go to the cluster worker on `mirrord-main-{workload}-{original-queue}`.
+
+{% endtab %}
 {% endtabs %}
 
 ## FAQ
@@ -1766,6 +1966,18 @@ openssl pkcs12 -in truststore.p12 -nokeys -out ca-cert.pem
 ```
 
 Then, follow the guide for [authenticating with an SSL certificate](queue-splitting.md#how-do-i-authenticate-operators-kafka-client-with-an-ssl-certificate).
+
+#### Does Temporal splitting work with Temporal Cloud?
+
+Yes. Put the Temporal Cloud frontend address in the `MirrordPropertyList` `address` property and set `apiKey` (and `tls: "true"` if required). The operator ingest client and proxy use this connection for upstream calls. Workers under splitting still connect to the operator proxy, not directly to Temporal Cloud.
+
+#### Do I need to change my worker code for Temporal splitting?
+
+No application code changes are required beyond marking test workflows (for example with a `workflow_id` prefix) so filters can route them. The operator patches env vars on the cluster deployment and injects overrides for the local worker. Your SDK keeps using the same poll/respond APIs.
+
+#### Does routing through the operator make Temporal slower?
+
+Only the workers taking part in a splitting session go through the operator; everything else keeps talking to Temporal directly. That extra step is just a small hop. Tasks are kept in memory and handed out the moment a worker asks, so it feels just like talking to Temporal directly.
 
 ## Troubleshooting SQS splitting
 
@@ -1874,3 +2086,47 @@ Check that:
 #### Temporary queues are not being cleaned up
 
 After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.
+
+## Troubleshooting Temporal splitting
+
+If you are having issues with Temporal splitting, start with these general steps:
+
+1. Make sure `operator.temporalSplitting` is enabled in the operator Helm chart and port `7233` is reachable from worker pods.
+2. Make sure a `MirrordSplitConfig` exists for the target workload with queue entries of `kind: Temporal`:
+   ```shell
+   kubectl get mirrordsplitconfigs.queues.mirrord.metalbear.co -n <target-namespace> -o yaml
+   ```
+3. Make sure the queue IDs in your mirrord configuration match the IDs in the `MirrordSplitConfig`.
+4. Verify the `MirrordPropertyList` referenced by `clientConfigs.temporal` exists and has correct `address` and `namespace`:
+   ```shell
+   kubectl get mirrordpropertylists.mirrord.metalbear.co -n <target-namespace> -o yaml
+   ```
+5. Check that the deployment was patched after the first session (`TEMPORAL_ADDRESS` points at the operator Service, `TEMPORAL_TASK_QUEUE` starts with `mirrord-main-`):
+   ```shell
+   kubectl get deployment <worker-name> -n <target-namespace> -o yaml | grep -A2 TEMPORAL
+   ```
+6. Get operator logs:
+   ```shell
+   kubectl logs -n mirrord -l app==mirrord-operator --tail -1 > /tmp/mirrord-operator-$(date +"%Y-%m-%d_%H-%M-%S").log
+   ```
+
+#### Tasks are not reaching the local worker
+
+Check that:
+
+- The local worker is running and polling (mirrord session is active).
+- Your `message_filter` regex matches the workflow ID or task metadata on ingested tasks.
+- If using `jq_filter`, remember it only applies to **activity** tasks and the first JSON payload in the activity input.
+- Another session with a matching filter connected more recently and receives duplicate matches first.
+
+#### Cluster worker still talks to real Temporal
+
+The deployment patch is applied on the **first** splitting session. If no session is active and `drainTimeout` has passed, the patch is removed and the worker reverts to its original env vars. Start a mirrord session to re-enable splitting.
+
+#### Workflows stall after closing a local session
+
+When a session ends, buffered tasks for that session are moved to the main virtual queue. Keep the cluster worker running so it can drain `mirrord-main-{workload}-{queue}`. If you killed the local worker without ending the mirrord session, wait for the split session CR to expire or delete it manually.
+
+#### Operator proxy vs upstream Temporal
+
+Workers under splitting always talk to the operator proxy for polls and task completions. The operator ingest loop is the only component that polls the real Temporal task queue. Unhandled gRPC RPCs (for example `DescribeNamespace`) are passed through the proxy to the upstream frontend.
