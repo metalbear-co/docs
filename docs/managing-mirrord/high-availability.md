@@ -16,7 +16,11 @@ description: High availability for mirrord Operator in Enterprise Tier
 ---
 
 {% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan.
+Session persistence — the ability to survive an Operator restart without terminating active mirrord sessions — is available to users on the Enterprise pricing plan.
+{% endhint %}
+
+{% hint style="warning" %}
+The Operator's leader election and standby replica infrastructure is active regardless of license tier, so the Operator itself may recover from failures even on non-Enterprise plans. However, session persistence is not guaranteed outside of Enterprise. Sessions created on non-Enterprise plans are tied to a specific operator instance and are not guaranteed to survive a leader transition. We make no promises about HA behaviour for non-Enterprise plans.
 {% endhint %}
 
 Starting from chart version `1.40.1`, the mirrord Operator is highly available by default. This means mirrord sessions survive transient failures — including failures of the node where the Operator pod is running — without terminating the user's local process.
