@@ -58,7 +58,7 @@ operator:
 With multiple replicas, standby pods are already running when a leader failure occurs. The new leader is elected from the existing standby pool, which eliminates the pod scheduling delay and shortens the recovery window.
 
 {% hint style="warning" %}
-Additional replicas provide failover redundancy, not additional serving capacity. Only the elected leader handles mirrord sessions. If you need to support more concurrent sessions, see [Scalability](scalability.md).
+Additional replicas provide failover redundancy, not additional serving capacity. Only the elected leader handles mirrord sessions. A single Operator instance is a lightweight Kubernetes controller capable of managing hundreds of concurrent sessions across large clusters — additional replicas shorten recovery time after a failure, not throughput. If you are hitting session limits, see [Scalability](scalability.md).
 {% endhint %}
 
 ### Recommended: pod anti-affinity
