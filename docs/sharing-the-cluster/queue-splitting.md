@@ -1484,6 +1484,53 @@ spec:
 
 `appConfig` maps env vars on the target pod. The operator reads their current values to learn the real task queue name and to know which variables to patch.
 
+A worker often reads from more than one task queue. List each one as its own entry under `queues`, with the env var that holds its name. Declaring a queue here only makes it *available* to split - each developer still chooses which of these queues to actually split in their own mirrord config (see [Setting a Filter for a mirrord Run](#setting-a-filter-for-a-mirrord-run)). Queues a developer does not reference keep running normally on the cluster worker.
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: activity-worker-split
+  namespace: my-app
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: activity-worker
+  clientConfigs:
+    temporal: temporal-connection
+  queues:
+    - id: checkout-activities
+      kind: Temporal
+      appConfig:
+        taskQueue:
+          - env: TEMPORAL_TASK_QUEUE_CHECKOUT
+        temporalAddress:
+          - env: TEMPORAL_ADDRESS
+        temporalNamespace:
+          - env: TEMPORAL_NAMESPACE
+    - id: shipping-activities
+      kind: Temporal
+      appConfig:
+        taskQueue:
+          - env: TEMPORAL_TASK_QUEUE_SHIPPING
+        temporalAddress:
+          - env: TEMPORAL_ADDRESS
+        temporalNamespace:
+          - env: TEMPORAL_NAMESPACE
+    - id: billing-activities
+      kind: Temporal
+      appConfig:
+        taskQueue:
+          - env: TEMPORAL_TASK_QUEUE_BILLING
+        temporalAddress:
+          - env: TEMPORAL_ADDRESS
+        temporalNamespace:
+          - env: TEMPORAL_NAMESPACE
+```
+
+Here all three queues share the same `TEMPORAL_ADDRESS` env var. When a developer splits any of them, that one address var is patched to the operator proxy, so traffic for the queues they did not split still passes through the proxy - but it is forwarded straight to the real Temporal server, unchanged and unfiltered. Those queues behave exactly as before.
+
 Optional `drainTimeout` (seconds) on the split config controls how long shared splitting infrastructure stays up after the last session disconnects. Default is 30 seconds.
 
 {% endstep %}
@@ -1876,6 +1923,33 @@ Route by workflow type and activity input (jq applies to activity tasks only):
 `jq_filter` looks at the activity's first input argument as JSON. In the example above the activity is called with an object like `{"customer": "alice"}`, so `.customer == "alice"` matches tasks for that customer. It only works on activity tasks; workflow tasks ignore it.
 
 The queue ID (`checkout-activities`) must match the `id` field in `MirrordSplitConfig`. The local worker receives matching tasks on `mirrord-session-{session}-{original-queue}`. All other tasks go to the cluster worker on `mirrord-main-{workload}-{original-queue}`.
+
+Split more than one queue at a time by listing several queue IDs, each with its own filter. This matches the multi-queue `MirrordSplitConfig` shown earlier:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/activity-worker",
+  "feature": {
+    "split_queues": {
+      "checkout-activities": {
+        "queue_type": "Temporal",
+        "message_filter": {
+          "workflow_id": "^test-alice-"
+        }
+      },
+      "shipping-activities": {
+        "queue_type": "Temporal",
+        "message_filter": {
+          "activity_type": "^ShipOrder$"
+        }
+      }
+    }
+  }
+}
+```
+
+Each queue is split on its own: `checkout-activities` routes by `workflow_id`, `shipping-activities` routes by `activity_type`, and each sends only its matching tasks to your local worker. The third queue from the split config, `billing-activities`, is not listed here, so it is never split - the cluster worker keeps handling all of its tasks as usual.
 
 {% endtab %}
 {% endtabs %}
