@@ -67,6 +67,7 @@
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
 * [Scalability](managing-mirrord/scalability.md)
+* [Licensing](managing-mirrord/licensing.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
 * [Jira Integration](managing-mirrord/jira-integration.md)
