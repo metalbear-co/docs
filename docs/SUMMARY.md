@@ -87,7 +87,7 @@
 * [Network Traffic](reference/traffic.md)
 * [Environment Variables](reference/env.md)
 * [File Operations](reference/fileops.md)
-* [Feature Matrix](reference/feature-matrix.md)
+* [Feature Support Matrix](reference/feature-matrix.md)
 
 ***
 
