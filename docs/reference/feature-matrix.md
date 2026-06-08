@@ -13,21 +13,22 @@ Support levels vary by platform. The table below shows the current status for ea
 
  | Feature         | Platform          | Standalone       | Preview Env | Multi-cluster | mirrord up |
   |-----------------|-------------------|------------------|-------------|---------------|------------|
-  | DB Branching    | PostgreSQL        | Beta (remote)    | Alpha       | Alpha         | Planned    |
-  |                 | MongoDB           | Alpha (remote)   | Alpha       | Alpha         | Planned    |
-  |                 | MySQL             | Alpha (remote)   | Alpha       | Alpha         | Planned    |
-  |                 | MSSQL             | Alpha (remote)   | Alpha       | Alpha         | Planned    |
-  |                 | Redis             | Alpha (local)    | Planned     | Planned       | Planned |
-  | Queue Splitting | SQS               | GA               | Alpha       | Alpha         | Planned    |
-  |                 | Kafka             | Alpha            | Alpha       | Planned       | Planned    |
-  |                 | Temporal          | Planned/Prototype| Planned     | Planned/Prototype | Planned |
-  |                 | Google Pub/Sub    | Alpha            | Alpha       | Alpha         | Planned    |
-  |                 | Azure Service Bus | Alpha            | Alpha       | Alpha         | Planned    |
-  |                 | NATS              | Planned          | Planned     | Planned       | Planned    |
-  |                 | Redis Pub/Sub     | Planned/Prototype| Planned     | Planned/Prototype | Planned |
-  | Preview Env     | —                 | GA               | —           | Alpha         | Planned    |
-  | Multi-cluster   | —                 | GA               | Alpha       | —             | Planned    |
-  | mirrord up      | —                 | GA               | Alpha       | Alpha         | —          |
+  | **DB Branching**    | **PostgreSQL**        | Beta (remote)    | Alpha       | Alpha         | Planned    |
+  |                 | **MongoDB**           | Alpha (remote)   | Alpha       | Alpha         | Planned    |
+  |                 | **MySQL**             | Alpha (remote)   | Alpha       | Alpha         | Planned    |
+  |                 | **MSSQL**             | Alpha (remote)   | Alpha       | Alpha         | Planned    |
+  |                 | **Redis**             | Alpha (local)    | Planned     | Planned       | Planned |
+  | **Queue Splitting** | **SQS**               | GA               | Alpha       | Alpha         | Planned    |
+  |                 | **Kafka**             | Alpha            | Alpha       | Planned       | Planned    |
+  |                 | **Temporal**          | Planned          | Planned     | Planned       | Planned |
+  |                 | **Google Pub/Sub**    | Alpha            | Alpha       | Alpha         | Planned    |
+  |                 | **Azure Service Bus** | Alpha            | Alpha       | Alpha         | Planned    |
+  |                 | **NATS**              | Planned          | Planned     | Planned       | Planned    |
+  |                 | **Redis Pub/Sub**     | Planned          | Planned     | Planned.      | Planned |
+  | **Preview Env**     | —                 | GA               | —           | Alpha         | Planned    |
+  | **Multi-cluster**   | —                 | GA               | Alpha       | —             | Planned    |
+  | **mirrord up**      | —                 | GA               | Alpha       | Alpha         | —          |
 
 
-### Don't see your platform listed, or need a status that isn't available yet? [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) — we prioritize based on demand.
+### Didn't find what you are looking for?
+[Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) - and tell us what you're working with, we prioritize based on demand.
