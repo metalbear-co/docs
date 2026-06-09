@@ -503,8 +503,9 @@ The queues are described in entries of the `spec.topics` list:
 * `id` can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
 * `clientConfig` stores the name of the `MirrordKafkaClientConfig` to use when making connections to the Kafka cluster.
 * `nameSources` stores a list of all occurrences of the queue name in the consumer workload's pod template.
-* `groupIdSources` stores a list of all occurrences of the consumer Kafka group ID in the consumer workload's pod template.
-The operator will use the same group ID when consuming messages from the queue.
+* One of the following must be set:
+  * `groupIdSources` — a list of all occurrences of the consumer Kafka group ID in the consumer workload. Use for standard Kafka consumers.
+  * `applicationIdSources` — a list of all occurrences of the Kafka Streams application ID in the consumer workload. Use for Kafka Streams consumers.
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
