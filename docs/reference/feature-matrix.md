@@ -12,21 +12,21 @@ Support levels vary by platform. The table below shows the current status for ea
 
  | Feature         | Platform          | Preview Env | Multi-cluster | mirrord up |
   |-----------------|-------------------|-------------|---------------|------------|
-  | **[DB Branching](../sharing-the-cluster/db-branching.md)**    | **[PostgreSQL](../sharing-the-cluster/db-branching.md)**        | Alpha       | Alpha         | Planned    |
-  |                 | **[MongoDB](../sharing-the-cluster/db-branching.md)**           | Alpha       | Alpha         | Planned    |
-  |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | Alpha       | Alpha         | Planned    |
-  |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | Alpha       | Alpha         | Planned    |
+  | **[DB Branching](../sharing-the-cluster/db-branching.md)**    | **[PostgreSQL](../sharing-the-cluster/db-branching.md)**        | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MongoDB](../sharing-the-cluster/db-branching.md)**           | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching.md#local-redis)**             | Planned     | Planned       | Planned |
-  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | Beta       | Alpha         | Planned    |
-  |                 | **[Kafka](../sharing-the-cluster/queue-splitting.md#enable-kafka-splitting-in-the-helm-chart)**             | Alpha       | Planned       | Planned    |
+  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Kafka](../sharing-the-cluster/queue-splitting.md#enable-kafka-splitting-in-the-helm-chart)**             | `Alpha`       | Planned       | Planned    |
   |                 | **Temporal**          | Planned     | Planned       | Planned |
-  |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting.md#enable-gcp-pubsub-splitting-in-the-helm-chart)**    | Alpha       | Alpha         | Planned    |
-  |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting.md#enable-azure-service-bus-splitting-in-the-helm-chart)** | Alpha       | Alpha         | Planned    |
+  |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting.md#enable-gcp-pubsub-splitting-in-the-helm-chart)**    | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting.md#enable-azure-service-bus-splitting-in-the-helm-chart)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
   |                 | **Redis Pub/Sub**     | Planned     | Planned.      | Planned |
-  | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | Alpha         | Planned    |
-  | **[Multi-cluster](../using-mirrord/multi-cluster.md)**   | —                 | Alpha       | —             | Planned    |
-  | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | Alpha       | Alpha         | —          |
+  | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | `Alpha`         | Planned    |
+  | **[Multi-cluster](../using-mirrord/multi-cluster.md)**   | —                 | `Alpha`       | —             | Planned    |
+  | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | `Alpha`       | `Alpha`         | —          |
 
 
 *Not sure what Alpha, Beta, or GA means? See [Release Stages](/release-stages.md)*
