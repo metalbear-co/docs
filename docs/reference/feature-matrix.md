@@ -29,5 +29,7 @@ Support levels vary by platform. The table below shows the current status for ea
   | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | Alpha       | Alpha         | —          |
 
 
+*Not sure what Alpha, Beta, or GA means? See [Release Stages](/release-stages.md)*
+
 ### Didn't find what you are looking for?
 [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) and tell us what you're working with, we prioritize based on demand.
