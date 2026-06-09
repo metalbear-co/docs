@@ -474,11 +474,13 @@ spec:
     - directEnvVar:
         container: consumer
         variable: KAFKA_TOPIC_NAME
+        fallback: views-topic # optional, used when the variable is absent
 ```
 
 The topics consumer resource above says that:
 1. It provides context for deployment `meme-app` in namespace `meme`.
 2. The deployment consumes one queue. Its name is read from environment variable `KAFKA_TOPIC_NAME` in container `consumer`.
+If the variable is absent, the fallback value `views-topic` is used instead.
 The Kafka consumer group id is read from environment variable `KAFKA_GROUP_ID` in container `consumer`.
 3. The Kafka queue can be referenced in a mirrord config under ID `views-topic`.
 
@@ -506,6 +508,8 @@ The queues are described in entries of the `spec.topics` list:
 * One of the following must be set:
   * `groupIdSources` — a list of all occurrences of the consumer Kafka group ID in the consumer workload. Use for standard Kafka consumers.
   * `applicationIdSources` — a list of all occurrences of the Kafka Streams application ID in the consumer workload. Use for Kafka Streams consumers.
+
+Each source entry supports an optional `fallback` value, used when the specified variable is absent from the workload.
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
