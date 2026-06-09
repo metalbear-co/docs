@@ -119,15 +119,13 @@ If the filters defined by the two users both match some message, one of the user
 
 {% tab title="Azure Service Bus" %}
 
-Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both.
+Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both, but each uses a different routing mechanism.
 
-First, we have a consumer app reading messages from an Azure Service Bus queue (or topic subscription):
+**Queue model.** When the first mirrord splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). Routing is based on the AMQP application properties set on each message. If a second user then starts a session on the same queue, a third temporary queue is created for their local application, and the operator includes the new queue and filter in the routing logic.
 
-When the first mirrord Azure Service Bus splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run). Routing is based on AMQP application properties set on each message.
+**Topic/Subscription model.** Here the operator splits the topic using native Service Bus subscription rules, without creating a temporary topic and without restarting the deployed application (so it works with frameworks like MassTransit that choose their own topic names). The operator adds a temporary subscription on the original topic to capture incoming messages, reads them, evaluates the [user's filter](queue-splitting.md#setting-a-filter-for-a-mirrord-run), and re-publishes each message to the same topic with a routing marker. Native subscription rules then deliver each copy to the right place: messages matching a user's filter go to a temporary per-session subscription that their local application reads, while everything else goes to the deployed application's own subscription, which is left untouched. When re-publishing, the operator preserves the message body, application properties, and the standard system fields (message id, correlation id, subject, content type, and so on). Each additional user who starts a session on the same topic gets their own per-session subscription and filter.
 
-If a second user then starts a mirrord Azure Service Bus splitting session on the same queue, a third temporary queue is created (for the second user's local application). The mirrord operator includes the new queue and the second user's filter in the routing logic.
-
-If the filters defined by the two users both match some message, one of the users will receive the message at random.
+In both models, if the filters defined by two users both match some message, one of the users will receive the message at random.
 
 {% endtab %}
 
