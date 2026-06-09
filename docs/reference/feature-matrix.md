@@ -1,8 +1,8 @@
 ---
-title: Feature Support Matrix 
+title: Feature Support Matrix
 ---
 
-mirrord's advanced features - DB Branching, Queue Splitting, Preview Environments, and Multi-cluster - work across a range of platforms and infrastructure setups. 
+mirrord's advanced features - DB Branching, Queue Splitting, Preview Environments, and Multi-cluster - work across a range of platforms and infrastructure setups.
 Support levels vary by platform. The table below shows the current status for each combination.
 
 ### The columns reflect the different contexts in which a feature can be used:
@@ -23,13 +23,13 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting.md#enable-gcp-pubsub-splitting-in-the-helm-chart)**    | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting.md#enable-azure-service-bus-splitting-in-the-helm-chart)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
-  |                 | **Redis Pub/Sub**     | Planned     | Planned.      | Planned |
+  |                 | **Redis Pub/Sub**     | Planned     | Planned       | Planned |
   | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | `Alpha`         | Planned    |
   | **[Multi-cluster](../using-mirrord/multi-cluster.md)**   | —                 | `Alpha`       | —             | Planned    |
   | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | `Alpha`       | `Alpha`         | —          |
 
 
-*Not sure what Alpha, Beta, or GA means? See [Release Stages](/release-stages.md)*
+*Not sure what Alpha, Beta, or GA means? See [Release Status](release-stages.md)*
 
 ### Didn't find what you are looking for?
 [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) and tell us what you're working with, we prioritize based on demand.
