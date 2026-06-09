@@ -1,16 +1,16 @@
 ---
-title: Release Staus
+title: Release Status
 ---
 
 Features in mirrord ship gradually. The release status tells you both how complete the feature is and what level of stability you can expect.
 
 {% hint style="info" %}
-Release staus is currently being mapped and will be added to all feature in the documentation shortly.
+Release status is currently being mapped and will be added to all features in the documentation shortly.
 {% endhint %}
 
 ### `Alpha`
-The feature is available but has a limited scope — not all configurations, platforms, or edge cases are covered yet. You may encounter bugs, unexpected behavior, or performance
-issues. APIs and configuration options may change between releases. We actively want feedback at this stage — if something breaks or behaves unexpectedly, please let us know.
+The feature is available but has a limited scope, so not all configurations, platforms, or edge cases are covered yet. You may encounter bugs, unexpected behavior, or performance
+issues. APIs and configuration options may change between releases. We actively want feedback at this stage. If something breaks or behaves unexpectedly, please let us know.
 
 ### `Beta`
 The feature covers the main use cases and is stable enough for most teams to use. You may still hit edge cases or minor issues, and some details of the API or configuration may
