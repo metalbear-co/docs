@@ -91,6 +91,6 @@
 ***
 
 * [Feature Release Status](reference/release-stages.md)
-* [Feature Support Matrix](reference/feature-matrix.md)
+  * [Feature Support Matrix](reference/feature-matrix.md)
 * [Third-party](reference/third-party.md)
 * [Contributing](contributing.md)
