@@ -17,7 +17,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | Alpha       | Alpha         | Planned    |
   |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | Alpha       | Alpha         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching.md#local-redis)**             | Planned     | Planned       | Planned |
-  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | Alpha       | Alpha         | Planned    |
+  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | Beta       | Alpha         | Planned    |
   |                 | **[Kafka](../sharing-the-cluster/queue-splitting.md#enable-kafka-splitting-in-the-helm-chart)**             | Alpha       | Planned       | Planned    |
   |                 | **Temporal**          | Planned     | Planned       | Planned |
   |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting.md#enable-gcp-pubsub-splitting-in-the-helm-chart)**    | Alpha       | Alpha         | Planned    |
