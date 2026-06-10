@@ -1,5 +1,6 @@
 ---
 title: Release Status
+description: "Understand mirrord's release stages — how complete each feature is and what stability to expect before relying on it in your workflow."
 ---
 
 Features in mirrord ship gradually. The release status tells you both how complete the feature is and what level of stability you can expect.

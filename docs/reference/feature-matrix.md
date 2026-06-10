@@ -1,5 +1,6 @@
 ---
 title: Feature Support Matrix
+description: "See which platforms and infrastructure support mirrord's advanced features — DB Branching, Queue Splitting, Preview Environments, and Multi-cluster."
 ---
 
 Some of mirrord's advanced features - DB Branching, Queue Splitting, Preview Environments, and Multi-cluster - work across a range of platforms and infrastructure setups.

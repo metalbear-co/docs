@@ -1,5 +1,6 @@
 ---
 title: "Seamless Multi-Cluster Development"
+description: "Multi-cluster mirrord lets developers intercept traffic from pods across several Kubernetes clusters at once, without switching kube contexts."
 ---
 
 Multi-cluster mirrord lets developers intercept traffic from pods running in multiple Kubernetes clusters at the same time, without switching kube contexts or managing multiple sessions. You run `mirrord exec` exactly like before, and the operator handles everything behind the scenes.
