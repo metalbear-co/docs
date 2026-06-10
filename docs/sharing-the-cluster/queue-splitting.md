@@ -1588,9 +1588,9 @@ Directly under it, mirrord expects a mapping from a queue or queue ID to a queue
 
 Filter definition contains the following fields:
 * `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, or `Temporal`
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), or Temporal task metadata field (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`) to a regex for its value.
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), or Temporal task metadata field (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`, `header.<name>`, or a search attribute name) to a regex for its value.
   The local application will only see queue messages or tasks that have **all** of the specified attributes/headers/properties/metadata fields.
-* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, and `Temporal` (activity input JSON only) queue types.
+* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, and `Temporal` (activity or workflow input JSON) queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3Event: true`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -1598,7 +1598,7 @@ Filter definition contains the following fields:
     a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
-  * For **Temporal**, `jq_filter` runs on the activity's first input argument as JSON. It only works on activity tasks; workflow tasks ignore it.
+  * For **Temporal**, `jq_filter` runs on a decoded JSON document built from the task (see the document fields in the Temporal example tab below). This lets you match on any exposed field, including the input under `.input`, headers, search attributes, and memo.
   * A message matches if the jq program outputs `true`.
 
 For **Temporal** `message_filter` keys:
@@ -1609,6 +1609,12 @@ For **Temporal** `message_filter` keys:
 | `workflow_type` | workflow and activity tasks | Regex on workflow type name |
 | `activity_type` | activity tasks only | Regex on activity type name |
 | `workflow_namespace` | activity tasks only | Regex on the workflow namespace on the activity task |
+| `header.<name>` | workflow and activity tasks | Regex on a Temporal header value. Activity tasks carry the header directly; workflow tasks read it from the [`WorkflowExecutionStarted`](https://docs.temporal.io/references/events#workflowexecutionstarted) event |
+| any other key | workflow tasks only | Treated as a search attribute set at workflow start; regex on its value |
+
+For workflow tasks, the header, search attributes, and input are read from the [`WorkflowExecutionStarted`](https://docs.temporal.io/references/events#workflowexecutionstarted) event - always the first event in a workflow's history. The operator polls without a sticky queue, so Temporal returns the complete history and this event is always present.
+
+Header and search attribute values are encoded payloads (usually `json/plain`), so the operator decodes them before matching. If your application uses a custom data converter (for example encryption or compression), the value is not readable and these filters will not match. A header is the best cross-cutting key when you want both the workflow task and its activity tasks to route together, because activity tasks do not carry search attributes.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a task to be routed locally.
 
@@ -1898,7 +1904,7 @@ Route by workflow ID prefix:
 }
 ```
 
-Route by workflow type and activity input (jq applies to activity tasks only):
+Route by workflow type and input JSON:
 
 ```json
 {
@@ -1911,16 +1917,130 @@ Route by workflow type and activity input (jq applies to activity tasks only):
         "message_filter": {
           "workflow_type": "^CheckoutWorkflow$"
         },
-        "jq_filter": ".customer == \"alice\""
+        "jq_filter": ".input[0].customer == \"alice\""
       }
     }
   }
 }
 ```
 
-`message_filter` matches task metadata. The keys you can use (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`) are listed in the filter reference table above.
+Route by a propagated header (matches both the workflow task and its activity tasks):
 
-`jq_filter` looks at the activity's first input argument as JSON. In the example above the activity is called with an object like `{"customer": "alice"}`, so `.customer == "alice"` matches tasks for that customer. It only works on activity tasks; workflow tasks ignore it.
+```json
+{
+  "operator": true,
+  "target": "deployment/activity-worker",
+  "feature": {
+    "split_queues": {
+      "checkout-activities": {
+        "queue_type": "Temporal",
+        "message_filter": {
+          "header.x-user": "^alice$"
+        }
+      }
+    }
+  }
+}
+```
+
+`message_filter` matches task metadata. The keys you can use (`workflow_id`, `workflow_type`, `activity_type`, `workflow_namespace`, `header.<name>`, or a search attribute name) are listed in the filter reference table above.
+
+`jq_filter` runs against a decoded JSON document built from the task, so you can match on any exposed field without a dedicated `message_filter` key. Values are decoded for you (no base64): headers, search attributes, memo, and input are plain JSON. The document differs by task type:
+
+{% tabs %}
+{% tab title="Activity task document" %}
+
+```json
+{
+  "task_type": "activity",
+  "workflow_namespace": "default",
+  "workflow_id": "test-alice-42",
+  "run_id": "8f1c...",
+  "workflow_type": "CheckoutWorkflow",
+  "activity_type": "ShipOrder",
+  "activity_id": "5",
+  "attempt": 1,
+  "header": { "x-user": "alice" },
+  "input": [ { "customer": "alice" } ]
+}
+```
+
+| Field | Type | Source |
+|-------|------|--------|
+| `task_type` | string | always `"activity"` |
+| `workflow_namespace` | string | activity task |
+| `workflow_id` / `run_id` | string | workflow execution |
+| `workflow_type` | string | workflow type name |
+| `activity_type` | string | activity type name |
+| `activity_id` | string | activity task |
+| `attempt` | number | activity task |
+| `header` | object | decoded activity header |
+| `input` | array | decoded activity arguments |
+
+{% endtab %}
+{% tab title="Workflow task document" %}
+
+Built from the [`WorkflowExecutionStarted`](https://docs.temporal.io/references/events#workflowexecutionstarted) event.
+
+```json
+{
+  "task_type": "workflow",
+  "workflow_id": "test-alice-42",
+  "run_id": "8f1c...",
+  "workflow_type": "CheckoutWorkflow",
+  "attempt": 1,
+  "task_queue": "order-checkout",
+  "cron_schedule": "",
+  "identity": "worker-7",
+  "first_execution_run_id": "8f1c...",
+  "header": { "x-user": "alice" },
+  "search_attributes": { "tenant": "acme" },
+  "memo": { "team": "payments" },
+  "input": [ { "customer": "alice" } ]
+}
+```
+
+| Field | Type | Source |
+|-------|------|--------|
+| `task_type` | string | always `"workflow"` |
+| `workflow_id` / `run_id` | string | workflow execution |
+| `workflow_type` | string | workflow type name |
+| `attempt` | number | workflow task |
+| `task_queue` | string | start event |
+| `cron_schedule` | string | start event |
+| `identity` | string | start event |
+| `first_execution_run_id` | string | start event |
+| `header` | object | decoded workflow header |
+| `search_attributes` | object | decoded search attributes |
+| `memo` | object | decoded memo |
+| `input` | array | decoded workflow arguments |
+
+{% endtab %}
+{% endtabs %}
+
+Examples:
+
+```json
+{ "jq_filter": ".header[\"x-user\"] == \"alice\"" }
+```
+```json
+{ "jq_filter": ".search_attributes.tenant == \"acme\"" }
+```
+```json
+{ "jq_filter": ".input[0].customer == \"alice\"" }
+```
+```json
+{ "jq_filter": "(.workflow_id | startswith(\"test-\")) and .cron_schedule == \"\"" }
+```
+```json
+{ "jq_filter": ".task_type == \"activity\" and .activity_type == \"ShipOrder\"" }
+```
+
+A single filter is matched against **both** workflow tasks and activity tasks flowing through the queue - there is no separate activity vs workflow filter. Each document carries a `task_type` field (`"activity"` or `"workflow"`) so you can branch explicitly when you want, for example to target only activity tasks.
+
+{% hint style="info" %}
+Fields that are missing on a task type are `null`, so a filter referencing them simply does not match that type (for example `.activity_type` is `null` on workflow tasks). Most fields beyond `task_type`, `workflow_id`, `workflow_type`, `activity_type`, and `header` only exist on **workflow** tasks (they come from the start event). Activity tasks of the same workflow do not carry them, so to route a workflow and its activities together prefer a `header` value or a `workflow_id` prefix.
+{% endhint %}
 
 The queue ID (`checkout-activities`) must match the `id` field in `MirrordSplitConfig`. The local worker receives matching tasks on `mirrord-session-{session}-{original-queue}`. All other tasks go to the cluster worker on `mirrord-main-{workload}-{original-queue}`.
 
@@ -2190,7 +2310,8 @@ Check that:
 
 - The local worker is running and polling (mirrord session is active).
 - Your `message_filter` regex matches the workflow ID or task metadata on ingested tasks.
-- If using `jq_filter`, remember it only applies to **activity** tasks and the first JSON payload in the activity input.
+- If using `jq_filter`, remember it runs on the decoded task document, not the raw payload: input arguments are under `.input` (so use `.input[0].field`), and header/search attributes/memo are decoded objects.
+- If filtering on `header.<name>` or a search attribute, remember the values are encoded payloads; a custom data converter (encryption/compression) makes them unreadable, so those filters will not match.
 - Another session with a matching filter connected more recently and receives duplicate matches first.
 
 #### Cluster worker still talks to real Temporal
