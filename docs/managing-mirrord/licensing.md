@@ -48,7 +48,7 @@ The active tracking mode is configured by MetalBear when the license is issued a
 
 When a new user attempts to start a session and no seats are available, the Operator rejects the request with a `MaxSeatCountReached` error. Existing active sessions are not affected.
 
-A seat is released as soon as the corresponding mirrord session ends. Seats are not reserved in advance — they are claimed when a session starts and freed when it ends.
+Seats are not released when a session ends. Once a seat is assigned to a user, that user retains it until the billing period resets. Seats are reset on the billing date each month, at which point the full seat count becomes available again.
 
 ### Checking seat usage
 
