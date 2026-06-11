@@ -1,4 +1,6 @@
-# How to Debug a Java Microservice
+---
+title: "How to Debug a Java Microservice"
+---
 
 In this guide, we’ll cover how to debug a Java microservice running in a Kubernetes environment using mirrord. You’ll learn how to set up and use mirrord with IntelliJ IDEA and the command-line Java Debugger (jdb).
 

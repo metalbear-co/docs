@@ -1,4 +1,6 @@
-# How to Debug a Node.js Microservice
+---
+title: "How to Debug a Node.js Microservice"
+---
 
 In this guide, we’ll cover how to debug a Node.js microservice running in a Kubernetes environment using mirrord. You’ll learn how to set up and use mirrord with the VSCode IDE and the command line.
 

@@ -1,4 +1,6 @@
-# How to Debug SQS Consumers
+---
+title: "How to Debug SQS Consumers"
+---
 
 In this guide, we’ll cover how to debug SQS consumer applications running in a Kubernetes environment using mirrord. You’ll learn how to set up mirrord and use it to effectively debug SQS consumers without the traditional overhead of rebuilding and redeploying your application.
 
