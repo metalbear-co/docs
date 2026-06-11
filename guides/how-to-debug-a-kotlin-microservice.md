@@ -1,7 +1,4 @@
----
-title: "How to Debug a Kotlin Microservice"
----
-
+# How to Debug a Kotlin Microservice
 In this guide, we’ll cover how to debug a Kotlin microservice running in a Kubernetes environment using mirrord. You’ll learn how to set up and use mirrord with the IntelliJ IDEA IDE and use the mirrord CLI to debug the Kotlin application in the command line.
 
 **Tip:** You can use mirrord to debug, test, and troubleshoot your applications locally with Kubernetes context, without needing to build or deploy each time.

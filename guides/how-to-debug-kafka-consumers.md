@@ -1,6 +1,4 @@
----
-title: "How to Debug Kafka Consumers"
----
+# How to Debug Kafka Consumers
 
 In this guide, we’ll cover how to debug Kafka consumer applications running in a Kubernetes environment using mirrord. You’ll learn how to set up mirrord and use it to effectively debug Kafka consumers without the traditional overhead of rebuilding and redeploying your application.
 

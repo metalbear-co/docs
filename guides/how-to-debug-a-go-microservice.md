@@ -1,6 +1,4 @@
----
-title: "How to Debug a Go Microservice"
----
+# How to Debug a Go Microservice
 
 In this guide, we’ll cover how to debug a Golang microservice running in a Kubernetes environment using mirrord. You’ll learn how to set up and use mirrord with the Goland IDE and the command line.
 

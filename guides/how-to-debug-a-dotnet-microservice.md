@@ -1,7 +1,4 @@
----
-title: "How to Debug a .NET Microservice"
----
-
+# How to Debug a .NET Microservice
 In this guide, we'll cover how to debug a .NET microservice running in a Kubernetes environment using mirrord. You'll learn how to set up and use mirrord to debug .NET microservices in the command line.
 
 Tip: You can use mirrord to debug, test, and troubleshoot your applications locally with Kubernetes context, without needing to build or deploy each time.

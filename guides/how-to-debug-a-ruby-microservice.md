@@ -1,6 +1,4 @@
----
-title: "How to Debug a Ruby Microservice"
----
+# How to Debug a Ruby Microservice
 
 In this guide, we’ll cover how to debug a Ruby microservice running in a Kubernetes environment using mirrord. You’ll learn how to set up and use mirrord with the RubyMine IDE and the command line.
 

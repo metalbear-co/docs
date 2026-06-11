@@ -1,6 +1,4 @@
----
-title: "How to Debug a Python Microservice"
----
+# How to Debug a Python Microservice
 
 In this guide, we'll cover how to debug a Python microservice running in a Kubernetes environment using mirrord. You'll learn how to set up and use mirrord from VS Code and from the command line.
 
