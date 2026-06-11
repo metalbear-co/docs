@@ -8,7 +8,7 @@ tags:
 
 The mirrord Operator is a Kubernetes operator that runs persistently in your cluster and manages mirrord sessions. It's the central component that enables all **[Teams]** features.
 
-## Why the Operator?
+### Why the Operator?
 
 In the open-source version of mirrord, each session is standalone - mirrord injects itself into the local process and creates an agent pod directly. This works well for individual use, but doesn't support coordination between users.
 
@@ -20,11 +20,11 @@ The Operator solves this by acting as a centralized control plane:
 
 ![mirrord for Teams - Architecture](/docs/overview/teams/operator-architecture.svg)
 
-## Installation
+### Installation
 
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
-### Helm
+#### Helm
 
 Add the MetalBear Helm repository:
 
@@ -79,11 +79,11 @@ Then install:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-### Using an Internal Registry (Optional)
+#### Using an Internal Registry (Optional)
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
 
-#### Feature-specific images
+##### Feature-specific images
 
 These images are only pulled when the corresponding feature is enabled:
 
@@ -92,7 +92,7 @@ These images are only pulled when the corresponding feature is enabled:
 | Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image` |
 | MSSQL tools | `ghcr.io/metalbear-co/mssql-tools` | `latest` | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`). | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
 
-#### DB branching default database images
+##### DB branching default database images
 
 DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
 
@@ -103,7 +103,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | MongoDB | `docker.io/library/mongo:{version}` | `operator.mongodbBranchConfig` - `dbPod.image` |
 | MSSQL | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image` |
 
-#### Copying images
+##### Copying images
 
 We recommend [regctl](https://regclient.org/) for copying multi-arch images:
 
@@ -129,7 +129,7 @@ agent:
     registry: your-registry/mirrord
 ```
 
-### OpenShift
+#### OpenShift
 
 Apply the following SecurityContextConstraints:
 
@@ -151,7 +151,7 @@ users:
   - system:serviceaccount:mirrord:default
 ```
 
-### GKE Autopilot
+#### GKE Autopilot
 
 In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
 
@@ -211,7 +211,7 @@ agent:
     cloud.google.com/generate-allowlist: "true"
 ```
 
-## Verifying the Installation
+### Verifying the Installation
 
 ```bash
 mirrord operator status

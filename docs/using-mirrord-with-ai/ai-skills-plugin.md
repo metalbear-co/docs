@@ -1,5 +1,6 @@
 ---
 title: Agent Skills for mirrord
+description: "Install the mirrord skills plugin to give AI coding assistants like Cursor and Claude Code domain-specific knowledge of how to work with mirrord."
 ---
 
 MetalBear maintains a **mirrord skills plugin** that extends AI coding assistants, such as Cursor and Claude Code with domain-specific knowledge about mirrord. Instead of relying solely on general instructions in `AGENTS.md`, these skills give your AI assistant built-in expertise for mirrord configuration, troubleshooting, and best practices.

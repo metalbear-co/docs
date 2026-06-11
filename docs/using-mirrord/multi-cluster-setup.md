@@ -1,10 +1,11 @@
 ---
 title: "Multi-Cluster Setup"
+description: "Step-by-step guide to setting up multi-cluster mirrord: install the operator on every cluster, choose an authentication method, and connect them."
 ---
 
 This guide covers how to set up multi-cluster mirrord. It involves installing the operator on all clusters, choosing an authentication method, and configuring the Primary cluster to connect to downstream clusters.
 
-## Prerequisites
+### Prerequisites
 
 Before you start, make sure you have:
 
@@ -15,17 +16,17 @@ Before you start, make sure you have:
 
 ---
 
-## Authentication Methods
+### Authentication Methods
 
 For each downstream cluster, you must specify an `authType` that determines how the Primary mirrord operator authenticates to it.
 
-### Bearer Token (`authType: bearerToken`)
+#### Bearer Token (`authType: bearerToken`)
 
 Uses ServiceAccount tokens that are automatically refreshed via the Kubernetes TokenRequest API. Good for most setups where the Primary cluster can reach the downstream cluster's API server.
 
 You generate an initial token manually during setup. After that, the operator auto-refreshes the token before it expires using the TokenRequest API. The refreshed token keeps the same lifetime as the original.
 
-### EKS IAM (`authType: eks`)
+#### EKS IAM (`authType: eks`)
 
 For AWS EKS clusters. The Primary operator generates short-lived tokens using its IAM role (via IRSA). No secrets to manage - tokens are generated and refreshed automatically every 10 minutes.
 
@@ -33,7 +34,7 @@ On the Primary cluster, the operator pod gets AWS credentials through IRSA (`sa.
 
 No Kubernetes Secret is needed - authentication is entirely through IAM.
 
-### AKS Workload Identity (`authType: aks`)
+#### AKS Workload Identity (`authType: aks`)
 
 For Azure AKS clusters. The Primary operator generates tokens by exchanging its projected ServiceAccount token with Azure AD. No secrets to manage - tokens are generated and refreshed automatically at the halfway point of the token's lifetime (~12 hours for a typical 24-hour Azure AD token).
 
@@ -41,13 +42,13 @@ On the Primary cluster, the operator pod gets Azure credentials through [Workloa
 
 No Kubernetes Secret is needed - authentication is entirely through Azure AD.
 
-### mTLS (`authType: mtls`)
+#### mTLS (`authType: mtls`)
 
 For clusters that require client certificate authentication. You provide the client certificate and key in the cluster configuration or Secret.
 
 Kubernetes does not auto-refresh mTLS client certificates. You are responsible for rotating the certificates you provide before they expire.
 
-### Fields per Auth Type
+#### Fields per Auth Type
 
 | Field | `bearerToken` | `eks` | `aks` | `mtls` |
 |-------|:---:|:---:|:---:|:---:|
@@ -62,16 +63,16 @@ Kubernetes does not auto-refresh mTLS client certificates. You are responsible f
 
 ---
 
-## Setting Up Downstream Clusters
+### Setting Up Downstream Clusters
 
 Every downstream cluster needs the mirrord operator installed with the `operator.multiClusterMember` helm chart value set to `true`. This creates the `ServiceAccount`, `ClusterRoles`, and `ClusterRoleBindings` that the Primary operator needs to manage sessions on that cluster.
 
-### Bearer Token / mTLS Clusters
+#### Bearer Token / mTLS Clusters
 
 {% stepper %}
 {% step %}
 
-### Install the operator on the downstream cluster
+#### Install the operator on the downstream cluster
 
 ```bash
 helm install mirrord-operator metalbear/mirrord-operator \
@@ -83,7 +84,7 @@ This creates a `mirrord-operator-envoy` ServiceAccount with the necessary RBAC p
 {% endstep %}
 {% step %}
 
-### Generate an initial token (bearer token auth only)
+#### Generate an initial token (bearer token auth only)
 
 ```bash
 kubectl create token mirrord-operator-envoy -n mirrord --duration=24h
@@ -96,11 +97,11 @@ For mTLS, skip this step. Instead, you'll provide the client certificate and key
 {% endstep %}
 {% endstepper %}
 
-### EKS IAM Clusters
+#### EKS IAM Clusters
 
 EKS IAM authentication lets the Primary operator authenticate to downstream EKS clusters using its AWS IAM role. No Kubernetes Secrets to manage — the operator generates short-lived tokens from its IAM identity.
 
-#### How EKS IAM Authentication Works
+##### How EKS IAM Authentication Works
 
 The Primary operator pod needs to talk to downstream EKS clusters. To do that, it needs a token. Here's how the token gets created and accepted:
 
@@ -114,7 +115,7 @@ The Primary operator pod needs to talk to downstream EKS clusters. To do that, i
 
 5. **Kubernetes RBAC grants permissions** — the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberIamGroup`) grant the `mirrord-operator-envoy` group the necessary permissions.
 
-#### What Goes Where
+##### What Goes Where
 
 | Component | Where | Purpose |
 |-----------|-------|---------|
@@ -128,12 +129,12 @@ The Primary operator pod needs to talk to downstream EKS clusters. To do that, i
 The Primary cluster does **not** need an Access Entry. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount — no IAM token needed. The Access Entries are only needed on downstream clusters where the pod authenticates from the outside.
 {% endhint %}
 
-#### Setup Steps
+##### Setup Steps
 
 {% stepper %}
 {% step %}
 
-### Associate an OIDC Identity Provider with the Primary cluster
+#### Associate an OIDC Identity Provider with the Primary cluster
 
 This is a one-time AWS setup. It registers the Primary EKS cluster's OIDC issuer as an IAM Identity Provider, which is what enables IRSA — the mechanism that lets pods assume IAM roles.
 
@@ -147,7 +148,7 @@ Skip this if already done (e.g. if other workloads in the cluster already use IR
 {% endstep %}
 {% step %}
 
-### Create the IAM role with a trust policy
+#### Create the IAM role with a trust policy
 
 Create an IAM role that the operator pod will assume. The trust policy controls who can assume this role — it should only allow the Primary operator's ServiceAccount.
 
@@ -187,7 +188,7 @@ This IAM role does **not** need any IAM policies attached (no `s3:*`, `sqs:*`, e
 {% endstep %}
 {% step %}
 
-### Create an EKS Access Entry on each downstream cluster
+#### Create an EKS Access Entry on each downstream cluster
 
 This is an AWS-level configuration (not a Kubernetes resource). It tells each downstream EKS cluster: "When this IAM role authenticates, map it to the `mirrord-operator-envoy` Kubernetes group."
 
@@ -206,7 +207,7 @@ The Access Entry itself doesn't grant any Kubernetes permissions — it only est
 {% endstep %}
 {% step %}
 
-### Install the operator on each downstream cluster
+#### Install the operator on each downstream cluster
 
 Install the operator with `multiClusterMember` and `multiClusterMemberIamGroup`:
 
@@ -221,7 +222,7 @@ This creates ClusterRoleBindings that grant the `mirrord-operator-envoy` Kuberne
 {% endstep %}
 {% step %}
 
-### Install the operator on the Primary cluster with `sa.roleArn`
+#### Install the operator on the Primary cluster with `sa.roleArn`
 
 On the Primary cluster, set `sa.roleArn` so the operator pod can assume the IAM role:
 
@@ -237,11 +238,11 @@ See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) sect
 {% endstep %}
 {% endstepper %}
 
-### AKS Workload Identity Clusters
+#### AKS Workload Identity Clusters
 
 AKS Workload Identity lets the Primary operator authenticate to downstream AKS clusters using its Azure Managed Identity. No Kubernetes Secrets to manage - the operator exchanges its projected SA token with Azure AD for access tokens.
 
-#### How AKS Workload Identity Authentication Works
+##### How AKS Workload Identity Authentication Works
 
 The Primary operator pod needs to talk to downstream AKS clusters. To do that, it needs a token. Here's how the token gets created and accepted:
 
@@ -255,7 +256,7 @@ The Primary operator pod needs to talk to downstream AKS clusters. To do that, i
 
 5. **Kubernetes RBAC grants permissions** - the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberAzureGroup`) grant the Azure AD group the necessary permissions.
 
-#### What Goes Where
+##### What Goes Where
 
 | Component | Where | Purpose |
 |-----------|-------|---------|
@@ -270,12 +271,12 @@ The Primary operator pod needs to talk to downstream AKS clusters. To do that, i
 The Primary cluster does **not** need special RBAC for itself. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount - no Azure AD token needed. The Federated Identity Credential and role assignments are only needed for downstream clusters where the pod authenticates from the outside.
 {% endhint %}
 
-#### Setup Steps
+##### Setup Steps
 
 {% stepper %}
 {% step %}
 
-### Enable Workload Identity on the Primary AKS cluster
+#### Enable Workload Identity on the Primary AKS cluster
 
 If not already enabled:
 
@@ -290,7 +291,7 @@ az aks update \
 {% endstep %}
 {% step %}
 
-### Create a User-Assigned Managed Identity
+#### Create a User-Assigned Managed Identity
 
 ```bash
 az identity create \
@@ -304,7 +305,7 @@ Note the `clientId` from the output - you'll need it for `sa.azureClientId`.
 {% endstep %}
 {% step %}
 
-### Create a Federated Identity Credential
+#### Create a Federated Identity Credential
 
 This tells Azure AD: "when a token comes from the Primary cluster's OIDC issuer, signed for the `mirrord-operator` ServiceAccount, trust it as this Managed Identity."
 
@@ -332,7 +333,7 @@ The `--subject` must match the operator's ServiceAccount namespace and name exac
 {% endstep %}
 {% step %}
 
-### Enable Azure AD on each downstream AKS cluster
+#### Enable Azure AD on each downstream AKS cluster
 
 Each downstream AKS cluster must have Azure AD integration enabled so it can validate Azure AD tokens from the Managed Identity:
 
@@ -350,7 +351,7 @@ If you skip this step, the downstream cluster's API server won't understand Azur
 {% endstep %}
 {% step %}
 
-### Grant access on each downstream AKS cluster
+#### Grant access on each downstream AKS cluster
 
 The Managed Identity needs Kubernetes-level permissions on each downstream cluster to manage sessions. Bind the Managed Identity's `principalId` (object ID) directly to the ClusterRoles created by Helm:
 
@@ -376,7 +377,7 @@ The `mirrord-operator-envoy` and `mirrord-operator-envoy-remote` ClusterRoles ar
 {% endstep %}
 {% step %}
 
-### Install the operator on each downstream cluster
+#### Install the operator on each downstream cluster
 
 Install the operator with `multiClusterMember` and `multiClusterMemberAzureGroup`:
 
@@ -391,7 +392,7 @@ This creates ClusterRoleBindings that grant the `mirrord-operator-envoy` group t
 {% endstep %}
 {% step %}
 
-### Install the operator on the Primary cluster with `sa.azureClientId`
+#### Install the operator on the Primary cluster with `sa.azureClientId`
 
 On the Primary cluster, set `sa.azureClientId` so the Workload Identity webhook injects Azure credentials into the pod. You also need the downstream cluster's CA certificate (`caData`) since AKS clusters use per-cluster self-signed CAs:
 
@@ -418,11 +419,11 @@ See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) sect
 
 ---
 
-## Configuring the Primary Cluster
+### Configuring the Primary Cluster
 
 Install the operator on the Primary cluster with multi-cluster enabled and all downstream clusters configured.
 
-### Helm Values
+#### Helm Values
 
 ```yaml
 operator:
@@ -487,13 +488,13 @@ sa:
 The cluster key names in the `clusters` map should match the real cluster names. For EKS clusters this is especially important — the operator uses the key as the EKS cluster name when signing IAM tokens.
 {% endhint %}
 
-### Where Data Is Stored
+#### Where Data Is Stored
 
 When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `isDefault`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).
 
 For EKS IAM and AKS Workload Identity clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM/Azure AD, not stored credentials.
 
-### Manual Secret Creation
+#### Manual Secret Creation
 
 If you prefer to manage secrets outside of Helm values, you can create the Secret manually. The Secret must be labeled with `operator.metalbear.co/remote-cluster-credentials=true` and named `mirrord-cluster-<cluster-name>`. The cluster configuration (server, authType, etc.) still needs to be in the Helm values or the `clusters-config.yaml` ConfigMap.
 
@@ -534,7 +535,7 @@ EKS IAM and AKS Workload Identity clusters do not need a Secret at all. They aut
 
 ---
 
-## RBAC — How Permissions Work
+### RBAC — How Permissions Work
 
 When the Primary operator connects to a downstream cluster, it needs permissions to list targets, create sessions, run health checks, and more. These permissions are set up automatically by the Helm chart on each downstream cluster.
 
@@ -547,7 +548,7 @@ The chart creates two ClusterRoles (permission definitions):
 
 A ClusterRole by itself doesn't grant anything — it only defines what actions are possible. ClusterRoleBindings connect the ClusterRole to an identity (a ServiceAccount or a group).
 
-### How Bindings Differ by Auth Type
+#### How Bindings Differ by Auth Type
 
 | Auth type | Identity bound to ClusterRoles | How it's set up |
 |-----------|-------------------------------|----------------|
@@ -567,7 +568,7 @@ In practice:
 
 ---
 
-## Verify the Connection
+### Verify the Connection
 
 After installing the operator on all clusters, verify that the Primary can reach all downstream clusters:
 
@@ -596,7 +597,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 
 ---
 
-## Token Refresh
+### Token Refresh
 
 | Auth type | Refresh mechanism | Notes |
 |-----------|------------------|-------|
@@ -607,7 +608,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 
 ---
 
-## FAQ
+### FAQ
 
 **Q: Do developers need to know about multi-cluster?**
 A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything. Note that multi-cluster sessions only work when the developer connects to the Primary cluster — connecting directly to a downstream cluster will start a regular single-cluster session on that cluster.
