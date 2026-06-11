@@ -26,7 +26,7 @@ mirrord for Teams is available in two license variants:
 | **Seat enforcement** | Strict — sessions blocked when limit is reached | Configurable — overages can be allowed |
 | **Session type** | Ephemeral only | Ephemeral and persistent |
 | **Telemetry** | Required | Optional |
-| **License server** | Not supported | Supported |
+| **License server** | ❌ | ✅ |
 
 **Teams** licenses are subscription-based and validated against MetalBear's servers using a license key. The operator must be able to reach MetalBear's license endpoint.
 
