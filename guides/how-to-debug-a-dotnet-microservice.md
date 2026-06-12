@@ -94,7 +94,7 @@ The microservice needs access to the "redis" service hosted on the cluster. To r
 
 2. Installing mirrord
 
-Install the mirrord CLI to run the Guestbook service within the context of the cluster so that it is able to communicate with the redis service in the cluster. Follow the installation guide for mirrord [here](https://metalbear.com/mirrord/docs/overview/quick-start/#installation).
+Install the mirrord CLI to run the Guestbook service within the context of the cluster so that it is able to communicate with the redis service in the cluster. Follow the installation guide for mirrord [here](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation).
 
 3. Run the Guestbook application with dotnet and mirrord in the CLI
 
@@ -176,7 +176,7 @@ Let's add a new config file for mirrord, which we can use with VS Code for debug
 ```
 
 
-If you want to steal traffic from a multipod deployment, you can learn more about [mirrord for Teams](https://metalbear.com/mirrord/docs/overview/teams/) which provides this feature. Right now, we only have one pod in this deployment, and mirrord's OSS features should work perfectly for us.
+If you want to steal traffic from a multipod deployment, you can learn more about [mirrord for Teams](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord) which provides this feature. Right now, we only have one pod in this deployment, and mirrord's OSS features should work perfectly for us.
 
 To ensure that the configuration file created is read by the VS Code mirrord extension, hover over the mirrord button we mentioned earlier and press the 'Select active config' option. From the given prompt, enter the location of the configuration to be consumed by the plugin.
 

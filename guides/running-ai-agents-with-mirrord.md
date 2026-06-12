@@ -13,7 +13,7 @@ In this guide, we'll cover how to set up an AI coding agent to test its own chan
 ## Prerequisites
 
 - A Kubernetes cluster with your services running (staging or dev)
-- [mirrord CLI installed](https://metalbear.com/mirrord/docs/installing-mirrord/cli)
+- [mirrord CLI installed](https://metalbear.com/mirrord/docs/getting-started/installing-mirrord/cli)
 - An existing E2E test suite that covers your critical happy paths (Playwright, Cypress, Jest, pytest, bash scripts, or any test runner)
 - An AI coding agent that can execute shell commands (Claude Code, Cursor, Codex)
 
@@ -44,7 +44,7 @@ Create a mirrord config for each service an agent might work on. If you already 
 }
 ```
 
-**Tip:** You can auto-generate configs for every service using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) for any tool.
+**Tip:** You can auto-generate configs for every service using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai) for any tool.
 
 ## Step 2: Write AGENTS.md for autonomous operation
 
@@ -212,5 +212,5 @@ For agents that need to write to the database without affecting shared staging d
 
 - [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md): test AI-generated code against your Kubernetes cluster step by step
 - [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md): per-tool config for Cursor, Claude Code, Copilot, and Codex
-- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
+- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
 - [Sharing the Cluster](https://metalbear.com/mirrord/docs/sharing-the-cluster/overview): manage concurrent agent sessions with mirrord for Teams
