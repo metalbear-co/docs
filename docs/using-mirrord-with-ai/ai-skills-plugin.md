@@ -17,7 +17,7 @@ Skills are reusable instruction modules that teach AI agents how to work with mi
 - Guide you through installation and your first mirrord session
 - Help set up mirrord in CI pipelines
 - Configure the mirrord operator for team environments
-- Help set up [database branching](../using-mirrord/db-branching.md) for your cluster
+- Help set up [database branching](../sharing-the-cluster/db-branching.md) for your cluster
 
 
 ## Available Skills
