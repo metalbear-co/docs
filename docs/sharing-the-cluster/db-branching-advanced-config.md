@@ -20,7 +20,7 @@ These settings give additional flexibility in how mirrord handles database branc
     "db_branches": [
       {
         "id": "users-mysql-db",            // Optional
-        "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb]
+        "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb|redis]
         "version": "8.0",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
@@ -352,6 +352,35 @@ All collections are copied, but the `users` collection includes only documents f
 ```
 
 Only the `users` collection is created, containing documents for alice and bob. All other collections are not created. This is useful when you only need a subset of reference data and your application handles the rest through migrations.
+
+## Redis Copy Modes
+
+Redis copy modes apply only to **remote** Redis branches. A local Redis branch always starts empty. Redis supports two modes:
+
+1. ### Empty Database
+
+`"mode": "empty"` Starts a fresh, empty Redis instance. This is the default value when the `copy` attribute is not specified.
+
+2. ### Complete Database
+
+`"mode": "all"` Copies keys from the source Redis instance into the branch.
+
+By default `"all"` copies the entire keyspace. To copy only a subset, add `patterns` - a list of [`SCAN MATCH`](https://redis.io/docs/latest/commands/scan/) glob patterns. Only keys matching at least one pattern are copied.
+
+```json
+{
+  "copy": {
+    "mode": "all",
+    "patterns": ["user:*", "session:*"]
+  }
+}
+```
+
+In this example, only keys prefixed with `user:` or `session:` are copied; everything else is left out of the branch.
+
+{% hint style="info" %}
+Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
+{% endhint %}
 
 ## IAM Authentication
 
