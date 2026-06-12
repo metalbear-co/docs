@@ -1423,7 +1423,7 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 
 ### Enable Temporal splitting in the Helm chart
 
-Enable `operator.temporalSplitting` in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This exposes port `operator.temporalProxyPort` (default `7233`) on the operator Service.
+Enable `operator.temporalSplitting` in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This exposes port `operator.temporalProxy.port` (default `7233`) on the operator Service.
 
 Workers patched for splitting connect to this port instead of the upstream Temporal frontend.
 
