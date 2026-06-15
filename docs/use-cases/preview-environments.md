@@ -91,6 +91,10 @@ mirrord preview status
 ```bash
 mirrord preview stop --key <environment-key>
 ```
+3. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
+```bash
+mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
+```
 
 ### GitHub Action
 We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline.
