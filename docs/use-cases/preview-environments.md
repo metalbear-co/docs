@@ -1,6 +1,6 @@
 ---
 title: Preview Environments
-lastmod: 2026-04-15T00:00:00.000Z
+lastmod: 2026-06-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
 
 ---
@@ -78,6 +78,14 @@ Example output:
 ```
 
 - If `-k` is omitted, mirrord generates a new key and prints it in the output.
+
+If a preview session with the same key and target already exists, `mirrord preview start` refuses to create another one. To replace it (for example, after changing the image), pass `--force`:
+
+```bash
+mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
+```
+
+Alternatively, stop the existing session first with `mirrord preview stop -k <key>`, or choose a different key.
 
 ---
 
