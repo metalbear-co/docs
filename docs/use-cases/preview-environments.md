@@ -1,6 +1,6 @@
 ---
 title: Preview Environments
-lastmod: 2026-06-15T00:00:00.000Z
+lastmod: 2026-04-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
 
 ---
@@ -54,9 +54,7 @@ Each Preview Environment is identified by an **environment key**. The key is use
 - Associate multiple preview pods into a single environment
 - Share access to the same environment with other developers
 
-If no key is provided, mirrord generates one automatically.
-
-Reusing the same key is common (for example, `pr-123` in CI or a fixed name for a shared preview). See **Replace** under Managing Preview Environments when starting again with an existing key.
+If no key is provided, mirrord generates one automatically
 
 ---
 
