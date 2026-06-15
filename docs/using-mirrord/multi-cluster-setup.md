@@ -546,6 +546,8 @@ The chart creates two ClusterRoles (permission definitions):
 | `mirrord-operator-envoy` | General operations: listing targets, managing parent sessions, syncing database branches, reading pods/deployments, health checks | All member clusters |
 | `mirrord-operator-envoy-remote` | Creating and managing child sessions | Member clusters only (not Primary) |
 
+These multi-cluster roles are separate from the Operator API roles used by mirrord clients. Interactive users are usually bound to `mirrord-operator-user`, while CI runner identities for machine sessions such as `mirrord ci` and `mirrord preview` should be bound to the CI-specific `mirrord-operator-ci` role.
+
 A ClusterRole by itself doesn't grant anything — it only defines what actions are possible. ClusterRoleBindings connect the ClusterRole to an identity (a ServiceAccount or a group).
 
 #### How Bindings Differ by Auth Type
