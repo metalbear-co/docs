@@ -54,7 +54,15 @@ Each Preview Environment is identified by an **environment key**. The key is use
 - Associate multiple preview pods into a single environment
 - Share access to the same environment with other developers
 
-If no key is provided, mirrord generates one automatically
+If no key is provided, mirrord generates one automatically.
+
+Reusing the same key is common (for example, `pr-123` in CI or a fixed name for a shared preview). If a preview session with that key and target already exists, `mirrord preview start` refuses to create another one. To replace it (for example, after changing the image), pass `--force`:
+
+```bash
+mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
+```
+
+Alternatively, stop the existing session first with `mirrord preview stop -k <key>`, or choose a different key.
 
 ---
 
@@ -78,14 +86,6 @@ Example output:
 ```
 
 - If `-k` is omitted, mirrord generates a new key and prints it in the output.
-
-If a preview session with the same key and target already exists, `mirrord preview start` refuses to create another one. To replace it (for example, after changing the image), pass `--force`:
-
-```bash
-mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
-```
-
-Alternatively, stop the existing session first with `mirrord preview stop -k <key>`, or choose a different key.
 
 ---
 
