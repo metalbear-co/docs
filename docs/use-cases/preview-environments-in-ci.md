@@ -2,7 +2,7 @@
 title: Preview Environments in CI
 description: How to automate preview environments in your CI pipeline with PR-based keys and header propagation
 date: 2026-02-23T00:00:00.000Z
-lastmod: 2026-06-15T00:00:00.000Z
+lastmod: 2026-02-23T00:00:00.000Z
 draft: false
 toc: true
 tags:
@@ -122,17 +122,6 @@ mirrord preview start \
   -i "ghcr.io/org/my-app:preview-pr-123-abc1234" \
   -k "pr-123" \
   --timeout 600
-```
-
-When re-running `preview start` for the same PR key (for example, after a manual retry or a workflow re-run), add `--force` to replace the existing session instead of failing with a duplicate-key error:
-
-```bash
-mirrord preview start \
-  -f mirrord-preview.json \
-  -i "ghcr.io/org/my-app:preview-pr-123-abc1234" \
-  -k "pr-123" \
-  --timeout 600 \
-  --force
 ```
 
 ## CI Workflow Best Practices
