@@ -11,7 +11,7 @@ In this guide, we'll cover how to test AI-generated code against your Kubernetes
 ## Prerequisites
 
 - A Kubernetes cluster with your services running (staging or dev)
-- [mirrord CLI installed](https://metalbear.com/mirrord/docs/installing-mirrord/cli)
+- [mirrord CLI installed](https://metalbear.com/mirrord/docs/getting-started/installing-mirrord/cli)
 - An AI coding tool (Claude Code, Cursor, Copilot, Codex)
 
 ## Step 1: Create a mirrord config
@@ -108,4 +108,4 @@ The request reaches your local code, but when your code queries the database or 
 
 - [Autonomous AI Workflows with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
 - [How to Set Up AI Tools with mirrord](setting-up-mirrord-for-ai-tools.md): per-tool config for Cursor, Claude Code, Copilot, and Codex
-- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
+- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai): auto-generate mirrord configs and AGENTS.md for your repo
