@@ -56,13 +56,7 @@ Each Preview Environment is identified by an **environment key**. The key is use
 
 If no key is provided, mirrord generates one automatically.
 
-Reusing the same key is common (for example, `pr-123` in CI or a fixed name for a shared preview). If a preview session with that key and target already exists, `mirrord preview start` refuses to create another one. To replace it (for example, after changing the image), pass `--force`:
-
-```bash
-mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
-```
-
-Alternatively, stop the existing session first with `mirrord preview stop -k <key>`, or choose a different key.
+Reusing the same key is common (for example, `pr-123` in CI or a fixed name for a shared preview). See **Replace** under Managing Preview Environments when starting again with an existing key.
 
 ---
 
@@ -98,6 +92,10 @@ mirrord preview status
 2. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
 ```bash
 mirrord preview stop --key <environment-key>
+```
+3. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
+```bash
+mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
 ```
 
 ### GitHub Action
