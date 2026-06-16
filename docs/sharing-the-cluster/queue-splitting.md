@@ -1025,6 +1025,7 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
   * `envLike` - regex matching environment variable names.
   * `fallback` - fallback subscription name if the variable is not found.
   * `valueSelector` - a jq expression to extract the subscription name from the variable's value. Useful when the env var contains JSON or a compound string rather than a plain name.
+  * `valuePattern` - a regex used when the subscription name is embedded in a larger string such as a Go CDK URL (`gcppubsub://projects/my-project/subscriptions/my-subscription`) or a resource path. See [Preserving the value format](#preserving-the-value-format) below.
   * `containers` - limit to specific containers (optional, defaults to all).
 * `appConfig.projectId` - how the application discovers the GCP project ID. Uses the same structure as `subscription`.
 * `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
@@ -1283,7 +1284,9 @@ Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that descr
 | `envLike` | Regex pattern matching multiple environment variable names | One of `env` or `envLike` |
 | `fallback` | Fallback value if the variable is not found (only with `env`) | No |
 | `valueSelector` | JSON selector to extract value(s) from the variable content (e.g. `.key`, `.[]`) | No |
+| `valuePattern` | Regex that captures the resource name embedded in a larger value (a URL, path, or connection string). See [Preserving the value format](#preserving-the-value-format). | No |
 | `containers` | Limit resolution to specific containers. Defaults to all containers. | No |
+
 
 Example with multiple options:
 
@@ -1299,6 +1302,26 @@ queues:
             - main
         - envLike: "^SB_QUEUE_.*"
 ```
+
+##### Preserving the value format
+
+By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. `valuePattern` solves this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
+
+The capture group is picked in this order: a group named `value`, otherwise the first unnamed group.
+
+For example, an application that reads a Go CDK Pub/Sub URL:
+
+```yaml
+queues:
+  - id: orders
+    kind: GooglePubSub
+    appConfig:
+      subscription:
+        - env: PUBSUB_SUBSCRIPTION
+          valuePattern: "subscriptions/(?P<value>[^/?]+)"
+```
+
+With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL. This is the queue-splitting counterpart to database branching's `value_pattern` and works the same way for every broker.
 
 ##### Per-queue client configuration
 
