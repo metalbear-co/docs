@@ -67,7 +67,12 @@ mirrord for Teams works on top of Kubernetes' built-in RBAC with the following r
 
 You can limit a user's ability to use mirrord on specific targets by limiting their access to the `target` resource. The specific verbs for rules to our resources can be copied from the examples below.
 
-For your convenience, mirrord for Teams includes a built-in ClusterRole called `mirrord-operator-user`, which controls access to the Operator API. To grant access to the Operator API, you can create a ClusterRoleBinding like this:
+For your convenience, mirrord for Teams includes built-in ClusterRoles that control access to the Operator API:
+
+- `mirrord-operator-user` for interactive users running mirrord locally.
+- `mirrord-operator-ci` for machine sessions in CI runners, such as `mirrord ci` and `mirrord preview`.
+
+Both roles grant access to the same Operator API resources by default, but keeping CI access in a separate role lets you bind and label machine identities independently from human users. To grant access to the Operator API, you can create a ClusterRoleBinding like this:
 
 ```yaml
 
@@ -84,6 +89,8 @@ roleRef:
   name: mirrord-operator-user
   apiGroup: rbac.authorization.k8s.io
 ```
+
+For CI runners, bind the runner's ServiceAccount, Kubernetes group, or other authenticated identity to `mirrord-operator-ci` instead of `mirrord-operator-user`.
 
 In addition, the Operator impersonates any user that calls its API, and thus only operates on pods or deployments for which the user has `get` permissions.
 
@@ -155,4 +162,3 @@ _NB: If you are using a certificate manager, make sure you set up reminders for 
 ### Set up network policies for communication
 
 Access to the operator can be further restricted by setting up [network policies](https://kubernetes.io/concepts/services-networking/network-policies/) in the cluster to limit the operator to communicate only with mirrord agents (this is not possible if running agents in [ephemeral mode](https://metalbear.com/mirrord/docs/config#agent.ephemeral)).
-

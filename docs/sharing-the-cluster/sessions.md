@@ -66,10 +66,12 @@ The session management commands are:
 
 ### `sessions` RBAC
 
-Every `mirrord-operator-user` has access to **all** session operations by **default**, as they come
-with `deletecollection` and `delete` privileges for the `sessions` resource. You may limit
-this by changing the RBAC configuration. Here is a sample `role.yaml` with the other Operator
-rules omitted:
+Every `mirrord-operator-user` has access to **all** session operations by **default**, as it comes
+with `deletecollection` and `delete` privileges for the `sessions` resource. The CI-specific
+`mirrord-operator-ci` ClusterRole, intended for machine sessions such as `mirrord ci` and
+`mirrord preview`, has the same session permissions by default. You may limit either role by
+changing the RBAC configuration. Here is a sample `role.yaml` with the other Operator rules
+omitted:
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -85,6 +87,8 @@ rules:
   - deletecollection
   - delete
 ```
+
+For CI identities, apply the same change to `mirrord-operator-ci`.
 
 - `mirrord operator session kill-all` requires the `deletecollection` verb;
 - `mirrord operator session kill --id {id}` requires the `delete` verb;
