@@ -17,7 +17,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[MongoDB](../sharing-the-cluster/db-branching.md)**           | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Redis](../sharing-the-cluster/db-branching.md#local-redis)**             | Planned     | Planned       | Planned |
+  |                 | **[Redis](../sharing-the-cluster/db-branching.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Kafka](../sharing-the-cluster/queue-splitting.md#enable-kafka-splitting-in-the-helm-chart)**             | `Alpha`       | Planned       | Planned    |
   |                 | **Temporal**          | Planned     | Planned       | Planned |

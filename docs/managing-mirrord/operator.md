@@ -102,6 +102,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | MySQL | `docker.io/library/mysql:{version}` | `operator.mysqlBranchConfig` - `dbPod.image` |
 | MongoDB | `docker.io/library/mongo:{version}` | `operator.mongodbBranchConfig` - `dbPod.image` |
 | MSSQL | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image` |
+| Redis | `docker.io/library/redis:{version}` | `operator.redisBranchConfig` - `dbPod.image` |
 
 ##### Copying images
 
