@@ -1321,7 +1321,7 @@ queues:
           valuePattern: "subscriptions/(?P<value>[^/?]+)"
 ```
 
-With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL. This is the queue-splitting counterpart to database branching's `value_pattern` and works the same way for every broker.
+With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
 
 ##### Per-queue client configuration
 
