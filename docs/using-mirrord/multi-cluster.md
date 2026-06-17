@@ -1,12 +1,13 @@
 ---
 title: "Seamless Multi-Cluster Development"
+description: "Multi-cluster mirrord lets developers intercept traffic from pods across several Kubernetes clusters at once, without switching kube contexts."
 ---
+
+Multi-cluster mirrord lets developers intercept traffic from pods running in multiple Kubernetes clusters at the same time, without switching kube contexts or managing multiple sessions. You run `mirrord exec` exactly like before, and the operator handles everything behind the scenes.
 
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan.
 {% endhint %}
-
-Multi-cluster mirrord lets developers intercept traffic from pods running in multiple Kubernetes clusters at the same time, without switching kube contexts or managing multiple sessions. You run `mirrord exec` exactly like before, and the operator handles everything behind the scenes.
 
 **When is this useful?**
 
@@ -105,6 +106,14 @@ If the Primary cluster is also the Default cluster, no synchronization is requir
 
 {% hint style="info" %}
 Create your `MirrordWorkloadQueueRegistry` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
+{% endhint %}
+
+## GCP Pub/Sub Queue Splitting in Multi-Cluster
+
+[GCP Pub/Sub queue splitting](queue-splitting.md) is supported in multi-cluster. Each Workload cluster creates its own main temporary resources (the fallback topic and subscription that the deployed workload reads from). The per-session filtered resources (the topic and subscription for each developer's mirrord session) are created on the Default cluster and their names are pre-populated to the Workload clusters so they can reuse them.
+
+{% hint style="info" %}
+Create your `MirrordSplitConfig` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
 {% endhint %}
 
 ---

@@ -22,7 +22,7 @@ mirrord is composed of the following components:
 * `mirrord-layer` - Rust dynamic library for Unix systems (so/dylib) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
 * `mirrord-layer-win` - Rust dynamic library for Windows (dll) that loads to the local process, hooks its filesystem, network APIs and relays them to the agent.
 * `mirrord-cli` - Rust binary that wraps the behavior of the respective mirrord layer in a user friendly CLI.
-* `VS Code extension` - Exposes the same functionality as - mirrord-cli within the VS Code IDE.
+* `VS Code extension` - Exposes the same functionality as mirrord-cli within the VS Code IDE.
 * `JetBrains plugin` - Exposes the same functionality as mirrord-cli within JetBrains IDEs. 
 
 ![mirrord - Architecture](architecture/architecture.svg)

@@ -1,5 +1,5 @@
 ---
-title: "DB Branchimg Management"
+title: "DB Branching Management"
 description: "How to manage isolated mirrord DB branches for visibility and control"
 date: 2025-08-31T00:00:00+03:00
 lastmod: 2025-08-31T00:00:00+03:00

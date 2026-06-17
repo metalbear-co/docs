@@ -20,7 +20,9 @@
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
-* [Using mirrord with AI Agents](using-mirrord-with-ai/README.md)
+* [Using mirrord with AI](using-mirrord-with-ai/README.md)
+  * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
+  * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
 
 ## Using mirrord
 
@@ -44,6 +46,7 @@
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
 * [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
+* [Local UI](using-mirrord/local-ui.md)
 
 ## Sharing the Cluster
 
@@ -63,6 +66,7 @@
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
+* [Scalability](managing-mirrord/scalability.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
 * [Jira Integration](managing-mirrord/jira-integration.md)
@@ -86,5 +90,7 @@
 
 ***
 
+* [Feature Release Status](reference/release-stages.md)
+  * [Feature Support Matrix](reference/feature-matrix.md)
 * [Third-party](reference/third-party.md)
 * [Contributing](contributing.md)

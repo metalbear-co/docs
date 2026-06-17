@@ -29,12 +29,12 @@ it as a background process.
 The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as
 background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
-## Prerequisites
+### Prerequisites
 
 1. Minimum mirrord CLI version `3.181.0`.
 2. The CI runner must be able to access the Kubernetes cluster in which you want to test.
 
-## Kubernetes requirements
+### Kubernetes requirements
 
 The CI runner must be able to access the Kubernetes cluster where the service you want to target is deployed,
 otherwise mirrord won't work. You'll need a
@@ -45,7 +45,11 @@ CI runner that points to the target's cluster, and has the appropriate
 It's recommended that you create a Kubernetes
 [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
 
-## For mirrord for Teams users
+### For mirrord for Teams users
+
+{% hint style="info" %}
+This feature is available to users on the Enterprise pricing plan.
+{% endhint %}
 
 To use mirrord ci with mirrord Operator, you'll need to generate a CI API key and store it
 as a **secret** environment variable. This will prevent your usage of mirrord in CI from expending your seats, which are counted using a machine-based ID.
@@ -58,7 +62,7 @@ mirrord ci api-key
 
 Copy it and save it as the **secret** environment variable `MIRRORD_CI_API_KEY` in your CI.
 
-## Starting a mirrord CI session
+### Starting a mirrord CI session
 
 The `mirrord ci start` command is used to start the service being tested in your CI runner, and supports the same arguments as `mirrord exec`, including specifying a target with `--target` or using a configuration file with `--config-file`. Here’s an example for starting a Go service called `ip-visit-counter`:
 
@@ -77,7 +81,15 @@ You can start multiple mirrord for CI sessions during a single CI job by running
 If you want to run the service with mirrord in the foreground, you can use the `--foreground` arg.
 {% endhint %}
 
-### Application logs
+### Starting a mirrord CI session in a container
+Use `mirrord ci container` when your CI job runs inside a local container runtime such as Docker.
+
+```sh
+mirrord ci container -- docker run my-image
+```
+
+
+#### Application logs
 
 By default, `stdout` and `stderr` outputs from your application are saved to a file in
 the OS' temporary directory (e.g. `/tmp/mirrord`). A directory is created based on the name
@@ -108,7 +120,12 @@ mirrord ci start --config-file mirrord.json npm run
 # /var/opt/mirrord/npm-{unique run identifier}
 ```
 
-## Stopping a mirrord CI session
+{% hint style="info" %}
+When running with the --foreground argument, application logs are streamed to the foreground 
+process’s `stdout` and `stderr` unless `ci.output_dir` is configured.
+{% endhint %}
+
+### Stopping a mirrord CI session
 
 After the tests are done, you should stop the mirrord CI session using `mirrord ci stop`. It's recommended that you do it,
 even if you won't be running mirrord for another service in this CI runner.
@@ -122,5 +139,5 @@ mirrord ci stop
 mirrord will stop running itself, and the local app.
 
 {% hint style="info" %}
-A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job.
+A single `mirrord ci stop` is enough to stop all running mirrord for CI sessions for that job, including sessions started with `mirrord ci container`.
 {% endhint %}
