@@ -1,8 +1,8 @@
 ---
 title: "mirrord up (multiple concurrent sessions)"
 description: "How to use mirrord up"
-date: 2026-04-24T16:25:00+04:00
-lastmod: 2026-04-24T16:25:00+04:00
+date: 2026-04-014T16:25:00+04:00
+lastmod: 2026-04-014T16:25:00+04:00 
 draft: false
 menu:
   docs:
@@ -15,7 +15,14 @@ tags: ["open source", "team", "enterprise"]
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
 
 ## Getting started
-Start by creating a `mirrord-up.yaml`:
+
+The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
+```sh
+$ mirrord up init
+```
+It prompts for common settings and walks you through one or more services, then writes the file (default: `./mirrord-up.yaml`). The generated file contains only the values you set; everything left at its default is omitted. See [`mirrord up init`](#mirrord-up-init) below for details.
+
+To write the file by hand instead, start with:
 ```yaml
 services:
   user-auth-service:
@@ -114,16 +121,24 @@ run:
 ```
 
 
-### CLI args
+## CLI args
 
-#### `-f`, `--config-file`
+### `-f`, `--config-file`
 Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom.yaml`
 
-#### `-m`, `--mode`
-Specifies the network mode for all defined services, overriding `default_mode`. Available options:
-- `split`:
-
-Defaults to `split`. For more details, see `services.*.default_mode`.
-
-#### `--key`
+### `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.
+
+## `mirrord up init`
+
+Interactive wizard that generates a skeleton `mirrord-up.yaml`. Targets are entered as freeform strings (e.g. `deployment/foo`) — no cluster lookups are performed.
+
+```sh
+$ mirrord up init [-o path/to/mirrord-up.yaml]
+```
+
+Flow:
+1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
+2. **Services** — loops one service at a time, prompting for name, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. Repeats until you answer "no" to *Add another service?*.
+3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
+
