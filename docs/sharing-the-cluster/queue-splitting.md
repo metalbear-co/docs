@@ -231,7 +231,7 @@ This is an example for a policy that gives the operator's roles the minimal perm
     Instead of specifying the queues you would like to be able to split in the first statement, you could alternatively make that statement apply for all resources in the account, and limit the queues it applies to using conditions instead of resource names. For example, you could add a condition that makes the statement only apply to queues with the tag `splittable=true` or `env=dev` etc. and set those tags for all queues you would like to allow the operator to split.
 *   The second statement in the example gives the role the permissions it needs for the temporary queues. Since all the temporary queues created by mirrord are created with the name prefix `mirrord-`, that statement in the example is limited to resources with that prefix in their name.
 
-    If you would like to limit the second statement with conditions instead of (only) with the resource name, you can [set a condition that requires a tag](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-abac-tagging-resource-control.html), and in the `MirrordWorkloadQueueRegistry` resource you can specify for each queue tags that mirrord will set for temporary queues that it creates for that original queue (see [relevant section](queue-splitting.md#create-the-queue-registry)).
+    If you would like to limit the second statement with conditions instead of (only) with the resource name, you can [set a condition that requires a tag](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-abac-tagging-resource-control.html), and for each queue you can specify tags that mirrord will set on the temporary queues it creates for that original queue (see [per-queue options](queue-splitting.md#per-queue-options-sns-s3-events-tags)).
 
 If the queue messages are encrypted, the operator's IAM role should also have the following permissions:
 
@@ -239,7 +239,7 @@ If the queue messages are encrypted, the operator's IAM role should also have th
 * `kms:Decrypt`
 * `kms:GenerateDataKey`
 
-If you enable `s3Event` for an SQS queue registry entry, the operator will also fetch S3 object metadata for jq filtering.
+If you enable `s3_event` for an SQS queue (via its `queueConfig`), the operator will also fetch S3 object metadata for jq filtering.
 In that case, grant the operator:
 
 * `s3:GetObject` on the relevant buckets / object prefixes.
@@ -264,106 +264,99 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 #### Provide application context
 
 On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
-type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence
-with `kubectl get crd mirrordworkloadqueueregistries.queues.mirrord.metalbear.co`.
-Before you can run sessions with SQS splitting, you must create a queue registry for the desired target.
-This is because the queue registry contains additional application context required by the mirrord operator.
+type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence
+with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
+Before you can run sessions with SQS splitting, you must create a `MirrordSplitConfig` for the desired target.
+This is because the `MirrordSplitConfig` contains additional application context required by the mirrord operator.
 For example, the operator needs to know which environment variables contain the names of the SQS queues to split.
 
-See an example queue registry defined for a deployment `meme-app` living in namespace `meme`:
+See an example `MirrordSplitConfig` defined for a deployment `meme-app` living in namespace `meme`:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordWorkloadQueueRegistry
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
 metadata:
-  name: meme-app-q-registry
+  name: meme-app-split
   namespace: meme
 spec:
-  consumer:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
     name: meme-app
-    workloadType: Deployment
-    container: main
   queues:
-    meme-queue:
-      queueType: SQS
-      nameSource:
-        envVar: INCOMING_MEME_QUEUE_NAME
-      tags:
-        tool: mirrord
-      sns: true
-    ad-queue:
-      queueType: SQS
-      nameSource:
-        envVar: AD_QUEUE_NAME
-      tags:
-        tool: mirrord
+    - id: meme-queue
+      kind: sqs
+      # Optional per-queue options (SNS parsing, tags). See below.
+      queueConfig: meme-queue-options
+      appConfig:
+        queue:
+          - env: INCOMING_MEME_QUEUE_NAME
+            containers:
+              - main
+    - id: ad-queue
+      kind: sqs
+      appConfig:
+        queue:
+          - env: AD_QUEUE_NAME
+            containers:
+              - main
 ```
 
-The registry above says that:
-1. It provides context for container `main` running in deployment `meme-app` in namespace `meme`.
+The `MirrordSplitConfig` above says that:
+1. It targets the deployment `meme-app` in namespace `meme`, restricted to container `main`.
 2. The container consumes two SQS queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
-4. When creating a temporary queue derived from either of the two queues, mirrord operator should add the tag `tool=mirrord`.
+4. The `meme-queue` has extra per-queue options defined in the `meme-queue-options` `MirrordPropertyList` (e.g. tags set on temporary queues, SNS parsing).
 
-##### Link the registry to the deployed consumer
+##### Link the config to the deployed consumer
 
-The queue registry is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
-The reference is specified with `spec.consumer`:
-* `name` — name of the Kubernetes workload of the deployed consumer.
-* `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
-* `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
+The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
+The target workload reference is specified with `spec.targetRef`:
+* `apiVersion` - API version of the Kubernetes workload (e.g. `apps/v1`).
+* `kind` - type of the workload. mirrord supports SQS splitting on deployments and Argo rollouts.
+* `name` - name of the workload.
 
-##### Desribe consumed queues in the registry
+##### Describe consumed queues
 
-The queue registry describes SQS queues consumed by the referenced consumer.
-The queues are described in entries of the `spec.queues` object.
+Each entry in the `spec.queues` list describes one or more SQS queues consumed by the workload:
 
-The entry's key can be arbitrary, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
+* `id` - arbitrary queue ID, as it will only be [referenced](queue-splitting.md#setting-a-filter-for-a-mirrord-run) from the user's mirrord config.
+* `kind` - must be `sqs`.
+* `appConfig.queue` - how the application discovers the queue name/URL. Each entry can use:
+  * `env` - exact name of a single environment variable containing the queue name or URL.
+  * `envLike` - regex selecting multiple environment variables by name.
+  * `fallback` - fallback name/URL if the variable is not found (only valid with `env`). The temporary queue name is still injected into the variable.
+  * `valueSelector` - a jq expression to extract queue names from the variable's value. Use `.[]` when the variable holds a JSON object whose string values are queue names/URLs.
+  * `containers` - limit resolution to specific containers (optional, defaults to all containers).
+* `queueConfig` (optional) - name of a `MirrordPropertyList` holding per-queue options (see below).
 
-The entry's value is an object describing single or multiple SQS queues consumed by the workload:
+##### Per-queue options (SNS, S3 events, tags)
 
-* `nameSource` describes which environment variables contain names/URLs of the consumed queues. Either `envVar` or `regexPattern` field is required.
-  * `envVar` stores a name of a single environment variables.
-  * `regexPattern` selects multiple environment variables based on a regular expression.
-* `fallbackName` stores an optional fallback name/URL, in case `nameSource` is not found in the workload spec.
-  `nameSource` will still be used to inject the name/URL of the temporary queue.
-* `namesFromJsonMap` specifies how to process the values of environment variables that contain queue names/URLs.
-  If set to `true`, values of all variables of will be parsed as JSON objects with string values. All values in these objects will be treated as queue names/URLs.
-  If set to `false`, values of all variables will be treated directly as queue names/URLs.
-  Defaults to `false`.
-* `tags` specifies additional tags to be set on all created temporary queues.
-* `sns` specifies whether the queues contains SQS messages created from SNS notifications.
-  If set to `true`, message bodies will be parsed and matched against users' filters,
-  as SNS notification attributes are found in the SQS message body.
-  If set to `false`, message attributes will be used matched against users' filters.
-  Defaults to `false`.
-* `s3Event` specifies whether the operator should try to parse incoming message JSON as an S3
-  event notification and, when parsing succeeds, fetch user-defined S3 object metadata for the
-  referenced object and expose it to `jq_filter` as `S3Metadata`.
-  Supported delivery paths:
-  * **S3 → SQS** (direct): set only `s3Event: true`.
-  * **S3 → SNS → SQS**: set both `sns: true` and `s3Event: true`.
-  Defaults to `false`.
+SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list must be in the same namespace as the `MirrordSplitConfig`. Supported properties:
 
-For example, a queue registry entry for S3 event notifications delivered directly to SQS:
+* `sns` (`"true"`/`"false"`) - set to `"true"` if the queue contains SQS messages created from SNS notifications. Message bodies are then parsed and matched against users' filters, since SNS notification attributes live in the SQS message body. Defaults to `"false"`.
+* `s3_event` (`"true"`/`"false"`) - set to `"true"` to parse incoming messages as S3 event notifications and, on success, fetch user-defined S3 object metadata for the referenced object and expose it to `jq_filter` as `S3Metadata`.
+  * **S3 to SQS** (direct): set only `s3_event: "true"`.
+  * **S3 to SNS to SQS**: set both `sns: "true"` and `s3_event: "true"`.
+  Defaults to `"false"`.
+* `tags` - a JSON object string of tags that mirrord sets on every temporary queue it creates for this queue, e.g. `'{"tool":"mirrord"}'`.
+
+For example, a `MirrordPropertyList` for a queue that tags its temporary queues and receives S3 events delivered through SNS:
 
 ```yaml
-uploads-queue:
-  queueType: SQS
-  nameSource:
-    envVar: UPLOAD_EVENTS_QUEUE_NAME
-  s3Event: true
-```
-
-For S3 event notifications delivered through SNS:
-
-```yaml
-uploads-queue:
-  queueType: SQS
-  nameSource:
-    envVar: UPLOAD_EVENTS_QUEUE_NAME
-  sns: true
-  s3Event: true
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: meme-queue-options
+  namespace: meme
+spec:
+  properties:
+    - name: sns
+      value: 'true'
+    - name: s3_event
+      value: 'true'
+    - name: tags
+      value: '{"tool":"mirrord"}'
 ```
 
 {% hint style="warning" %}
@@ -1467,11 +1460,11 @@ See example configurations below:
 
 In the example above, the local application:
 
-* Will receive a subset of messages from SQS queues desribed in the registry under ID `meme-queue`.
+* Will receive a subset of messages from SQS queues described in the `MirrordSplitConfig` under ID `meme-queue`.
   All received messages will have an SQS attribute `baggage` containing `mirrord-session=alice`.
-* Will receive a subset of messages from SQS queues described in the registry under ID `orders-queue`.
+* Will receive a subset of messages from SQS queues described in the `MirrordSplitConfig` under ID `orders-queue`.
   All received messages will have a JSON body with `"important": true`.
-* Will receive no messages from SQS queues described in the registry under ID `ad-queue`.
+* Will receive no messages from SQS queues described in the `MirrordSplitConfig` under ID `ad-queue`.
 * Will receive a subset of messages from Kafka queue with ID `views-topic`.
   All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`.
 
@@ -1568,9 +1561,9 @@ In the example above, the local application will receive messages from SQS queue
 }
 ```
 
-In the example above, the local application will receive a subset of message from **all** SQS queues described in the registry.
+In the example above, the local application will receive a subset of message from **all** SQS queues described in the `MirrordSplitConfig`.
 All received messages will have an SQS attribute `baggage` containing `mirrord-session=pr-123`.
-`*` is a special queue ID for SQS queues, and resolves to all queues described in the registry.
+`*` is a special queue ID for SQS queues, and resolves to all queues described in the `MirrordSplitConfig`.
 
 {% endtab %}
 {% tab title="GCP Pub/Sub" %}
@@ -1779,12 +1772,12 @@ and hopefully solve the problem.
 
 First, some generally applicable steps:
 
-1. Make sure a [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) exists for the workload you're targeting:
+1. Make sure a `MirrordSplitConfig` exists for the workload you're targeting:
    ```shell
-   kubectl describe mirrordworkloadqueueregistries.queues.mirrord.metalbear.co -n <target-namespace>
+   kubectl describe mirrordsplitconfigs.queues.mirrord.metalbear.co -n <target-namespace>
    ```
 2. Note [the queue-ids in the mirrord configuration](#setting-a-filter-for-a-mirrord-run) have to match the queue-ids in
-   the [`MirrordWorkloadQueueRegistry`](#creating-a-queue-registry) of the used target.
+   the `MirrordSplitConfig` of the used target.
 3. Get the logs from the mirrord-operator, in case it becomes necessary for the mirrord team
    to look into your issue, like this:
    ```shell
@@ -1801,15 +1794,16 @@ First, some generally applicable steps:
    or by setting
    the `RUST_LOG` environment variable in the operator’s deployment to `mirrord=info,operator=info,operator_sqs_splitting::forwarder=trace`,
    e.g. by using `kubectl edit deploy mirrord-operator -n mirrord`.
-4. Some operations, like changing a `MirrordWorkloadQueueRegistry` of a workload while there are active sessions to
+4. Some operations, like changing a `MirrordSplitConfig` of a workload while there are active sessions to
    that target, are not yet supported, and can lead to a bad state for mirrord. 
    If you've reached such a state:
-   1. Delete all the mirrord SQS session resources of the affected target. Those
-      resources, `MirrordSqsSession`, are not the same as `MirrordWorkloadQueueRegistry`. You can delete them with:
+   1. Delete all the mirrord split session resources of the affected target. Those
+      resources, `MirrordClusterSplitSession`, are not the same as `MirrordSplitConfig`. They are cluster-scoped, and
+      reference the target by namespace and workload name. You can delete the ones for your target with:
       ```shell
-      kubectl get mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> -o json \
-      | jq -r '.items[] | select(.spec.queueConsumer.name=="<TARGET-WORKLOAD-NAME>" and .spec.queueConsumer.workloadType=="<TARGET-WORKLOAD-TYPE>") | .metadata.name' \     
-      | xargs -r -I {} kubectl delete mirrordsqssessions.queues.mirrord.metalbear.co -n <TARGET-NAMESPACE> {}
+      kubectl get mirrordclustersplitsessions.queues.mirrord.metalbear.co -o json \
+      | jq -r '.items[] | select(.spec.namespace=="<TARGET-NAMESPACE>" and .spec.target.name=="<TARGET-WORKLOAD-NAME>") | .metadata.name' \
+      | xargs -r -I {} kubectl delete mirrordclustersplitsessions.queues.mirrord.metalbear.co {}
       ```
    2. Restart the mirrord operator, e.g.:
       ```shell
@@ -1839,7 +1833,7 @@ value in the operator's helm chart, to set a timeout for the draining of the tem
 
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
-lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
+lingering `MirrordClusterSplitSession` objects, and if possible, restart the mirrord operator.
 
 ### Troubleshooting Azure Service Bus splitting
 
