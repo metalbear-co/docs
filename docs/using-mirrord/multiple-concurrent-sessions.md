@@ -11,10 +11,10 @@ weight: 140
 toc: true
 tags: ["open source", "team", "enterprise"]
 ---
-## Introduction
+# Introduction
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
 
-## Getting started
+# Getting started
 
 The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
 ```sh
@@ -49,11 +49,11 @@ This will start all defined services, and they will run in parallel. The `mirror
 
 Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`.
 
-## Configuration
+# Configuration
 
-### Config file (`mirrord-up.yaml`)
+## Config file (`mirrord-up.yaml`)
 
-#### `common`
+### `common`
 Common configuration options, applied to all defined services. Currently 3 options are supported:
 - [`accept_invalid_certificates`](https://metalbear.com/mirrord/docs/config/options#root-accept_invalid_certificates)
 - [`operator`](https://metalbear.com/mirrord/docs/config/options#root-operator)
@@ -61,10 +61,10 @@ Common configuration options, applied to all defined services. Currently 3 optio
 
 All 3 map directly to their `mirrord.json` counterparts.
 
-#### `services`
+### `services`
 A map from service ids to a `ServiceConfig`. Each entry in this map defines and configures a mirrord process that will be run as part of the session.
 
-##### `services.*.target`
+#### `services.*.target`
 Specifies the target of the session. Has 2 fields: `path` and `namespace`, which map directly to their `mirrord.json` counterparts.
 Examples:
 ```yaml
@@ -86,23 +86,23 @@ target:
   path: deployment/test-app
 ```
 
-##### `services.*.env`
+#### `services.*.env`
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
 
-##### `services.*.default_mode`
+#### `services.*.default_mode`
 So far, only `split` is supported. The incoming mode is set to `steal` with http filter.
 User-provided filter is used if provided, otherwise defaulting to `baggage: .*mirrord-session={key}.*`.
 
-##### `services.*.http_filter`
+#### `services.*.http_filter`
 Specifies the HTTP filtering configuration for the given service. Maps directly to [`feature.network.incoming.http_filter`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
-##### `services.*.ignore_ports` 
+#### `services.*.ignore_ports` 
 List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
-##### `services.*.messages` 
+#### `services.*.messages` 
 Specifies queue splitting configuration (Not supported as of now).
 
-##### `services.*.run` 
+#### `services.*.run` 
 Specifies the command that should be run with mirrord. Has 2 fields:
 - `command`: Array of strings containing the command to be run and its CLI arguments.
 - `type`: can be either `exec` or `container`, defaults to `exec`. Specifies how mirrord should be run (i.e. with `mirrord exec` or `mirrord container`)
@@ -121,15 +121,15 @@ run:
 ```
 
 
-## CLI args
+# CLI args
 
-### `-f`, `--config-file`
+## `-f`, `--config-file`
 Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom.yaml`
 
-### `--key`
+## `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.
 
-## `mirrord up init`
+# `mirrord up init`
 
 Interactive wizard that generates a skeleton `mirrord-up.yaml`. Targets are entered as freeform strings (e.g. `deployment/foo`) — no cluster lookups are performed.
 
