@@ -16,7 +16,7 @@ tags:
 description: What are the limitations to using mirrord?
 ---
 
-#### What frameworks/languages does mirrord support?
+## What frameworks/languages does mirrord support?
 
 mirrord works by [hooking libc](https://metalbear.com/blog/mirrord-internals-hooking-libc-functions-in-rust-and-fixing-bugs/), so it should work with any language/framework that uses libc (vast majority).
 
@@ -24,15 +24,15 @@ This includes: Rust, Node, Python, Java, Kotlin, Ruby, and others (most language
 
 mirrord also supports [Go](https://metalbear.com/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
 
-#### Does mirrord support clusters with a service mesh like Istio or Linkerd?
+## Does mirrord support clusters with a service mesh like Istio or Linkerd?
 
 Yes, mirrord works exactly the same way with and without a service mesh installed.
 
-#### Does mirrord support OpenShift?
+## Does mirrord support OpenShift?
 
 Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](../managing-mirrord/operator.md).
 
-#### Does mirrord support binaries that are statically compiled? (Linux)
+## Does mirrord support binaries that are statically compiled? (Linux)
 
 No, mirrord needs to be able to leverage dynamic linking in order to work. This means static binaries are not supported.
 
