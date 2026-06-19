@@ -49,7 +49,7 @@ mirrord subscribe --key my-key | jq 'select(.data.http_request)'
 ```
 
 Pass `--pretty` to pretty-print each event. The key can also come from the `key` field in your
-mirrord config (`-f`).
+mirrord config (`mirrord exec -f mirrord.json ...`).
 
 ## Events
 
