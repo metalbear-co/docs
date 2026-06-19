@@ -43,23 +43,46 @@ mirrord config (`-f`).
 
 ## Events
 
-Each event is `{ "service_name", "timestamp", "data": { ... } }`, where `data` is one of:
+Every event has the same envelope — `service_name`, `timestamp`, and a `data` payload:
 
 ```json
 {"service_name":"my-app","timestamp":"2026-06-17T12:00:00Z","data":{"http_request":{"method":"GET","uri":"/health","headers":{"host":"my-app"},"version":"HTTP/1.1"}}}
 ```
-```json
-{"service_name":"my-app","timestamp":"2026-06-17T12:00:00Z","data":{"http_response":{"status":200,"version":"HTTP/1.1","headers":{"content-type":"application/json"}}}}
-```
-```json
-{"service_name":"orders","timestamp":"2026-06-17T12:00:00Z","data":{"queue_message":{"queue_type":"azure_service_bus","queue_name":"orders","correlation_id":"trace-123","properties":{"tenant":"test"}}}}
+
+To work with just the payload, extract `.data` with `jq`:
+
+```sh
+mirrord subscribe --key my-key | jq '.data'
 ```
 
-If your consumer falls behind, the operator drops the oldest events and tells you how many:
+`data` is one of the following (payloads shown on their own):
+
+**`http_request`** — an intercepted (stolen) request:
 
 ```json
-{"service_name":"","timestamp":"2026-06-17T12:00:00Z","data":{"lagged":{"count":12}}}
+{"http_request":{"method":"GET","uri":"/health","headers":{"host":"my-app"},"version":"HTTP/1.1"}}
 ```
+
+**`http_response`** — the response to a stolen request:
+
+```json
+{"http_response":{"status":200,"version":"HTTP/1.1","headers":{"content-type":"application/json"}}}
+```
+
+**`queue_message`** — a queue message routed to your session (`message_id` and
+`correlation_id` are included when the broker provides them):
+
+```json
+{"queue_message":{"queue_type":"azure_service_bus","queue_name":"orders","correlation_id":"trace-123","properties":{"tenant":"test"}}}
+```
+
+**`lagged`** — your consumer fell behind and the operator dropped `count` events:
+
+```json
+{"lagged":{"count":12}}
+```
+Lagging takes place whenever the consumer is not able to keep up with the messages and receive them in a timely fashion (e.g. due to a slow network connection). By default, the operator buffers up to 2048 messages (configurable in `values.yaml` through `subscribeEventBufferSize`), and lagging will take place if more than this many messages accumulate in the internal buffer without the consumer receiving them. Note that lagging only affects slow consumers — functioning consumers will continue to receive all events even in the presence of slow peers.
+
 
 {% hint style="info" %}
 Only **HTTP request/response** events and **Azure Service Bus** queue messages are emitted today.
