@@ -9,7 +9,7 @@ instead of silently hitting the real service, so a broken interception fails the
 going green.
 
 {% hint style="info" %}
-Requires mirrord for Teams (the mirrord Operator).
+This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 ## Prerequisites
