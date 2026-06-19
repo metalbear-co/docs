@@ -12,6 +12,16 @@ going green.
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
+{% hint style="info" %}
+Only **HTTP request/response** events and **Azure Service Bus** queue messages are emitted today.
+HTTP events come from requests/responses intercepted in steal mode; queue events require
+[Azure Service Bus queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the
+session.
+
+Didn't find what you are looking for?
+[Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) 
+{% endhint %}
+
 ## Prerequisites
 
 - A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass
@@ -82,14 +92,6 @@ mirrord subscribe --key my-key | jq '.data'
 {"lagged":{"count":12}}
 ```
 Lagging takes place whenever the consumer is not able to keep up with the messages and receive them in a timely fashion (e.g. due to a slow network connection). By default, the operator buffers up to 2048 messages (configurable in `values.yaml` through `subscribeEventBufferSize`), and lagging will take place if more than this many messages accumulate in the internal buffer without the consumer receiving them. Note that lagging only affects slow consumers — functioning consumers will continue to receive all events even in the presence of slow peers.
-
-
-{% hint style="info" %}
-Only **HTTP request/response** events and **Azure Service Bus** queue messages are emitted today.
-HTTP events come from requests/responses intercepted in steal mode; queue events require
-[Azure Service Bus queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the
-session.
-{% endhint %}
 
 ## Without the CLI
 
