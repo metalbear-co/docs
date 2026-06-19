@@ -1,17 +1,6 @@
 ---
 title: "Subscribing to Events"
 description: "Stream a session's interception events as JSON with mirrord subscribe"
-date: 2026-06-17T00:00:00+00:00
-lastmod: 2026-06-17T00:00:00+00:00
-draft: false
-menu:
-  docs:
-    parent: "using-mirrord"
-weight: 180
-toc: true
-tags:
-  - team
-  - enterprise
 ---
 
 `mirrord subscribe` streams a session's interception events from the operator to stdout as JSON.
