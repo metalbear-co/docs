@@ -3,9 +3,7 @@ title: "Subscribing to Events"
 description: "Stream a session's interception events as JSON with mirrord subscribe"
 ---
 
-`mirrord subscribe` streams a session's interception events from the operator to stdout as JSON.
-It's useful in CI/tests: assert that a request actually got stolen to your local process
-instead of silently hitting the real service, so a broken interception fails the build instead of
+`mirrord subscribe` lets you stream live events from an active mirrord session — HTTP requests, queue messages, and operator notifications as JSON to stdout. It's useful in CI/tests: assert that a request actually got stolen to your local process instead of silently hitting the real service, so a broken interception fails the build instead of
 going green.
 
 {% hint style="info" %}
