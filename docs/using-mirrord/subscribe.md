@@ -39,6 +39,8 @@ In another, subscribe to its events:
 mirrord subscribe --key my-key
 ```
 
+The key can also come from the `key` field in your mirrord config (e.g. `mirrord subscribe -f mirrord.json`)
+
 Events stream to stdout, one compact JSON object per line, as the operator intercepts traffic for
 that key. Status messages go to stderr, so you can pipe events straight into `jq`:
 
@@ -46,8 +48,7 @@ that key. Status messages go to stderr, so you can pipe events straight into `jq
 mirrord subscribe --key my-key | jq 'select(.data.http_request)'
 ```
 
-Pass `--pretty` to pretty-print each event. The key can also come from the `key` field in your
-mirrord config (`mirrord exec -f mirrord.json ...`).
+You may also pass `--pretty` to pretty-print each event.
 
 ## Events
 
@@ -91,12 +92,11 @@ mirrord subscribe --key my-key | jq '.data'
 ```
 Lagging takes place whenever the consumer is not able to keep up with the messages and receive them in a timely fashion (e.g. due to a slow network connection). By default, the operator buffers up to 2048 messages (configurable in `values.yaml` through `subscribeEventBufferSize`), and lagging will take place if more than this many messages accumulate in the internal buffer without the consumer receiving them. Note that lagging only affects slow consumers — functioning consumers will continue to receive all events even in the presence of slow peers.
 
-## Without the CLI
+## Direct Kube API access (no mirrord CLI required)
 
-`mirrord subscribe` is a thin client over an operator endpoint that emits
+`mirrord subscribe` is a thin wrapper over an operator endpoint that emits
 [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
-(`text/event-stream`). You can hit it directly through the Kubernetes API — handy from a language
-without a mirrord client:
+(`text/event-stream`). You can access it directly through the Kubernetes API, without requiring the mirrord CLI:
 
 ```sh
 kubectl get --raw \
@@ -110,5 +110,5 @@ kubectl proxy &
 curl -N "http://127.0.0.1:8001/apis/operator.metalbear.co/v1/events?watch=true&session_key=my-key"
 ```
 
-Each event arrives as a `data: <json>` line (lines starting with `:` are keep-alives). `watch=true`
-is necessary to stop the Kube API server from cutting out the stream after ~60s.
+Each event arrives as a `data: <json>` line (lines starting with `:` are keep-alives).
+`watch=true` is necessary to stop the Kube API server from cutting out the stream after ~60s.
