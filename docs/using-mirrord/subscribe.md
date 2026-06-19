@@ -110,5 +110,4 @@ kubectl proxy &
 curl -N "http://127.0.0.1:8001/apis/operator.metalbear.co/v1/events?watch=true&session_key=my-key"
 ```
 
-Each event arrives as a `data: <json>` line (lines starting with `:` are keep-alives).
 `watch=true` is necessary to stop the Kube API server from cutting out the stream after ~60s.
