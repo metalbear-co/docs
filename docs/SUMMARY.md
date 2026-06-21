@@ -62,7 +62,7 @@
   * [Google Cloud Pub/Sub](sharing-the-cluster/queue-splitting/gcp-pubsub.md)
   * [Azure Service Bus](sharing-the-cluster/queue-splitting/azure-service-bus.md)
   * [Redis Pub/Sub](sharing-the-cluster/queue-splitting/redis-pubsub.md)
-  * [Temporal ⚠️](sharing-the-cluster/queue-splitting/temporal.md "Experimental")
+  * [Temporal ⚠️](sharing-the-cluster/queue-splitting/temporal.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [Branch Management](sharing-the-cluster/db-branch-management.md)
   * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
