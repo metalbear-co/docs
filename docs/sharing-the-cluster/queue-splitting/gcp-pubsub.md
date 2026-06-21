@@ -21,15 +21,15 @@ The word "queue" on this page refers to a Pub/Sub subscription.
 
 First, we have a consumer app reading messages from a Google Cloud Pub/Sub subscription.
 
-![A consumer app reading from a Pub/Sub subscription without splitting](images/gcp-normal.png)
+![A consumer app reading from a Pub/Sub subscription without splitting](images/gcp-normal.svg)
 
 When the first mirrord Pub/Sub splitting session starts, the operator creates temporary topics and subscriptions (one set for the target deployed in the cluster, one for the user's local application), and routes messages according to the [user's filter](#setting-a-filter).
 
-![One Pub/Sub splitting session, with a forwarder routing matched messages to the local application](images/gcp-single-session.png)
+![One Pub/Sub splitting session, with a forwarder routing matched messages to the local application](images/gcp-single-session.svg)
 
 If a second user then starts a mirrord Pub/Sub splitting session on the same subscription, an additional temporary topic and subscription are created for the second user's local application. The operator includes the new subscription and the second user's filter in the routing logic.
 
-![Two Pub/Sub splitting sessions sharing one original subscription](images/gcp-2-sessions.png)
+![Two Pub/Sub splitting sessions sharing one original subscription](images/gcp-2-sessions.svg)
 
 If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
@@ -208,7 +208,7 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
 
 When a single queue ID uses `envLike` to match several environment variables, each matched subscription is split independently under that one ID. A filter on the queue ID then applies to every matched subscription. The diagram below shows one queue ID whose `envLike` matches two subscription variables, each getting its own session and main resources.
 
-![One queue ID matching two subscriptions via envLike](images/gcp-multi-subscriptions.png)
+![One queue ID matching two subscriptions via envLike](images/gcp-multi-subscriptions.svg)
 
 **Subscriptions in multiple GCP projects**
 

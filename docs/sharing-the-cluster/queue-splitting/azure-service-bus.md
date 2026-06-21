@@ -29,7 +29,7 @@ In both models, if the filters defined by two users both match some message, one
 
 The diagram below shows the two-pass routing used by the Topic/Subscription model: the operator first reads raw messages from a temporary ingest subscription, stamps a routing marker, and re-publishes each copy to the same topic, where native subscription rules deliver it to the matching session subscription or to the deployed application.
 
-![Azure Service Bus topic splitting flow](images/azure-service-bus-splitting.png)
+![Azure Service Bus topic splitting flow](images/azure-service-bus-splitting.svg)
 
 ### Enabling Azure Service Bus Splitting in Your Cluster
 

@@ -31,7 +31,7 @@ Each user who starts a session gets their own **session virtual task queue**. Th
 
 If the filters defined by two users both match some task, the most recently started matching session receives the task.
 
-![Temporal queue splitting full system flow](images/temporal-system-flow.png)
+![Temporal queue splitting full system flow](images/temporal-system-flow.svg)
 
 ### Enabling Temporal Splitting in Your Cluster
 
