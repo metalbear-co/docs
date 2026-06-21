@@ -18,13 +18,14 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
-  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting.md#enable-sqs-splitting-in-the-helm-chart)**               | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Kafka](../sharing-the-cluster/queue-splitting.md#enable-kafka-splitting-in-the-helm-chart)**             | `Alpha`       | Planned       | Planned    |
-  |                 | **Temporal**          | Planned     | Planned       | Planned |
-  |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting.md#enable-gcp-pubsub-splitting-in-the-helm-chart)**    | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting.md#enable-azure-service-bus-splitting-in-the-helm-chart)** | `Alpha`       | `Alpha`         | Planned    |
+  | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | Planned       | Planned    |
+  |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | Planned       | Planned    |
+  |                 | **[Temporal](../sharing-the-cluster/queue-splitting/temporal.md)**          | Experimental | Planned       | Planned |
+  |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)**    | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting/azure-service-bus.md)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
-  |                 | **Redis Pub/Sub**     | Planned     | Planned       | Planned |
+  |                 | **[Redis Pub/Sub](../sharing-the-cluster/queue-splitting/redis-pubsub.md)**     | `Alpha`     | `Alpha`       | Planned |
   | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | `Alpha`         | Planned    |
   | **[Multi-cluster](../using-mirrord/multi-cluster.md)**   | —                 | `Alpha`       | —             | Planned    |
   | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | `Alpha`       | `Alpha`         | —          |
