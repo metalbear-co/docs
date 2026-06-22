@@ -767,7 +767,7 @@ spec:
 | `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity                                                                                                      |          | string (PEM)                                                  |                                    |
 | `client.*`            | Custom metadata or properties sent to the broker                                                                                                                         |          | object / key-value pairs                                      |                                    |
 
-¹ `host`, `username`, and `password` are each required, but can be supplied either directly or via `url` (an AMQP URI always resolves a host, username, and password, defaulting to `guest`/`guest` for credentials not present in the URI).
+¹ `host`, `username`, and `password` are each required, but can be supplied either directly or via `url` (an AMQP URI always resolves a host, username, and password, defaulting to `guest`/`guest` for credentials not present in the URI). `url` requires mirrord operator version `3.170.0` or higher.
 
 #### Queue Declare Properties
 
