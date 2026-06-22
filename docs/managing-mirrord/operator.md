@@ -212,6 +212,32 @@ agent:
     cloud.google.com/generate-allowlist: "true"
 ```
 
+#### vcluster
+
+mirrord can target workloads running inside [vcluster](https://www.vcluster.com/) virtual clusters. Install and use the
+mirrord Operator inside the vcluster the same way you would in a regular Kubernetes cluster.
+
+If you also install the mirrord Operator on the host Kubernetes cluster that runs those vclusters, configure an
+isolation marker on the **host cluster's Operator**.
+
+vcluster syncs pods from virtual clusters back to the host cluster. Without an isolation marker, the host Operator can
+see mirrord agent pods that belong to a vcluster Operator and treat them as unmanaged host-cluster agent pods, causing
+the host Operator to clean them up.
+
+Set `OPERATOR_ISOLATION_MARKER` through `operator.extraEnv` in the host Operator's Helm values:
+
+```yaml
+operator:
+  extraEnv:
+    OPERATOR_ISOLATION_MARKER: host-cluster
+```
+
+The marker value can be any stable value that identifies that Operator installation.
+
+You only need this setting on the host Operator. Operators installed inside vclusters do not need their own isolation
+marker for this setup. If you install the mirrord Operator only inside virtual clusters, and not on the host cluster,
+this setting is unnecessary.
+
 ### Verifying the Installation
 
 ```bash
