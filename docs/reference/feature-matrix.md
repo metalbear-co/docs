@@ -21,7 +21,7 @@ Support levels vary by platform. The table below shows the current status for ea
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Temporal](../sharing-the-cluster/queue-splitting/temporal.md)**          | Experimental | `Alpha`         | Planned |
+  |                 | **[Temporal](../sharing-the-cluster/queue-splitting/temporal.md)**          | Experimental | `Experimental`         | Planned |
   |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)**    | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting/azure-service-bus.md)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
