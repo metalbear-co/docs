@@ -16,7 +16,7 @@ HTTP events come from requests/responses intercepted in steal mode; queue events
 [Azure Service Bus queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the
 session.
 
-Didn't find what you are looking for?
+Need support for more events?
 [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) 
 {% endhint %}
 
@@ -64,28 +64,28 @@ To work with just the payload, extract `.data` with `jq`:
 mirrord subscribe --key my-key | jq '.data'
 ```
 
-`data` is one of the following (payloads shown on their own):
+**`data` is one of the following (payloads shown on their own):**
 
-**`http_request`** — an intercepted (stolen) request:
++ **`http_request`** — an intercepted (stolen) request:
 
 ```json
 {"http_request":{"method":"GET","uri":"/health","headers":{"host":"my-app"},"version":"HTTP/1.1"}}
 ```
 
-**`http_response`** — the response to a stolen request:
++ **`http_response`** — the response to a stolen request:
 
 ```json
 {"http_response":{"status":200,"version":"HTTP/1.1","headers":{"content-type":"application/json"}}}
 ```
 
-**`queue_message`** — a queue message routed to your session (`message_id` and
++ **`queue_message`** — a queue message routed to your session (`message_id` and
 `correlation_id` are included when the broker provides them):
 
 ```json
 {"queue_message":{"queue_type":"azure_service_bus","queue_name":"orders","correlation_id":"trace-123","properties":{"tenant":"test"}}}
 ```
 
-**`lagged`** — your consumer fell behind and the operator dropped `count` events:
++ **`lagged`** — your consumer fell behind and the operator dropped `count` events:
 
 ```json
 {"lagged":{"count":12}}
