@@ -19,9 +19,9 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | Planned       | Planned    |
-  |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | Planned       | Planned    |
-  |                 | **[Temporal](../sharing-the-cluster/queue-splitting/temporal.md)**          | Experimental | Planned       | Planned |
+  |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Temporal](../sharing-the-cluster/queue-splitting/temporal.md)**          | Experimental | `Alpha`         | Planned |
   |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)**    | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting/azure-service-bus.md)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
