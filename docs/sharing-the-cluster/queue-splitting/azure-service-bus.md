@@ -1,7 +1,7 @@
 ---
 title: Queue Splitting - Azure Service Bus
 date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
+lastmod: 2026-06-22T00:00:00.000Z
 draft: false
 menu:
   docs:
@@ -223,6 +223,26 @@ spec:
 
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
 
+##### When the topic name is not in an environment variable
+
+Some frameworks (most commonly [MassTransit](https://masstransit.io/)) derive the topic name from the message type, so it never appears in an environment variable. The operator does not change the topic name anyway, it only needs to know it, so just give the name in `fallback`:
+
+```yaml
+queues:
+  - id: events-topic
+    kind: azureServiceBus
+    appConfig:
+      topic:
+        # `fallback` is the topic name. The `env` next to it is just a
+        # placeholder - the operator ignores it, does NOT need to exist.
+        - env: TOPIC
+          fallback: "MyApp.Events~OrderSubmitted"
+      subscription:
+        - env: SERVICE_BUS_SUBSCRIPTION_NAME
+```
+
+The subscription is different: its env var **is** read and rewritten to point your local process at its own session subscription, so `subscription.env` must be the real variable your app uses. In MassTransit you can set the subscription name explicitly (for example via `SubscriptionEndpoint`) and expose it through that variable.
+
 ##### AppConfig reference fields
 
 Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that describes how to find the resource name in the workload's environment:
@@ -231,7 +251,7 @@ Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that descr
 | ----- | :---------: | :------: |
 | `env` | Exact environment variable name | One of `env` or `envLike` |
 | `envLike` | Regex pattern matching multiple environment variable names | One of `env` or `envLike` |
-| `fallback` | Fallback value if the variable is not found (only with `env`) | No |
+| `fallback` | Value to use when the `env` variable is not present in the pod. Useful for topics whose name is fixed but not exposed via an environment variable (see [When the topic name is not in an environment variable](#when-the-topic-name-is-not-in-an-environment-variable)). Only with `env`. | No |
 | `valueSelector` | JSON selector to extract value(s) from the variable content (e.g. `.key`, `.[]`) | No |
 | `valuePattern` | Regex that captures the resource name embedded in a larger value (a URL, path, or connection string). See [Preserving the value format](#preserving-the-value-format). | No |
 | `containers` | Limit resolution to specific containers. Defaults to all containers. | No |
