@@ -55,8 +55,23 @@ You may also pass `--pretty` to pretty-print each event.
 Every event has the same envelope — `service_name`, `timestamp`, and a `data` payload:
 
 ```json
-{"service_name":"my-app","timestamp":"2026-06-17T12:00:00Z","data":{"http_request":{"method":"GET","uri":"/health","headers":{"host":"my-app"},"version":"HTTP/1.1"}}}
+{
+  "service_name": "my-app",
+  "timestamp": "2026-06-17T12:00:00Z",
+  "data": {
+    "http_request": {
+      "method": "GET",
+      "uri": "/health",
+      "headers": {
+        "host": "my-app"
+      },
+      "version": "HTTP/1.1"
+    }
+  }
+}
 ```
+(examples are pretty-printed for clarity; actual output is compact unless `--pretty` is passed)
+
 
 To work with just the payload, extract `.data` with `jq`:
 
@@ -69,26 +84,56 @@ mirrord subscribe --key my-key | jq '.data'
 + **`http_request`** — an intercepted (stolen) request:
 
 ```json
-{"http_request":{"method":"GET","uri":"/health","headers":{"host":"my-app"},"version":"HTTP/1.1"}}
+{
+  "http_request": {
+    "method": "GET",
+    "uri": "/health",
+    "headers": {
+      "host": "my-app"
+    },
+    "version": "HTTP/1.1"
+  }
+}
 ```
 
 + **`http_response`** — the response to a stolen request:
 
 ```json
-{"http_response":{"status":200,"version":"HTTP/1.1","headers":{"content-type":"application/json"}}}
+{
+  "http_response": {
+    "status": 200,
+    "version": "HTTP/1.1",
+    "headers": {
+      "content-type": "application/json"
+    }
+  }
+}
 ```
 
 + **`queue_message`** — a queue message routed to your session (`message_id` and
 `correlation_id` are included when the broker provides them):
 
 ```json
-{"queue_message":{"queue_type":"azure_service_bus","queue_name":"orders","correlation_id":"trace-123","properties":{"tenant":"test"}}}
+{
+  "queue_message": {
+    "queue_type": "azure_service_bus",
+    "queue_name": "orders",
+    "correlation_id": "trace-123",
+    "properties": {
+      "tenant": "test"
+    }
+  }
+}
 ```
 
 + **`lagged`** — your consumer fell behind and the operator dropped `count` events:
 
 ```json
-{"lagged":{"count":12}}
+{
+  "lagged": {
+    "count": 12
+  }
+}
 ```
 Lagging takes place whenever the consumer is not able to keep up with the messages and receive them in a timely fashion (e.g. due to a slow network connection). By default, the operator buffers up to 2048 messages (configurable in `values.yaml` through `subscribeEventBufferSize`), and lagging will take place if more than this many messages accumulate in the internal buffer without the consumer receiving them. Note that lagging only affects slow consumers — functioning consumers will continue to receive all events even in the presence of slow peers.
 
