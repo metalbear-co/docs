@@ -1,19 +1,3 @@
----
-title: Queue Splitting
-date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-weight: 170
-toc: true
-tags:
-  - team
-  - enterprise
-description: Sharing queues by splitting messages between multiple clients and the cluster
----
-
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
 1. Running your application with mirrord without any special configuration will result in your local application competing with the deployed application (and potentially other mirrord runs by teammates) for queue messages.

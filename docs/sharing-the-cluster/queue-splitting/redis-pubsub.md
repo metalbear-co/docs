@@ -2,6 +2,10 @@ This page covers queue splitting for [Redis Pub/Sub](https://redis.io/docs/lates
 
 The word "queue" on this page refers to a Redis Pub/Sub channel.
 
+{% hint style="info" %}
+Queue splitting for Redis Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
+{% endhint %}
+
 ### How It Works
 
 The mirrord operator subscribes to the same Redis channel(s) the deployed workload uses, then re-publishes each incoming message to temporary channels based on the users' filters.

@@ -3,7 +3,14 @@ This page covers queue splitting for [Kafka](https://kafka.apache.org/). For the
 The word "queue" on this page refers to a Kafka topic.
 
 {% hint style="info" %}
-Already using the deprecated `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig`? They still work, but we recommend moving to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
+Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
+{% endhint %}
+
+{% hint style="warning" %}
+**⚠️ Deprecated CRD**
+
+`MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig` are deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
+See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
 {% endhint %}
 
 ### How It Works

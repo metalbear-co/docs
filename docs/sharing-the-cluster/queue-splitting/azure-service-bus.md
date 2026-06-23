@@ -1,5 +1,9 @@
 This page covers queue splitting for [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
+{% hint style="info" %}
+Queue splitting for Azure Service Bus requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
+{% endhint %}
+
 ### How It Works
 
 Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both, but each uses a different routing mechanism.

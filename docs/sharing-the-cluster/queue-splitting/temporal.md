@@ -3,7 +3,7 @@ This page covers queue splitting for [Temporal](https://temporal.io). For the ge
 The word "queue" on this page refers to a Temporal task queue.
 
 {% hint style="info" %}
-Temporal splitting is **experimental**. It works today, but its configuration and behavior may change in upcoming releases as we refine it. We'd love your feedback - please reach out if you try it.
+Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
 ### How It Works

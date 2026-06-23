@@ -2,6 +2,10 @@ This page covers queue splitting for [Google Cloud Pub/Sub](https://cloud.google
 
 The word "queue" on this page refers to a Pub/Sub subscription.
 
+{% hint style="info" %}
+Queue splitting for Google Cloud Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
+{% endhint %}
+
 ### How It Works
 
 First, we have a consumer app reading messages from a Google Cloud Pub/Sub subscription.

@@ -1,7 +1,14 @@
 This page covers queue splitting for [Amazon SQS](https://aws.amazon.com/sqs/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 {% hint style="info" %}
-Already using the deprecated `MirrordWorkloadQueueRegistry`? It still works, but we recommend moving to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
+Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
+{% endhint %}
+
+{% hint style="warning" %}
+**⚠️ Deprecated CRD**
+
+`MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
+See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
 {% endhint %}
 
 ### How It Works
