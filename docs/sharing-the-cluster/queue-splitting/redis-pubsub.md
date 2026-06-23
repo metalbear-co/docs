@@ -1,18 +1,3 @@
----
-title: Queue Splitting - Redis Pub/Sub
-date: 2026-06-21T00:00:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-toc: true
-tags:
-  - team
-  - enterprise
-description: Splitting Redis Pub/Sub channels between local applications and the cluster
----
-
 This page covers queue splitting for [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a Redis Pub/Sub channel.

@@ -1,18 +1,3 @@
----
-title: Queue Splitting - Google Cloud Pub/Sub
-date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-toc: true
-tags:
-  - team
-  - enterprise
-description: Splitting Google Cloud Pub/Sub subscriptions between local applications and the cluster
----
-
 This page covers queue splitting for [Google Cloud Pub/Sub](https://cloud.google.com/pubsub). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a Pub/Sub subscription.
@@ -260,6 +245,46 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 {% endstep %}
 {% endstepper %}
+
+### Configuring temporary subscriptions
+
+By default the temporary subscriptions mirrord creates are deep copies of the source subscription, so they inherit its settings - including its acknowledgement deadline, message retention, and expiration. You can override these per queue by pointing its `queueConfig` at a `MirrordPropertyList`:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: user-events-queue-config
+  namespace: events
+spec:
+  properties:
+    - name: ack_deadline_seconds
+      value: "120"
+    - name: message_retention_seconds
+      value: "3600"
+    - name: expiration_seconds
+      value: "never"
+```
+
+Reference it from the queue entry in the `MirrordSplitConfig`:
+
+```yaml
+queues:
+  - id: user-events
+    kind: GooglePubSub
+    queueConfig: user-events-queue-config
+    appConfig:
+      subscription:
+        - env: PUBSUB_SUBSCRIPTION
+```
+
+Each key is optional, and any key you leave out keeps the value copied from the source subscription. All of them apply to the temporary subscriptions created for this queue. An invalid value for a key is ignored (a warning is logged) and that setting falls back to the source subscription's value, so a typo never fails the session.
+
+All three values are forwarded to GCP, which enforces its own allowed ranges (see the [`Subscription` reference](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#Subscription) for the current limits). A value GCP considers out of range is rejected by GCP when the temporary subscription is created.
+
+* `ack_deadline_seconds` (integer seconds) - the acknowledgement deadline. Raising it gives your local application more time to handle a message before Pub/Sub considers it unacknowledged and redelivers it, which is useful when you pause on a breakpoint while debugging.
+* `message_retention_seconds` (integer seconds) - how long unacknowledged messages are kept, so a backlog is not dropped while you debug.
+* `expiration_seconds` (integer seconds, or `never`) - how long the temporary subscription survives without activity before Pub/Sub deletes it. Use `never` to keep it for the whole session, which prevents the subscription from being garbage-collected while the deployed consumer is paused.
 
 ### Preserving the value format
 

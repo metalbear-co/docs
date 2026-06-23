@@ -1,21 +1,10 @@
----
-title: Queue Splitting - Kafka
-date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-toc: true
-tags:
-  - team
-  - enterprise
-description: Splitting Kafka topics between local applications and the cluster
----
-
 This page covers queue splitting for [Kafka](https://kafka.apache.org/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a Kafka topic.
+
+{% hint style="info" %}
+Already using the deprecated `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig`? They still work, but we recommend moving to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
+{% endhint %}
 
 ### How It Works
 
@@ -84,7 +73,7 @@ The Kafka consumer group used by the operator's own client is managed by mirrord
 {% endhint %}
 
 {% hint style="info" %}
-If no `MirrordPropertyList` with the referenced name exists in the target's namespace, the operator falls back to a legacy `MirrordKafkaClientConfig` of the same name in the operator's namespace. This keeps older setups working untouched. See [Migrating to `MirrordSplitConfig`](#migrating-to-mirrordsplitconfig).
+If no `MirrordPropertyList` with the referenced name exists in the target's namespace, the operator falls back to a legacy `MirrordKafkaClientConfig` of the same name in the operator's namespace. This keeps older setups working untouched. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
 {% endhint %}
 
 {% endstep %}
@@ -180,112 +169,6 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 {% endstep %}
 {% endstepper %}
-
-### Migrating to `MirrordSplitConfig`
-
-Earlier versions of mirrord used two resources to configure Kafka splitting: `MirrordKafkaTopicsConsumer` (which queues to split and how to find their names) and `MirrordKafkaClientConfig` (the Kafka client connection).
-
-{% hint style="info" %}
-`MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` are deprecated but still fully supported. The operator reads existing `MirrordKafkaTopicsConsumer` objects on the fly and drives the split through the same unified flow, and the new `clientConfig` field transparently falls back to a `MirrordKafkaClientConfig` of the same name in the operator's namespace. Your current setups keep working with no change. New setups should use `MirrordSplitConfig` + `MirrordPropertyList`, and we recommend migrating existing ones so all your configuration lives in one place.
-{% endhint %}
-
-Here is the same configuration in the deprecated and the new format, side by side.
-
-Deprecated `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig`:
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaTopicsConsumer
-metadata:
-  name: meme-app-topics-consumer
-  namespace: meme
-spec:
-  consumerApiVersion: apps/v1
-  consumerKind: Deployment
-  consumerName: meme-app
-  topics:
-  - id: views-topic
-    clientConfig: base-config
-    groupIdSources:
-    - directEnvVar:
-        container: consumer
-        variable: KAFKA_GROUP_ID
-    nameSources:
-    - directEnvVar:
-        container: consumer
-        variable: KAFKA_TOPIC_NAME
-        fallback: views-topic
----
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaClientConfig
-metadata:
-  name: base-config
-  namespace: mirrord # operator namespace
-spec:
-  properties:
-  - name: bootstrap.servers
-    value: kafka.default.svc.cluster.local:9092
-```
-
-Equivalent `MirrordSplitConfig` + `MirrordPropertyList`:
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1
-kind: MirrordSplitConfig
-metadata:
-  name: meme-app-split
-  namespace: meme
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: meme-app
-  queues:
-    - id: views-topic
-      kind: kafka
-      clientConfig: kafka-connection
-      appConfig:
-        topic:
-          - env: KAFKA_TOPIC_NAME
-            fallback: views-topic
-            containers:
-              - consumer
-        groupId:
-          - env: KAFKA_GROUP_ID
-            containers:
-              - consumer
----
-apiVersion: mirrord.metalbear.co/v1
-kind: MirrordPropertyList
-metadata:
-  name: kafka-connection
-  namespace: meme # same namespace as the target workload
-spec:
-  properties:
-    - name: bootstrap.servers
-      value: kafka.default.svc.cluster.local:9092
-```
-
-Field mapping:
-
-| Deprecated | `MirrordSplitConfig` |
-| ---------- | -------------------- |
-| `consumerApiVersion` / `consumerKind` / `consumerName` | `spec.targetRef.apiVersion` / `kind` / `name` |
-| `topics[].id` | `spec.queues[].id` |
-| `topics[].nameSources[].directEnvVar` | `appConfig.topic[]` (`variable` -> `env`, `container` -> `containers`, `fallback` -> `fallback`) |
-| `topics[].groupIdSources` | `appConfig.groupId[]` |
-| `topics[].applicationIdSources` | `appConfig.appId[]` |
-| `topics[].clientConfig` (a `MirrordKafkaClientConfig`) | `spec.queues[].clientConfig` (a `MirrordPropertyList` in the target namespace, or the same legacy name as a fallback) |
-| `consumerRestartTimeout` | `spec.restart.timeout` |
-| `splitTtl` | `spec.drainTimeout` |
-
-The `MirrordKafkaClientConfig` properties map one-to-one onto `MirrordPropertyList` properties. The only difference is the namespace: a `MirrordPropertyList` lives in the target's namespace, while `MirrordKafkaClientConfig` lives in the operator's namespace.
-
-To migrate:
-1. Create a `MirrordPropertyList` in the target's namespace with your Kafka client properties (or keep your existing `MirrordKafkaClientConfig` - the new `clientConfig` falls back to it by name).
-2. Create the new `MirrordSplitConfig` using the mapping above.
-3. Start a session and verify messages are split as expected.
-4. Once you are confident, delete the old `MirrordKafkaTopicsConsumer` (and `MirrordKafkaClientConfig`, if you moved its properties into a `MirrordPropertyList`).
 
 ### Additional Options
 

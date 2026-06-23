@@ -1,19 +1,8 @@
----
-title: Queue Splitting - Amazon SQS
-date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-21T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-toc: true
-tags:
-  - team
-  - enterprise
-description: Splitting Amazon SQS queues between local applications and the cluster
----
-
 This page covers queue splitting for [Amazon SQS](https://aws.amazon.com/sqs/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
+
+{% hint style="info" %}
+Already using the deprecated `MirrordWorkloadQueueRegistry`? It still works, but we recommend moving to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
+{% endhint %}
 
 ### How It Works
 
@@ -258,107 +247,6 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 {% endstep %}
 {% endstepper %}
-
-### Migrating to `MirrordSplitConfig`
-
-Earlier versions of mirrord used the `MirrordWorkloadQueueRegistry` resource to configure SQS splitting.
-
-{% hint style="info" %}
-`MirrordWorkloadQueueRegistry` is deprecated but still fully supported. The operator reads existing objects with `queueType: SQS` on the fly and drives the split through the same unified flow, so your current setups keep working with no change. New setups should use `MirrordSplitConfig`, and we recommend migrating existing ones so all your configuration lives in one place.
-{% endhint %}
-
-Here is the same configuration in the deprecated and the new format, side by side.
-
-Deprecated `MirrordWorkloadQueueRegistry`:
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordWorkloadQueueRegistry
-metadata:
-  name: meme-app-q-registry
-  namespace: meme
-spec:
-  consumer:
-    name: meme-app
-    workloadType: Deployment
-    container: main
-  queues:
-    meme-queue:
-      queueType: SQS
-      nameSource:
-        envVar: INCOMING_MEME_QUEUE_NAME
-      tags:
-        tool: mirrord
-      sns: true
-    ad-queue:
-      queueType: SQS
-      nameSource:
-        envVar: AD_QUEUE_NAME
-```
-
-Equivalent `MirrordSplitConfig` (plus a `MirrordPropertyList` for the per-queue options):
-
-```yaml
-apiVersion: queues.mirrord.metalbear.co/v1
-kind: MirrordSplitConfig
-metadata:
-  name: meme-app-split
-  namespace: meme
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: meme-app
-  queues:
-    - id: meme-queue
-      kind: sqs
-      queueConfig: meme-queue-options
-      appConfig:
-        queue:
-          - env: INCOMING_MEME_QUEUE_NAME
-            containers:
-              - main
-    - id: ad-queue
-      kind: sqs
-      appConfig:
-        queue:
-          - env: AD_QUEUE_NAME
-            containers:
-              - main
----
-apiVersion: mirrord.metalbear.co/v1
-kind: MirrordPropertyList
-metadata:
-  name: meme-queue-options
-  namespace: meme
-spec:
-  properties:
-    - name: sns
-      value: 'true'
-    - name: tags
-      value: '{"tool":"mirrord"}'
-```
-
-Field mapping:
-
-| `MirrordWorkloadQueueRegistry` | `MirrordSplitConfig` |
-| ------------------------------ | -------------------- |
-| `spec.consumer.name` / `workloadType` | `spec.targetRef.name` / `kind` (with `apiVersion`) |
-| `spec.consumer.container` | `appConfig.queue[].containers` |
-| `spec.queues.<key>` | `spec.queues[].id` |
-| `queueType: SQS` | `kind: sqs` |
-| `nameSource.envVar` | `appConfig.queue[].env` |
-| `nameSource.regexPattern` | `appConfig.queue[].envLike` |
-| `fallbackName` | `appConfig.queue[].fallback` |
-| `namesFromJsonMap: true` | `appConfig.queue[].valueSelector: ".[]"` |
-| inline `sns` | `queueConfig` property `sns: "true"` |
-| inline `s3Event` | `queueConfig` property `s3_event: "true"` |
-| inline `tags` | `queueConfig` property `tags` (JSON object string) |
-
-To migrate:
-1. Create the new `MirrordSplitConfig` (and any `MirrordPropertyList` for per-queue options) using the mapping above.
-2. Start a session and verify messages are split as expected.
-3. Once you are confident, delete the old `MirrordWorkloadQueueRegistry`.
 
 ### Setting a filter
 

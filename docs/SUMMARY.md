@@ -63,6 +63,8 @@
   * [Azure Service Bus](sharing-the-cluster/queue-splitting/azure-service-bus.md)
   * [Redis Pub/Sub](sharing-the-cluster/queue-splitting/redis-pubsub.md)
   * [Temporal ⚠️](sharing-the-cluster/queue-splitting/temporal.md)
+  * [More](sharing-the-cluster/queue-splitting/more.md)
+    * [Migrating to MirrordSplitConfig](sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [Branch Management](sharing-the-cluster/db-branch-management.md)
   * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)

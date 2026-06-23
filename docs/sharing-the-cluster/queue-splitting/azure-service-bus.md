@@ -1,18 +1,3 @@
----
-title: Queue Splitting - Azure Service Bus
-date: 2024-08-31T13:37:00.000Z
-lastmod: 2026-06-22T00:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: using-mirrord
-toc: true
-tags:
-  - team
-  - enterprise
-description: Splitting Azure Service Bus queues and topics between local applications and the cluster
----
-
 This page covers queue splitting for [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 ### How It Works
