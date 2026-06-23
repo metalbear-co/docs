@@ -47,6 +47,7 @@
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
 * [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 * [Local UI](using-mirrord/local-ui.md)
+* [Subscribing to Events](using-mirrord/subscribe.md)
 
 ## Sharing the Cluster
 
