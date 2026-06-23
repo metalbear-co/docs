@@ -29,7 +29,7 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, and "subscription" in the context of Google Cloud Pub/Sub.
 {% endhint %}
 
-### How It Works
+## How It Works
 
 When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue.
 That temporary queue is *exclusive* to the target workload.
@@ -141,7 +141,7 @@ Please note that:
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
 
-### Enabling Queue Splitting in Your Cluster
+## Enabling Queue Splitting in Your Cluster
 
 {% tabs %}
 
@@ -150,14 +150,14 @@ Please note that:
 {% stepper %}
 {% step %}
 
-#### Enable SQS splitting in the Helm chart
+### Enable SQS splitting in the Helm chart
 
 Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 {% endstep %}
 {% step %}
 
-#### Authenticate and authorize the mirrord operator
+### Authenticate and authorize the mirrord operator
 
 The mirrord operator will need to be able to perform operations on the SQS queues.
 To do this, it will build an SQS client, using the default credentials provider chain.
@@ -248,7 +248,7 @@ In that case, grant the operator:
 {% endstep %}
 {% step %}
 
-#### Authorize deployed consumers
+### Authorize deployed consumers
 
 In order to be targeted with SQS splitting, a deployed consumer must be able to use the temporary queues created by mirrord.
 E.g. if the consumer application retrieves the queue's URL based on its name, lists queue's tags, consumes and deletes messages from the queue — it must be able to do the same on a temporary queue.
@@ -261,7 +261,7 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 {% endstep %}
 {% step %}
 
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence
@@ -305,7 +305,7 @@ The registry above says that:
 3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 4. When creating a temporary queue derived from either of the two queues, mirrord operator should add the tag `tool=mirrord`.
 
-##### Link the registry to the deployed consumer
+#### Link the registry to the deployed consumer
 
 The queue registry is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
 The reference is specified with `spec.consumer`:
@@ -313,7 +313,7 @@ The reference is specified with `spec.consumer`:
 * `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
 * `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
 
-##### Desribe consumed queues in the registry
+#### Desribe consumed queues in the registry
 
 The queue registry describes SQS queues consumed by the referenced consumer.
 The queues are described in entries of the `spec.queues` object.
@@ -381,14 +381,14 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% stepper %}
 {% step %}
 
-#### Enable Kafka splitting in the Helm chart
+### Enable Kafka splitting in the Helm chart
 
 Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 {% endstep %}
 {% step %}
 
-#### Configure the operator's Kafka client
+### Configure the operator's Kafka client
 
 The mirrord operator will need to be able to perform some operations on the Kafka cluster.
 To allow for properly configuring the operator's Kafka client, on operator installation with `operator.kafkaSplitting` enabled,
@@ -433,7 +433,7 @@ See [additional options](queue-splitting.md#additional-options) section for more
 {% endstep %}
 {% step %}
 
-#### Authorize deployed consumers
+### Authorize deployed consumers
 
 In order to be targeted with Kafka splitting, a deployed consumer must be able to use the temporary queues created by mirrord.
 E.g. if the consumer application describes the queue or reads messages from it — it must be able to do the same on a temporary queue.
@@ -442,7 +442,7 @@ This might require extra actions on your side to adjust the authorization, for e
 {% endstep %}
 {% step %}
 
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.kafkaSplitting` enabled,
 a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster
@@ -484,7 +484,7 @@ If the variable is absent, the fallback value `views-topic` is used instead.
 The Kafka consumer group id is read from environment variable `KAFKA_GROUP_ID` in container `consumer`.
 3. The Kafka queue can be referenced in a mirrord config under ID `views-topic`.
 
-##### Link the topics consumer resource to the deployed consumer
+#### Link the topics consumer resource to the deployed consumer
 
 The topics consumer resource is namespaced, so it can only reference a Kafka consumer deployed in the same namespace.
 The reference is specified with `spec.consumer*` fields, which cover api version, kind, and name of the Kubernetes workload.
@@ -498,7 +498,7 @@ consumerName: kafka-notifications-worker
 
 The operator supports Kafka splitting on deployments, stateful sets, and Argo rollouts.
 
-##### Desribe consumed queues in the topics consumer resource
+#### Desribe consumed queues in the topics consumer resource
 
 The topics consumer resource describes Kafka queues consumed by the referenced consumer.
 The queues are described in entries of the `spec.topics` list:
@@ -520,9 +520,9 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Additional Options
+### Additional Options
 
-##### Customizing Temporary Kafka Queue Names
+#### Customizing Temporary Kafka Queue Names
 
 {% hint style="info" %}
 Available since chart version `1.27` and operator version `3.114.0`.
@@ -547,7 +547,7 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 * `{{FALLBACK}}` will resolve either to `-fallback-` or `-` literal.
 * `{{ORIGINAL_TOPIC}}` will resolve to the name of the original topic that is being split.
 
-##### Reusing Kafka Client Configs
+#### Reusing Kafka Client Configs
 
 `MirrordKafkaClientConfig` resource supports property inheritance via `spec.parent` field. When resolving a resource `config-A` that has a parent `config-B`:
 
@@ -594,7 +594,7 @@ bootstrap.servers=kafka.default.svc.cluster.local:9092
 client.id=mirrord-operator
 ```
 
-##### Configuring Kafka Clients with Secrets
+#### Configuring Kafka Clients with Secrets
 
 `MirrordKafkaClientConfig` also supports loading properties from a Kubernetes [`Secret`](https://kubernetes.io/docs/concepts/configuration/secret/), with the `spec.loadFromSecret` field.
 The value for `spec.loadFromSecret` is given in the form: `<secret-namespace>/<secret-name>`.
@@ -626,7 +626,7 @@ spec:
 Note that by default, mirrord operator has read access only to the secrets in the operator's namespace.
 {% endhint %}
 
-##### Configuring Custom Kafka Authentication
+#### Configuring Custom Kafka Authentication
 
 For authentication methods that cannot be handled just by setting [client properties](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md),
 we provide a separate field `spec.authenticationExtra`. The field allows for specifying custom authentication methods:
@@ -661,7 +661,7 @@ Note that operator's service account can be annotated with the IAM role's ARN wi
 {% endtab %}
 {% endtabs %}
 
-##### Configuring Workload Restart
+#### Configuring Workload Restart
 
 To inject the names of the temporary queues into the consumer workload, 
 the operator always requires the workload to be restarted.
@@ -683,14 +683,14 @@ is started before the TTL elapses. Specified in seconds.
 {% stepper %}
 {% step %}
 
-#### Enable RabbitMQ splitting in the Helm chart
+### Enable RabbitMQ splitting in the Helm chart
 
 Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 {% endstep %}
 {% step %}
 
-#### Cluster Declaration
+### Cluster Declaration
 
 The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters.
 As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting. A `MirrordPropertyList` must live in the same namespace as the consumer workload (and the `MirrordWorkloadQueueRegistry`), which may very well be different than your RabbitMQ broker's namespace.
@@ -755,7 +755,7 @@ spec:
 
 {% endhint %}
 
-##### Cluster Properties
+#### Cluster Properties
 
 | Property              | Description                                                                                                                                                              | Required | Type                                                          | Default                            |
 | --------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :------------------------------------------------------------:|:----------------------------------:|
@@ -774,7 +774,7 @@ spec:
 
 ¹ `host`, `username`, and `password` are each required, but can be supplied either directly or via `url` (an AMQP URI always resolves a host, username, and password, defaulting to `guest`/`guest` for credentials not present in the URI). `url` requires mirrord operator version `3.170.0` or higher.
 
-##### Queue Declare Properties
+#### Queue Declare Properties
 
 | Property              | Description                                                                                                       | Required | Type                     | Default   |
 | --------------------- | :---------------------------------------------------------------------------------------------------------------: | :------: | :-----------------------:|:---------:|
@@ -786,7 +786,7 @@ spec:
 {% endstep %}
 {% step %}
 
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
 type is defined in your cluster — `MirrordWorkloadQueueRegistry`. Users with permissions to get CRDs can verify its existence
@@ -827,7 +827,7 @@ The registry above says that:
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
-##### Link the registry to the deployed consumer
+#### Link the registry to the deployed consumer
 
 The queue registry is a namespaced resource, so it can only reference a consumer deployed in the same namespace.
 The reference is specified with `spec.consumer`:
@@ -835,7 +835,7 @@ The reference is specified with `spec.consumer`:
 * `workloadType` — type of the Kubernetes workload of the deployed consumer. Right now only consumers deployed in deployments and rollouts are supported.
 * `container` — name of the exact container running in the workload. This field is optional. If you omit it, the registry will reference all of the workload's containers.
 
-##### Describe consumed queues in the registry
+#### Describe consumed queues in the registry
 
 The queue registry describes RabbitMQ queues consumed by the referenced consumer.
 The queues are described in entries of the `spec.queues` object.
@@ -870,14 +870,14 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% stepper %}
 {% step %}
 
-#### Enable GCP Pub/Sub splitting in the Helm chart
+### Enable GCP Pub/Sub splitting in the Helm chart
 
 Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 {% endstep %}
 {% step %}
 
-#### Authenticate the mirrord operator
+### Authenticate the mirrord operator
 
 The mirrord operator needs access to the Google Cloud Pub/Sub API to create and manage temporary topics and subscriptions.
 
@@ -960,14 +960,14 @@ A good starting point is to assign the `roles/pubsub.editor` role to the operato
 {% endstep %}
 {% step %}
 
-#### Authorize deployed consumers
+### Authorize deployed consumers
 
 In order to be targeted with Pub/Sub splitting, a deployed consumer must be able to read from the temporary subscriptions created by mirrord. If the consumer's IAM permissions are scoped to specific subscription names, you will need to extend them to cover subscriptions with the `mirrord-tmp-` prefix. This prefix is customizable via the `spec.tmpNameTemplate` field in your `MirrordSplitConfig` resource.
 
 {% endstep %}
 {% step %}
 
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.gcpPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -1010,14 +1010,14 @@ The `MirrordSplitConfig` above says that:
 4. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
 5. The subscription can be referenced in a mirrord config under ID `user-events`.
 
-##### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 * `apiVersion` - API version of the Kubernetes workload (e.g. `apps/v1`).
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-##### Describe consumed subscriptions
+#### Describe consumed subscriptions
 
 Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions consumed by the workload:
 
@@ -1090,14 +1090,14 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% stepper %}
 {% step %}
 
-#### Enable Azure Service Bus splitting in the Helm chart
+### Enable Azure Service Bus splitting in the Helm chart
 
 Enable the `operator.azureServiceBusSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 {% endstep %}
 {% step %}
 
-#### Authenticate the mirrord operator
+### Authenticate the mirrord operator
 
 The mirrord operator needs to connect to your Azure Service Bus namespace to consume and re-route messages. You have three options for authentication:
 
@@ -1116,7 +1116,7 @@ Register an Azure AD application, create a client secret, and assign it the **Az
 {% endstep %}
 {% step %}
 
-#### Create a MirrordPropertyList
+### Create a MirrordPropertyList
 
 As part of operator installation with `operator.azureServiceBusSplitting` enabled, the `MirrordPropertyList` custom resource type is available in your cluster. Create one with your Service Bus connection details.
 
@@ -1210,7 +1210,7 @@ spec:
 
 {% endtabs %}
 
-##### Property Reference
+#### Property Reference
 
 | Property | Description | Required |
 | -------- | :---------: | :------: |
@@ -1223,7 +1223,7 @@ spec:
 {% endstep %}
 {% step %}
 
-#### Create a MirrordSplitConfig
+### Create a MirrordSplitConfig
 
 Create a `MirrordSplitConfig` resource for the target workload. Azure Service Bus uses `kind: azureServiceBus` in queue entries and supports both the Queue model and the Topic/Subscription model.
 
@@ -1277,7 +1277,7 @@ spec:
 
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
 
-##### AppConfig reference fields
+#### AppConfig reference fields
 
 Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that describes how to find the resource name in the workload's environment:
 
@@ -1306,7 +1306,7 @@ queues:
         - envLike: "^SB_QUEUE_.*"
 ```
 
-##### Preserving the value format
+#### Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use`valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
 
@@ -1326,7 +1326,7 @@ queues:
 
 With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
 
-##### Per-queue client configuration
+#### Per-queue client configuration
 
 To use a different `MirrordPropertyList` for a specific queue entry (instead of the default from `clientConfigs.azureServiceBus`), set the `clientConfig` field:
 
@@ -1340,7 +1340,7 @@ queues:
         - env: SERVICE_BUS_QUEUE_NAME
 ```
 
-##### Wildcard queue ID
+#### Wildcard queue ID
 
 You can use `*` as a queue ID in the mirrord config to apply a filter to all queues defined in the `MirrordSplitConfig`:
 
@@ -1370,11 +1370,11 @@ The mirrord operator can only read the consumer's environment variables if they 
 {% endstep %}
 {% step %}
 
-#### Additional options
+### Additional options
 
 The `MirrordSplitConfig` supports several optional fields that control restart behavior, temporary resource naming, and drain timing.
 
-##### Restart policy
+#### Restart policy
 
 Controls how the workload is restarted when patched for queue splitting:
 
@@ -1392,7 +1392,7 @@ spec:
 | `timeout` | Seconds to wait for pods to become ready after restart | 60 |
 | `waitForPods` | Number of patched pods required before sessions may start, or `"all"` | 1 |
 
-##### Drain timeout
+#### Drain timeout
 
 After all splitting sessions end, the operator waits for the fallback queue to drain before deleting temporary resources. Set `drainTimeout` (in seconds) to cap how long this wait lasts:
 
@@ -1403,7 +1403,7 @@ spec:
 
 Set to `0` to skip draining entirely (temporary queues are deleted immediately). If omitted, the default is 30 seconds.
 
-##### Temporary resource name template
+#### Temporary resource name template
 
 You can customize the naming format of temporary queues/topics created by the operator:
 
@@ -1424,7 +1424,7 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 {% endtab %}
 {% endtabs %}
 
-### Setting a Filter for a mirrord Run
+## Setting a Filter for a mirrord Run
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://metalbear.com/mirrord/docs/config/options#feature-split_queues) is the configuration field they need to specify in order to filter queue messages.
@@ -1711,9 +1711,9 @@ Both `message_filter` and `jq_filter` can be combined - a message must match bot
 {% endtab %}
 {% endtabs %}
 
-### FAQ
+## FAQ
 
-##### How do I authenticate operator's Kafka client with an SSL certificate?
+#### How do I authenticate operator's Kafka client with an SSL certificate?
 
 An example `MirrordKafkaClientConfig` would look as follows:
 
@@ -1765,7 +1765,7 @@ spec:
   properties: []
 ```
 
-##### How do I authenticate operator's Kafka client with a Java KeyStore?
+#### How do I authenticate operator's Kafka client with a Java KeyStore?
 
 The mirrord operator does not support direct use of JKS files.
 In order to use JKS files with Kafka splitting, first extract all necessary certificates and key to PEM files.
@@ -1798,7 +1798,7 @@ openssl pkcs12 -in truststore.p12 -nokeys -out ca-cert.pem
 
 Then, follow the guide for [authenticating with an SSL certificate](queue-splitting.md#how-do-i-authenticate-operators-kafka-client-with-an-ssl-certificate).
 
-### Troubleshooting SQS splitting
+## Troubleshooting SQS splitting
 
 If you're trying to use SQS-splitting and are facing difficulties, here are some steps you can go through to identify
 and hopefully solve the problem.
@@ -1842,14 +1842,14 @@ First, some generally applicable steps:
       kubectl rollout restart deployment mirrord-operator -n mirrord
       ```
    
-##### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
+#### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the
 original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for
 them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can
 delete them.
 
-##### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
+#### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
 
 When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read
 directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no
@@ -1867,7 +1867,7 @@ If that service is trying to consume messages correctly, and the temporary queue
 application still doesn't get restored to its original state, please try restarting the application, deleting any
 lingering `MirrordSqsSession` objects, and if possible, restart the mirrord operator.
 
-### Troubleshooting Azure Service Bus splitting
+## Troubleshooting Azure Service Bus splitting
 
 If you are having issues with Azure Service Bus splitting, start with these general steps:
 
@@ -1889,19 +1889,19 @@ If you are having issues with Azure Service Bus splitting, start with these gene
    helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_queue_splitting::azure_service_bus=trace" metalbear/mirrord-operator
    ```
 
-##### Messages are not reaching the local application
+#### Messages are not reaching the local application
 
 Check that:
 - The producer is setting AMQP application properties on messages. The operator routes based on these properties when `message_filter` is used.
 - Your `message_filter` regex patterns match the actual property values. Property values are compared as plain strings.
 - If using `jq_filter`, verify the message body is valid JSON and the jq expression returns `true` for your test messages.
 
-##### Authentication errors in operator logs
+#### Authentication errors in operator logs
 
 - **Connection string auth**: verify the connection string is correct and the SAS key has Manage, Send, and Listen claims.
 - **Workload Identity / Managed Identity**: verify the managed identity has the **Azure Service Bus Data Owner** role on the namespace. Check that AKS Workload Identity is properly configured and the operator's service account has the correct annotations.
 - **Service Principal**: verify that `tenant_id`, `client_id`, and `client_secret` are all present in the `MirrordPropertyList` and that the app registration has the correct role assignment.
 
-##### Temporary queues are not being cleaned up
+#### Temporary queues are not being cleaned up
 
 After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.

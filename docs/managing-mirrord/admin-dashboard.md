@@ -15,7 +15,7 @@ tags:
 description: Dashboard for monitoring mirrord usage
 ---
 
-## Dashboard
+# Dashboard
 
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
@@ -31,7 +31,7 @@ Want to see the dashboard in action? Check out our [live playground](https://pla
 |-----------|------------|
 | ![Dashboard - Dark Mode](admin-dashboard/images/dashboard-dark.png) | ![Dashboard - Light Mode](admin-dashboard/images/dashboard-light.png) |
 
-### Quick Start
+## Quick Start
 
 1. Add `dashboard.enabled: true` to your license server Helm values:
 
@@ -62,11 +62,11 @@ The dashboard reads from the license server's existing session database, so your
 The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking configuration.
 {% endhint %}
 
-### Usage Tab
+## Usage Tab
 
 The Usage tab is the main view, showing metrics, session activity, and analytics charts.
 
-#### Metric Cards and Session Activity
+### Metric Cards and Session Activity
 
 ![Metric cards and session activity table](admin-dashboard/images/metrics-and-activity.png)
 
@@ -84,7 +84,7 @@ Use the time range selector in the top-right corner (**7d**, **30d**, **90d**, *
 
 Below the metrics, the **Session Activity** table shows a cross-referenced view of users and their target workloads. Each row shows the user, target, namespace, session count with a visual bar, and total time. The table is searchable and sortable by any column, with pagination for large datasets.
 
-#### Users View
+### Users View
 
 ![User charts and metrics table](admin-dashboard/images/users-view.png)
 
@@ -94,7 +94,7 @@ Switch to the **Users** tab to see user-focused analytics:
 - **User Timeline**: Shows when each user was first seen and their most recent activity, giving a quick view of adoption over time.
 - **User Metrics** table: A detailed, searchable table with columns for identifier, first active date, last seen date, total sessions, cumulative time, and average duration. Click any column header to sort.
 
-#### Targets View
+### Targets View
 
 ![Target adoption and namespace breakdown](admin-dashboard/images/targets-view.png)
 
@@ -104,7 +104,7 @@ Switch to the **Targets** tab to see target-focused analytics:
 - **Sessions by Namespace**: A horizontal bar chart breaking down session distribution across Kubernetes namespaces.
 - **Target Metrics** table: A searchable table listing each target workload with its namespace, session count, total time, and number of unique users.
 
-### ROI Calculator
+## ROI Calculator
 
 ![ROI Calculator](admin-dashboard/images/roi-calculator.png)
 
@@ -124,21 +124,21 @@ The **ROI Calculator** tab estimates the time and cost savings from using mirror
 - **Annual infrastructure savings**
 - **Net Annual ROI** after subtracting the mirrord license cost
 
-### Features
+## Features
 
-#### Dark Mode
+### Dark Mode
 
 Toggle between light and dark themes using the moon/sun icon in the top-right corner of the app bar. Your preference is saved in the browser's local storage.
 
-#### Manual Sync
+### Manual Sync
 
 Click the **Sync** button in the app bar to manually refresh all dashboard data. The last updated timestamp is displayed next to the button.
 
-#### Operator Version
+### Operator Version
 
 The operator version is displayed in the app bar for quick reference (e.g., `v3.142.0`).
 
-### Helm Configuration
+## Helm Configuration
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -147,7 +147,7 @@ The operator version is displayed in the app bar for quick reference (e.g., `v3.
 
 The chart automatically configures the container port, service port, and required environment variables when `dashboard.enabled` is set to `true`.
 
-### API Endpoints
+## API Endpoints
 
 The dashboard consumes two API endpoints from the license server. These are also available for programmatic access:
 

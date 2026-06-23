@@ -37,7 +37,7 @@ These settings give additional flexibility in how mirrord handles database branc
 }
 ```
 
-## Branch Creation Timeout
+# Branch Creation Timeout
 
 `creation_timeout_secs`
 Defines how long (in seconds) mirrord waits for a database branch to become ready after creation.
@@ -45,11 +45,11 @@ If the branch isn’t ready within this time, mirrord session fails, exists and 
 Use this field to avoid hanging operations when branch creation takes too long or fails.
 Default value is 60 seconds.
 
-## Connection Modes
+# Connection Modes
 
 mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**.
 
-#### Connection URL
+### Connection URL
 
 Provide a single environment variable that contains the full database connection string:
 
@@ -66,7 +66,7 @@ The optional `type` field controls where the environment variable is read from (
 - `"env"` (default): Direct `env` entry in the target pod spec.
 - `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
 
-#### Individual Connection Parameters (Params)
+### Individual Connection Parameters (Params)
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 
@@ -86,7 +86,7 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
 }
 ```
 
-#### Secret Source
+### Secret Source
 
 Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
 
@@ -114,7 +114,7 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
-#### Literal Value
+### Literal Value
 
 You can provide a connection parameter as a literal value directly in the config. This is useful when the credential is injected at runtime by an external system and does not appear in the pod spec where mirrord can read it.
 
@@ -136,7 +136,7 @@ Use a field with `value`:
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
-#### Composite Environment Variables
+### Composite Environment Variables
 
 Some applications pack multiple connection details into a single environment variable. For example, a target pod might expose:
 
@@ -169,14 +169,14 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
 
 During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
 
-#### Choosing the capture group
+### Choosing the capture group
 The capture group name follows the parameter name - `(?P<host>...)` for the `host` variable, `(?P<port>...)` for the `port` variable.
 
 For single-parameter patterns you can also use `(?P<value>...)` as a generic name, or a plain unnamed group like ([^:]+). If the regex contains more than one unnamed group, the first one is used.
 
 > The regex must contain at least one capture group, otherwise the configuration is rejected.
 
-#### Multiple Sources for the Same Parameter
+### Multiple Sources for the Same Parameter
 
 Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection. For example, separate read/write URLs.
 
@@ -193,7 +193,7 @@ Both `url` and individual `params` fields accept either a single value or an arr
 
 The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
 
-#### Combining arrays with `value_pattern`
+### Combining arrays with `value_pattern`
 If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. 
 
 As with plain arrays, the first entry is used as the source. Even if `WRITE_SERVER` and `READ_SERVER` point to different databases, only `WRITE_SERVER` is cloned. During the session, all entries are rewritten to point at the branch.
@@ -222,7 +222,7 @@ For example, when both `WRITE_SERVER` and `READ_SERVER ` hold a `host:port` pair
 
 The same rule applies: `WRITE_SERVER` (the first entry) is used to extract the source connection. During the session, all entries - `WRITE_SERVER`, `READ_SERVER`, both user vars, and both password vars - are rewritten to point at the branch.
 
-## Copy Modes (MySQL, PostgreSQL & MSSQL)
+# Copy Modes (MySQL, PostgreSQL & MSSQL)
 
 The `copy` field controls what data gets cloned when creating a database branch. The following modes apply to MySQL, PostgreSQL, and MSSQL. For MongoDB copy modes, see [MongoDB Copy Modes](#mongodb-copy-modes) below.
 
@@ -266,7 +266,7 @@ Developers can customize what gets copied per table. This allows copying only sp
 }
 ```
 
-##### In this example
+#### In this example
 
 The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.
@@ -277,7 +277,7 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
-## MongoDB Copy Modes
+# MongoDB Copy Modes
 
 MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
 When combined with [collection filters](#mongodb-collection-filters), the mode determines what happens to collections that are _not_ listed in the filter. Filtered collections always receive only the matching documents.
@@ -305,7 +305,7 @@ Copying large datasets can significantly increase branch creation time and stora
 MongoDB does not support a `"schema"` copy mode. In relational databases, `"schema"` copies table structures without data. MongoDB is schema-less and collections don't have a predefined structure separate from their documents, so `"empty"` and `"all"` are the available options.
 {% endhint %}
 
-#### MongoDB Collection Filters
+### MongoDB Collection Filters
 
 Developers can customize which collections are copied and apply MongoDB query filters per collection.
 
@@ -316,7 +316,7 @@ The copy mode controls the **baseline** (what happens to collections not mention
 | `"empty"` | Not created | Created with matching documents only |
 | `"all"` | Fully copied (all documents) | Copied with matching documents only |
 
-##### Example: `"mode": "all"` with filters
+#### Example: `"mode": "all"` with filters
 
 ```json
 {
@@ -336,7 +336,7 @@ The copy mode controls the **baseline** (what happens to collections not mention
 
 All collections are copied, but the `users` collection includes only documents for alice and bob, and the `orders` collection includes only documents created after the given timestamp.
 
-##### Example: `"mode": "empty"` with filters
+#### Example: `"mode": "empty"` with filters
 
 ```json
 {
@@ -353,7 +353,7 @@ All collections are copied, but the `users` collection includes only documents f
 
 Only the `users` collection is created, containing documents for alice and bob. All other collections are not created. This is useful when you only need a subset of reference data and your application handles the rest through migrations.
 
-## Redis Copy Modes
+# Redis Copy Modes
 
 Redis copy modes apply only to **remote** Redis branches. A local Redis branch always starts empty. Redis supports two modes:
 
@@ -382,7 +382,7 @@ In this example, only keys prefixed with `user:` or `session:` are copied; every
 Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
 {% endhint %}
 
-## IAM Authentication
+# IAM Authentication
 
 mirrord supports IAM authentication for **AWS RDS** and **GCP Cloud SQL**. Credentials are read from the **target pod's environment**, just like connection URLs.
 
@@ -390,9 +390,9 @@ mirrord supports IAM authentication for **AWS RDS** and **GCP Cloud SQL**. Crede
 **Default environment variables**: If you do not specify custom credential sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`). You only need additional configuration if your pod uses non-standard variable names.
 {% endhint %}
 
-### AWS RDS IAM Authentication
+## AWS RDS IAM Authentication
 
-#### Minimal Configuration
+### Minimal Configuration
 
 Uses the standard AWS environment variables already present in the target pod.
 
@@ -411,7 +411,7 @@ Uses the standard AWS environment variables already present in the target pod.
 }
 ```
 
-#### Default AWS environment variables
+### Default AWS environment variables
 
 mirrord reads the following variables from the **target pod**, not from your local shell.
 
@@ -422,7 +422,7 @@ mirrord reads the following variables from the **target pod**, not from your loc
 | `secret_access_key` | `AWS_SECRET_ACCESS_KEY` |
 | `session_token` | `AWS_SESSION_TOKEN` |
 
-#### Custom AWS environment variables
+### Custom AWS environment variables
 
 Use this only if your pod uses non-standard variable names.
 
@@ -437,9 +437,9 @@ Use this only if your pod uses non-standard variable names.
 }
 ```
 
-### GCP Cloud SQL IAM Authentication
+## GCP Cloud SQL IAM Authentication
 
-#### Minimal Configuration
+### Minimal Configuration
 
 Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 
@@ -458,14 +458,14 @@ Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 }
 ```
 
-#### Default GCP environment variables
+### Default GCP environment variables
 
 | Field | Default fallback |
 |-------|------------------|
 | `credentials_path` | `GOOGLE_APPLICATION_CREDENTIALS` |
 | `project` | `GOOGLE_CLOUD_PROJECT`, `GCP_PROJECT`, `GCLOUD_PROJECT` |
 
-#### Custom GCP credentials
+### Custom GCP credentials
 
 You can override the default behavior in one of the following ways.
 
@@ -498,7 +498,7 @@ Read credentials from a file path provided via an environment variable (for exam
 Use either `credentials_json` OR `credentials_path`, not both.
 {% endhint %}
 
-##### Required Database Settings
+#### Required Database Settings
 
 GCP Cloud SQL requires TLS.
 Make sure your `DATABASE_URL` includes: `sslmode=require`
