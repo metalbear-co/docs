@@ -103,8 +103,9 @@ spec:
 
 | Property              | Description                                                         | Required | Type                                                          | Default                            |
 | --------------------- | :-----------------------------------------------------------------: | :------: | :------------------------------------------------------------:|:----------------------------------:|
+| `url`                 | Full AMQP connection URL (e.g. `amqp://user:pass@host:5672/vhost`), used as an alternative to `host`. Any explicitly set `scheme`, `port`, `username`, `password`, or `vhost` overrides the corresponding part parsed from the URL | ✓ ¹ | string (URI) | |
 | `scheme`              | Protocol used for the connection                                    |          | `amqp` or `amqps`                                             | `amqp`                             |
-| `host`                | Hostname or IP address of the message broker                        |     ✓    | string                                                        |                                    |
+| `host`                | Hostname or IP address of the message broker                        |   ✓ ¹    | string                                                        |                                    |
 | `port`                | Network port the broker is listening on                             |          | integer                                                       | 5671 or 5672 according to `scheme` |
 | `username`            | Credential used to authenticate the connection                      |          | string                                                        |                                    |
 | `password`            | Secret key or password for the specified user                       |          | string                                                        |                                    |
@@ -114,6 +115,8 @@ spec:
 | `tls.key`             | private key (PEM format) matching the client certificate            |          | string (PEM)                                                  |                                    |
 | `ca-certificates.crt` | CA certificate(s) (PEM format) used to verify the broker's identity |          | string (PEM)                                                  |                                    |
 | `client.*`            | Custom metadata or properties sent to the broker                    |          | object / key-value pairs                                      |                                    |
+
+¹ Provide either `url` or `host`. Whenever a part is both present in the `url` and set as its own property, the individual property wins. A `username` and `password` are always required - set them directly or include them in the `url`.
 
 ##### Queue Declare Properties
 
