@@ -6,6 +6,12 @@ description: "Stream a session's interception events as JSON with mirrord subscr
 `mirrord subscribe` lets you stream live events from an active mirrord session — HTTP requests, queue messages, and operator notifications as JSON to stdout. It's useful in CI/tests: assert that a request actually got stolen to your local process instead of silently hitting the real service, so a broken interception fails the build instead of
 going green.
 
+ **When events are emitted?**
+- HTTP - an event is emitted for each request/response that mirrord intercepts.
+- Queue (ASB) - an event is emitted for every message that passes through the operator while queue splitting is active — not just messages routed to your session. If no splitting session is active, no events are emitted.
+
+In both cases: no active mirrord session = no events.
+
 {% hint style="info" %}
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
