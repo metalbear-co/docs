@@ -108,7 +108,7 @@ spec:
 **To migrate:**
 1. Create the new `MirrordSplitConfig`. For any queue that had inline `sns`, `s3Event`, or `tags`, create a `MirrordPropertyList` with those options and point the queue's `queueConfig` at it.
 2. Start a session and verify messages are split as expected.
-3. Once you are confident, delete the old `MirrordWorkloadQueueRegistry`.
+3. Delete the old `MirrordWorkloadQueueRegistry`.
 
 ### Kafka
 
@@ -294,7 +294,7 @@ Field mapping:
 
 `clusterProperties` and `queueProperties` already pointed to a `MirrordPropertyList` by name; `clientConfig` and `queueConfig` point to the same `MirrordPropertyList` the same way. These rows are just renames - there is no new resource to create.
 
-To migrate:
+**To migrate:**
 1. Create the new `MirrordSplitConfig` using the mapping above. Your existing `MirrordPropertyList` cluster declaration is reused as-is.
 2. Start a session and verify messages are split as expected.
-3. Once you are confident, delete the old `MirrordWorkloadQueueRegistry`.
+3. Delete the old `MirrordWorkloadQueueRegistry`.

@@ -14,7 +14,7 @@ When a Temporal splitting session starts, the operator starts polling the real t
 
 Each user who starts a session gets their own **session virtual task queue**. The operator evaluates the user's filter against each task and routes matching tasks to that user's session queue; everything else goes to the main virtual queue that the deployed worker reads. If a session ends with tasks still buffered for it, those tasks overflow back to the main queue so they are not lost.
 
-If the filters defined by two users both match some task, the most recently started matching session receives the task.
+If two users' filters both match the same task, only one of them gets it: the task goes to whichever of those sessions started most recently.
 
 ![Temporal queue splitting full system flow](images/temporal-system-flow.svg)
 
