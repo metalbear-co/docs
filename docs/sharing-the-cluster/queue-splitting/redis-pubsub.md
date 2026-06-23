@@ -16,6 +16,8 @@ If a second user starts a session on the same channel, the operator creates anot
 
 Because Redis Pub/Sub channels are created implicitly when a message is published, the operator only manages temporary channel names - there are no extra Redis objects to clean up. When all sessions end, the operator restores the workload to read from the original channel.
 
+![Redis Pub/Sub splitting flow](images/redis-pubsub-splitting.svg)
+
 ### Enabling Redis Pub/Sub Splitting in Your Cluster
 
 {% stepper %}
