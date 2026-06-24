@@ -102,15 +102,17 @@ If the Primary cluster is also the Default cluster, no synchronization is requir
 
 ## SQS Queue Splitting in Multi-Cluster
 
-[SQS queue splitting](queue-splitting.md) works the same way in multi-cluster as it does in single-cluster. The Primary cluster sends the queue splitting config to every child session during setup, and each Workload cluster creates its own temporary queues and patches the target workload on its own.
+[SQS queue splitting](../sharing-the-cluster/queue-splitting/sqs.md) works the same way in multi-cluster as it does in single-cluster. The Primary cluster sends the queue splitting config to every child session during setup, and each Workload cluster creates its own temporary queues and patches the target workload on its own.
 
 {% hint style="info" %}
-Create your `MirrordWorkloadQueueRegistry` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
+Create your `MirrordSplitConfig` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
 {% endhint %}
 
 ## GCP Pub/Sub Queue Splitting in Multi-Cluster
 
-[GCP Pub/Sub queue splitting](queue-splitting.md) is supported in multi-cluster. Each Workload cluster creates its own main temporary resources (the fallback topic and subscription that the deployed workload reads from). The per-session filtered resources (the topic and subscription for each developer's mirrord session) are created on the Default cluster and their names are pre-populated to the Workload clusters so they can reuse them.
+[GCP Pub/Sub queue splitting](../sharing-the-cluster/queue-splitting/gcp-pubsub.md) is supported in multi-cluster. Each Workload cluster creates its own main temporary resources (the fallback topic and subscription that the deployed workload reads from). The per-session filtered resources (the topic and subscription for each developer's mirrord session) are created on the Default cluster and their names are pre-populated to the Workload clusters so they can reuse them.
+
+![Multi-cluster GCP Pub/Sub splitting for a single session](../sharing-the-cluster/queue-splitting/images/gcp-multi-cluster.png)
 
 {% hint style="info" %}
 Create your `MirrordSplitConfig` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters. You don't need to create them on each cluster manually.
