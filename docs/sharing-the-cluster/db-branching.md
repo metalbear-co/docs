@@ -84,9 +84,10 @@ For Redis, `name` is the database **index** Redis uses to select a logical datab
 6. `ttl_secs` / `ttl_mins`: Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes.
 7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
-9. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
-10. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
-11. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
+9. `copy.dump_args`: (MySQL & PostgreSQL only) Override the default arguments passed to `mysqldump` or `pg_dump`. See [Custom Dump Arguments](./db-branching-advanced-config.md#custom-dump-arguments-mysql--postgresql) for details.
+10. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
+11. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
+12. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
 
 ## Running With DB Branches
 

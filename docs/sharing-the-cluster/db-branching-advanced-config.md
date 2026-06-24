@@ -277,6 +277,60 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
+5. ### Custom Dump Arguments (MySQL & PostgreSQL)
+
+The `dump_args` field lets you override the default arguments passed to the underlying dump tool (`mysqldump` for MySQL, `pg_dump` for PostgreSQL). It is available in all three copy modes (`empty`, `schema`, and `all`).
+
+When `dump_args` is set, it **replaces** the defaults entirely. If you want to keep the defaults while adding your own flags, include them explicitly.
+
+| Database   | Dump tool    | Default arguments                            |
+|------------|-------------|----------------------------------------------|
+| MySQL      | `mysqldump` | `--single-transaction`, `--no-tablespaces`   |
+| PostgreSQL | `pg_dump`   | `--no-owner`, `--no-acl`                     |
+
+An empty list (`[]`) removes all default dump arguments.
+
+##### PostgreSQL example - exclude a large table from the dump
+
+```json
+{
+  "copy": {
+    "mode": "schema",
+    "dump_args": ["--no-owner", "--no-acl", "--exclude-table=audit_logs"]
+  }
+}
+```
+
+This keeps the PostgreSQL defaults and adds `--exclude-table=audit_logs` so `pg_dump` skips the `audit_logs` table.
+
+##### MySQL example - skip table locking
+
+```json
+{
+  "copy": {
+    "mode": "all",
+    "dump_args": ["--single-transaction", "--no-tablespaces", "--skip-lock-tables"]
+  }
+}
+```
+
+This keeps the MySQL defaults and adds `--skip-lock-tables`.
+
+##### Remove all default dump arguments
+
+```json
+{
+  "copy": {
+    "mode": "schema",
+    "dump_args": []
+  }
+}
+```
+
+{% hint style="info" %}
+`dump_args` is only supported for MySQL and PostgreSQL. MSSQL, MongoDB, and Redis branches use their own internal dump mechanisms and do not support this field.
+{% endhint %}
+
 ## MongoDB Copy Modes
 
 MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
