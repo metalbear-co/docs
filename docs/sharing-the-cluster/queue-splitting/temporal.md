@@ -10,13 +10,15 @@ Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mi
 
 Temporal has no native way to "split" a task queue, so the mirrord operator does it with a small gRPC proxy and a set of virtual task queues.
 
+![Temporal queue splitting full system flow](images/temporal-full-flow.svg)
+
 When a Temporal splitting session starts, the operator starts polling the real task queue itself, buffering the tasks it receives in memory. It then patches the deployed worker to poll a **main virtual task queue** instead of the real one, and to talk to an operator-hosted Temporal proxy instead of the real Temporal frontend. The proxy serves polls for the virtual queues from the buffered tasks, while forwarding everything else (task completions, heartbeats, and so on) to the real frontend unchanged.
 
 Each user who starts a session gets their own **session virtual task queue**. The operator evaluates the user's filter against each task and routes matching tasks to that user's session queue; everything else goes to the main virtual queue that the deployed worker reads. If a session ends with tasks still buffered for it, those tasks overflow back to the main queue so they are not lost.
 
 If two users' filters both match the same task, only one of them gets it: the task goes to whichever of those sessions started most recently.
 
-![Temporal queue splitting full system flow](images/temporal-system-flow.svg)
+![Temporal queue splitting detailed system flow](images/temporal-detailed-flow.svg)
 
 ### Enabling Temporal Splitting in Your Cluster
 
