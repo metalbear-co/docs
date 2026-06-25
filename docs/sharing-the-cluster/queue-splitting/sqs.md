@@ -449,20 +449,16 @@ If the target workload doesn't change back within the expected time, check its l
 messages.
 
 If you don't want to wait for the remote service to drain the temporary queue, and you don't care about losing those
-messages, you can cap the wait. Two settings control it:
+messages, you can cap the wait with `spec.drainTimeout` (in seconds) on the `MirrordSplitConfig`:
 
-| Setting | Unit | Scope | Effect |
-| ------- | ---- | ----- | ------ |
-| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
-| `operator.sqsSplittingLingerTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
-
-Whichever value applies is then interpreted as:
-
-| Value | Behavior |
-| ----- | -------- |
-| unset (both) | Drain indefinitely - the temporary queue is kept until the remote service empties it. |
+| `spec.drainTimeout` | Behavior |
+| ------------------- | -------- |
+| unset | Drain indefinitely - the temporary queue is kept until the remote service empties it. |
 | `0` | Skip draining; delete the temporary queue immediately. Unread messages may be lost. |
-| `N` | Wait up to `N` for the queue to drain, then delete it. |
+| `N` | Wait up to `N` seconds for the queue to drain, then delete it. |
+
+The cluster-wide `operator.sqsSplittingLingerTimeout` Helm value (in milliseconds) is deprecated and only applies to the
+legacy `MirrordWorkloadQueueRegistry`. With `MirrordSplitConfig`, use `spec.drainTimeout` (above) instead.
 
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
