@@ -219,20 +219,20 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ### Drain timeout
 
-After the last splitting session against a target ends, the operator keeps the split's temporary resources alive for a while so fallback messages can still be delivered before it tears them down. Two settings control how long it waits:
+After the last splitting session against a target ends, the operator can keep the split's temporary resources alive for a fixed window so a new session can reuse them and the workload has time to finish consuming any fallback messages, before it tears them down. The operator does not actively wait for those messages to drain - the window is a plain timeout. Two settings control how long it is:
 
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
-| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps how long the temporary resources are kept for that split. Always wins over the cluster-wide default. |
 | `operator.rmqSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
 
 Whichever value applies is then interpreted as:
 
 | Value | Behavior |
 | ----- | -------- |
-| unset (both) | Drain indefinitely - temporary resources are kept until fallback messages are drained. |
-| `0` | Skip draining; delete temporary resources immediately. Undrained messages may be lost. |
-| `N` | Wait up to `N` to drain, then delete temporary resources. |
+| unset (both) | Temporary resources are torn down as soon as the last session ends. Same as `0`. |
+| `0` | Torn down immediately. Unconsumed fallback messages may be lost. |
+| `N` | Temporary resources are kept for up to `N` seconds so a new session can reuse them, then torn down. |
 
 ### Setting a filter
 
