@@ -224,13 +224,7 @@ Two settings control the drain timeout:
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps how long that split stays patched. Always wins over the cluster-wide default. |
 | `operator.kafkaSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
 
-Whichever value applies is then interpreted as:
-
-| Value | Behavior |
-| ----- | -------- |
-| unset (both) | Unpatch as soon as the last session ends (the workload restarts). Same as `0`. |
-| `0` | Unpatch immediately (restart the workload as soon as the last session ends). |
-| `N` | Stay patched for up to `N` seconds so a new session can reuse the split, then unpatch. |
+> Set a positive `drainTimeout` to give the workload time to finish reading the temporary topic before unpatching deletes it. With unset or `0` it is deleted right away, so any messages the workload has not read yet are lost.
 
 > The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) is deprecated. It now only applies to legacy `MirrordKafkaTopicsConsumer` objects that do not set `spec.splitTtl`; it has no effect on `MirrordSplitConfig`. Use `operator.kafkaSplittingDrainTimeout` instead.
 
