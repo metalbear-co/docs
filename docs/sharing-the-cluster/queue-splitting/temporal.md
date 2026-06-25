@@ -150,20 +150,18 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ### Drain timeout
 
-After the last splitting session against a target ends, the operator can keep the split's temporary resources alive for a fixed window so a new session can reuse them and the workload has time to finish processing any fallback work, before it tears them down. The operator does not actively wait for that work to drain - the window is a plain timeout. Two settings control how long it is:
+After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for in-flight work to finish first.
 
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
-| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps how long the temporary resources are kept for that split. Always wins over the cluster-wide default. |
-| `operator.temporalSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
+| `operator.temporalSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default, used only when a config omits `drainTimeout`. |
 
-Whichever value applies is then interpreted as:
-
-| Value | Behavior |
-| ----- | -------- |
-| unset (both) | Temporary resources are torn down as soon as the last session ends. Same as `0`. |
-| `0` | Torn down immediately. Unprocessed fallback work may be lost. |
-| `N` | Temporary resources are kept for up to `N` seconds so a new session can reuse them, then torn down. |
+| `drainTimeout` | Behavior |
+| -------------- | -------- |
+| unset (both) | Tear down as soon as the last session ends (same as `0`). |
+| `0` | Tear down immediately. In-flight work may be lost. |
+| `N` | Keep resources for up to `N` seconds, then tear down. |
 
 ### Setting a filter
 
