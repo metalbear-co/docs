@@ -354,7 +354,6 @@ After all splitting sessions end, the operator will wait for the fallback subscr
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
-| `operator.azureServiceBusSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
 
 Whichever value applies is then interpreted as:
 

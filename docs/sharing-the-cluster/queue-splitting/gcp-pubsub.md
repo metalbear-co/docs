@@ -317,7 +317,6 @@ After the last splitting session against a target ends, the operator keeps the s
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
-| `operator.gcpPubsubSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
 
 Whichever value applies is then interpreted as:
 

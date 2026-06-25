@@ -155,7 +155,6 @@ After the last session against a target ends, the operator keeps the split's tem
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
-| `operator.temporalSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default, used only when a config omits `drainTimeout`. |
 
 | `drainTimeout` | Behavior |
 | -------------- | -------- |

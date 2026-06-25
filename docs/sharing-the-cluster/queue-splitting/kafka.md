@@ -11,6 +11,8 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 
 `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig` are deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
 See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
+
+The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) is deprecated together with it. It only affects legacy `MirrordKafkaTopicsConsumer` objects that do not set `spec.splitTtl` and has no effect on `MirrordSplitConfig`. It continues to work for backward compatibility, but we recommend using `MirrordSplitConfig`'s `spec.drainTimeout` instead.
 {% endhint %}
 
 ### How It Works
@@ -229,8 +231,6 @@ Two settings control the drain timeout:
 | unset (both) | Unpatch as soon as the last session ends (same as `0`). Messages not yet read from the temporary topic are lost. |
 | `0` | Unpatch immediately. Messages not yet read from the temporary topic are lost. |
 | `N` | Stay patched for up to `N` seconds so a new session can reuse the split, then unpatch. |
-
-> The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) is deprecated. It now only applies to legacy `MirrordKafkaTopicsConsumer` objects that do not set `spec.splitTtl`; it has no effect on `MirrordSplitConfig`. Use `operator.kafkaSplittingDrainTimeout` instead.
 
 #### AWS MSK IAM authentication
 

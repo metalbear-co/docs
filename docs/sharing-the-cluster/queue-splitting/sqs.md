@@ -9,6 +9,8 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
 See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
+
+The cluster-wide `operator.sqsSplittingLingerTimeout` Helm value (in milliseconds) is deprecated together with it. It only affects `MirrordWorkloadQueueRegistry` and has no effect on `MirrordSplitConfig`. It continues to work for backward compatibility, but we recommend using `MirrordSplitConfig`'s `spec.drainTimeout` instead.
 {% endhint %}
 
 ### How It Works
@@ -456,9 +458,6 @@ messages, you can cap the wait with `spec.drainTimeout` (in seconds) on the `Mir
 | unset | Drain indefinitely - the temporary queue is kept until the remote service empties it. |
 | `0` | Skip draining; delete the temporary queue immediately. Unread messages may be lost. |
 | `N` | Wait up to `N` seconds for the queue to drain, then delete it. |
-
-The cluster-wide `operator.sqsSplittingLingerTimeout` Helm value (in milliseconds) is deprecated and only applies to the
-legacy `MirrordWorkloadQueueRegistry`. With `MirrordSplitConfig`, use `spec.drainTimeout` (above) instead.
 
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
