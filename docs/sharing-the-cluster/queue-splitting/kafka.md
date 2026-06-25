@@ -12,7 +12,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig` are deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
 See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
 
-The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) is deprecated together with it. It only affects legacy `MirrordKafkaTopicsConsumer` objects that do not set `spec.splitTtl` and has no effect on `MirrordSplitConfig`. It continues to work for backward compatibility, but we recommend using `MirrordSplitConfig`'s `spec.drainTimeout` instead.
+The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) only affects legacy `MirrordKafkaTopicsConsumer` objects; with `MirrordSplitConfig`, use [`spec.drainTimeout`](#configuring-workload-restart) instead.
 {% endhint %}
 
 ### How It Works

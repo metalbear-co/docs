@@ -10,7 +10,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`.
 See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
 
-The cluster-wide `operator.sqsSplittingLingerTimeout` Helm value (in milliseconds) is deprecated together with it. It only affects `MirrordWorkloadQueueRegistry` and has no effect on `MirrordSplitConfig`. It continues to work for backward compatibility, but we recommend using `MirrordSplitConfig`'s `spec.drainTimeout` instead.
+The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `MirrordWorkloadQueueRegistry`; with `MirrordSplitConfig`, use [`spec.drainTimeout`](#if-all-sqs-sessions-are-over-but-the-remote-service-still-didnt-change-back-to-read-from-the-original-queue) instead.
 {% endhint %}
 
 ### How It Works
