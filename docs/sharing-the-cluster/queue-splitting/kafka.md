@@ -215,7 +215,24 @@ spec:
 ```
 
 * `spec.restart.timeout` - how long the operator waits for a new pod to become ready after the workload restart is triggered (in seconds, defaults to 60). This silences timeout errors when the workload pods take a long time to start.
-* `spec.drainTimeout` - how long the consumer workload should remain patched after the last Kafka splitting session against it finishes (in seconds). This lets the operator skip the next restart if a new session starts before the timeout elapses.
+* `spec.drainTimeout` - how long the consumer workload stays patched after the last Kafka splitting session against it finishes (in seconds). Keeping it patched lets the operator skip the next restart if a new session starts before the timeout elapses.
+
+Two settings control the drain timeout:
+
+| Setting | Unit | Scope | Effect |
+| ------- | ---- | ----- | ------ |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps how long that split stays patched. Always wins over the cluster-wide default. |
+| `operator.kafkaSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
+
+Whichever value applies is then interpreted as:
+
+| Value | Behavior |
+| ----- | -------- |
+| unset (both) | Stay patched indefinitely after the last session. |
+| `0` | Unpatch immediately (restart the workload as soon as the last session ends). |
+| `N` | Stay patched for up to `N` so a new session can reuse the split, then unpatch. |
+
+> The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) is deprecated. It now only applies to legacy `MirrordKafkaTopicsConsumer` objects that do not set `spec.splitTtl`; it has no effect on `MirrordSplitConfig`. Use `operator.kafkaSplittingDrainTimeout` instead.
 
 #### AWS MSK IAM authentication
 

@@ -449,9 +449,20 @@ If the target workload doesn't change back within the expected time, check its l
 messages.
 
 If you don't want to wait for the remote service to drain the temporary queue, and you don't care about losing those
-messages, you can set the
-[`operator.sqsSplittingLingerTimeout`](https://github.com/metalbear-co/charts/blob/752892998a1145b826e29c6d812b7a08a312c4f5/mirrord-operator/values.yaml#L102-L108)
-value in the operator's helm chart, to set a timeout for the draining of the temporary queue.
+messages, you can cap the wait. Two settings control it:
+
+| Setting | Unit | Scope | Effect |
+| ------- | ---- | ----- | ------ |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
+| `operator.sqsSplittingLingerTimeout` Helm value | milliseconds | Whole cluster | Default used only when a config omits `drainTimeout`. |
+
+Whichever value applies is then interpreted as:
+
+| Value | Behavior |
+| ----- | -------- |
+| unset (both) | Drain indefinitely - the temporary queue is kept until the remote service empties it. |
+| `0` | Skip draining; delete the temporary queue immediately. Unread messages may be lost. |
+| `N` | Wait up to `N` for the queue to drain, then delete it. |
 
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target
 application still doesn't get restored to its original state, please try restarting the application, deleting any
