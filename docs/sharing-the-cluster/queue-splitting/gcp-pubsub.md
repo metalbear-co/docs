@@ -310,6 +310,22 @@ queues:
 
 With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
 
+### Drain timeout
+
+After the last splitting session against a target ends, the operator keeps the split's temporary subscription alive for a while so fallback messages can still be delivered before it tears it down. Two settings control how long it waits:
+
+| Setting | Unit | Scope | Effect |
+| ------- | ---- | ----- | ------ |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
+
+Whichever value applies is then interpreted as:
+
+| Value | Behavior |
+| ----- | -------- |
+| unset (both) | Drain indefinitely - the temporary subscription is kept until fallback messages are drained. |
+| `0` | Skip draining; delete the temporary subscription immediately. Undrained messages may be lost. |
+| `N` | Wait up to `N` to drain, then delete the temporary subscription. |
+
 ### Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). GCP Pub/Sub uses `queue_type: GCPPubSub`.

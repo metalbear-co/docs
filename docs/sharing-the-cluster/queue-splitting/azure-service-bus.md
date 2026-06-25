@@ -349,14 +349,19 @@ spec:
 
 ##### Drain timeout
 
-After all splitting sessions end, the operator waits for the fallback queue to drain before deleting temporary resources. Set `drainTimeout` (in seconds) to cap how long this wait lasts:
+After all splitting sessions end, the operator will wait for the fallback subscription to drain before deleting temporary resources. Two settings control how long it waits:
 
-```yaml
-spec:
-  drainTimeout: 60
-```
+| Setting | Unit | Scope | Effect |
+| ------- | ---- | ----- | ------ |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One config | Caps the drain wait for that split. Always wins over the cluster-wide default. |
 
-Set to `0` to skip draining entirely (temporary queues are deleted immediately). If omitted, the default is 30 seconds.
+Whichever value applies is then interpreted as:
+
+| Value | Behavior |
+| ----- | -------- |
+| unset (both) | Drain indefinitely - temporary resources are kept until the fallback subscription is empty. |
+| `0` | Skip draining; delete temporary resources immediately. Unread messages may be lost. |
+| `N` | Wait up to `N` for the fallback subscription to drain, then delete temporary resources. |
 
 ##### Temporary resource name template
 

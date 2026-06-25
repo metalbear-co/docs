@@ -148,6 +148,20 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
+### Drain timeout
+
+After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for in-flight work to finish first.
+
+| Setting | Unit | Scope | Effect |
+| ------- | ---- | ----- | ------ |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
+
+| `drainTimeout` | Behavior |
+| -------------- | -------- |
+| unset (both) | Tear down as soon as the last session ends (same as `0`). |
+| `0` | Tear down immediately. In-flight work may be lost. |
+| `N` | Keep resources for up to `N` seconds, then tear down. |
+
 ### Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Temporal uses `queue_type: Temporal`.
