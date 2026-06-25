@@ -349,7 +349,7 @@ spec:
 
 ##### Drain timeout
 
-After all splitting sessions end, the operator waits for the fallback subscription to drain before deleting temporary resources. Two settings control how long it waits:
+After all splitting sessions end, the operator will wait for the fallback subscription to drain before deleting temporary resources. Two settings control how long it waits:
 
 | Setting | Unit | Scope | Effect |
 | ------- | ---- | ----- | ------ |
