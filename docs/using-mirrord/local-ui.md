@@ -1,6 +1,6 @@
 ---
 title: "Local UI"
-description: Alpha <span style="background:#EFEEFE; color:white; padding:2px 6px; border-radius:4px; font-size:11px">Alpha</span>
+description: ![Alpha](https://img.shields.io/badge/Alpha-EFEEFE?style=flat-square&labelColor=232141&color=EFEEFE)
 "Launch a local web dashboard that watches every active mirrord session"
 date: 2026-04-28T00:00:00+00:00
 lastmod: 2026-04-28T00:00:00+00:00

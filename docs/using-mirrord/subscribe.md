@@ -1,6 +1,6 @@
 ---
 title: "Subscribing to Events"
-description: Alpha  <span style="background:#FFA500; color:white; padding:2px 6px; border-radius:4px; font-size:11px">Alpha</span>
+description: ![Beta](https://img.shields.io/badge/Alpha-EFEEFE?style=flat-square&labelColor=232141&color=EFEEFE)
 "Stream a session's interception events as JSON with mirrord subscribe"
 ---
 
