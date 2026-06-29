@@ -8,7 +8,7 @@ going green.
 
 **When do you receive events?**
 - HTTP - you receive an event for each request/response that was routed to or from a target workload by mirrord and matches your subscribed key.
-- Queue (ASB) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
+- Queue (Azure Service Bus, Amazon SQS) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
 
 In both cases: no active mirrord session = no events.
 
@@ -17,10 +17,10 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Only **HTTP request/response** events and **Azure Service Bus** queue messages are emitted today.
-HTTP events come from requests/responses intercepted in steal mode; queue events require
-[Azure Service Bus queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the
-session.
+Only **HTTP request/response** events and **Azure Service Bus** / **Amazon SQS** queue messages are
+emitted today. HTTP events come from redirected requests/responses; queue events
+require [queue splitting](../sharing-the-cluster/queue-splitting.md) (Azure Service Bus or Amazon
+SQS) configured for the session.
 
 Need support for more events?
 [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) 
@@ -116,8 +116,10 @@ mirrord subscribe --key my-key | jq '.data'
 }
 ```
 
-+ **`queue_message`** — a queue message routed to your session (`message_id` and
-`correlation_id` are included when the broker provides them):
++ **`queue_message`** — a queue message routed to your session. `queue_type` is
+`azure_service_bus` or `sqs`. `message_id` and `correlation_id` are included only when the broker
+provides them (SQS has no `correlation_id`). `properties` is the message's attribute bag, with
+values stringified: text as-is, and **binary values base64-encoded**.
 
 ```json
 {
@@ -127,6 +129,22 @@ mirrord subscribe --key my-key | jq '.data'
     "correlation_id": "trace-123",
     "properties": {
       "tenant": "test"
+    }
+  }
+}
+```
+
+An SQS message, where the `payload` attribute was binary (its bytes come back base64-encoded):
+
+```json
+{
+  "queue_message": {
+    "queue_type": "sqs",
+    "queue_name": "orders",
+    "message_id": "9f2c...",
+    "properties": {
+      "tenant": "test",
+	  "payload": "c29tZSBlcGljIHBheWxvYWQ="
     }
   }
 }
