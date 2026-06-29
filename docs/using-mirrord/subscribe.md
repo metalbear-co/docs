@@ -8,7 +8,7 @@ going green.
 
 **When do you receive events?**
 - HTTP - you receive an event for each request/response that was routed to or from a target workload by mirrord and matches your subscribed key.
-- Queue (Azure Service Bus, Amazon SQS) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
+- Queue (Azure Service Bus, Amazon SQS, Kafka) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
 
 In both cases: no active mirrord session = no events.
 
@@ -17,10 +17,11 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Only **HTTP request/response** events and **Azure Service Bus** / **Amazon SQS** queue messages are
-emitted today. HTTP events come from redirected requests/responses; queue events
-require [queue splitting](../sharing-the-cluster/queue-splitting.md) (Azure Service Bus or Amazon
-SQS) configured for the session.
+Only **HTTP request/response** events and **Azure Service Bus** / **Amazon SQS** / **Kafka** queue
+messages are emitted today. HTTP events come from redirected requests/responses; queue events
+require [queue splitting](../sharing-the-cluster/queue-splitting.md) (Azure Service Bus, Amazon SQS,
+or Kafka) configured for the session. Kafka Streams consumers are **not** currently supported — only
+standard Kafka consumers.
 
 Need support for more events?
 [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect) 
@@ -149,6 +150,28 @@ An SQS message, where the `payload` attribute was binary (its bytes come back ba
   }
 }
 ```
+
++ **`kafka_message`** — a Kafka message stolen to your session. Kafka uses a **different schema**
+than `queue_message`: `topic`, `partition`, `offset`, an optional `key`, and `headers` (values
+stringified — text as-is, binary base64). There is no `queue_type` or `correlation_id`.
+
+```json
+{
+  "kafka_message": {
+    "topic": "orders",
+    "partition": 0,
+    "offset": 42,
+    "key": "order-7",
+    "headers": {
+      "tenant": "test"
+    }
+  }
+}
+```
+
+{% hint style="info" %}
+Kafka Streams consumers are not currently supported — only standard Kafka consumers.
+{% endhint %}
 
 + **`lagged`** — your consumer fell behind and the operator dropped `count` events:
 
