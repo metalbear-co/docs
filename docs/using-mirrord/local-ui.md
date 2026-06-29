@@ -1,6 +1,7 @@
 ---
 title: "Local UI"
-description: "Launch a local web dashboard that watches every active mirrord session"
+description: Alpha <span style="background:#EFEEFE; color:white; padding:2px 6px; border-radius:4px; font-size:11px">Alpha</span>
+"Launch a local web dashboard that watches every active mirrord session"
 date: 2026-04-28T00:00:00+00:00
 lastmod: 2026-04-28T00:00:00+00:00
 draft: false
