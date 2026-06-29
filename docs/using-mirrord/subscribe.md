@@ -1,9 +1,8 @@
 ---
 title: "Subscribing to Events"
-description: ![Beta](https://img.shields.io/badge/Alpha-EFEEFE?style=flat-square&labelColor=232141&color=EFEEFE)
-"Stream a session's interception events as JSON with mirrord subscribe"
+description: "Stream a session's interception events as JSON with mirrord subscribe"
 ---
-
+[!](/docs/reference/release-status-assets/alpha-status)
 `mirrord subscribe` lets you stream live events from an active mirrord session — HTTP requests, queue messages, and operator notifications as JSON to stdout. It's useful in CI/tests: assert that a request actually got stolen to your local process instead of silently hitting the real service, so a broken interception fails the build instead of
 going green.
 
