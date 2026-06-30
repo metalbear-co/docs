@@ -346,7 +346,7 @@ This keeps the MySQL defaults and adds `--skip-lock-tables`.
 
 `connection_settings` is a map of PostgreSQL settings that mirrord applies to every connection it opens to the source database while building the branch. Each entry is sent at connection startup, so it is in effect before any schema dump or data copy runs.
 
-For example, this can be used for a [Row-Level Security (RLS)](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) policy that reads `current_setting('...')`. Without that setting, the copy fails with:
+Any PostgreSQL session variable works here (e.g. `role`, `search_path`, custom app settings). For example, if your source database uses [Row-Level Security (RLS)](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) with a policy that reads `current_setting('...')`, mirrord's connection will fail without that setting.
 
 ```
 ERROR: unrecognized configuration parameter "app.product_id"
