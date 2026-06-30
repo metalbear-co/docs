@@ -377,7 +377,7 @@ Setting it through `connection_settings` makes the copy read past the policy:
 }
 ```
 
-The settings affect only the connection mirrord uses to read the source - they are never written into the branch. Any PostgreSQL session GUC works here, not just RLS variables (for example `role` or `search_path`).
+These settings only apply while mirrord reads from the source, they are never written into the branch itself.
 
 ## MongoDB Copy Modes
 
