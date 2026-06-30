@@ -70,7 +70,7 @@ The optional `type` field controls where the environment variable is read from (
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 
-Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Specify the parameters that your application uses to connect to the database.
+Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Non-existent envinroment variables are also filled with defaults. Specify the parameters that your application uses to connect to the database.
 
 ```json
 {
@@ -85,6 +85,17 @@ Available parameters: `host`, `port`, `user`, `password`, `database`. Each field
   }
 }
 ```
+
+Defaults
+| Database | Port | User |
+| --- | --- | --- |
+| PostgreSQL | `5432` | `postgres` |
+| MySQL | `3306` | `root` |
+| MSSQL | `1433` | `sa` |
+| MongoDB | `27017` | `root` |
+| Redis | `6379` | `default` |
+
+Default for host is `localhost` on all databases.
 
 #### Secret Source
 
