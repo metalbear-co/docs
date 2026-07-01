@@ -12,8 +12,8 @@ weight: 535
 toc: true
 description: Dashboard for monitoring mirrord usage
 tags:
-  - enterprise
   - alpha
+  - enterprise
 ---
 
 # Dashboard

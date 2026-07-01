@@ -1,5 +1,9 @@
 ---
 title: Agent Skills for mirrord
+tags:
+  - oss
+  - team
+  - enterprise
 description: "Install the mirrord skills plugin to give AI coding assistants like Cursor and Claude Code domain-specific knowledge of how to work with mirrord."
 ---
 
