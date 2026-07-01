@@ -10,7 +10,7 @@ menu:
 weight: 120
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: What are the limitations to using mirrord?

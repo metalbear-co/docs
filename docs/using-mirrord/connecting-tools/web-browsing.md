@@ -9,7 +9,7 @@ menu:
 weight: 135
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: Using mirrord to browse using cluster networking

@@ -10,7 +10,7 @@ menu:
 weight: 140
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: Some common issues and workarounds.

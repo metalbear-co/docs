@@ -3,7 +3,7 @@ title: File Operations
 description: Control which files your local process reads and writes remotely
 draft: false
 toc: true
-tags: ["OSS", "team", "enterprise"]
+tags: ["open source", "team", "enterprise"]
 ---
 
 By default, mirrord redirects most file access from your local process to the remote pod. When your code opens `/etc/config/app.yaml`, it reads the remote pod's copy. This means your local process sees the same configuration files, certificates, and data that the deployed application does.

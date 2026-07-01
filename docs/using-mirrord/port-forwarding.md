@@ -9,7 +9,7 @@ menu:
     parent: "using-mirrord"
 weight: 140
 toc: true
-tags: ["OSS", "team", "enterprise"]
+tags: ["open source", "team", "enterprise"]
 ---
 ## Regular port-forwarding
 

@@ -5,7 +5,7 @@ images: []
 toc: true
 description: Run your code locally while it communicates with real cloud services
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 ---

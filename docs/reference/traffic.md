@@ -10,7 +10,7 @@ menu:
 weight: 140
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: Reference to working with network traffic with mirrord

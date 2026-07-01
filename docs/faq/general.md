@@ -10,7 +10,7 @@ menu:
 weight: 110
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: General questions about mirrord.
@@ -39,7 +39,7 @@ By proxying all of your local process' input and output points in this way, mirr
 
 ## Is mirrord free?
 
-mirrord is free and OSS (MIT License). Our paid offering, mirrord for Teams, includes a Kubernetes operator that acts as a control plane for mirrord. You can read more about it [here](../managing-mirrord/operator.md).
+mirrord is free and open source (MIT License). Our paid offering, mirrord for Teams, includes a Kubernetes operator that acts as a control plane for mirrord. You can read more about it [here](../managing-mirrord/operator.md).
 
 ## Can I intercept traffic instead of duplicating it?
 

@@ -9,7 +9,7 @@ menu:
 weight: 130
 toc: true
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 description: How to run mirrord without a remote target

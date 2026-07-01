@@ -6,7 +6,7 @@ draft: false
 toc: true
 description: Using the mirrord wizard to speed up onboarding setup
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 ---

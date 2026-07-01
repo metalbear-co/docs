@@ -11,7 +11,7 @@ weight: 120
 toc: true
 description: mirrord's architecture
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 ---

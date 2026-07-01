@@ -11,7 +11,7 @@ weight: 160
 toc: true
 description: Reference to mirrord's file operations
 tags:
-  - OSS
+  - open source
   - team
   - enterprise
 ---
