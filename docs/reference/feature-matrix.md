@@ -26,6 +26,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting/azure-service-bus.md)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **NATS**              | Planned     | Planned       | Planned    |
   |                 | **[Redis Pub/Sub](../sharing-the-cluster/queue-splitting/redis-pubsub.md)**     | `Alpha`     | `Alpha`       | Planned |
+  |                 | **[BullMQ](../sharing-the-cluster/queue-splitting/bullmq.md)**     | `Alpha`     | `Alpha`       | Planned |
   | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | `Alpha`         | Planned    |
   | **[Multi-cluster](../using-mirrord/multi-cluster.md)**   | —                 | `Alpha`       | —             | Planned    |
   | **[mirrord up](../using-mirrord/multiple-concurrent-sessions.md)**      | —                 | `Alpha`       | `Alpha`         | —          |
