@@ -53,7 +53,7 @@ Supported properties:
 | `url` | Full Redis URL, e.g. `redis://host:6379/0`. Used as-is when present. | One of `url` or `host` | |
 | `host` | Redis hostname, used when `url` is absent. | One of `url` or `host` | |
 | `port` | Redis port, used with `host`. | No | `6379` |
-| `password` | Password for authentication. | No | |
+| `password` | Password. | No | |
 | `tls` | Set to `"true"` to connect over TLS (`rediss://`). | No | `false` |
 | `db` | Database index. | No | `0` |
 
