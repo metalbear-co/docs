@@ -12,6 +12,7 @@ weight: 505
 toc: true
 tags:
   - enterprise
+  - beta
 description: High availability for mirrord Operator in Enterprise Tier
 ---
 

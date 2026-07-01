@@ -1,4 +1,8 @@
-# Amazon SQS
+---
+title: Amazon SQS
+tags:
+    - beta
+---
 
 This page covers queue splitting for [Amazon SQS](https://aws.amazon.com/sqs/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 

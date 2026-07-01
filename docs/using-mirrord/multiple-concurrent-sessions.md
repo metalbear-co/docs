@@ -1,5 +1,7 @@
 ---
 title: "mirrord up (multiple concurrent sessions)"
+tags:
+    - alpha
 description: "How to use mirrord up"
 date: 2026-04-014T16:25:00+04:00
 lastmod: 2026-04-014T16:25:00+04:00 

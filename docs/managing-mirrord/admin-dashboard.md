@@ -13,6 +13,7 @@ toc: true
 description: Dashboard for monitoring mirrord usage
 tags:
   - enterprise
+  - alpha
 ---
 
 # Dashboard
