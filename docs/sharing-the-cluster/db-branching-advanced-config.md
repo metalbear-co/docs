@@ -342,6 +342,43 @@ This keeps the MySQL defaults and adds `--skip-lock-tables`.
 `dump_args` is only supported for MySQL and PostgreSQL. MSSQL, MongoDB, and Redis branches use their own internal dump mechanisms and do not support this field.
 {% endhint %}
 
+## Connection Settings (PostgreSQL)
+
+`connection_settings` is a map of PostgreSQL settings that mirrord applies to every connection it opens to the source database while building the branch. Each entry is set before any schema dump or data copy runs.
+
+Any PostgreSQL session variable works here (e.g. `role`, `search_path`, custom app settings). For example, if your source database uses [Row-Level Security (RLS)](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) with a policy that reads `current_setting('...')`, mirrord's connection will fail without that setting.
+
+```
+ERROR: unrecognized configuration parameter "app.product_id"
+```
+
+Setting it through `connection_settings` makes the copy read past the policy:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "version": "16",
+        "connection": { "url": "DATABASE_URL" },
+        "connection_settings": {
+          "app.product_id": "123456"
+        },
+        "copy": {
+          "mode": "schema",
+          "tables": {
+            "kudos": { "filter": "product_id = 123456" }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+These settings only apply while mirrord reads from the source, they are never written into the branch itself.
+
 ## MongoDB Copy Modes
 
 MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
