@@ -79,6 +79,44 @@ Then install:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
+#### Cloud API key (optional)
+
+The Operator can authenticate to the mirrord cloud with a dedicated **API key**, separate from your license (the license still drives entitlement; the API key authenticates the Operator's calls to the cloud). Generate one in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — the key is shown only once, so store it then. If you don't set one, the Operator keeps using its license key to authenticate, so this is optional and opt-in.
+
+Provide the key to the chart in one of three ways:
+
+**Kubernetes secret (recommended)** — create a secret in your cluster and reference it via `cloud.apiKey.keyRef`, so the key never lives in your `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-cloud-api-key \
+  --namespace mirrord \
+  --from-literal=apiKey=<your API key>
+```
+
+```yaml
+cloud:
+  apiKey:
+    keyRef: mirrord-operator-cloud-api-key
+```
+
+**Google Secret Manager** — store the key in GSM and reference it via `cloud.apiKey.gsmRef`. The Operator reads it using Application Default Credentials, the same way as `license.gsmRef` (see `sa.gcpSa`):
+
+```yaml
+cloud:
+  apiKey:
+    gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
+```
+
+**Inline (dev/test)** — set the value directly, keeping in mind it then lives in your Helm values:
+
+```yaml
+cloud:
+  apiKey:
+    key: <your API key>
+```
+
+Rotating and revoking the key are done from the dashboard. When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
+
 #### Using an Internal Registry (Optional)
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
