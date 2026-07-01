@@ -1,7 +1,7 @@
 ---
 title: Kafka
 tags:
-    - beta
+  - beta
 ---
 
 This page covers queue splitting for [Kafka](https://kafka.apache.org/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).

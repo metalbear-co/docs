@@ -4,7 +4,7 @@ description: >-
   Multi-cluster mirrord lets developers intercept traffic from pods across
   several Kubernetes clusters at once, without switching kube contexts.
 tags:
-    - alpha
+  - alpha
 ---
 
 # Seamless Multi-Cluster Development

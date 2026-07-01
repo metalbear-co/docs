@@ -9,11 +9,11 @@ menu:
     parent: "using-mirrord"
 weight: 175
 toc: true
-tags: 
+tags:
   - alpha
-  - "oss"
-  - "team"
-  - "enterprise"
+  - oss
+  - team
+  - enterprise
 ---
 
 `mirrord ui` launches a small local web dashboard that watches every active mirrord session on your machine and, when you're connected to a mirrord operator, every operator session your kubeconfig can see across the cluster. It runs entirely on your laptop. Nothing in your cluster has to change to use it.

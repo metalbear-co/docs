@@ -1,7 +1,7 @@
 ---
 title: Azure Service Bus
 tags:
-    - alpha
+  - alpha
 ---
 
 This page covers queue splitting for [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).

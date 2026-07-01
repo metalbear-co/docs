@@ -1,7 +1,10 @@
 ---
 title: "mirrord up (multiple concurrent sessions)"
 tags:
-    - alpha
+  - alpha
+  - oss
+  - team
+  - enterprise
 description: "How to use mirrord up"
 date: 2026-04-014T16:25:00+04:00
 lastmod: 2026-04-014T16:25:00+04:00 
@@ -11,7 +14,6 @@ menu:
     parent: "using-mirrord"
 weight: 140
 toc: true
-tags: ["oss", "team", "enterprise"]
 ---
 ## Introduction
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
