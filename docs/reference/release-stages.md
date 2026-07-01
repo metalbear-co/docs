@@ -11,15 +11,16 @@ Release status is currently being mapped and will be added to all features in th
 
 ### Alpha
 {% update date="2026-06-01" tags="alpha" %}
-{% endupdate %}
 The feature is available but has a limited scope, so not all configurations, platforms, or edge cases are covered yet. You may encounter bugs, unexpected behavior, or performance
 issues. APIs and configuration options may change between releases. We actively want feedback at this stage. If something breaks or behaves unexpectedly, please let us know.
+{% endupdate %}
 
 ### Beta
 {% updates format="full" %}
 {% update date="2026-06-01" tags="beta" %}
 The feature covers the main use cases and is stable enough for most teams to use. You may still hit edge cases or minor issues, and some details of the API or configuration may
 change before GA.
+{% endupdate %}
 
 ### GA (Generally Available)
 The feature is complete, stable, and production-ready. The API and behavior are stable across releases. Issues are treated as bugs and addressed promptly.
