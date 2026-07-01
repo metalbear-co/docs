@@ -1,5 +1,9 @@
 ---
 title: "Subscribing to Events"
+tags:
+  - news
+  - tag: beta
+    primary: true
 description: "Stream a session's interception events as JSON with mirrord subscribe"
 ---
 [!](/docs/reference/release-status-assets/alpha-status)
