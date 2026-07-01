@@ -3,7 +3,7 @@ title: Environment Variables
 description: Control which environment variables are loaded from the remote pod
 draft: false
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["OSS", "team", "enterprise"]
 ---
 
 By default, mirrord imports all environment variables from the remote pod into your local process. This means your local code automatically gets the same database URLs, API keys, feature flags, and service discovery values as the deployed application, without any manual setup.

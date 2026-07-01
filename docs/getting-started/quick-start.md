@@ -10,7 +10,7 @@ menu:
 weight: 105
 toc: true
 tags:
-  - open source
+  - OSS
   - team
   - enterprise
 shallowToc: true

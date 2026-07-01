@@ -3,7 +3,7 @@ title: Using mirrord with AI Agents
 description: Configure AI coding agents to test code changes against your cluster using mirrord
 draft: false
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["OSS", "team", "enterprise"]
 ---
 
 AI coding models don’t have the full context of your application — external dependencies, environment variables, and the way services interact in production. The code they generate might look correct in isolation, but things often break once you try integrating it with the rest of your system.

@@ -5,7 +5,7 @@ lastmod: 2025-12-16T12:00:00.000Z
 draft: false
 toc: true
 tags:
-  - open source
+  - OSS
   - team
   - enterprise
 description: Use mirrord to connect local tools like browsers, Postman, and database clients to cluster services

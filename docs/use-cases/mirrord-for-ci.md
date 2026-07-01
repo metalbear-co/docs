@@ -9,7 +9,7 @@ menu:
 toc: true
 description: How to use mirrord in a CI environment with `mirrord ci` commands.
 tags:
-  - open source
+  - OSS
   - team
   - enterprise
 ---

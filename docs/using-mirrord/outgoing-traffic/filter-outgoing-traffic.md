@@ -9,7 +9,7 @@ menu:
 weight: 120
 toc: true
 tags:
-  - open source
+  - OSS
   - team
   - enterprise
 description: Control which outgoing connections go through the cluster and which stay local

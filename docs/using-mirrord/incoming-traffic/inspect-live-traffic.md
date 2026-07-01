@@ -8,7 +8,7 @@ menu:
   docs:
     parent: "using-mirrord"
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["OSS", "team", "enterprise"]
 ---
 
 The `mirrord dump` command lets you inspect incoming traffic to a Kubernetes resource - such as a Deployment, Service, Pod, or StatefulSet - directly in your terminal.
