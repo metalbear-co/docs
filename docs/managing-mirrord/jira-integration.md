@@ -12,6 +12,7 @@ weight: 550
 toc: true
 description: Recording and displaying user session metrics in Jira
 tags:
+  - alpha
   - team
   - enterprise
 ---

@@ -1,4 +1,11 @@
-# Redis Pub/Sub
+---
+title: Redis Pub/Sub
+tags:
+  - alpha
+  - team
+  - enterprise
+---
+
 
 This page covers queue splitting for [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 

@@ -10,7 +10,7 @@ menu:
     parent: "faq"
 weight: 130
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["oss", "team", "enterprise"]
 ---
 
 ## Why not just use a remote debugger?

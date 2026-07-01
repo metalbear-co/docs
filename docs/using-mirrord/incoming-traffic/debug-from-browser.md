@@ -9,6 +9,8 @@ menu:
 toc: true
 description: Use the Chrome extension to route browser traffic to your local process
 tags:
+  - beta
+  - oss
   - team
   - enterprise
 ---

@@ -10,7 +10,7 @@ menu:
 weight: 110
 toc: true
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 description: General questions about mirrord.
