@@ -5,6 +5,7 @@ description: >-
   several Kubernetes clusters at once, without switching kube contexts.
 tags:
   - alpha
+  - enterprise
 ---
 
 # Seamless Multi-Cluster Development

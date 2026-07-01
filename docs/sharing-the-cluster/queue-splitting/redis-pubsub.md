@@ -2,6 +2,8 @@
 title: Redis Pub/Sub
 tags:
   - alpha
+  - team
+  - enterprise
 ---
 
 

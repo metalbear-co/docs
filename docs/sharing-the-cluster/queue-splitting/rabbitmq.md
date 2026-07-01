@@ -2,6 +2,8 @@
 title: RabbitMQ
 tags:
   - alpha
+  - team
+  - enterprise
 ---
 
 This page covers queue splitting for [RabbitMQ](https://www.rabbitmq.com). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
