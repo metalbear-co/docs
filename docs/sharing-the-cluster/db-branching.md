@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, and Redis** databases for remote usage, and **Redis** database for local development.
+Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, Redis, and DynamoDB** databases for remote usage, and **Redis** database for local development.
 
 **When is this useful?**
 
@@ -42,6 +42,7 @@ Before you start, make sure you have:
   - MongoDB: Operator `3.137.0`, mirrord CLI `3.183.0` and operator Helm chart `1.44.0` with `operator.mongoBranching` value set to `true`.
   - Redis (remote): Operator `3.168.0`, mirrord CLI `3.217.0` and operator Helm chart `3.168.0` with `operator.redisBranching` value set to `true`.
   - Redis (local): mirrord CLI `3.180.0` (no operator or chart version requirements, since a local branch runs entirely on your machine).
+  - DynamoDB: Operator `<OPERATOR_VERSION>`, mirrord CLI `<CLI_VERSION>` and operator Helm chart `<CHART_VERSION>` with `operator.dynamodbBranching` value set to `true`.
 2. Your local application is using environment variables or Kubernetes Secrets to store DB connection strings or individual connection parameters.  
 3. mirrord installed and working.  
 
@@ -55,7 +56,7 @@ Developers define branches in their `mirrord.json`:
       {
         "id": "users-mysql-db",             // Optional
         "location": "remote",               // Optional, default is "remote", Available options [remote | local]
-        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
+        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis | dynamodb]
         "version": "8.0",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
@@ -75,18 +76,18 @@ Developers define branches in their `mirrord.json`:
 ### Key Fields
 
 1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse)
-2. `location`: Supported values are `remote` and `local`. The default is `remote`. For `mysql`, `pg`, `mssql`, and `mongodb`, only `remote` is supported. `redis` supports both: `remote` provisions a branch in the cluster like the other engines, while `local` spawns a Redis instance on your own machine.
-3. `type`: Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, and `"redis"`.
+2. `location`: Supported values are `remote` and `local`. The default is `remote`. For `mysql`, `pg`, `mssql`, `mongodb`, and `dynamodb`, only `remote` is supported. `redis` supports both: `remote` provisions a branch in the cluster like the other engines, while `local` spawns a Redis instance on your own machine.
+3. `type`: Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, `"redis"`, and `"dynamodb"`.
 4. `version`: Database engine version.
 5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
 If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
 For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`.
 6. `ttl_secs` / `ttl_mins`: Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes.
-7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
+7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details. For DynamoDB, `connection` is optional and only used to point at a custom/VPC endpoint - see [DynamoDB](#dynamodb) below.
 8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
 9. `copy.dump_args`: (MySQL & PostgreSQL only) Override the default arguments passed to `mysqldump` or `pg_dump`. See [Custom Dump Arguments](./db-branching-advanced-config.md#custom-dump-arguments-mysql--postgresql) for details.
 10. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
-11. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
+11. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details. For DynamoDB, `iam_auth` is **required** when using `"copy": { "mode": "all" }`, since DynamoDB has no password-based auth - see [DynamoDB](#dynamodb) below.
 12. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
 
 ## Running With DB Branches
@@ -143,6 +144,50 @@ mirrord can spin up a local Redis instance, automatically redirecting your app's
 ```
 
 mirrord overrides the env variable to point to `localhost:<port>` and cleans up the Redis instance on exit.
+
+---
+
+## DynamoDB
+
+DynamoDB branching gives your session its own throwaway DynamoDB instance (backed by `dynamodb-local`), optionally seeded from your real ("source") DynamoDB account. The operator redirects your app's DynamoDB endpoint environment variable to the branch for the duration of the session, so local code reads and writes an isolated copy instead of the production tables.
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "id": "users-dynamodb",                  // Optional
+        "type": "dynamodb",
+        "name": "my-branch",                     // Optional
+        "ttl_secs": 60,                          // Optional, mutually exclusive with `ttl_mins`
+        "creation_timeout_secs": 120,            // Optional, defaults to 60 if not specified
+        "connection": {                          // Optional - custom/VPC endpoint override
+          "url": { "type": "env", "variable": "AWS_ENDPOINT_URL_DYNAMODB" }
+        },
+        "iam_auth": {                            // Required only for "mode": "all"
+          "type": "aws_rds",
+          "region": { "type": "env", "variable": "AWS_REGION" },
+          "access_key_id": { "type": "env", "variable": "AWS_ACCESS_KEY_ID" },
+          "secret_access_key": { "type": "env", "variable": "AWS_SECRET_ACCESS_KEY" }
+        },
+        "copy": {
+          "mode": "all",                         // "empty" (default) or "all"
+          "collections": {                       // Optional, restricts/filters copied tables
+            "users": {},
+            "orders": {}
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+A few things are specific to DynamoDB:
+
+- **`connection` is optional.** DynamoDB has no user or password in the connection details. The `connection` field is only used to point the source client at a custom or VPC endpoint URL (held in an environment variable such as `AWS_ENDPOINT_URL_DYNAMODB`). If omitted, the source client uses the standard regional AWS endpoint.
+- **`iam_auth` is required for `"mode": "all"`.** Since there is no password-based auth, IAM is the only way to read the source account. Use `"type": "aws_rds"` (the same type name reused across AWS engines). Any credential field you leave unset falls back to the standard `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` variables. See [IAM Authentication](./db-branching-advanced-config.md#iam-authentication).
+- **`copy`** controls what gets seeded into the branch. See [DynamoDB Copy Modes](./db-branching-advanced-config.md#dynamodb-copy-modes) for the `empty`/`all` modes, per-table filters, and known limitations.
 
 ---
 

@@ -98,13 +98,14 @@ These images are only pulled when the corresponding feature is enabled:
 
 DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
 
-| Engine     | Default image                              | Override                                       |
-| ---------- | ------------------------------------------ | ---------------------------------------------- |
-| PostgreSQL | `docker.io/library/postgres:{version}`     | `operator.pgBranchConfig` - `dbPod.image`      |
-| MySQL      | `docker.io/library/mysql:{version}`        | `operator.mysqlBranchConfig` - `dbPod.image`   |
-| MongoDB    | `docker.io/library/mongo:{version}`        | `operator.mongodbBranchConfig` - `dbPod.image` |
-| MSSQL      | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image`   |
-| Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`   |
+| Engine     | Default image                              | Override                                        |
+| ---------- | ------------------------------------------ | ----------------------------------------------- |
+| PostgreSQL | `docker.io/library/postgres:{version}`     | `operator.pgBranchConfig` - `dbPod.image`       |
+| MySQL      | `docker.io/library/mysql:{version}`        | `operator.mysqlBranchConfig` - `dbPod.image`    |
+| MongoDB    | `docker.io/library/mongo:{version}`        | `operator.mongodbBranchConfig` - `dbPod.image`  |
+| MSSQL      | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image`    |
+| Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
+| DynamoDB   | `amazon/dynamodb-local:{version}`          | `operator.dynamodbBranchConfig` - `dbPod.image` |
 
 **Copying images**
 
