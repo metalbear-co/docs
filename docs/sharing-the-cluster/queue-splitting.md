@@ -51,7 +51,7 @@ Please note that:
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://metalbear.com/mirrord/docs/config/options#feature-split_queues) is the configuration field they need to specify in order to filter queue messages.
-Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
+It pairs each queue ID with a queue filter definition, and accepts either an object keyed by queue ID or an array of entries (see [One queue or many](#one-queue-or-many)).
 
 Filter definition contains the following fields:
 * `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, or `Temporal`
@@ -70,6 +70,48 @@ Filter definition contains the following fields:
   * A message matches if the jq program outputs `true`.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
+
+#### One queue or many
+
+`feature.split_queues` accepts two shapes.
+
+For a single queue, use the **object** form, which maps the queue ID to its queue split config:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": {
+        "queue_type": "SQS",
+        "message_filter": { "region": "^eu" }
+      }
+    }
+  }
+}
+```
+
+For multiple queues, use the **array** form, which moves the ID into each entry as `queue_id`:
+
+```json
+{
+  "feature": {
+    "split_queues": [
+      {
+        "queue_id": "orders",
+        "queue_type": "SQS",
+        "message_filter": { "region": "^eu" }
+      },
+      {
+        "queue_id": "notifications",
+        "queue_type": "RedisPubSub",
+        "message_filter": { "tenant": "^test$" }
+      }
+    ]
+  }
+}
+```
+
+Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.

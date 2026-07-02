@@ -66,6 +66,7 @@
   * [Temporal](sharing-the-cluster/queue-splitting/temporal.md)
   * [More](sharing-the-cluster/queue-splitting/more.md)
     * [Migrating to MirrordSplitConfig](sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig.md)
+  * [Queue Splitting Status](sharing-the-cluster/queue-splitting/status.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [Branch Management](sharing-the-cluster/db-branch-management.md)
   * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
