@@ -10,7 +10,7 @@ tags:
 This page covers DB branching for ClickHouse. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
 {% hint style="info" %}
-ClickHouse branching requires operator `3.178.0`, mirrord CLI `3.228.0`, and operator Helm chart `3.178.0` with the `operator.clickhouseBranching` value set to `true`.
+ClickHouse branching requires operator `3.182.0`, mirrord CLI `3.230.0`, and operator Helm chart `3.182.0` with the `operator.clickhouseBranching` value set to `true`.
 {% endhint %}
 
 ## Basic Configuration

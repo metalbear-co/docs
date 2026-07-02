@@ -79,6 +79,7 @@
   * [More](sharing-the-cluster/db-branching/more.md)
     * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
     * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)
+    * [Schema Migrations](sharing-the-cluster/db-branching/migrations.md)
     * [Branch Management](sharing-the-cluster/db-branching/management.md)
 
 ## Managing mirrord
