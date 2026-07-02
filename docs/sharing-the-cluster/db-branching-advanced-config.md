@@ -20,7 +20,7 @@ These settings give additional flexibility in how mirrord handles database branc
     "db_branches": [
       {
         "id": "users-mysql-db",            // Optional
-        "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb|redis]
+        "type": "mysql",                    // Available options [mysql|pg|mssql|mongodb|redis|dynamodb]
         "version": "8.0",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
@@ -484,9 +484,64 @@ In this example, only keys prefixed with `user:` or `session:` are copied; every
 Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
 {% endhint %}
 
+## DynamoDB Copy Modes
+
+DynamoDB supports two copy modes. Unlike the SQL engines, there is no `"schema"` mode - tables are schema-on-write, so only `"empty"` and `"all"` are available.
+
+1. ### Empty Database
+
+`"mode": "empty"` Creates an empty branch with no tables copied. This is the default value when the `copy` attribute is not specified.
+Best for workflows where your application creates its own tables or runs migrations/seeding as part of startup.
+
+2. ### Complete Database
+
+`"mode": "all"` Copies the schema and items of every source table into the branch.
+
+{% hint style="info" %}
+`"mode": "all"` requires [`iam_auth`](#iam-authentication), since reading the source account is only possible through AWS IAM.
+{% endhint %}
+
+{% hint style="warning" %}
+Use this option with caution.
+It's only recommended for very small or empty tables.
+Copying large datasets can significantly increase branch creation time and storage usage.
+{% endhint %}
+
+#### Table Filters
+
+You can restrict which tables are copied and apply a per-table filter using the `collections` map. A `filter` is a DynamoDB [`FilterExpression`](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.FilterExpression.html) applied during the `Scan` of the source table.
+
+```json
+{
+  "copy": {
+    "mode": "all",
+    "collections": {
+      "users": {
+        "filter": "active = true"
+      },
+      "orders": {}
+    }
+  }
+}
+```
+
+In this example, only the `users` and `orders` tables are copied. The `users` table copy includes only items where `active = true`; the `orders` table is copied in full.
+
+#### Known Limitations
+
+{% hint style="warning" %}
+- **Filter expressions cannot define `ExpressionAttributeValues` or `ExpressionAttributeNames`.** The `filter` string is passed straight to `Scan`, so expressions that rely on placeholders (for example `age > :min` or `#n = "alice"`) fail at runtime. Only self-contained expressions work.
+- **Local Secondary Indexes (LSIs) are not copied.** Only Global Secondary Indexes (GSIs) are reconstructed on the branch, because LSIs can only be created at table-creation time.
+- **Branch tables always use PayPerRequest billing**, regardless of the source table's billing mode.
+{% endhint %}
+
 ## IAM Authentication
 
 mirrord supports IAM authentication for **AWS RDS** and **GCP Cloud SQL**. Credentials are read from the **target pod's environment**, just like connection URLs.
+
+{% hint style="info" %}
+DynamoDB branches also authenticate to the source account with `"iam_auth": { "type": "aws_rds" }` (the `aws_rds` type name is reused across AWS engines). For DynamoDB, `iam_auth` is **required** when `"copy": { "mode": "all" }` is set. See [DynamoDB Copy Modes](#dynamodb-copy-modes).
+{% endhint %}
 
 {% hint style="info" %}
 **Default environment variables**: If you do not specify custom credential sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`). You only need additional configuration if your pod uses non-standard variable names.
