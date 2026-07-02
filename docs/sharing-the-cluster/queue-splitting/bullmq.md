@@ -1,3 +1,10 @@
+---
+title: BullMQ
+tags:
+  - alpha
+  - team
+  - enterprise
+---
 This page covers queue splitting for [BullMQ](https://bullmq.io/), a Redis-backed persistent job queue. For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a BullMQ queue (backed by Redis lists, hashes, and sorted sets under the `bull:<queue>:*` key prefix).
