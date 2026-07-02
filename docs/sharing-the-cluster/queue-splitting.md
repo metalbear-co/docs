@@ -75,7 +75,7 @@ If both `message_filter` and `jq_filter` are specified for the same queue, both 
 
 `feature.split_queues` accepts two shapes.
 
-For a single queue, use the **object** form, which maps the queue ID to its filter:
+For a single queue, use the **object** form, which maps the queue ID to its queue split config:
 
 ```json
 {

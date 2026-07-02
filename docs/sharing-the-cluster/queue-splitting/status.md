@@ -1,3 +1,10 @@
+---
+title: Queue Splitting Status
+tags:
+  - alpha
+  - team
+  - enterprise
+---
 # Queue Splitting Status
 
 Once queue splitting is set up (see the per-service pages) you often want to know what is happening right now: which sessions are active, who started them, which queues the operator resolved, and whether the target pods were patched. mirrord exposes this in two ways that show the same data:
@@ -64,7 +71,7 @@ kubectl get queuesplits -n events -o yaml
 kubectl describe queuesplit e9f285ea68abf9f9.multi-broker-consumer.deployment -n events
 ```
 
-An example object for a session splitting three brokers (SQS, Redis Pub/Sub, and Temporal) at once:
+An example object for a session splitting three brokers (SQS, Redis Pub/Sub, and Temporal) at once (each field is explained in the [field reference](status.md#field-reference) below):
 
 ```yaml
 apiVersion: operator.metalbear.co/v1
