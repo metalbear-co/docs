@@ -484,6 +484,51 @@ In this example, only keys prefixed with `user:` or `session:` are copied; every
 Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
 {% endhint %}
 
+## Schema Migrations (MySQL, PostgreSQL & MSSQL)
+
+The `migrations` field runs your schema migrations against the branch automatically, so the branch comes up with the schema your code expects. It requires `name` to be set.
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "version": "17",
+        "name": "users-database-name",
+        "connection": { "url": "DATABASE_URL" },
+        "migrations": {
+          "flavor": "flyway",
+          "path": "./migrations"
+        }
+      }
+    ]
+  }
+}
+```
+
+`flavor` selects the migration tool. `path` is a local directory of migration files, resolved relative to your working directory.
+
+Migrations run while the branch is created, before it becomes ready. If they fail, the session aborts, so your app is never started against a half-migrated branch.
+
+A migration that conflicts with one already applied to the branch fails your session only—the branch itself remains usable.
+
+### Flyway migrations
+
+Set `"flavor": "flyway"` to run migrations with [Flyway](https://documentation.red-gate.com/flyway).
+
+Optionally override the migration runner image:
+
+```json
+{
+  "migrations": {
+    "flavor": "flyway",
+    "path": "./migrations",
+    "image": "flyway/flyway:11-alpine"
+  }
+}
+```
+
 ## IAM Authentication
 
 mirrord supports IAM authentication for **AWS RDS** and **GCP Cloud SQL**. Credentials are read from the **target pod's environment**, just like connection URLs.
