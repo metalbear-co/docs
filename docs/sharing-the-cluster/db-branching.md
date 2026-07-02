@@ -88,6 +88,7 @@ For Redis, `name` is the database **index** Redis uses to select a logical datab
 10. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
 11. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
 12. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
+13. `migrations`: (MySQL, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](./db-branching-advanced-config.md#schema-migrations-mysql-postgresql--mssql) for details.
 
 ## Running With DB Branches
 
