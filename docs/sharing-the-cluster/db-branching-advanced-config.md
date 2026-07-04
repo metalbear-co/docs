@@ -125,6 +125,51 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
+#### Google Secret Manager Source
+
+Any connection value can be read from [Google Secret Manager](https://cloud.google.com/secret-manager) instead of an environment variable or a Kubernetes Secret. This is useful when your application already loads its database credentials from Secret Manager at runtime and never puts them in the pod spec.
+
+The branch init container fetches the value when it copies the data, using the target pod's service account through [GKE Workload Identity](https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity) - the same way GCP Cloud SQL IAM works below. mirrord and the operator never read the secret themselves.
+
+Unlike the `secret` source, this works for both the full connection URL and individual parameters.
+
+For the full URL, use `type: gcp_secret_manager` with a `secret_ref` (the Secret Manager resource name):
+
+```json
+{
+  "connection": {
+    "url": {
+      "type": "gcp_secret_manager",
+      "secret_ref": "projects/my-project/secrets/db-url/versions/latest",
+      "env_var_name": "DATABASE_URL"
+    }
+  }
+}
+```
+
+For an individual parameter, use a `gcp_secret_manager` field with the resource name:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": "DB_HOST",
+      "password": {
+        "gcp_secret_manager": "projects/my-project/secrets/db-password/versions/latest",
+        "env_var_name": "DB_PASSWORD"
+      },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+`env_var_name` is optional. When set, the operator injects the branch connection under that name for your local process, just like the `secret` and literal-value sources, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch and your app keeps reading its own source.
+
+{% hint style="info" %}
+**Setup**: the branch pod inherits the target pod's service account, so that account's Google identity must have `roles/secretmanager.secretAccessor` on the secret. No operator-level permissions are needed.
+{% endhint %}
+
 #### Literal Value
 
 You can provide a connection parameter as a literal value directly in the config. This is useful when the credential is injected at runtime by an external system and does not appear in the pod spec where mirrord can read it.
