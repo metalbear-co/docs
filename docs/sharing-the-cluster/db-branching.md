@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, and Redis** databases for remote usage, and **Redis** database for local development.
+Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, Redis, and DynamoDB** databases for remote usage, and **Redis** database for local development.
 
 **When is this useful?**
 
@@ -31,17 +31,21 @@ Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, and Re
 4. **Validating AI-generated database changes**
     If your AI coding agents need to generate migrations or schema updates, DB branching provides a safe environment to test those changes without risking the shared environment.
 
+## Choose Your Database
+
+Copy modes, version requirements, and engine-specific behavior differ per database. Pick yours to see the full guide:
+
+* [MySQL](db-branching/mysql.md)
+* [PostgreSQL](db-branching/postgresql.md)
+* [MSSQL](db-branching/mssql.md)
+* [MongoDB](db-branching/mongodb.md)
+* [Redis](db-branching/redis.md) (remote and local)
+* [DynamoDB](db-branching/dynamodb.md)
 
 ## Prerequisites
 
 Before you start, make sure you have:  
-1. Minimum versions installed: 
-  - MySQL: Operator `3.129.0`, mirrord CLI `3.160.0` and operator Helm chart `1.37.0` with `operator.mysqlBranching` value set to `true`.
-  - PostgreSQL: Operator `3.131.0`, mirrord CLI `3.175.0` and operator Helm chart `1.40.2` with `operator.pgBranching` value set to `true`.
-  - MSSQL: Operator `3.150.0`, mirrord CLI `3.195.0` and operator Helm chart `1.57.0` with `operator.mssqlBranching` value set to `true`.
-  - MongoDB: Operator `3.137.0`, mirrord CLI `3.183.0` and operator Helm chart `1.44.0` with `operator.mongoBranching` value set to `true`.
-  - Redis (remote): Operator `3.168.0`, mirrord CLI `3.217.0` and operator Helm chart `3.168.0` with `operator.redisBranching` value set to `true`.
-  - Redis (local): mirrord CLI `3.180.0` (no operator or chart version requirements, since a local branch runs entirely on your machine).
+1. The minimum operator, mirrord CLI, and operator Helm chart versions for your database engine, with the engine's branching value enabled in the chart. The exact versions are listed at the top of each database page above.  
 2. Your local application is using environment variables or Kubernetes Secrets to store DB connection strings or individual connection parameters.  
 3. mirrord installed and working.  
 
@@ -55,7 +59,7 @@ Developers define branches in their `mirrord.json`:
       {
         "id": "users-mysql-db",             // Optional
         "location": "remote",               // Optional, default is "remote", Available options [remote | local]
-        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis]
+        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis | dynamodb]
         "version": "8.0",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
@@ -74,20 +78,20 @@ Developers define branches in their `mirrord.json`:
 
 ### Key Fields
 
-1. `id`: When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse)
-2. `location`: Supported values are `remote` and `local`. The default is `remote`. For `mysql`, `pg`, `mssql`, and `mongodb`, only `remote` is supported. `redis` supports both: `remote` provisions a branch in the cluster like the other engines, while `local` spawns a Redis instance on your own machine.
-3. `type`: Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, and `"redis"`.
-4. `version`: Database engine version.
-5. `name`: Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname.
-If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case.
-For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`.
-6. `ttl_secs` / `ttl_mins`: Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes.
-7. `connection`: Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Advanced Configuration](./db-branching-advanced-config.md#connection-modes) for details.
-8. `copy.mode`: Allows developers to control how the database is cloned when creating a branch, see [Advanced Configuration](./db-branching-advanced-config.md)
-9. `copy.dump_args`: (MySQL & PostgreSQL only) Override the default arguments passed to `mysqldump` or `pg_dump`. See [Custom Dump Arguments](./db-branching-advanced-config.md#custom-dump-arguments-mysql--postgresql) for details.
-10. `creation_timeout_secs`: Override for branch creation timeout. The default is 60 seconds.
-11. `iam_auth`: Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [Advanced Configuration](./db-branching-advanced-config.md#iam-authentication) for details.
-12. `local.port`: Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one.
+| Field | Description |
+| --- | --- |
+| `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse) |
+| `location` | Supported values are `remote` and `local`. The default is `remote`. For `mysql`, `pg`, `mssql`, `mongodb`, and `dynamodb`, only `remote` is supported. `redis` supports both: `remote` provisions a branch in the cluster like the other engines, while `local` spawns a Redis instance on your own machine. See [Redis](db-branching/redis.md#local-redis) for local branches. |
+| `type` | Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, `"redis"`, and `"dynamodb"`. |
+| `version` | Database engine version. |
+| `name` | Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname. If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case. For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`. |
+| `ttl_secs` / `ttl_mins` | Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes. |
+| `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
+| `copy.mode` | Allows developers to control how the database is cloned when creating a branch. Available modes and filtering options differ per engine - see the Copy Modes section on your [database's page](#choose-your-database). |
+| `copy.dump_args` | (MySQL & PostgreSQL only) Customize the arguments passed to `mysqldump` or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments) or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
+| `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. |
+| `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` (`"type": "aws_rds"`) is **required** when using `"copy": { "mode": "all" }`, since DynamoDB has no password-based auth. |
+| `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 
 ## Running With DB Branches
 
@@ -115,35 +119,6 @@ For Redis, `name` is the database **index** Redis uses to select a logical datab
 ## Portforwards
 When DB branching is enabled, mirrord will also automatically set up portforwards to the branch pod while the session is active. This can be used to, for example, access the branch database with a GUI SQL client like DBeaver or DataGrip. To list currently active DB branch portforwards, run `mirrord db-branches connections`.
 
-## Local Redis
-
-mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
-
-```json
-{
-  "feature": {
-    "db_branches": [
-      {
-        "type": "redis",
-        "location": "local",                     // "remote" (default) or "local"
-        "connection": {
-          // Use "host" if your app reads Redis as host:port (e.g. REDIS_ADDR=redis:6379)
-          // Use "url" if your app reads a full Redis URL (e.g. REDIS_URL=redis://user:pass@redis:6379/0)
-          "host": { "type": "env", "variable": "REDIS_ADDR" }
-        },
-        "local": {                               // Optional runtime config
-          "port": 6379,                          // Custom port (default: 6379)
-          "runtime": "container",                // "container" (default), "redis_server", or "auto"
-          "container_runtime": "docker"          // "docker" (default), "podman", or "nerdctl"
-        }
-      }
-    ]
-  }
-}
-```
-
-mirrord overrides the env variable to point to `localhost:<port>` and cleans up the Redis instance on exit.
-
 ---
 
 ## FAQ
@@ -152,8 +127,8 @@ mirrord overrides the env variable to point to `localhost:<port>` and cleans up 
 A: By default, branch databases have SSL disabled. Check if your client is specifically requesting SSL.
 
 **Q: How do I use IAM authentication instead of passwords?**
-A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Just add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` — mirrord automatically uses standard env vars like `AWS_REGION` or `GOOGLE_APPLICATION_CREDENTIALS` from your target pod. See [IAM Authentication](./db-branching-advanced-config.md#iam-authentication) for details.
+A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Just add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` — mirrord automatically uses standard env vars like `AWS_REGION` or `GOOGLE_APPLICATION_CREDENTIALS` from your target pod. See [IAM Authentication](db-branching/iam-authentication.md) for details.
 
 ## What's next?
 
-Next, check out the [Advanced Configuration](./db-branching-advanced-config.md) and [DB Branch Management](./db-branch-management.md) sections to learn more about customization and command options.
+Next, pick your database from [Choose Your Database](#choose-your-database) for engine-specific copy modes and configuration, check out [Connection Modes](db-branching/connection.md) for all the ways mirrord can locate your connection details, and see [Branch Management](db-branching/management.md) for CLI commands to inspect and destroy branches.

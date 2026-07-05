@@ -13,11 +13,12 @@ Support levels vary by platform. The table below shows the current status for ea
 
  | Feature         | Platform          | Preview Env | Multi-cluster | mirrord up |
   |-----------------|-------------------|-------------|---------------|------------|
-  | **[DB Branching](../sharing-the-cluster/db-branching.md)**    | **[PostgreSQL](../sharing-the-cluster/db-branching.md)**        | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[MongoDB](../sharing-the-cluster/db-branching.md)**           | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[MySQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[MSSQL](../sharing-the-cluster/db-branching.md)**             | `Alpha`       | `Alpha`         | Planned    |
-  |                 | **[Redis](../sharing-the-cluster/db-branching.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
+  | **[DB Branching](../sharing-the-cluster/db-branching.md)**    | **[PostgreSQL](../sharing-the-cluster/db-branching/postgresql.md)**        | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MongoDB](../sharing-the-cluster/db-branching/mongodb.md)**           | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MySQL](../sharing-the-cluster/db-branching/mysql.md)**             | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MSSQL](../sharing-the-cluster/db-branching/mssql.md)**             | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Redis](../sharing-the-cluster/db-branching/redis.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[DynamoDB](../sharing-the-cluster/db-branching/dynamodb.md)**          | `Alpha`       | `Alpha`         | Planned    |
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | `Alpha`         | Planned    |

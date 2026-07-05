@@ -69,8 +69,16 @@
     * [Migrating to MirrordSplitConfig](sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig.md)
   * [Queue Splitting Status](sharing-the-cluster/queue-splitting/status.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
-  * [Branch Management](sharing-the-cluster/db-branch-management.md)
-  * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
+  * [MySQL](sharing-the-cluster/db-branching/mysql.md)
+  * [PostgreSQL](sharing-the-cluster/db-branching/postgresql.md)
+  * [MSSQL](sharing-the-cluster/db-branching/mssql.md)
+  * [MongoDB](sharing-the-cluster/db-branching/mongodb.md)
+  * [Redis](sharing-the-cluster/db-branching/redis.md)
+  * [DynamoDB](sharing-the-cluster/db-branching/dynamodb.md)
+  * [More](sharing-the-cluster/db-branching/more.md)
+    * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
+    * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)
+    * [Branch Management](sharing-the-cluster/db-branching/management.md)
 
 ## Managing mirrord
 

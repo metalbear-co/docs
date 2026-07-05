@@ -1,26 +1,25 @@
 ---
-title: DB Branching Management
-date: 2025-08-30T21:00:00.000Z
-lastmod: 2025-08-30T21:00:00.000Z
-draft: false
-menu:
-  docs:
-    parent: db-branching
-toc: true
+title: Branch Management
 description: How to manage isolated mirrord DB branches for visibility and control
 tags:
   - team
   - enterprise
 ---
 
-# Branch Management
+mirrord provides CLI commands to inspect and manage database branches:
 
-mirrord provides CLI commands to inspect and manage database branches.
+| Command | Purpose |
+| --- | --- |
+| `mirrord db-branches status [name...]` | Show the status of running database branches |
+| `mirrord db-branches destroy (--all \| name...)` | Destroy one or more running database branches |
+| `mirrord db-branches connections` | List the currently active DB branch portforwards |
 
-1. #### View Branch Status using:
+All commands accept `(-n\|--namespace) namespace` to select a namespace and `-A\|--all-namespaces` to operate across all namespaces.
+
+#### View Branch Status
 
 ```bash
-  mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
+mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
 ```
 
 * Shows the status of running database branches.
@@ -28,7 +27,7 @@ mirrord provides CLI commands to inspect and manage database branches.
 * If no names are given, all active branches in the selected namespace (or all namespaces, if --all-namespaces is used) are listed.
 * If no branches are active, mirrord returns:`No active DB branch found`
 
-2. #### Destroy Branches using:
+#### Destroy Branches
 
 ```bash
 mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy (--all | name...)
@@ -40,3 +39,11 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy
 * mirrord uses the default namespace, or the namespace specified with `--namespace`.
 * To destroy branches across all namespaces, use `--all-namespaces`.
 * If no active branches are found, mirrord returns: `Error: No active DB branch found`
+
+#### List Branch Portforwards
+
+```bash
+mirrord db-branches connections
+```
+
+* Lists the currently active DB branch portforwards, which are set up automatically while a session is active. See [Portforwards](../db-branching.md#portforwards).
