@@ -15,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 The `db_branches` feature in mirrord lets developers spin up an isolated DB branch that mirrors the remote DB, while running safely in isolation. This allows schema changes, migrations, and experiments without impacting teammates or shared environments.
-Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, Redis, and DynamoDB** databases for remote usage, and **Redis** database for local development.
+The supported database engines are listed under [Choose Your Database](#choose-your-database) below.
 
 **When is this useful?**
 
@@ -35,12 +35,14 @@ Currently, the feature is limited to **MySQL, PostgreSQL, MSSQL, MongoDB, Redis,
 
 Copy modes, version requirements, and engine-specific behavior differ per database. Pick yours to see the full guide:
 
-* [MySQL](db-branching/mysql.md)
-* [PostgreSQL](db-branching/postgresql.md)
-* [MSSQL](db-branching/mssql.md)
-* [MongoDB](db-branching/mongodb.md)
-* [Redis](db-branching/redis.md) (remote and local)
-* [DynamoDB](db-branching/dynamodb.md)
+| Database | Config `type` | Branch location |
+| --- | --- | --- |
+| [MySQL](db-branching/mysql.md) | `"mysql"` | Remote |
+| [PostgreSQL](db-branching/postgresql.md) | `"pg"` | Remote |
+| [MSSQL](db-branching/mssql.md) | `"mssql"` | Remote |
+| [MongoDB](db-branching/mongodb.md) | `"mongodb"` | Remote |
+| [Redis](db-branching/redis.md) | `"redis"` | Remote or local |
+| [DynamoDB](db-branching/dynamodb.md) | `"dynamodb"` | Remote |
 
 ## Prerequisites
 
@@ -59,7 +61,7 @@ Developers define branches in their `mirrord.json`:
       {
         "id": "users-mysql-db",             // Optional
         "location": "remote",               // Optional, default is "remote", Available options [remote | local]
-        "type": "mysql",                    // Available options [mysql | pg | mssql | mongodb | redis | dynamodb]
+        "type": "mysql",                    // See "Choose Your Database" above for supported values
         "version": "8.0",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
@@ -81,8 +83,8 @@ Developers define branches in their `mirrord.json`:
 | Field | Description |
 | --- | --- |
 | `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse) |
-| `location` | Supported values are `remote` and `local`. The default is `remote`. For `mysql`, `pg`, `mssql`, `mongodb`, and `dynamodb`, only `remote` is supported. `redis` supports both: `remote` provisions a branch in the cluster like the other engines, while `local` spawns a Redis instance on your own machine. See [Redis](db-branching/redis.md#local-redis) for local branches. |
-| `type` | Supported values are `"mysql"`, `"pg"`, `"mssql"`, `"mongodb"`, `"redis"`, and `"dynamodb"`. |
+| `location` | Supported values are `remote` and `local`. The default is `remote`, which provisions a branch in the cluster. `local` spawns the branch on your own machine, and is only available for engines whose [Choose Your Database](#choose-your-database) entry lists a local branch location (see [Local Redis](db-branching/redis.md#local-redis)). |
+| `type` | The database engine to branch. See the [Choose Your Database](#choose-your-database) table for supported values. |
 | `version` | Database engine version. |
 | `name` | Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname. If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case. For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`. |
 | `ttl_secs` / `ttl_mins` | Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes. |
