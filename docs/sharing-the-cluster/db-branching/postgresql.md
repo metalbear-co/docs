@@ -153,4 +153,4 @@ These settings only apply while mirrord reads from the source, they are never wr
 
 ### IAM Authentication
 
-PostgreSQL branches support IAM authentication for **AWS RDS** and **GCP Cloud SQL** - add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` to the branch config. See [IAM Authentication](iam-authentication.md) for details.
+PostgreSQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.

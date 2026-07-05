@@ -105,4 +105,4 @@ In this example, `mysqldump` runs with `--single-transaction`, `--no-tablespaces
 
 ### IAM Authentication
 
-MySQL branches support IAM authentication for **AWS RDS** and **GCP Cloud SQL** - add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` to the branch config. See [IAM Authentication](iam-authentication.md) for details.
+MySQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.
