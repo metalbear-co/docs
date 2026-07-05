@@ -92,7 +92,7 @@ Developers define branches in their `mirrord.json`:
 | `copy.mode` | Allows developers to control how the database is cloned when creating a branch. Available modes and filtering options differ per engine - see the Copy Modes section on your [database's page](#choose-your-database). |
 | `copy.dump_args` | (MySQL & PostgreSQL only) Customize the arguments passed to `mysqldump` or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments) or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
 | `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. |
-| `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` (`"type": "aws_rds"`) is **required** when using `"copy": { "mode": "all" }`, since DynamoDB has no password-based auth. |
+| `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 
 ## Running With DB Branches
@@ -129,7 +129,7 @@ When DB branching is enabled, mirrord will also automatically set up portforward
 A: By default, branch databases have SSL disabled. Check if your client is specifically requesting SSL.
 
 **Q: How do I use IAM authentication instead of passwords?**
-A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL. Just add `"iam_auth": { "type": "aws_rds" }` or `"iam_auth": { "type": "gcp_cloud_sql" }` — mirrord automatically uses standard env vars like `AWS_REGION` or `GOOGLE_APPLICATION_CREDENTIALS` from your target pod. See [IAM Authentication](db-branching/iam-authentication.md) for details.
+A: mirrord supports IAM authentication for AWS RDS and GCP Cloud SQL, using the standard credential env vars already present on your target pod. See [IAM Authentication](db-branching/iam-authentication.md) for setup and examples.
 
 ## What's next?
 
