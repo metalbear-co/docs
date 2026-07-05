@@ -11,7 +11,7 @@ This page covers DB branching for DynamoDB. For the general concepts, the full l
 The branch runs as a [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) pod (`amazon/dynamodb-local`) in your cluster, so your application talks to an isolated endpoint instead of the source AWS account.
 
 {% hint style="info" %}
-DynamoDB branching requires operator `<OPERATOR_VERSION>`, mirrord CLI `<CLI_VERSION>`, and operator Helm chart `<CHART_VERSION>` with the `operator.dynamodbBranching` value set to `true`.
+DynamoDB branching requires operator `3.179.0`, mirrord CLI `3.228.0`, and operator Helm chart `3.179.0` with the `operator.dynamodbBranching` value set to `true`.
 {% endhint %}
 
 ### Basic Configuration
