@@ -44,10 +44,23 @@ In all cases you must create a `MirrordPropertyList` that tells the operator whi
 
 **Option A: Workload Identity (recommended)**
 
-[Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. Annotate the operator's service account with the GCP service account email using the `sa.annotations` setting in the Helm chart:
+[Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. The Kubernetes service account must carry the `iam.gke.io/gcp-service-account` annotation pointing at the GCP service account email.
+
+When the chart creates the operator's service account (`sa.create`, on by default), set the email with the `sa.gcpSa` value and the chart adds the annotation for you:
 
 ```yaml
 sa:
+  gcpSa: mirrord-operator@my-project.iam.gserviceaccount.com
+```
+
+If you bring your own service account (`sa.create: false`), add the annotation to it directly:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mirrord-operator
+  namespace: mirrord
   annotations:
     iam.gke.io/gcp-service-account: mirrord-operator@my-project.iam.gserviceaccount.com
 ```
@@ -148,7 +161,7 @@ spec:
   tmpNameTemplate: "mirrord-tmp-{{RANDOM}}{{FALLBACK}}{{ORIGINAL}}"
   queues:
     - id: user-events
-      kind: GooglePubSub
+      kind: googlePubSub
       appConfig:
         subscription:
           - env: PUBSUB_SUBSCRIPTION
@@ -181,7 +194,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions consumed by the workload:
 
 * `id` - arbitrary queue ID that developers reference from their mirrord config.
-* `kind` - must be `GooglePubSub`.
+* `kind` - must be `googlePubSub`.
 * `appConfig.subscription` - how the application discovers the subscription name. Each entry can use:
   * `env` - exact environment variable name containing the subscription ID.
   * `envLike` - regex matching environment variable names.
@@ -275,7 +288,7 @@ Reference it from the queue entry in the `MirrordSplitConfig`:
 ```yaml
 queues:
   - id: user-events
-    kind: GooglePubSub
+    kind: googlePubSub
     queueConfig: user-events-queue-config
     appConfig:
       subscription:
@@ -301,7 +314,7 @@ For example, an application that reads a Go CDK Pub/Sub URL:
 ```yaml
 queues:
   - id: user-events
-    kind: GooglePubSub
+    kind: googlePubSub
     appConfig:
       subscription:
         - env: PUBSUB_SUBSCRIPTION
