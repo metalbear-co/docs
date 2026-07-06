@@ -34,12 +34,6 @@ Example output:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `mirrord-pg-branch-070081bc40967ac9` | `mirrord-postgresql-branch-db-pod-686qf` | PostgreSQL | Ready | 600 | `my_database_name_etc` | `minikube-user` | `2026-07-06T04:36:59.683405Z` |
 
-When no branches are active:
-
-```text
-No active DB branch found
-```
-
 ## Destroy Branches
 
 ```bash
@@ -52,19 +46,6 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy
 * mirrord uses the default namespace, or the namespace specified with `--namespace`.
 * To destroy branches across all namespaces, use `--all-namespaces`.
 * If no active branches are found, mirrord returns: `Error: No active DB branch found`
-
-Example output:
-
-```text
-destroying BranchDatabase mirrord-spanner-branch-7aaada6f6a021e59
-destroyed mirrord-spanner-branch-7aaada6f6a021e59
-```
-
-When a named branch does not exist:
-
-```text
-branch not found: does-not-exist
-```
 
 ## List Branch Portforwards
 
