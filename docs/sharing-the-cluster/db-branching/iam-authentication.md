@@ -2,6 +2,7 @@
 title: IAM Authentication
 description: Use AWS RDS or GCP Cloud SQL IAM authentication with mirrord DB branching
 tags:
+  - beta
   - team
   - enterprise
 ---
