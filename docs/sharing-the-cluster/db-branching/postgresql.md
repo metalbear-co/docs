@@ -104,8 +104,6 @@ When `dump_args` is set, it **replaces** the defaults entirely. If you want to k
 
 This keeps the PostgreSQL defaults and adds `--exclude-table=audit_logs` so `pg_dump` skips the `audit_logs` table.
 
-### Remove all default dump arguments
-
 ```json
 {
   "copy": {
