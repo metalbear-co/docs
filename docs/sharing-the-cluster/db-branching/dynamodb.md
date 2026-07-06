@@ -35,7 +35,7 @@ DynamoDB branching requires operator `3.179.0`, mirrord CLI `3.228.0`, and opera
 }
 ```
 
-#### Connection
+### Connection
 
 Unlike the other engines, `connection` is optional for DynamoDB. Since there is no user or password, it is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. See [Connection Modes](connection.md) for the supported source formats.
 
