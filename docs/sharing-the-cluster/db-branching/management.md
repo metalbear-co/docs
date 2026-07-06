@@ -2,8 +2,9 @@
 title: Branch Management
 description: How to manage isolated mirrord DB branches for visibility and control
 tags:
-  - team
-  - enterprise
+- beta
+- team
+- enterprise
 ---
 
 mirrord provides CLI commands to inspect and manage database branches:
