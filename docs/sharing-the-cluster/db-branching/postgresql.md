@@ -2,6 +2,7 @@
 title: PostgreSQL
 description: Spin up an isolated PostgreSQL branch of your remote database with mirrord
 tags:
+  - beta
   - team
   - enterprise
 ---
