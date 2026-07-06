@@ -18,15 +18,15 @@ The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `M
 
 First, we have a consumer app reading messages from an SQS queue:
 
-![A K8s application that consumes messages from an SQS queue](<../../.gitbook/assets/before-splitting-sqs (1).svg>)
+![A K8s application that consumes messages from an SQS queue](../../.gitbook/assets/before-splitting-sqs.svg)
 
 When the first mirrord SQS splitting session starts, two temporary queues are created (one for the target deployed in the cluster, one for the user's local application), and the mirrord operator routes messages according to the [user's filter](sqs.md#setting-a-filter):
 
-![One SQS splitting session](<../../.gitbook/assets/1-user-sqs (1).svg>)
+![One SQS splitting session](../../.gitbook/assets/1-user-sqs.svg)
 
 If a second user then starts a mirrord SQS splitting session on the same queue, a third temporary queue is created (for the second user's local application). The mirrord operator includes the new queue and the second user's filter in the routing logic.
 
-![Two SQS splitting sessions](<../../.gitbook/assets/2-users-sqs (1).svg>)
+![Two SQS splitting sessions](../../.gitbook/assets/2-users-sqs.svg)
 
 If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
