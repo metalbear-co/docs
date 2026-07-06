@@ -12,7 +12,7 @@ This page covers DB branching for MongoDB. For the general concepts, the full li
 MongoDB branching requires operator `3.137.0`, mirrord CLI `3.183.0`, and operator Helm chart `1.44.0` with the `operator.mongoBranching` value set to `true`.
 {% endhint %}
 
-### Basic Configuration
+## Basic Configuration
 
 ```json
 {
@@ -37,7 +37,7 @@ MongoDB branching requires operator `3.137.0`, mirrord CLI `3.183.0`, and operat
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
-### Copy Modes
+## Copy Modes
 
 MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.
 When combined with [collection filters](#collection-filters), the mode determines what happens to collections that are _not_ listed in the filter. Filtered collections always receive only the matching documents.
@@ -68,7 +68,7 @@ The copy mode controls the **baseline** (what happens to collections not mention
 | `"empty"` | Not created | Created with matching documents only |
 | `"all"` | Fully copied (all documents) | Copied with matching documents only |
 
-##### Example: `"mode": "all"` with filters
+#### Example: `"mode": "all"` with filters
 
 ```json
 {

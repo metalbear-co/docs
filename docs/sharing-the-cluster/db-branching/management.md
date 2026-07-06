@@ -16,7 +16,7 @@ mirrord provides CLI commands to inspect and manage database branches:
 
 All commands accept `(-n\|--namespace) namespace` to select a namespace and `-A\|--all-namespaces` to operate across all namespaces.
 
-#### View Branch Status
+### View Branch Status
 
 ```bash
 mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
@@ -27,7 +27,7 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status 
 * If no names are given, all active branches in the selected namespace (or all namespaces, if --all-namespaces is used) are listed.
 * If no branches are active, mirrord returns:`No active DB branch found`
 
-#### Destroy Branches
+## Destroy Branches
 
 ```bash
 mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy (--all | name...)
@@ -40,7 +40,7 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy
 * To destroy branches across all namespaces, use `--all-namespaces`.
 * If no active branches are found, mirrord returns: `Error: No active DB branch found`
 
-#### List Branch Portforwards
+## List Branch Portforwards
 
 ```bash
 mirrord db-branches connections

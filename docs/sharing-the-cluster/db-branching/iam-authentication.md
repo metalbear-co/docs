@@ -16,9 +16,9 @@ DynamoDB branches also authenticate to the source account with `"iam_auth": { "t
 **Default environment variables**: If you do not specify custom credential sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`). You only need additional configuration if your pod uses non-standard variable names.
 {% endhint %}
 
-### AWS RDS IAM Authentication
+## AWS RDS IAM Authentication
 
-#### Minimal Configuration
+### Minimal Configuration
 
 Uses the standard AWS environment variables already present in the target pod.
 
@@ -37,7 +37,7 @@ Uses the standard AWS environment variables already present in the target pod.
 }
 ```
 
-#### Default AWS environment variables
+### Default AWS environment variables
 
 mirrord reads the following variables from the **target pod**, not from your local shell.
 
@@ -48,7 +48,7 @@ mirrord reads the following variables from the **target pod**, not from your loc
 | `secret_access_key` | `AWS_SECRET_ACCESS_KEY` |
 | `session_token` | `AWS_SESSION_TOKEN` |
 
-#### Custom AWS environment variables
+### Custom AWS environment variables
 
 Use this only if your pod uses non-standard variable names.
 
@@ -63,9 +63,9 @@ Use this only if your pod uses non-standard variable names.
 }
 ```
 
-### GCP Cloud SQL IAM Authentication
+## GCP Cloud SQL IAM Authentication
 
-#### Minimal Configuration
+### Minimal Configuration
 
 Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 
@@ -91,7 +91,7 @@ Uses the standard `GOOGLE_APPLICATION_CREDENTIALS` file path from target pod
 | `credentials_path` | `GOOGLE_APPLICATION_CREDENTIALS` |
 | `project` | `GOOGLE_CLOUD_PROJECT`, `GCP_PROJECT`, `GCLOUD_PROJECT` |
 
-#### Custom GCP credentials
+### Custom GCP credentials
 
 You can override the default behavior in one of the following ways.
 
@@ -124,7 +124,7 @@ Read credentials from a file path provided via an environment variable (for exam
 Use either `credentials_json` OR `credentials_path`, not both.
 {% endhint %}
 
-##### Required Database Settings
+#### Required Database Settings
 
 GCP Cloud SQL requires TLS.
 Make sure your `DATABASE_URL` includes: `sslmode=require`
