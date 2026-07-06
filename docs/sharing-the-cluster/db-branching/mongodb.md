@@ -88,7 +88,7 @@ The copy mode controls the **baseline** (what happens to collections not mention
 
 All collections are copied, but the `users` collection includes only documents for alice and bob, and the `orders` collection includes only documents created after the given timestamp.
 
-##### Example: `"mode": "empty"` with filters
+#### Example: `"mode": "empty"` with filters
 
 ```json
 {
