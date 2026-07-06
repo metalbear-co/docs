@@ -2,6 +2,7 @@
 title: Redis
 description: Spin up an isolated Redis branch with mirrord - in the cluster or on your own machine
 tags:
+  - alpha
   - team
   - enterprise
 ---
