@@ -13,7 +13,7 @@ This page covers DB branching for PostgreSQL. For the general concepts, the full
 PostgreSQL branching requires operator `3.131.0`, mirrord CLI `3.175.0`, and operator Helm chart `1.40.2` with the `operator.pgBranching` value set to `true`.
 {% endhint %}
 
-### Basic Configuration
+## Basic Configuration
 
 ```json
 {
@@ -91,7 +91,7 @@ The `dump_args` field lets you override the default arguments passed to `pg_dump
 
 When `dump_args` is set, it **replaces** the defaults entirely. If you want to keep the defaults while adding your own flags, include them explicitly. The PostgreSQL defaults are `--no-owner` and `--no-acl`. An empty list (`[]`) removes all default dump arguments.
 
-##### Example - exclude a large table from the dump
+#### Example - exclude a large table from the dump
 
 ```json
 {

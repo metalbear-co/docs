@@ -17,7 +17,7 @@ mirrord provides CLI commands to inspect and manage database branches:
 
 All commands accept `(-n\|--namespace) namespace` to select a namespace and `-A\|--all-namespaces` to operate across all namespaces.
 
-### View Branch Status
+## View Branch Status
 
 ```bash
 mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status [name...]
@@ -27,6 +27,18 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] status 
 * If specific branch names are provided, mirrord shows their statuses.
 * If no names are given, all active branches in the selected namespace (or all namespaces, if --all-namespaces is used) are listed.
 * If no branches are active, mirrord returns:`No active DB branch found`
+
+Example output:
+
+| Name | Pod Name | DB Type | Phase | TTL (sec) | Database | Users | Expires At |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `mirrord-pg-branch-070081bc40967ac9` | `mirrord-postgresql-branch-db-pod-686qf` | PostgreSQL | Ready | 600 | `my_database_name_etc` | `minikube-user` | `2026-07-06T04:36:59.683405Z` |
+
+When no branches are active:
+
+```text
+No active DB branch found
+```
 
 ## Destroy Branches
 
@@ -41,6 +53,19 @@ mirrord db-branches [(-n|--namespace) namespace] [-A | --all-namespaces] destroy
 * To destroy branches across all namespaces, use `--all-namespaces`.
 * If no active branches are found, mirrord returns: `Error: No active DB branch found`
 
+Example output:
+
+```text
+destroying BranchDatabase mirrord-spanner-branch-7aaada6f6a021e59
+destroyed mirrord-spanner-branch-7aaada6f6a021e59
+```
+
+When a named branch does not exist:
+
+```text
+branch not found: does-not-exist
+```
+
 ## List Branch Portforwards
 
 ```bash
@@ -48,3 +73,15 @@ mirrord db-branches connections
 ```
 
 * Lists the currently active DB branch portforwards, which are set up automatically while a session is active. See [Portforwards](../db-branching.md#portforwards).
+
+Example output:
+
+| DB ID | Address | Key | Session ID |
+| --- | --- | --- | --- |
+| `pg-dev-random-id10` | `postgresql://postgres:postgres-branch-pod-root-password@[::]:53778/my_database_name_etc` | `40c85` | `5E68BB2A295FDC5E` |
+
+When no session is active:
+
+```text
+No active portforward sessions.
+```

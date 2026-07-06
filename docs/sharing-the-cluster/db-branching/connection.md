@@ -27,7 +27,7 @@ The optional `type` field controls where the environment variable is read from (
 - `"env"` (default): Direct `env` entry in the target pod spec.
 - `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
 
-#### Individual Connection Parameters (Params)
+### Individual Connection Parameters (Params)
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 

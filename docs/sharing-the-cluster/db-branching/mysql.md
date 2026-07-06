@@ -13,7 +13,7 @@ This page covers DB branching for MySQL. For the general concepts, the full list
 MySQL branching requires operator `3.129.0`, mirrord CLI `3.160.0`, and operator Helm chart `1.37.0` with the `operator.mysqlBranching` value set to `true`.
 {% endhint %}
 
-### Basic Configuration
+## Basic Configuration
 
 ```json
 {
@@ -91,7 +91,7 @@ The `dump_args` field lets you customize the arguments passed to `mysqldump`, th
 
 By default, mirrord passes no arguments to `mysqldump`, which then runs with its own built-in defaults (the [`--opt`](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html#option_mysqldump_opt) option group). Arguments listed in `dump_args` are passed to the tool as-is. An empty list (`[]`) removes `mysqldump`'s built-in defaults.
 
-##### Example - single transaction and no table locking
+#### Example - single transaction and no table locking
 
 ```json
 {

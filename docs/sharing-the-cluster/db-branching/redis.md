@@ -18,7 +18,7 @@ Remote Redis branching requires operator `3.168.0`, mirrord CLI `3.217.0`, and o
 Local Redis branching only requires mirrord CLI `3.180.0` - there are no operator or chart version requirements, since a local branch runs entirely on your machine.
 {% endhint %}
 
-### Remote Branches
+## Remote Branches
 
 ```json
 {
@@ -43,7 +43,7 @@ Local Redis branching only requires mirrord CLI `3.180.0` - there are no operato
 
 The `connection` field describes how mirrord locates the source Redis connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
-#### Database Index
+### Database Index
 
 For Redis, the `name` field is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`.
 

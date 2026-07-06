@@ -13,7 +13,7 @@ This page covers DB branching for Microsoft SQL Server (MSSQL). For the general 
 MSSQL branching requires operator `3.150.0`, mirrord CLI `3.195.0`, and operator Helm chart `1.57.0` with the `operator.mssqlBranching` value set to `true`.
 {% endhint %}
 
-### Basic Configuration
+## Basic Configuration
 
 ```json
 {

@@ -58,7 +58,7 @@ Copying large datasets can significantly increase branch creation time and stora
 MongoDB does not support a `"schema"` copy mode. In relational databases, `"schema"` copies table structures without data. MongoDB is schema-less and collections don't have a predefined structure separate from their documents, so `"empty"` and `"all"` are the available options.
 {% endhint %}
 
-#### Collection Filters
+### Collection Filters
 
 Developers can customize which collections are copied and apply MongoDB query filters per collection.
 
