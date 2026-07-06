@@ -47,7 +47,7 @@ The `connection` field describes how mirrord locates the source Redis connection
 
 For Redis, the `name` field is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`.
 
-#### Copy Modes
+### Copy Modes
 
 Redis copy modes apply only to **remote** Redis branches. A local Redis branch always starts empty. Redis supports two modes:
 
@@ -73,7 +73,7 @@ In this example, only keys prefixed with `user:` or `session:` are copied; every
 Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
 {% endhint %}
 
-### Local Redis
+## Local Redis
 
 mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
 

@@ -38,7 +38,7 @@ MSSQL branching requires operator `3.150.0`, mirrord CLI `3.195.0`, and operator
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
-### Copy Modes
+## Copy Modes
 
 The `copy` field controls what data gets cloned when creating an MSSQL branch.
 
@@ -54,7 +54,7 @@ It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
-#### Filtered Data Clone
+### Filtered Data Clone
 
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
 
@@ -74,7 +74,7 @@ Developers can customize what gets copied per table. This allows copying only sp
 }
 ```
 
-##### In this example
+#### In this example
 
 The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.

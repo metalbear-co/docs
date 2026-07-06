@@ -38,7 +38,7 @@ MySQL branching requires operator `3.129.0`, mirrord CLI `3.160.0`, and operator
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
-### Copy Modes
+## Copy Modes
 
 The `copy` field controls what data gets cloned when creating a MySQL branch.
 
@@ -54,7 +54,7 @@ It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
-#### Filtered Data Clone
+### Filtered Data Clone
 
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
 
@@ -74,7 +74,7 @@ Developers can customize what gets copied per table. This allows copying only sp
 }
 ```
 
-##### In this example
+#### In this example
 
 The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.
@@ -85,13 +85,13 @@ Filtering can also be combined with `"mode": "empty"`, in which case only the sp
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
-### Custom Dump Arguments
+## Custom Dump Arguments
 
 The `dump_args` field lets you customize the arguments passed to `mysqldump`, the tool mirrord uses to copy the source database. It is available in all three copy modes (`empty`, `schema`, and `all`).
 
 By default, mirrord passes no arguments to `mysqldump`, which then runs with its own built-in defaults (the [`--opt`](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html#option_mysqldump_opt) option group). Arguments listed in `dump_args` are passed to the tool as-is. An empty list (`[]`) removes `mysqldump`'s built-in defaults.
 
-#### Example - single transaction and no table locking
+### Example - single transaction and no table locking
 
 ```json
 {
@@ -104,6 +104,6 @@ By default, mirrord passes no arguments to `mysqldump`, which then runs with its
 
 In this example, `mysqldump` runs with `--single-transaction`, `--no-tablespaces`, and `--skip-lock-tables`.
 
-### IAM Authentication
+## IAM Authentication
 
 MySQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.
