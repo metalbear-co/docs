@@ -27,7 +27,7 @@ The optional `type` field controls where the environment variable is read from (
 - `"env"` (default): Direct `env` entry in the target pod spec.
 - `"env_from"`: From the target pod's `envFrom` field (`secretRef` or `configMapRef`). mirrord replicates the `envFrom` sources onto the init container so it can resolve the variable at runtime.
 
-### Individual Connection Parameters (Params)
+## Individual Connection Parameters (Params)
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 
@@ -58,7 +58,7 @@ Defaults
 
 Default for `connection.params.host` is `localhost` for all databases.
 
-#### Secret Source
+### Secret Source
 
 Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
 
@@ -86,7 +86,7 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
-#### Google Secret Manager Source
+### Google Secret Manager Source
 
 Any connection value can be read from [Google Secret Manager](https://cloud.google.com/secret-manager) instead of an environment variable or a Kubernetes Secret. This is useful when your application already loads its database credentials from Secret Manager at runtime and never puts them in the pod spec.
 
@@ -131,7 +131,7 @@ For an individual parameter, use a `gcp_secret_manager` field with the resource 
 **Setup**: the branch pod inherits the target pod's service account, so that account's Google identity must have `roles/secretmanager.secretAccessor` on the secret. No operator-level permissions are needed.
 {% endhint %}
 
-#### Literal Value
+### Literal Value
 
 You can provide a connection parameter as a literal value directly in the config. This is useful when the credential is injected at runtime by an external system and does not appear in the pod spec where mirrord can read it.
 
@@ -153,7 +153,7 @@ Use a field with `value`:
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
-#### Composite Environment Variables
+### Composite Environment Variables
 
 Some applications pack multiple connection details into a single environment variable. For example, a target pod might expose:
 
@@ -186,14 +186,14 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
 
 During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
 
-#### Choosing the capture group
+### Choosing the capture group
 The capture group name follows the parameter name - `(?P<host>...)` for the `host` variable, `(?P<port>...)` for the `port` variable.
 
 For single-parameter patterns you can also use `(?P<value>...)` as a generic name, or a plain unnamed group like ([^:]+). If the regex contains more than one unnamed group, the first one is used.
 
 > The regex must contain at least one capture group, otherwise the configuration is rejected.
 
-#### Multiple Sources for the Same Parameter
+### Multiple Sources for the Same Parameter
 
 Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection. For example, separate read/write URLs.
 
@@ -210,7 +210,7 @@ Both `url` and individual `params` fields accept either a single value or an arr
 
 The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
 
-#### Combining arrays with `value_pattern`
+### Combining arrays with `value_pattern`
 If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. 
 
 As with plain arrays, the first entry is used as the source. Even if `WRITE_SERVER` and `READ_SERVER` point to different databases, only `WRITE_SERVER` is cloned. During the session, all entries are rewritten to point at the branch.
