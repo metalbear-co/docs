@@ -2,6 +2,7 @@
 title: MSSQL
 description: Spin up an isolated Microsoft SQL Server branch of your remote database with mirrord
 tags:
+  - beta
   - team
   - enterprise
 ---
