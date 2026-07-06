@@ -145,9 +145,9 @@ Each PR gets an isolated preview keyed by its number. The `{{ key }}` template i
 
 ### Preview Environment Workflow
 
-![Preview Environment Creation Workflow](<../.gitbook/assets/create-env (1).svg>)
+![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)
 
-![Preview Environment Modification Workflow](<../.gitbook/assets/modify-env (1).svg>)
+![Preview Environment Modification Workflow](../.gitbook/assets/modify-env.svg)
 
 ***
 
