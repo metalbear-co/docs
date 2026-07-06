@@ -82,7 +82,7 @@ You can restrict which tables are copied and apply a per-table filter using the 
 
 In this example, only the `users` and `orders` tables are copied. The `users` table copy includes only items where `active = true`; the `orders` table is copied in full.
 
-#### Known Limitations
+## Known Limitations
 
 {% hint style="warning" %}
 - **Filter expressions cannot define `ExpressionAttributeValues` or `ExpressionAttributeNames`.** The `filter` string is passed straight to `Scan`, so expressions that rely on placeholders (for example `age > :min` or `#n = "alice"`) fail at runtime. Only self-contained expressions work.
