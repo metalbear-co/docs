@@ -16,40 +16,71 @@ tags: ["open source", "team", "enterprise"]
 
 ## What it shows
 
-- **Local sessions** — each `mirrord exec` you have running locally, with its target, port subscriptions, processes, mirrord version, and a live event stream (file ops, DNS, HTTP requests, outgoing connections).
-- **Operator sessions** — a roll-up of every active mirrord session in your cluster, grouped by session key, with target, owner, namespace, and HTTP filter. Useful for seeing what your teammates have running before you start your own session, and for picking a session to ride on from the [mirrord browser extension](incoming-traffic/debug-from-browser.md).
+- **Local sessions** - each `mirrord exec` you have running locally, with its target, port subscriptions, processes, mirrord version, and a live event stream (file ops, DNS, HTTP requests, outgoing connections).
+- **Operator sessions** - a roll-up of every active mirrord session in your cluster, grouped by session key, with target, owner, namespace, and HTTP filter. Useful for seeing what your teammates have running before you start your own session, and for picking a session to ride on from the [mirrord browser extension](incoming-traffic/debug-from-browser.md).
 
 The dashboard updates live over a WebSocket as sessions start and end.
 
 ## Prerequisites
 
-- A recent mirrord CLI. The subcommand is available on macOS and Linux.
+- A recent mirrord CLI (`3.198.0` or newer). The subcommand is available on macOS and Linux.
 - A working kubeconfig pointing at a cluster running the [mirrord operator](../managing-mirrord/operator.md), if you want to see operator sessions. Without an operator, the dashboard still works for your own local sessions.
 
-## Running it
+## Quick start
 
 ```bash
 mirrord ui
 ```
 
-The CLI starts an HTTP + WebSocket server bound to localhost, generates a one-shot auth token, prints the URL, and opens it in your default browser.
+The CLI starts an HTTP + WebSocket server bound to localhost, generates a one-shot auth token, prints some details, and opens it in your default browser.
 
-```
-  mirrord session monitor
-    Web UI: http://127.0.0.1:59281?token=...
+```text
+* New mirrord session monitor started
+* Server PID:
+ -> ...
+
+* Web UI:
+ -> http://127.0.0.1:59281?token=...
+* API token:
+-> x-auth-token: ...
+
+* mirrord session monitor ready!
+  -> log file: ...
 ```
 
 The token is required on every API request, so there's no need to expose the dashboard beyond your machine. Each invocation generates a fresh token.
 
-To pick a different port:
+The server runs in the background on your machine. The logs for the server will be printed to a temporary file in the default temporary directory, and its file path is printed when the server is started. To stop the server, run:
+
+```bash
+mirrord ui stop
+```
+
+### Options
+
+To pick a **different port**:
 
 ```bash
 mirrord ui --port 9000
 ```
 
+To **skip opening the browser** when running the command:
+
+```bash
+mirrord ui --no-browser
+```
+
+To open using a **different browser**:
+
+```bash
+BROWSER="firefox" mirrord ui
+```
+
 ## Authentication
 
-The token is high-entropy and is bound to the running `mirrord ui` process. The first request you make with `?token=...` sets a `mirrord_token` cookie scoped to that origin so subsequent requests don't need to keep the query parameter. Closing `mirrord ui` invalidates the token; the next run mints a new one.
+The token is high-entropy and is bound to the running `mirrord ui` process. The first request you make with `?token=...` sets a `mirrord_token` cookie scoped to that origin so subsequent requests don't need to keep the query parameter. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
+
+Stopping the server with `mirrord ui stop` invalidates the token; the next run mints a new one.
 
 ## Browser extension auto-configure
 
@@ -57,9 +88,10 @@ If you have the [mirrord browser extension](incoming-traffic/debug-from-browser.
 
 ## Troubleshooting
 
-- **"Failed to bind"** — another process is on the chosen port. Pass `--port <other>`.
-- **Empty operator sessions list** — your kubeconfig context isn't pointing at a cluster with the mirrord operator installed, or your user doesn't have permission to read `MirrordOperator.status`. The local sessions panel still works.
-- **Dashboard says "unauthorized"** — the token in the URL didn't match. Re-open the URL the CLI printed; don't reuse a URL from a previous run.
+- **"Failed to bind"** - another process is on the chosen port. Pass `--port <other>`.
+- **Empty operator sessions list** - your kubeconfig context isn't pointing at a cluster with the mirrord operator installed, or your user doesn't have permission to read `MirrordOperator.status`. The local sessions panel still works.
+- **Dashboard says "unauthorized"** - the token in the URL didn't match. Re-open the URL the CLI printed; don't reuse a URL from a previous run.
+- **"Another session monitor is already running"** - the server is already running. If it isn't behaving as you expect, trying stopping it with `mirrord ui stop` or by killing it manually using its process ID, and then restarting.
 
 ## What's next?
 
