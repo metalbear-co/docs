@@ -2,6 +2,7 @@
 title: DynamoDB
 description: Spin up an isolated DynamoDB branch of your remote tables with mirrord
 tags:
+  - alpha
   - team
   - enterprise
 ---
