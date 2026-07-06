@@ -15,7 +15,7 @@ The branch runs as a [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb
 DynamoDB branching requires operator `3.179.0`, mirrord CLI `3.228.0`, and operator Helm chart `3.179.0` with the `operator.dynamodbBranching` value set to `true`.
 {% endhint %}
 
-### Basic Configuration
+## Basic Configuration
 
 ```json
 {
