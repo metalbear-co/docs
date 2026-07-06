@@ -10,7 +10,7 @@ This page covers the `connection` field of a DB branch config - how mirrord loca
 
 mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**.
 
-#### Connection URL
+## Connection URL
 
 Provide a single environment variable that contains the full database connection string:
 
