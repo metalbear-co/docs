@@ -43,7 +43,7 @@ Unlike the other engines, `connection` is optional for DynamoDB. Since there is 
 
 DynamoDB branches authenticate to the source account with `"iam_auth": { "type": "aws_rds" }` (the `aws_rds` type name is reused across AWS engines). Since DynamoDB has no password-based auth, `iam_auth` is **required** when `"copy": { "mode": "all" }` is set. Credentials are read from the target pod's environment - see [IAM Authentication](iam-authentication.md) for details and custom credential sources.
 
-### Copy Modes
+## Copy Modes
 
 DynamoDB supports two copy modes. Unlike the SQL engines, there is no `"schema"` mode - tables are schema-on-write, so only `"empty"` and `"all"` are available.
 
