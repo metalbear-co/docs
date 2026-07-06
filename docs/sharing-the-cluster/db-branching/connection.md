@@ -56,7 +56,7 @@ Defaults
 | MongoDB | `27017` | `root` |
 | Redis | `6379` | `default` |
 
-Default for host is `localhost` on all databases.
+Default for `connection.params.host` is `localhost` for all databases.
 
 #### Secret Source
 
