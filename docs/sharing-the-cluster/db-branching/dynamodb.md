@@ -62,7 +62,7 @@ It's only recommended for very small or empty tables.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
-#### Table Filters
+### Table Filters
 
 You can restrict which tables are copied and apply a per-table filter using the `collections` map. A `filter` is a DynamoDB [`FilterExpression`](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.FilterExpression.html) applied during the `Scan` of the source table.
 
