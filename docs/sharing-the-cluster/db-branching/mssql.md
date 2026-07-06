@@ -88,3 +88,7 @@ If both are specified, mirrord ignores the `tables` configuration.
 {% hint style="info" %}
 The `dump_args` field is not supported for MSSQL. MSSQL branches use their own internal dump mechanism, so only MySQL and PostgreSQL branches accept custom dump arguments.
 {% endhint %}
+
+### Schema Migrations
+
+MSSQL branches can run your schema migrations automatically while the branch is created, so it comes up with the schema your code expects. See [Schema Migrations](migrations.md) for setup and examples.

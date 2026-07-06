@@ -152,6 +152,10 @@ Setting it through `connection_settings` makes the copy read past the policy:
 
 These settings only apply while mirrord reads from the source, they are never written into the branch itself.
 
+### Schema Migrations
+
+PostgreSQL branches can run your schema migrations automatically while the branch is created, so it comes up with the schema your code expects. See [Schema Migrations](migrations.md) for setup and examples.
+
 ### IAM Authentication
 
 PostgreSQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.

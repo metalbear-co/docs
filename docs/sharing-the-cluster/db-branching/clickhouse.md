@@ -1,16 +1,16 @@
 ---
-title: MySQL
-description: Spin up an isolated MySQL branch of your remote database with mirrord
+title: ClickHouse
+description: Spin up an isolated ClickHouse branch of your remote database with mirrord
 tags:
-  - beta
+  - alpha
   - team
   - enterprise
 ---
 
-This page covers DB branching for MySQL. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
+This page covers DB branching for ClickHouse. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
 {% hint style="info" %}
-MySQL branching requires operator `3.129.0`, mirrord CLI `3.160.0`, and operator Helm chart `1.37.0` with the `operator.mysqlBranching` value set to `true`.
+ClickHouse branching requires operator `3.178.0`, mirrord CLI `3.228.0`, and operator Helm chart `3.178.0` with the `operator.clickhouseBranching` value set to `true`.
 {% endhint %}
 
 ## Basic Configuration
@@ -20,12 +20,12 @@ MySQL branching requires operator `3.129.0`, mirrord CLI `3.160.0`, and operator
   "feature": {
     "db_branches": [
       {
-        "id": "users-mysql-db",
-        "type": "mysql",
-        "version": "8.0",
-        "name": "users-database-name",
+        "id": "events-clickhouse-db",
+        "type": "clickhouse",
+        "version": "25.3",
+        "name": "events-database-name",
         "connection": {
-          "url": "DATABASE_URL"
+          "url": "CLICKHOUSE_URL"
         },
         "copy": {
           "mode": "empty"
@@ -40,7 +40,7 @@ The `connection` field describes how mirrord locates the source database connect
 
 ### Copy Modes
 
-The `copy` field controls what data gets cloned when creating a MySQL branch.
+The `copy` field controls what data gets cloned when creating a ClickHouse branch.
 
 | Mode | What gets cloned | Best for |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ Developers can customize what gets copied per table. This allows copying only sp
       "users": {
         "filter": "name = 'alice' OR name = 'bob'"
       },
-      "orders": {
+      "events": {
         "filter": "created_at > 1759948761"
       }
     }
@@ -78,36 +78,17 @@ Developers can customize what gets copied per table. This allows copying only sp
 
 The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.
-The `orders` table copy includes only rows created after a certain timestamp.
+The `events` table copy includes only rows created after a certain timestamp.
 
 Filtering can also be combined with `"mode": "empty"`, in which case only the specified tables (and their filtered data) are copied, while all others are excluded.
 
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
 
-### Custom Dump Arguments
-
-The `dump_args` field lets you customize the arguments passed to `mysqldump`, the tool mirrord uses to copy the source database. It is available in all three copy modes (`empty`, `schema`, and `all`).
-
-By default, mirrord passes no arguments to `mysqldump`, which then runs with its own built-in defaults (the [`--opt`](https://dev.mysql.com/doc/refman/8.4/en/mysqldump.html#option_mysqldump_opt) option group). Arguments listed in `dump_args` are passed to the tool as-is. An empty list (`[]`) removes `mysqldump`'s built-in defaults.
-
-#### Example - single transaction and no table locking
-
-```json
-{
-  "copy": {
-    "mode": "all",
-    "dump_args": ["--single-transaction", "--no-tablespaces", "--skip-lock-tables"]
-  }
-}
-```
-
-In this example, `mysqldump` runs with `--single-transaction`, `--no-tablespaces`, and `--skip-lock-tables`.
+{% hint style="info" %}
+The `dump_args` field is not supported for ClickHouse. ClickHouse branches use their own internal dump mechanism, so only MySQL and PostgreSQL branches accept custom dump arguments.
+{% endhint %}
 
 ### Schema Migrations
 
-MySQL branches can run your schema migrations automatically while the branch is created, so it comes up with the schema your code expects. See [Schema Migrations](migrations.md) for setup and examples.
-
-### IAM Authentication
-
-MySQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.
+ClickHouse branches can run your schema migrations automatically while the branch is created, so it comes up with the schema your code expects. mirrord's Flyway image includes ClickHouse support out of the box. See [Schema Migrations](migrations.md) for setup and examples.
