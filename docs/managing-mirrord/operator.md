@@ -38,21 +38,53 @@ Download the accompanying `values.yaml`:
 curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
 ```
 
-**Team license:** Set `license.key` to your key, then install:
+#### Cloud API key
+
+The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
+
+Provide the key to the chart in one of three ways:
+
+**Kubernetes secret (recommended)** — create a secret in your cluster and reference it via `cloud.apiKey.keyRef`, so the key never lives in your `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-cloud-api-key \
+  --namespace mirrord \
+  --from-literal=apiKey=<your API key>
+```
+
+```yaml
+cloud:
+  apiKey:
+    keyRef: mirrord-operator-cloud-api-key
+```
+
+**Google Secret Manager** — store the key in GSM and reference it via `cloud.apiKey.gsmRef`. The Operator reads it using Application Default Credentials (see `sa.gcpSa`):
+
+```yaml
+cloud:
+  apiKey:
+    gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
+```
+
+**Inline (dev/test)** — set the value directly, keeping in mind it then lives in your Helm values:
+
+```yaml
+cloud:
+  apiKey:
+    key: <your API key>
+```
+
+Then install:
 
 ```bash
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-Alternatively, create a Kubernetes secret with your license key and reference it via `license.keyRef` in `values.yaml`:
+Rotating and revoking the key are done from the dashboard. When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
 
-```bash
-kubectl create secret generic mirrord-operator-license \
-  --namespace mirrord \
-  --from-literal=OPERATOR_LICENSE_KEY=<your license key>
-```
+#### Air-gapped / offline clusters (Enterprise)
 
-**Enterprise license (certificate):** If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:
+Air-gapped or offline clusters can't reach the cloud to exchange an API key for a license, so Enterprise deployments in that situation use an offline **license certificate** instead. If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:
 
 ```yaml
 license:
@@ -79,43 +111,25 @@ Then install:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-#### Cloud API key (optional)
+For a fully self-hosted setup, see the [license server](license-server.md).
 
-The Operator can authenticate to the mirrord cloud with a dedicated **API key**, separate from your license (the license still drives entitlement; the API key authenticates the Operator's calls to the cloud). Generate one in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — the key is shown only once, so store it then. If you don't set one, the Operator keeps using its license key to authenticate, so this is optional and opt-in.
+#### License key (deprecated)
 
-Provide the key to the chart in one of three ways:
+> **Deprecated.** The license key is being replaced by the [cloud API key](#cloud-api-key), which is now the default way the Operator authenticates and obtains its license. Existing license-key installations keep working, but new installations should use a cloud API key.
 
-**Kubernetes secret (recommended)** — create a secret in your cluster and reference it via `cloud.apiKey.keyRef`, so the key never lives in your `values.yaml`:
+Set `license.key` to your key, then install:
 
 ```bash
-kubectl create secret generic mirrord-operator-cloud-api-key \
+helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
+```
+
+Alternatively, create a Kubernetes secret with your license key and reference it via `license.keyRef` in `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-license \
   --namespace mirrord \
-  --from-literal=apiKey=<your API key>
+  --from-literal=OPERATOR_LICENSE_KEY=<your license key>
 ```
-
-```yaml
-cloud:
-  apiKey:
-    keyRef: mirrord-operator-cloud-api-key
-```
-
-**Google Secret Manager** — store the key in GSM and reference it via `cloud.apiKey.gsmRef`. The Operator reads it using Application Default Credentials, the same way as `license.gsmRef` (see `sa.gcpSa`):
-
-```yaml
-cloud:
-  apiKey:
-    gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
-```
-
-**Inline (dev/test)** — set the value directly, keeping in mind it then lives in your Helm values:
-
-```yaml
-cloud:
-  apiKey:
-    key: <your API key>
-```
-
-Rotating and revoking the key are done from the dashboard. When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
 
 #### Using an Internal Registry (Optional)
 
