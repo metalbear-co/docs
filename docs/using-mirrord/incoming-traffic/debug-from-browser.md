@@ -31,8 +31,8 @@ There are two ways to use it:
 
 For operator sessions, additionally:
 
-3. A recent mirrord CLI (the `ui` subcommand needs to exist).
-4. A kubeconfig pointing at a cluster running the [mirrord operator](../../managing-mirrord/operator.md). The operator must be a version that exposes session metadata (3.157.1 or newer).
+3. A recent version of mirrord CLI (`3.198.0` or newer).
+4. A kubeconfig pointing at a cluster running the [mirrord operator](../../managing-mirrord/operator.md). The operator must be a version that exposes session metadata (`3.157.1` or newer).
 
 ### Quick start with `mirrord ui`
 
@@ -42,11 +42,20 @@ Run the local UI daemon in a terminal:
 mirrord ui
 ```
 
-It binds to localhost, prints a URL, and opens it in your default browser:
+It binds to localhost, prints some details, and opens the UI in your default browser:
 
-```
-  mirrord session monitor
-    Web UI: http://127.0.0.1:59281?token=...
+```text
+* New mirrord session monitor started
+* Server PID:
+ -> ...
+
+* Web UI:
+ -> http://127.0.0.1:59281?token=...
+* API token:
+-> x-auth-token: ...
+
+* mirrord session monitor ready!
+  -> log file: ...
 ```
 
 The Web UI page does an automatic handshake with the extension (over Chrome's `externally_connectable` mechanism) and hands it the daemon's address and a one-shot token. You should see this confirmation:
@@ -136,6 +145,7 @@ Once joined or active, open Chrome DevTools → Network on a request that hits y
 * The extension stores its configuration per browser profile in `chrome.storage.local`, so quitting the popup, closing Chrome, and reopening keeps your join state. Closing `mirrord ui` doesn't wipe the join — it just means the popup can't refresh the session list. Re-run `mirrord ui` to get it back.
 * Use **Reset to Default** on the Manual tab to revert to whatever `mirrord exec` last pushed in.
 * Saving on Manual after a Sessions-tab join overwrites the joined rule. Use **Leave** on the live banner first if you want to switch cleanly.
+* The server runs in the background on your machine. To stop it, run: `mirrord ui stop`.
 
 ### What's next?
 
