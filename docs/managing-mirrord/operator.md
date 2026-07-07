@@ -26,7 +26,7 @@ The Operator solves this by acting as a centralized control plane:
 
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
-## Helm
+### Helm
 
 Add the MetalBear Helm repository:
 
@@ -40,7 +40,7 @@ Download the accompanying `values.yaml`:
 curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
 ```
 
-## Cloud API key
+### Cloud API key
 
 The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
 
@@ -191,7 +191,7 @@ agent:
     registry: your-registry/mirrord
 ```
 
-## OpenShift
+### OpenShift
 
 Apply the following SecurityContextConstraints:
 
@@ -213,7 +213,7 @@ users:
   - system:serviceaccount:mirrord:default
 ```
 
-## GKE Autopilot
+### GKE Autopilot
 
 In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
 
@@ -271,7 +271,7 @@ agent:
     cloud.google.com/generate-allowlist: "true"
 ```
 
-## Verifying the Installation
+### Verifying the Installation
 
 ```bash
 mirrord operator status
