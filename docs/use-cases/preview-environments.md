@@ -1,9 +1,13 @@
 ---
 title: Preview Environments
+tags:
+  - beta
+  - enterprise
 lastmod: 2026-04-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
-
 ---
+
+# Preview Environments
 
 Preview Environments let teams collaborate, validate, and review new code using real traffic, without affecting live services.
 
@@ -11,60 +15,62 @@ A Preview Environment runs **only the new or changed services** in isolated pods
 
 Because Preview Environments are not tied to a developer's local process, they are well suited for:
 
-- Product managers exploring new features before they're merged
-- QA engineers testing changes against realistic traffic and dependencies
-- Engineers collaborating on a feature in progress or requesting async feedback
+* Product managers exploring new features before they're merged
+* QA engineers testing changes against realistic traffic and dependencies
+* Engineers collaborating on a feature in progress or requesting async feedback
 
-This enables realistic validation workflows without cloning an entire environment and without blocking on a single mirrord session. This model becomes even more valuable as [AI coding agents](../using-mirrord-with-ai/README.md) begin shipping features and fixes autonomously. Instead of reviewing Git diffs alone, teams can let an AI agent deploy its changes into a preview environment automatically. The result is the service modified by the agent running in the cluster in isolation, while still connecting to its real dependencies inside the cluster. This allows teams to observe the code running, test end-to-end workflows, and validate behavior before anything is merged.
+This enables realistic validation workflows without cloning an entire environment and without blocking on a single mirrord session. This model becomes even more valuable as [AI coding agents](../using-mirrord-with-ai/) begin shipping features and fixes autonomously. Instead of reviewing Git diffs alone, teams can let an AI agent deploy its changes into a preview environment automatically. The result is the service modified by the agent running in the cluster in isolation, while still connecting to its real dependencies inside the cluster. This allows teams to observe the code running, test end-to-end workflows, and validate behavior before anything is merged.
 
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan.
 {% endhint %}
 
-### Prerequisites
+#### Prerequisites
 
-- **Operator 3.142.0 or later** — the feature was introduced in this version.
-- **CLI 3.189.0 or later** — the `mirrord preview` subcommand was introduced in this version.
-- **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`):
+* **Operator 3.142.0 or later** — the feature was introduced in this version.
+* **CLI 3.189.0 or later** — the `mirrord preview` subcommand was introduced in this version.
+*   **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`):
 
-  ```yaml
-  operator:
-    # Has to be set to `true` in order to use the preview environments feature.
-    previewEnv: true
-  ```
+    ```yaml
+    operator:
+      # Has to be set to `true` in order to use the preview environments feature.
+      previewEnv: true
+    ```
 
-## What Is a Preview Environment?
+### What Is a Preview Environment?
 
-Today, mirrord sessions are tightly coupled to a developer's local process. When that process stops, the testing environment disappears.
-Preview Environments solve this by allowing you to spin up isolated, temporary pods in the cluster that:
+Today, mirrord sessions are tightly coupled to a developer's local process. When that process stops, the testing environment disappears. Preview Environments solve this by allowing you to spin up isolated, temporary pods in the cluster that:
 
-- Run **user-provided container images**
-- Match the **configuration and traffic behavior** of an existing mirrord target
-- Receive **filtered or duplicated staging traffic** using an environment key
-- Stay alive for a **fixed TTL**, independent of any local machine or process
+* Run **user-provided container images**
+* Match the **configuration and traffic behavior** of an existing mirrord target
+* Receive **filtered or duplicated staging traffic** using an environment key
+* Stay alive for a **fixed TTL**, independent of any local machine or process
 
----
+***
 
-### Environment Key
+#### Environment Key
 
 Each Preview Environment is identified by an **environment key**. The key is used to:
 
-- Scope HTTP and queue traffic filtering
-- Scope database branches
-- Associate multiple preview pods into a single environment
-- Share access to the same environment with other developers
+* Scope HTTP and queue traffic filtering
+* Scope database branches
+* Associate multiple preview pods into a single environment
+* Share access to the same environment with other developers
 
 If no key is provided, mirrord generates one automatically
 
----
+***
 
-## Starting a Preview Environment
+### Starting a Preview Environment
 
 Create a new Preview Environment using a mirrord configuration file and a container image:
+
 ```bash
 mirrord preview start -f <mirrord.json> -i <image> -k <key>
 ```
+
 Example output:
+
 ```
   ✓ mirrord preview start
     ✓ configuration loaded
@@ -77,28 +83,33 @@ Example output:
     * pod: preview-session-<target>-<id>
 ```
 
-- If `-k` is omitted, mirrord generates a new key and prints it in the output.
+* If `-k` is omitted, mirrord generates a new key and prints it in the output.
 
----
+***
 
-### Managing Preview Environments
+#### Managing Preview Environments
 
 1. **Status:** Check the current state of Preview Environments, including which environments are active, which preview pods they contain, and how long they will remain available.
+
 ```bash
 mirrord preview status
 ```
+
 2. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
+
 ```bash
 mirrord preview stop --key <environment-key>
 ```
+
 3. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
+
 ```bash
 mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
 ```
 
-### GitHub Action
-We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline.
-This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
+#### GitHub Action
+
+We also provide the [`metalbear-co/mirrord-preview` GitHub Action](https://github.com/metalbear-co/mirrord-preview) for managing preview environments from your GitHub Actions pipeline. This can be used to, for example, automatically start a preview environment when a PR is opened and stop it when the PR is closed.
 
 ```yaml
 name: Preview Environment
@@ -133,28 +144,27 @@ jobs:
           key: pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
 ```
 
-Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up.
-For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
+Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up. For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
 
-## Preview Environment Workflow
+### Preview Environment Workflow
 
-![Preview Environment Creation Workflow](preview-environments/create-env.svg)
+![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)
 
-![Preview Environment Modification Workflow](preview-environments/modify-env.svg)
+![Preview Environment Modification Workflow](../.gitbook/assets/modify-env.svg)
 
----
+***
 
-## Details
+### Details
 
-### Readiness
+#### Readiness
 
 Pods created by Preview Environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
 
-### Resources
+#### Resources
 
 Preview Environments consist of a Deployment, to manage and maintain the underlying pods, and a [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), to route traffic to the dynamic set of pods. Because the Service doesn't have a Cluster IP, exhaustion of IP addresses when deploying a large number of Preview Environments is not a concern.
 
-### Interaction with `mirrord exec`
+#### Interaction with `mirrord exec`
 
 If you start a local `mirrord exec` session against the same target and with the same Environment Key as an active Preview Environment, the local session takes precedence.
 

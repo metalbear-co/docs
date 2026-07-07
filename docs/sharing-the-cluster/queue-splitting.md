@@ -1,3 +1,9 @@
+---
+title: "Queue Splitting"
+tags:
+  - team
+  - enterprise
+---
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
 1. Running your application with mirrord without any special configuration will result in your local application competing with the deployed application (and potentially other mirrord runs by teammates) for queue messages.
@@ -9,7 +15,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), and [Temporal](https://temporal.io).
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
@@ -24,6 +30,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [Azure Service Bus](queue-splitting/azure-service-bus.md)
 * [Redis Pub/Sub](queue-splitting/redis-pubsub.md)
 * [Temporal](queue-splitting/temporal.md)
+* [BullMQ](queue-splitting/bullmq.md)
 
 ### How It Works
 
@@ -51,13 +58,13 @@ Please note that:
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://metalbear.com/mirrord/docs/config/options#feature-split_queues) is the configuration field they need to specify in order to filter queue messages.
-Directly under it, mirrord expects a mapping from a queue or queue ID to a queue filter definition.
+It pairs each queue ID with a queue filter definition, and accepts either an object keyed by queue ID or an array of entries (see [One queue or many](#one-queue-or-many)).
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, or `Temporal`
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), JSON field (Redis Pub/Sub), or task metadata (Temporal) name to a regex for its value.
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, or `BullMQ`
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified entries matching.
-* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, and `Temporal` queue types.
+* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, and `BullMQ` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -67,9 +74,52 @@ Filter definition contains the following fields:
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
+  * For **BullMQ**, it runs a jq program on the parsed JSON value of the job's `data` field.
   * A message matches if the jq program outputs `true`.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
+
+#### One queue or many
+
+`feature.split_queues` accepts two shapes.
+
+For a single queue, use the **object** form, which maps the queue ID to its queue split config:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": {
+        "queue_type": "SQS",
+        "message_filter": { "region": "^eu" }
+      }
+    }
+  }
+}
+```
+
+For multiple queues, use the **array** form, which moves the ID into each entry as `queue_id`:
+
+```json
+{
+  "feature": {
+    "split_queues": [
+      {
+        "queue_id": "orders",
+        "queue_type": "SQS",
+        "message_filter": { "region": "^eu" }
+      },
+      {
+        "queue_id": "notifications",
+        "queue_type": "RedisPubSub",
+        "message_filter": { "tenant": "^test$" }
+      }
+    ]
+  }
+}
+```
+
+Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.

@@ -9,6 +9,7 @@ menu:
 weight: 166
 toc: true
 tags:
+  - beta
   - team
   - enterprise
 description: "Decrypt and steal HTTPS traffic using TLS certificates"

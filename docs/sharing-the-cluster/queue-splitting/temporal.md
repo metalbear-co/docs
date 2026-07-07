@@ -1,3 +1,11 @@
+---
+title: Temporal
+tags:
+  - alpha
+  - team
+  - enterprise
+---
+
 This page covers queue splitting for [Temporal](https://temporal.io). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a Temporal task queue.
@@ -6,11 +14,11 @@ The word "queue" on this page refers to a Temporal task queue.
 Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-### How It Works
+#### How It Works
 
 Temporal has no native way to "split" a task queue, so the mirrord operator does it with a small gRPC proxy and a set of virtual task queues.
 
-![Temporal queue splitting full system flow](images/temporal-full-flow.svg)
+![Temporal queue splitting full system flow](../../.gitbook/assets/temporal-full-flow.svg)
 
 When a Temporal splitting session starts, the operator starts polling the real task queue itself, buffering the tasks it receives in memory. It then patches the deployed worker to poll a **main virtual task queue** instead of the real one, and to talk to an operator-hosted Temporal proxy instead of the real Temporal frontend. The proxy serves polls for the virtual queues from the buffered tasks, while forwarding everything else (task completions, heartbeats, and so on) to the real frontend unchanged.
 
@@ -18,23 +26,21 @@ Each user who starts a session gets their own **session virtual task queue**. Th
 
 If two users' filters both match the same task, only one of them gets it: the task goes to whichever of those sessions started most recently.
 
-![Temporal queue splitting detailed system flow](images/temporal-detailed-flow.svg)
+![Temporal queue splitting detailed system flow](../../.gitbook/assets/temporal-detailed-flow.svg)
 
-### Enabling Temporal Splitting in Your Cluster
+#### Enabling Temporal Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-
-#### Enable Temporal splitting in the Helm chart
+**Enable Temporal splitting in the Helm chart**
 
 Enable the `operator.temporalSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
 When enabled, the operator runs a Temporal proxy that deployed workers connect to. Its port defaults to `7233` and can be changed with the `operator.temporalProxy.port` helm value.
-
 {% endstep %}
-{% step %}
 
-#### Create a MirrordPropertyList
+{% step %}
+**Create a MirrordPropertyList**
 
 The operator needs to connect to your Temporal frontend to poll the real task queue. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`).
 
@@ -54,17 +60,16 @@ spec:
 
 Supported properties:
 
-| Property | Description | Required | Default |
-| -------- | :---------: | :------: | :-----: |
-| `address` | Temporal frontend address (`host:port` or a full URL). A bare `host:port` is prefixed with `http://`. | ✓ | |
-| `namespace` | Temporal namespace the operator polls. | ✓ | |
-| `tls` | Set to `"true"` to connect over TLS. | No | `false` |
-| `apiKey` | Temporal Cloud API key. | No | |
-
+| Property    |                                              Description                                              | Required | Default |
+| ----------- | :---------------------------------------------------------------------------------------------------: | :------: | :-----: |
+| `address`   | Temporal frontend address (`host:port` or a full URL). A bare `host:port` is prefixed with `http://`. |     ✓    |         |
+| `namespace` |                                 Temporal namespace the operator polls.                                |     ✓    |         |
+| `tls`       |                                  Set to `"true"` to connect over TLS.                                 |    No    | `false` |
+| `apiKey`    |                                        Temporal Cloud API key.                                        |    No    |         |
 {% endstep %}
-{% step %}
 
-#### Create a MirrordSplitConfig
+{% step %}
+**Create a MirrordSplitConfig**
 
 On operator installation with `operator.temporalSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -96,24 +101,26 @@ spec:
 ```
 
 The `MirrordSplitConfig` above says that:
+
 1. It targets the deployment `temporal-worker` in namespace `workflows`.
 2. The Temporal connection comes from the `temporal-config` `MirrordPropertyList`.
 3. The worker reads its task queue name from environment variable `TEMPORAL_TASK_QUEUE`.
 4. The operator patches `TEMPORAL_ADDRESS` so the worker connects to the operator's Temporal proxy, and reads the Temporal namespace from `TEMPORAL_NAMESPACE`.
 5. The task queue can be referenced in a mirrord config under ID `orders-task-queue`.
 
-##### Link the config to the deployed worker
+**Link the config to the deployed worker**
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
+
 * `apiVersion` - API version of the Kubernetes workload (e.g. `apps/v1`).
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-##### Describe consumed task queues
+**Describe consumed task queues**
 
 Each entry in the `spec.queues` list describes a Temporal task queue consumed by the worker. Each `appConfig` field uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
 
-* `id` - arbitrary queue ID that developers [reference](#setting-a-filter) from their mirrord config.
+* `id` - arbitrary queue ID that developers [reference](temporal.md#setting-a-filter) from their mirrord config.
 * `kind` - must be `temporal`.
 * `clientConfig` (optional) - name of a `MirrordPropertyList` with the Temporal connection. Can also be set once for all Temporal queues with `spec.clientConfigs.temporal`.
 * `appConfig.taskQueue` (required) - how the worker discovers the task queue name. The operator patches this to a virtual task queue name.
@@ -121,7 +128,7 @@ Each entry in the `spec.queues` list describes a Temporal task queue consumed by
 * `appConfig.temporalNamespace` (optional) - the environment variable holding the Temporal namespace.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with per-queue settings (see below).
 
-##### Per-queue options
+**Per-queue options**
 
 Temporal-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`:
 
@@ -141,14 +148,28 @@ spec:
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:
+
 1. defined directly in the workload's pod template, with the value defined in `value` or in `valueFrom` via config map reference; or
 2. loaded from config maps using `envFrom`.
 {% endhint %}
-
 {% endstep %}
 {% endstepper %}
 
-### Setting a filter
+#### Drain timeout
+
+After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for in-flight work to finish first.
+
+| Setting                                         | Unit    | Scope     | Effect                              |
+| ----------------------------------------------- | ------- | --------- | ----------------------------------- |
+| `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
+
+| `drainTimeout` | Behavior                                                  |
+| -------------- | --------------------------------------------------------- |
+| unset (both)   | Tear down as soon as the last session ends (same as `0`). |
+| `0`            | Tear down immediately. In-flight work may be lost.        |
+| `N`            | Keep resources for up to `N` seconds, then tear down.     |
+
+#### Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Temporal uses `queue_type: Temporal`.
 
@@ -200,7 +221,7 @@ Filtering on a Temporal header:
 }
 ```
 
-#### Filtering with jq
+**Filtering with jq**
 
 `jq_filter` runs against a JSON document the operator builds for each task. Every document has a `task_type` field, set to either `"activity"` or `"workflow"`.
 

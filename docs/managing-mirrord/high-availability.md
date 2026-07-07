@@ -11,6 +11,7 @@ teams: null
 weight: 505
 toc: true
 tags:
+  - beta
   - enterprise
 description: High availability for mirrord Operator in Enterprise Tier
 ---
