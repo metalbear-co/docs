@@ -10,7 +10,7 @@ menu:
 weight: 130
 toc: true
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 description: Possible targets for mirrord and how to set them

@@ -1,29 +1,14 @@
 ---
-title: Subscribing to Events
-description: Stream a session's interception events as JSON with mirrord subscribe
-layout:
-  width: default
-  title:
-    visible: true
-  description:
-    visible: true
-  tableOfContents:
-    visible: true
-  outline:
-    visible: true
-  pagination:
-    visible: true
-  metadata:
-    visible: true
-  tags:
-    visible: true
-  actions:
-    visible: true
+title: "Subscribing to Events"
+tags:
+  - alpha
+  - team
+  - enterprise
+
+description: "Stream a session's interception events as JSON with mirrord subscribe"
 ---
-
-# Subscribing to Events
-
-`mirrord subscribe` lets you stream live events from an active mirrord session — HTTP requests, queue messages, and operator notifications as JSON to stdout. It's useful in CI/tests: assert that a request actually got stolen to your local process instead of silently hitting the real service, so a broken interception fails the build instead of going green.
+`mirrord subscribe` lets you stream live events from an active mirrord session — HTTP requests, queue messages, and operator notifications as JSON to stdout. It's useful in CI/tests: assert that a request actually got stolen to your local process instead of silently hitting the real service, so a broken interception fails the build instead of
+going green.
 
 **When do you receive events?**
 

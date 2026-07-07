@@ -1,5 +1,8 @@
 ---
 title: Preview Environments
+tags:
+  - beta
+  - enterprise
 lastmod: 2026-04-15T00:00:00.000Z
 description: Ephemeral, isolated environments connected to your cluster
 ---

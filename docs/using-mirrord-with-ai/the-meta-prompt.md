@@ -3,7 +3,7 @@ title: Configure AI Agents to Use mirrord
 description: Configure AI coding agents to test code changes against your cluster using mirrord
 draft: false
 toc: true
-tags: ["open source", "team", "enterprise"]
+tags: ["oss", "team", "enterprise"]
 ---
 
 Agents can even do this autonomously. By instructing them to use mirrord as part of their workflow, they can run code against a real environment, catch issues early, and iterate until the feature actually works end-to-end. They can even use mirrord to explore the staging environment before writing code, giving them better visibility into how things are configured and service dependencies so they write more accurate code to begin with.

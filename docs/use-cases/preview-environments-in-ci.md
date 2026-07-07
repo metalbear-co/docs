@@ -7,6 +7,7 @@ draft: false
 toc: true
 tags:
   - enterprise
+  - beta
 menu:
   docs:
     parent: preview-environments

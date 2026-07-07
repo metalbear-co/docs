@@ -1,5 +1,9 @@
 ---
 title: Incoming Traffic
+tags:
+  - oss
+  - team
+  - enterprise
 description: How mirrord handles incoming network traffic from the cluster
 ---
 

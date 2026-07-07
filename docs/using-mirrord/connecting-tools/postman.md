@@ -5,7 +5,7 @@ lastmod: 2025-12-16T12:00:00.000Z
 draft: false
 toc: true
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 description: Connect Postman to your cluster via mirrord.

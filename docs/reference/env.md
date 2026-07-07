@@ -11,7 +11,7 @@ weight: 150
 toc: true
 description: Reference to including remote environment variables
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 ---

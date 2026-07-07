@@ -1,6 +1,9 @@
 ---
 title: "Multi-Cluster Setup"
 description: "Step-by-step guide to setting up multi-cluster mirrord: install the operator on every cluster, choose an authentication method, and connect them."
+tags:
+  - alpha
+  - enterprise
 ---
 
 This guide covers how to set up multi-cluster mirrord. It involves installing the operator on all clusters, choosing an authentication method, and configuring the Primary cluster to connect to downstream clusters.
