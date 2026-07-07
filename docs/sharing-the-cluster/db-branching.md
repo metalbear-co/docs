@@ -42,7 +42,7 @@ Before you start, make sure you have:
   - MongoDB: Operator `3.137.0`, mirrord CLI `3.183.0` and operator Helm chart `1.44.0` with `operator.mongoBranching` value set to `true`.
   - Redis (remote): Operator `3.168.0`, mirrord CLI `3.217.0` and operator Helm chart `3.168.0` with `operator.redisBranching` value set to `true`.
   - Redis (local): mirrord CLI `3.180.0` (no operator or chart version requirements, since a local branch runs entirely on your machine).
-  - DynamoDB: Operator `<OPERATOR_VERSION>`, mirrord CLI `<CLI_VERSION>` and operator Helm chart `<CHART_VERSION>` with `operator.dynamodbBranching` value set to `true`.
+  - DynamoDB: Operator `3.179.0`, mirrord CLI `3.227.0` and operator Helm chart `3.179.0` with `operator.dynamodbBranching` value set to `true`.
 2. Your local application is using environment variables or Kubernetes Secrets to store DB connection strings or individual connection parameters.  
 3. mirrord installed and working.  
 
