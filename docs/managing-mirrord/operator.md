@@ -113,9 +113,11 @@ helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 
 For a fully self-hosted setup, see the [license server](license-server.md).
 
-#### License key (deprecated)
+#### License key (deprecated for cloud authentication)
 
-> **Deprecated.** The license key is being replaced by the [cloud API key](#cloud-api-key), which is now the default way the Operator authenticates and obtains its license. Existing license-key installations keep working, but new installations should use a cloud API key.
+> **Deprecated for cloud authentication.** For clusters that reach the mirrord cloud, the license key is being replaced by the [cloud API key](#cloud-api-key), which is now the default way the Operator authenticates and obtains its license. Existing cloud license-key installations keep working, but new ones should use a cloud API key.
+>
+> This does **not** apply to the [license server](license-server.md): if you run your own license server, the license key is still the shared secret the Operator uses to authenticate to it (a value you choose, not a mirrord-issued credential) and remains required.
 
 Set `license.key` to your key, then install:
 
