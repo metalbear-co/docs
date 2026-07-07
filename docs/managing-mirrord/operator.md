@@ -10,7 +10,7 @@ tags:
 
 The mirrord Operator is a Kubernetes operator that runs persistently in your cluster and manages mirrord sessions. It's the central component that enables all **\[Teams]** features.
 
-#### Why the Operator?
+## Why the Operator?
 
 In the open-source version of mirrord, each session is standalone - mirrord injects itself into the local process and creates an agent pod directly. This works well for individual use, but doesn't support coordination between users.
 
@@ -22,11 +22,11 @@ The Operator solves this by acting as a centralized control plane:
 
 ![mirrord for Teams - Architecture](../.gitbook/assets/operator-architecture.svg)
 
-#### Installation
+## Installation
 
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
-**Helm**
+### Helm
 
 Add the MetalBear Helm repository:
 
@@ -40,21 +40,53 @@ Download the accompanying `values.yaml`:
 curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
 ```
 
-**Team license:** Set `license.key` to your key, then install:
+### Cloud API key
+
+The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
+
+Provide the key to the chart in one of three ways:
+
+**Kubernetes secret (recommended)** — create a secret in your cluster and reference it via `cloud.apiKey.keyRef`, so the key never lives in your `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-cloud-api-key \
+  --namespace mirrord \
+  --from-literal=apiKey=<your API key>
+```
+
+```yaml
+cloud:
+  apiKey:
+    keyRef: mirrord-operator-cloud-api-key
+```
+
+**Google Secret Manager** — store the key in GSM and reference it via `cloud.apiKey.gsmRef`. The Operator reads it using Application Default Credentials (see `sa.gcpSa`):
+
+```yaml
+cloud:
+  apiKey:
+    gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
+```
+
+**Inline (dev/test)** — set the value directly, keeping in mind it then lives in your Helm values:
+
+```yaml
+cloud:
+  apiKey:
+    key: <your API key>
+```
+
+Then install:
 
 ```bash
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-Alternatively, create a Kubernetes secret with your license key and reference it via `license.keyRef` in `values.yaml`:
+Rotating and revoking the key are done from the dashboard. When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
 
-```bash
-kubectl create secret generic mirrord-operator-license \
-  --namespace mirrord \
-  --from-literal=OPERATOR_LICENSE_KEY=<your license key>
-```
+## Air-gapped / offline clusters (Enterprise)
 
-**Enterprise license (certificate):** If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:
+Air-gapped or offline clusters can't reach the cloud to exchange an API key for a license, so Enterprise deployments in that situation use an offline **license certificate** instead. If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:
 
 ```yaml
 license:
@@ -81,11 +113,37 @@ Then install:
 helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
 ```
 
-**Using an Internal Registry (Optional)**
+For a fully self-hosted setup, see the [license server](license-server.md).
+
+## License key
+
+{% hint style="warning" %}
+**⚠️ Deprecated for cloud authentication**
+
+For clusters that reach the mirrord cloud, the license key is being replaced by the [cloud API key](#cloud-api-key), which is now the default way the Operator authenticates and obtains its license. Existing cloud license-key installations keep working, but new ones should use a cloud API key.
+
+This does not apply to the [license server](license-server.md): if you run your own license server, the license key is still the shared secret the Operator uses to authenticate to it (a value you choose, not a mirrord-issued credential) and remains required.
+{% endhint %}
+
+Set `license.key` to your key, then install:
+
+```bash
+helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
+```
+
+Alternatively, create a Kubernetes secret with your license key and reference it via `license.keyRef` in `values.yaml`:
+
+```bash
+kubectl create secret generic mirrord-operator-license \
+  --namespace mirrord \
+  --from-literal=OPERATOR_LICENSE_KEY=<your license key>
+```
+
+## Using an Internal Registry (Optional)
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
 
-**Feature-specific images**
+### Feature-specific images
 
 These images are only pulled when the corresponding feature is enabled:
 
@@ -94,7 +152,7 @@ These images are only pulled when the corresponding feature is enabled:
 | Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image`          |
 | MSSQL tools             | `ghcr.io/metalbear-co/mssql-tools`          | `latest`         | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`).                      | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
 
-**DB branching default database images**
+### DB branching default database images
 
 DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
 
@@ -107,7 +165,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
 | DynamoDB   | `amazon/dynamodb-local:{version}`          | `operator.dynamodbBranchConfig` - `dbPod.image` |
 
-**Copying images**
+### Copying images
 
 We recommend [regctl](https://regclient.org/) for copying multi-arch images:
 
@@ -133,7 +191,7 @@ agent:
     registry: your-registry/mirrord
 ```
 
-**OpenShift**
+### OpenShift
 
 Apply the following SecurityContextConstraints:
 
@@ -155,7 +213,7 @@ users:
   - system:serviceaccount:mirrord:default
 ```
 
-**GKE Autopilot**
+### GKE Autopilot
 
 In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
 
@@ -213,7 +271,7 @@ agent:
     cloud.google.com/generate-allowlist: "true"
 ```
 
-#### Verifying the Installation
+### Verifying the Installation
 
 ```bash
 mirrord operator status
