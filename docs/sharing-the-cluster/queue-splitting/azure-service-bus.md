@@ -260,19 +260,19 @@ By default the operator treats the whole environment variable value as the resou
 
 The capture group is picked in this order: a group named `value`, otherwise the first unnamed group.
 
-For example, an application that reads a Go CDK Pub/Sub URL:
+For example, an application that reads a Service Bus connection string with the entity in `EntityPath`:
 
 ```yaml
 queues:
-  - id: orders
-    kind: GooglePubSub
+  - id: orders-queue
+    kind: azureServiceBus
     appConfig:
-      subscription:
-        - env: PUBSUB_SUBSCRIPTION
-          valuePattern: "subscriptions/(?P<value>[^/?]+)"
+      queue:
+        - env: SERVICE_BUS_CONNECTION_STRING
+          valuePattern: "EntityPath=(?P<value>[^;]+)"
 ```
 
-With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
+With `SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://my-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=...;EntityPath=orders`, the operator captures `orders`, creates a temporary queue, and rewrites only the `EntityPath` to the temporary name, so the application still gets a full connection string.
 
 **Per-queue client configuration**
 
