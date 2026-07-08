@@ -151,6 +151,7 @@ These images are only pulled when the corresponding feature is enabled:
 | ----------------------- | ------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image`          |
 | MSSQL tools             | `ghcr.io/metalbear-co/mssql-tools`          | `latest`         | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`).                      | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv` |
+| Flyway                  | `flyway/flyway`                             | `12`             | Flyway migration runner for DB branching.                                                     | Per-branch `migrations.image`, or `dbPod.migrationImages.flyway.registry` |
 
 ### DB branching default database images
 
@@ -164,6 +165,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | MSSQL      | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image`    |
 | Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
 | DynamoDB   | `amazon/dynamodb-local:{version}`          | `operator.dynamodbBranchConfig` - `dbPod.image` |
+| ClickHouse | `docker.io/clickhouse/clickhouse-server:{version}` | `operator.clickhouseBranchConfig` - `dbPod.image` |
 | Spanner    | `gcr.io/cloud-spanner-emulator/emulator:{version}` | `operator.spannerBranchConfig` - `dbPod.image` |
 
 ### Copying images

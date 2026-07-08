@@ -47,11 +47,11 @@ Spanner branching requires operator `3.182.0`, mirrord CLI `3.230.0`, and operat
 
 Spanner locates the source database through individual parameters under `connection.params`, each naming an environment variable on the target pod that holds the value:
 
-| Param | Names the env var holding the... |
+| Param | Description |
 | --- | --- |
-| `project` | source Google Cloud project id |
-| `instance` | source Spanner instance id |
-| `database_id` | source Spanner database id |
+| `project` | Env var holding the source Google Cloud project ID |
+| `instance` | Env var holding the source Spanner instance ID |
+| `database_id` | Env var holding the source Spanner database ID |
 
 These identifiers are read-only: the operator resolves them from the target pod so the branch can recreate the same instance and database in the emulator, and the app is never overridden - it is redirected wholesale by `SPANNER_EMULATOR_HOST`. This is why the key is `database_id` rather than `database`: the fixed `database` slot is an override target, which does not apply to Spanner. See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets and Google Secret Manager.
 
