@@ -56,6 +56,7 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 7. organization_id (generated uuid)
 8. cluster_id (the UID of the cluster's `default` namespace, used as a stable, anonymous per-cluster identifier)
 9. cluster_name (optional; only sent if you set the `operator.clusterName` Helm value to give the cluster a recognizable label)
+10. kubernetes_version (the version of the Kubernetes cluster the Operator is running in)
 
 In the Enterprise offering, this communication can be disabled entirely.
 
