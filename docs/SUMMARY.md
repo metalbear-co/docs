@@ -75,6 +75,7 @@
   * [MongoDB](sharing-the-cluster/db-branching/mongodb.md)
   * [Redis](sharing-the-cluster/db-branching/redis.md)
   * [DynamoDB](sharing-the-cluster/db-branching/dynamodb.md)
+  * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
   * [More](sharing-the-cluster/db-branching/more.md)
     * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
     * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)

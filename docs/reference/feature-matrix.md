@@ -19,6 +19,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[MSSQL](../sharing-the-cluster/db-branching/mssql.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching/redis.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[DynamoDB](../sharing-the-cluster/db-branching/dynamodb.md)**          | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[Google Spanner](../sharing-the-cluster/db-branching/spanner.md)**      | `Alpha`       | `Alpha`         | Planned    |
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Kafka](../sharing-the-cluster/queue-splitting/kafka.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[RabbitMQ](../sharing-the-cluster/queue-splitting/rabbitmq.md)**          | `Alpha`       | `Alpha`         | Planned    |
