@@ -29,15 +29,21 @@ This feature is available to users on the **Enterprise** pricing plan.
 
 Your CI job needs a kubeconfig to run `mirrord preview` commands, but it doesn't need (and shouldn't get) cluster-admin credentials. The mirrord operator Helm chart ships a `mirrord-operator-ci` ClusterRole scoped to exactly what CI needs: creating and deleting preview sessions, plus the operator APIs the CLI talks to.
 
-Bind it to a dedicated ServiceAccount and build the CI kubeconfig from that ServiceAccount's token:
+Setting this up takes three steps: create an identity for CI, grant it the role, and package its credentials as a kubeconfig your CI can use.
+
+### 1. Create a ServiceAccount, bind the role, mint a token
+
+Kubernetes RBAC separates identity from permissions, so this needs three objects: the **ServiceAccount** is the identity CI authenticates as, the **ClusterRoleBinding** attaches the chart's `mirrord-operator-ci` ClusterRole to it, and the **Secret** asks Kubernetes to issue a long-lived token for it:
 
 ```yaml
+# The identity CI authenticates as.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: preview-ci
   namespace: staging
 ---
+# Grants that identity the operator chart's CI role.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -50,9 +56,62 @@ roleRef:
   kind: ClusterRole
   name: mirrord-operator-ci
   apiGroup: rbac.authorization.k8s.io
+---
+# A long-lived token for the ServiceAccount, consumed in step 2.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: preview-ci-token
+  namespace: staging
+  annotations:
+    kubernetes.io/service-account.name: preview-ci
+type: kubernetes.io/service-account-token
 ```
 
-Store the resulting kubeconfig as a CI secret (e.g. a base64-encoded `KUBECONFIG_DATA` in GitHub Actions) and point `KUBECONFIG` at it in the workflow. A token with only this ClusterRole can manage preview environments but can't read or modify other cluster resources.
+### 2. Build a kubeconfig from the token
+
+A ServiceAccount doesn't come with a kubeconfig — assemble one from the API server address, the cluster CA, and the token issued in step 1:
+
+```bash
+SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+CA=$(kubectl -n staging get secret preview-ci-token -o jsonpath='{.data.ca\.crt}')
+TOKEN=$(kubectl -n staging get secret preview-ci-token -o jsonpath='{.data.token}' | base64 -d)
+
+cat > preview-ci.kubeconfig <<EOF
+apiVersion: v1
+kind: Config
+clusters:
+- name: cluster
+  cluster:
+    server: ${SERVER}
+    certificate-authority-data: ${CA}
+users:
+- name: preview-ci
+  user:
+    token: ${TOKEN}
+contexts:
+- name: preview-ci
+  context:
+    cluster: cluster
+    user: preview-ci
+current-context: preview-ci
+EOF
+```
+
+### 3. Store it as a CI secret
+
+Base64-encode the file (`base64 -w0 preview-ci.kubeconfig`) and save it as a CI secret, e.g. `KUBECONFIG_DATA` in GitHub Actions. In the workflow, decode it and point `KUBECONFIG` at it before running any `mirrord preview` commands:
+
+```yaml
+- name: Configure cluster access
+  env:
+    KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+  run: |
+    echo "$KUBECONFIG_DATA" | base64 -d > kubeconfig
+    echo "KUBECONFIG=$PWD/kubeconfig" >> "$GITHUB_ENV"
+```
+
+A token with only this ClusterRole can manage preview environments but can't read or modify other cluster resources.
 
 ## Choosing the Preview Key
 
