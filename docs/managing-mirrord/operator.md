@@ -164,6 +164,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | MSSQL      | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image`    |
 | Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
 | DynamoDB   | `amazon/dynamodb-local:{version}`          | `operator.dynamodbBranchConfig` - `dbPod.image` |
+| ClickHouse | `docker.io/clickhouse/clickhouse-server:{version}` | `operator.clickhouseBranchConfig` - `dbPod.image` |
 
 ### Copying images
 
