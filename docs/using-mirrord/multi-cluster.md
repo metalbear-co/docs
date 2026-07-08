@@ -12,10 +12,6 @@ tags:
 
 Multi-cluster mirrord lets developers intercept traffic from pods running in multiple Kubernetes clusters at the same time, without switching kube contexts or managing multiple sessions. You run `mirrord exec` exactly like before, and the operator handles everything behind the scenes.
 
-{% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan.
-{% endhint %}
-
 **When is this useful?**
 
 1.  **Multi-region traffic testing**
