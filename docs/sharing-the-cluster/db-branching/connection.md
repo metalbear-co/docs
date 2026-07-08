@@ -55,6 +55,7 @@ Defaults
 | MSSQL | `1433` | `sa` |
 | MongoDB | `27017` | `root` |
 | Redis | `6379` | `default` |
+| ClickHouse | `9000` | `default` |
 
 Default for `connection.params.host` is `localhost` for all databases.
 
