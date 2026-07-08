@@ -23,7 +23,7 @@ This feature is available to users on the Enterprise pricing plan.
     Your service receives traffic from multiple regions such as `us-east-1` and `eu-west-1`. You want to validate your local changes against live traffic from all regions simultaneously, without running separate mirrord sessions per cluster.
 2.  **Centralized access**
 
-    Your organization requires developers to connect through a management cluster, with no direct access to workload clusters. You need mirrord to coordinate traffic interception across clusters while operating from the approved entry point.
+    Your organization requires developers to connect through a management cluster, with no direct access to workload clusters. You need mirrord to coordinate traffic interception across the workload clusters that share the same target, while operating from the approved entry point.
 3.  **Shared environments with multiple clusters**
 
     Your staging environment spans multiple clusters. You want mirrord to intercept traffic across all of them in a single session.
