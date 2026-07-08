@@ -44,6 +44,7 @@ Copy modes, version requirements, and engine-specific behavior differ per databa
 | [Redis](db-branching/redis.md) | `"redis"` | Remote or local |
 | [DynamoDB](db-branching/dynamodb.md) | `"dynamodb"` | Remote |
 | [ClickHouse](db-branching/clickhouse.md) | `"clickhouse"` | Remote |
+| [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote |
 
 ## Prerequisites
 
