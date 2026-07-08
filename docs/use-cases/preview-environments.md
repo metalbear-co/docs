@@ -80,11 +80,13 @@ Example output:
   info:
     * key: <key>
     * namespace: <namespace>
-    * pod: preview-session-<target>-<id>
+    * session: preview-session-<target>-<id>
+    * preview URL: https://<slug>.<shareDomain>
 ```
 
 * If `-k` is omitted, mirrord generates a new key and prints it in the output.
 * The image must be pullable from inside the cluster. The preview pod is a copy of the target's pod spec with the image swapped, so it pulls with the same credentials as the target — use a registry and repository the target already pulls from, otherwise the preview fails with `ErrImagePull`.
+* The `preview URL` line only appears when [sharing via a link](#sharing-a-preview-via-a-link) is configured.
 
 ***
 
@@ -146,6 +148,80 @@ jobs:
 ```
 
 Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up. For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
+
+### Sharing a Preview via a Link
+
+By default, opening a Preview Environment as a recipient requires the mirrord browser extension, which injects the `baggage: mirrord-session=<key>` header the operator routes on. That works for developers, but it's a non-starter for sharing a preview with a non-technical stakeholder.
+
+`mirrord-share-ingress` moves that header injection off the client and onto a server-side component, so a plain HTTPS link works on its own with nothing to install on the recipient's side. Each shareable preview is reachable at its own host, `<slug>.<shareDomain>`, printed by `mirrord preview start` as the `preview URL`.
+
+The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
+
+{% hint style="info" %}
+Only previews using the default key-derived traffic filter get a share host. A preview that sets a custom HTTP filter is not served and no share host is minted for it.
+{% endhint %}
+
+#### How it works
+
+`mirrord-share-ingress` runs as its own Deployment and Service. It watches Preview Environments and, on each request, matches the request host to a live preview, injects `baggage: mirrord-session=<key>`, and forwards to that preview's target Service in-cluster. The operator's filtered steal at the target then routes the request to the preview pod, exactly as the browser extension's header would.
+
+TLS and the public-facing ingress are owned by your platform team. You put an Ingress (or equivalent gateway) in front of the share-ingress Service that terminates TLS with a wildcard `*.<shareDomain>` certificate, preserves the `Host` header, and routes to the Service. Access control to the link is your responsibility as part of configuring that ingress.
+
+#### Setup
+
+1.  Configure the operator with the domain share hosts are minted under. This must match the `shareDomain` you give the share-ingress chart:
+
+    ```yaml
+    operator:
+      previewEnv: true
+      shareIngress:
+        # Minted hosts look like <slug>.<shareDomain>. Enter without "*.".
+        shareDomain: preview.example.com
+    ```
+
+2.  Install the `mirrord-share-ingress` chart. Install it **before** the first preview, since your ingress, DNS, and certificate point at its Service:
+
+    ```bash
+    helm install mirrord-share-ingress metalbear/mirrord-operator-share-ingress \
+      --set shareIngress.shareDomain=preview.example.com \
+      --set shareIngress.appDomain=example.com
+    ```
+
+    `appDomain` is where visitors land when a share link no longer resolves.
+
+3.  Point a wildcard DNS record `*.preview.example.com` at your ingress, and create an Ingress with a wildcard certificate that routes to the share-ingress Service. A reference manifest (NGINX Ingress preserves the `Host` header by default):
+
+    ```yaml
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      name: mirrord-share-ingress
+      namespace: mirrord
+    spec:
+      ingressClassName: nginx
+      tls:
+        - hosts:
+            - "*.preview.example.com"
+          secretName: share-ingress-tls
+      rules:
+        - host: "*.preview.example.com"
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: mirrord-share-ingress
+                    port:
+                      number: 80
+    ```
+
+4.  Create the wildcard TLS secret the Ingress references, unless cert-manager (or your platform) already issues it:
+
+    ```bash
+    kubectl create secret tls share-ingress-tls \
+      --cert=wildcard.crt --key=wildcard.key -n mirrord
+    ```
 
 ### Preview Environment Workflow
 
