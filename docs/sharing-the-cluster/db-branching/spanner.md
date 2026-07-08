@@ -57,7 +57,12 @@ These identifiers are read-only: the operator resolves them from the target pod 
 
 ## Authentication
 
-For the `schema` and `all` copy modes, the branch init container reads the source Spanner using the target pod's Google service account through Application Default Credentials (Workload Identity on GKE, or a mounted key file elsewhere) - the same credential detection used for GCP Cloud SQL. There is no `iam_auth` block to configure; make sure the target pod's service account has read access (for example `roles/spanner.databaseReader`) to the source database. The `empty` mode copies nothing, so it needs no source credentials.
+The `empty` mode copies nothing, so it needs no credentials. For `schema` and `all`, the branch reads the source Spanner over the Google API and authenticates as the **target pod's own Google identity** through Application Default Credentials - the same credential detection used for GCP Cloud SQL. There is no `iam_auth` block, and nothing GCP-related is configured on the operator: it inherits whatever identity your workload already uses. Make sure that identity has read access (for example `roles/spanner.databaseReader`) to the source database.
+
+mirrord picks up the identity from the target pod in one of two ways:
+
+- **Workload Identity (GKE):** the pod runs as a Kubernetes service account bound to a Google service account. The branch runs under the same service account, so ADC resolves it with no key file.
+- **Mounted key file:** the pod sets `GOOGLE_APPLICATION_CREDENTIALS` to a mounted service-account key. The operator mounts that same key on the branch and points ADC at it.
 
 ## Copy Modes
 
