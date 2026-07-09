@@ -35,9 +35,49 @@ Two built-in variables are always available alongside the parameters: `MIRRORD_B
 | `env` | *(Optional)* Extra environment variables for the branch container, with the same `$(VAR)` references. Keys must not start with `MIRRORD_PARAM_`. |
 | `readiness` | *(Optional)* Readiness check for the branch container. Defaults to a TCP probe on `port`. See [Readiness](#readiness). |
 
-How you feed the params into the branch depends entirely on how *your image* bootstraps itself - some images take startup flags (use `args`), others read well-known env vars on first boot (use `env`). The two examples below show one of each.
+How you feed the params into the branch depends entirely on how *your image* bootstraps itself - some images take startup flags (use `args`), others read well-known env vars on first boot (use `env`), and some need nothing at all. The examples below cover one of each style, from the most minimal to the most involved.
 
-## Example: Valkey (bootstrap via `args`)
+## Configuration Examples
+
+<details>
+
+<summary>CockroachDB - the minimal config (no credentials)</summary>
+
+Insecure single-node dev mode needs no bootstrap at all: just the image, the SQL port, the startup args, and host/port patterns. The app reads a postgres-style URL - note the host pattern anchors on the `@` that ends the userinfo part, and the rewrite leaves the scheme, user, database, and query params intact.
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-cockroach-branch",
+        "ttl_secs": 600,
+        "image": "cockroachdb/cockroach:v24.1.5",
+        "port": 26257,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "COCKROACH_URL", "value_pattern": "@(?P<host>[^:/]+)" },
+            "port": { "env_var_name": "COCKROACH_URL", "value_pattern": ":(?P<port>[0-9]+)/" }
+          }
+        },
+        "args": ["start-single-node", "--insecure"],
+        "readiness": { "type": "http_get", "path": "/health?ready=1", "port": 8080 }
+      }
+    ]
+  }
+}
+```
+
+Target pod env: `COCKROACH_URL=postgresql://root@cockroach-main:26257/defaultdb?sslmode=disable`.
+
+Also demonstrates: an `http_get` readiness probe on a **different port** than the redirected one - health is checked on CockroachDB's admin API (8080) while the app is redirected to the SQL port (26257).
+
+</details>
+
+<details>
+
+<summary>Valkey - bootstrap via <code>args</code></summary>
 
 The app reads a composite `VALKEY_ADDR=valkey-main:6379` env var and a `VALKEY_PASSWORD` that comes from a Kubernetes Secret. Valkey (like Redis) is configured through command-line flags, so the branch passes the app's real password to `--requirepass`:
 
@@ -71,7 +111,11 @@ When the session starts:
 2. The default TCP probe on `6379` passes and the branch turns Ready.
 3. Locally, only the host and port *fragments* of `VALKEY_ADDR` are rewritten in place (the `value_pattern` captures), so the app still sees the `host:port` shape it expects - now pointing at the branch. `VALKEY_PASSWORD` is untouched and just works.
 
-## Example: InfluxDB (bootstrap via `env`)
+</details>
+
+<details>
+
+<summary>InfluxDB - bootstrap via <code>env</code> (first-boot setup mode)</summary>
 
 The app reads `INFLUXDB_URL` plus token/org/bucket vars. InfluxDB's image isn't configured through flags - it bootstraps through its own **first-boot setup mechanism**: when the official `influxdb` image starts with `DOCKER_INFLUXDB_INIT_MODE=setup`, its entrypoint creates the initial admin user, organization, bucket, and API token from the other `DOCKER_INFLUXDB_INIT_*` env vars before serving traffic.
 
@@ -119,6 +163,101 @@ When the session starts:
 2. The `http_get` probe on `/health` passes once setup finished and the server is up - only then does the branch turn Ready.
 3. Locally, the host/port fragments of `INFLUXDB_URL` are rewritten to point at the branch (the URL shape and scheme survive). `INFLUXDB_TOKEN`, `INFLUXDB_ORG`, and `INFLUXDB_BUCKET` are untouched - and they're valid against the branch, because it was bootstrapped with those exact values.
 
+Also demonstrates: a **direct Kubernetes Secret** param source (`{ "secret": ..., "key": ... }`) - the token never needs to appear in the target pod's env at all.
+
+</details>
+
+<details>
+
+<summary>Elasticsearch - bootstrap via <code>ELASTIC_PASSWORD</code> (ES 8 security)</summary>
+
+Elasticsearch 8 ships with security enabled. The official image reads `ELASTIC_PASSWORD` as the `elastic` user's bootstrap password, so the branch is fed the app's real password through it. Dotted env names become `elasticsearch.yml` settings - here TLS is turned off so the app talks plain HTTP with basic auth:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-elasticsearch-branch",
+        "ttl_secs": 600,
+        "creation_timeout_secs": 300,
+        "image": "docker.elastic.co/elasticsearch/elasticsearch:8.17.4",
+        "port": 9200,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "ELASTICSEARCH_URL", "value_pattern": "https?://(?P<host>[^:/]+)" },
+            "port": { "env_var_name": "ELASTICSEARCH_URL", "value_pattern": ":(?P<port>[0-9]+)$" },
+            "password": "ELASTICSEARCH_PASSWORD"
+          }
+        },
+        "env": {
+          "discovery.type": "single-node",
+          "ELASTIC_PASSWORD": "$(MIRRORD_PARAM_PASSWORD)",
+          "xpack.security.http.ssl.enabled": "false",
+          "ES_JAVA_OPTS": "-Xms512m -Xmx512m"
+        },
+        "readiness": {
+          "type": "exec",
+          "command": ["sh", "-c", "curl -s -u \"elastic:$ELASTIC_PASSWORD\" http://localhost:9200 > /dev/null"]
+        }
+      }
+    ]
+  }
+}
+```
+
+Also demonstrates: an `exec` readiness probe - the command runs *inside* the branch container and can read the container's env with plain shell `$VAR` syntax, so Ready means "authentication actually works". JVM services need more memory than the branch pod default - see the resources note below the examples.
+
+</details>
+
+<details>
+
+<summary>OpenSearch - HTTPS + security bootstrap</summary>
+
+Same shape as Elasticsearch, using OpenSearch's `OPENSEARCH_INITIAL_ADMIN_PASSWORD` bootstrap. The demo security config keeps HTTPS on (self-signed certs), so the app connects with TLS verification disabled and the readiness probe curls with `-k`:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-opensearch-branch",
+        "ttl_secs": 600,
+        "creation_timeout_secs": 300,
+        "image": "opensearchproject/opensearch:2.19.1",
+        "port": 9200,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "OPENSEARCH_URL", "value_pattern": "https?://(?P<host>[^:/]+)" },
+            "port": { "env_var_name": "OPENSEARCH_URL", "value_pattern": ":(?P<port>[0-9]+)$" },
+            "password": "OPENSEARCH_PASSWORD"
+          }
+        },
+        "env": {
+          "discovery.type": "single-node",
+          "OPENSEARCH_INITIAL_ADMIN_PASSWORD": "$(MIRRORD_PARAM_PASSWORD)",
+          "OPENSEARCH_JAVA_OPTS": "-Xms512m -Xmx512m"
+        },
+        "readiness": {
+          "type": "exec",
+          "command": ["sh", "-c", "curl -sk -u \"admin:$OPENSEARCH_INITIAL_ADMIN_PASSWORD\" https://localhost:9200 > /dev/null"]
+        }
+      }
+    ]
+  }
+}
+```
+
+Note the password must satisfy OpenSearch's initial-admin-password strength rules - which is fine, because it's the app's *real* password resolved from its Secret, not something mirrord invents.
+
+</details>
+
+{% hint style="info" %}
+**Resource-hungry images**: branch pods default to a 512Mi memory limit, which OOM-kills JVM services like Elasticsearch and OpenSearch. Admins can raise it for all generic branches via `dbPod.resources` in the generic branch config (Helm `genericBranchConfig`), next to [`allowedImages`](#security). When a branch container does die, the branch fails immediately with the termination reason (e.g. `OOMKilled, exit code 137`) instead of hanging until the creation timeout.
+{% endhint %}
+
 ## Readiness
 
 The branch only turns Ready - and your session only proceeds - once the branch container's readiness probe passes. Because mirrord doesn't know your service, you can pick the probe that actually proves it's up:
@@ -149,7 +288,7 @@ If you find yourself writing a generic config for a common engine, that's a stro
 
 ## Slow Images and Timeouts
 
-Arbitrary images often pull and boot slower than the built-in engines. If branch creation times out, raise [`creation_timeout_secs`](../db-branching.md#key-fields). A bad image reference does not burn the whole timeout: the operator detects `ImagePullBackOff`-style failures and fails the branch immediately with the kubelet's message.
+Arbitrary images often pull and boot slower than the built-in engines. If branch creation times out, raise [`creation_timeout_secs`](../db-branching.md#key-fields). Unrecoverable failures don't burn the timeout, though: a bad image reference (`ImagePullBackOff`) or a crashing container (for example `OOMKilled` on an undersized memory limit) fails the branch immediately with the underlying reason.
 
 ## Security
 
