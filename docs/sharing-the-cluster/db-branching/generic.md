@@ -53,8 +53,8 @@ The app reads a composite `VALKEY_ADDR=valkey-main:6379` env var and a `VALKEY_P
         "port": 6379,
         "connection": {
           "params": {
-            "host": { "env_var_name": "VALKEY_ADDR", "value_pattern": "^([^:]+):" },
-            "port": { "env_var_name": "VALKEY_ADDR", "value_pattern": ":([0-9]+)$" },
+            "host": { "env_var_name": "VALKEY_ADDR", "value_pattern": "^(?P<host>[^:]+):" },
+            "port": { "env_var_name": "VALKEY_ADDR", "value_pattern": ":(?P<port>[0-9]+)$" },
             "password": "VALKEY_PASSWORD"
           }
         },
@@ -91,8 +91,8 @@ The `DOCKER_INFLUXDB_INIT_*` names are **InfluxDB's** convention, not mirrord's 
         "port": 8086,
         "connection": {
           "params": {
-            "host": { "env_var_name": "INFLUXDB_URL", "value_pattern": "https?://([^:/]+)" },
-            "port": { "env_var_name": "INFLUXDB_URL", "value_pattern": ":([0-9]+)" },
+            "host": { "env_var_name": "INFLUXDB_URL", "value_pattern": "https?://(?P<host>[^:/]+)" },
+            "port": { "env_var_name": "INFLUXDB_URL", "value_pattern": ":(?P<port>[0-9]+)" },
             "token": { "secret": "influx-creds", "key": "token" },
             "org": "INFLUXDB_ORG",
             "bucket": "INFLUXDB_BUCKET"
@@ -166,6 +166,6 @@ operator:
         - "ghcr.io/my-org/*"
 ```
 
-* Generic branch pods run under the namespace **default service account**, never the target's, and are plain unprivileged pods, so cluster admission policies (PSA, OPA/Kyverno) apply as usual.
+* Generic branch pods run under the namespace **default service account**, never the target's (which would let a user-chosen image impersonate the workload's cloud identity) and never the operator's. The service account token is **not mounted** into the branch pod at all - the container has zero Kubernetes API access even in clusters where roles were bound to the default SA. Branch pods are plain unprivileged pods, so cluster admission policies (PSA, OPA/Kyverno) apply as usual.
 * Values written directly into `args` are visible in the pod spec to anyone with pod-read access. Reference secrets via `$(MIRRORD_PARAM_*)` instead of inlining them - the `secretKeyRef` mechanism exists precisely so secret values never appear in the pod spec.
 * For images in private registries, set `imagePullSecrets` in the generic branch config, as with the other engines.
