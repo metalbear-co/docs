@@ -77,6 +77,38 @@ Also demonstrates: an `http_get` readiness probe on a **different port** than th
 
 <details>
 
+<summary>Aerospike - minimal config, binary wire protocol</summary>
+
+Community edition ships a default in-memory `test` namespace and no authentication, so like CockroachDB there is nothing to bootstrap. The app talks Aerospike's native binary protocol - generic branching is protocol-agnostic; only the env var rewrite matters:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-aerospike-branch",
+        "ttl_secs": 600,
+        "image": "aerospike/aerospike-server:latest",
+        "port": 3000,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "AEROSPIKE_ADDR", "value_pattern": "^(?P<host>[^:]+):" },
+            "port": { "env_var_name": "AEROSPIKE_ADDR", "value_pattern": ":(?P<port>[0-9]+)$" }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+No `command`, `args`, `env`, or `readiness` at all - the image's defaults plus the default TCP probe on `port` are enough.
+
+</details>
+
+<details>
+
 <summary>Valkey - bootstrap via <code>args</code></summary>
 
 The app reads a composite `VALKEY_ADDR=valkey-main:6379` env var and a `VALKEY_PASSWORD` that comes from a Kubernetes Secret. Valkey (like Redis) is configured through command-line flags, so the branch passes the app's real password to `--requirepass`:
@@ -254,8 +286,95 @@ Note the password must satisfy OpenSearch's initial-admin-password strength rule
 
 </details>
 
+<details>
+
+<summary>Cassandra - JVM tuning via <code>env</code>, <code>exec</code> probe via cqlsh</summary>
+
+Cassandra's default config has no authentication, so no credentials flow to the branch - the `env` here tunes the image itself (heap size), and readiness uses `cqlsh` inside the container. Note the probe command can be slow to start (`cqlsh` is a Python CLI); generic probes run with a 10-second timeout for exactly this reason:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-cassandra-branch",
+        "ttl_secs": 600,
+        "creation_timeout_secs": 300,
+        "image": "cassandra:5",
+        "port": 9042,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "CASSANDRA_ADDR", "value_pattern": "^(?P<host>[^:]+):" },
+            "port": { "env_var_name": "CASSANDRA_ADDR", "value_pattern": ":(?P<port>[0-9]+)$" }
+          }
+        },
+        "env": {
+          "MAX_HEAP_SIZE": "512M",
+          "HEAP_NEWSIZE": "128M"
+        },
+        "readiness": {
+          "type": "exec",
+          "command": ["sh", "-c", "cqlsh -e 'SELECT now() FROM system.local' > /dev/null 2>&1"]
+        }
+      }
+    ]
+  }
+}
+```
+
+Cassandra needs roughly 2Gi even with a small heap (off-heap structures + JVM overhead) - see the resources note below.
+
+</details>
+
+<details>
+
+<summary>Couchbase - <code>command</code>-wrapper bootstrap + host-only redirection (multi-port)</summary>
+
+Couchbase is the hardest bootstrap class: the image has **no first-boot env mechanism** - a fresh node must be initialized with `couchbase-cli` after the server starts. The branch handles this with a `command` wrapper: start the server in the background, wait for the management API, then run `cluster-init` and `bucket-create` with the app's real password.
+
+Two things to notice:
+
+* The wrapper references the param with **plain shell syntax** (`$MIRRORD_PARAM_PASSWORD`) - the injected params are ordinary env vars on the branch container, so a shell script can read them directly; kubelet `$(...)` expansion is only needed when there is no shell in between.
+* Couchbase is **multi-port** (management 8091, query 8093, KV 11210). mirrord redirects a single port - but if the app derives all its URLs from one *hostname* var, declaring only a `host` param (no `port`) redirects every port at once, since they all live on the same branch pod.
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "generic",
+        "id": "my-couchbase-branch",
+        "ttl_secs": 600,
+        "creation_timeout_secs": 300,
+        "image": "couchbase:community-7.6.2",
+        "port": 8091,
+        "connection": {
+          "params": {
+            "host": { "env_var_name": "COUCHBASE_HOST", "value_pattern": "^(?P<host>.+)$" },
+            "password": "COUCHBASE_PASSWORD"
+          }
+        },
+        "command": [
+          "/bin/bash", "-c",
+          "/entrypoint.sh couchbase-server & until curl -s http://localhost:8091/pools > /dev/null; do sleep 2; done; couchbase-cli cluster-init -c localhost --cluster-username Administrator --cluster-password \"$MIRRORD_PARAM_PASSWORD\" --services data,index,query --cluster-ramsize 512 --cluster-index-ramsize 256; couchbase-cli bucket-create -c localhost -u Administrator -p \"$MIRRORD_PARAM_PASSWORD\" --bucket sandbox --bucket-type couchbase --bucket-ramsize 256; wait"
+        ],
+        "readiness": {
+          "type": "exec",
+          "command": ["sh", "-c", "curl -s -u \"Administrator:$MIRRORD_PARAM_PASSWORD\" http://localhost:8091/pools/default/buckets/sandbox > /dev/null"]
+        }
+      }
+    ]
+  }
+}
+```
+
+The readiness probe checks that the `sandbox` bucket exists *with the bootstrapped credentials*, so the branch only turns Ready once the whole init sequence succeeded.
+
+</details>
+
 {% hint style="info" %}
-**Resource-hungry images**: branch pods default to a 512Mi memory limit, which OOM-kills JVM services like Elasticsearch and OpenSearch. Admins can raise it for all generic branches via `dbPod.resources` in the generic branch config (Helm `genericBranchConfig`), next to [`allowedImages`](#security). When a branch container does die, the branch fails immediately with the termination reason (e.g. `OOMKilled, exit code 137`) instead of hanging until the creation timeout.
+**Resource-hungry images**: branch pods default to a 512Mi memory limit, which OOM-kills heavier services like Elasticsearch, OpenSearch, Cassandra, and Couchbase. Admins can raise it for all generic branches via `dbPod.resources` in the generic branch config (Helm `genericBranchConfig`), next to [`allowedImages`](#security). When a branch container does die, the branch fails immediately with the termination reason (e.g. `OOMKilled, exit code 137`) instead of hanging until the creation timeout.
 {% endhint %}
 
 ## Readiness
@@ -268,7 +387,7 @@ The branch only turns Ready - and your session only proceeds - once the branch c
 | `http_get` | `{ "type": "http_get", "path": "/health", "port": 8086 }` | An HTTP GET on `path` returns a 2xx/3xx. `port` defaults to the branch `port`. |
 | `exec` | `{ "type": "exec", "command": ["valkey-cli", "ping"] }` | The command, run *inside* the branch container, exits 0. |
 
-The probe runs every 2 seconds (first check after 3 seconds). The first success marks the branch Ready; if it never succeeds, the session fails once [`creation_timeout_secs`](../db-branching.md#key-fields) elapses.
+The probe runs every 2 seconds (first check after 3 seconds) with a 10-second timeout per attempt, so slow probe commands like `cqlsh` don't false-fail. The first success marks the branch Ready; if it never succeeds, the session fails once [`creation_timeout_secs`](../db-branching.md#key-fields) elapses.
 
 Prefer a probe that captures "actually usable", not just "process started": a plain TCP probe can pass while an image is still initializing. The InfluxDB example uses `http_get` on `/health` precisely so the branch isn't Ready until the setup bootstrap has completed - with only the TCP default, the app could connect before its org and token exist.
 
