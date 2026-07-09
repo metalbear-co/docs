@@ -205,11 +205,9 @@ If you (or your observability library) don't propagate the header, downstream se
 
 ## Registry Authentication
 
-The preview image must be pullable **from inside the cluster**. The preview pod is a copy of the target's pod spec with the image swapped, so it pulls using the target's `imagePullSecrets`. If CI pushes preview images to a registry the target doesn't already pull from, add that registry's pull secret to the target workload — otherwise the preview fails with `ErrImagePull`.
+The preview image must be pullable **from inside the cluster**. The preview pod is a copy of the target's pod spec with the image swapped, so it pulls with the same credentials as the target — there is no separate registry configuration for previews.
 
-{% hint style="warning" %}
-**GHCR gotcha:** a `ghcr.io` package created by a workflow's `GITHUB_TOKEN` starts out **private**, even in public repos. Until you either flip the package to public (Package settings → Change visibility — a one-time step, there's no API for it) or configure a pull secret, `mirrord preview start` fails with a `401 Unauthorized` / `failed to fetch anonymous token` error on the image pull.
-{% endhint %}
+In practice this means: push preview image tags to the same registry and repository the target already pulls from (the image your target deployment runs, tagged per PR, e.g. `preview-pr-123-abc1234`). Pulls then work with zero extra setup. If CI pushes the preview image somewhere the target can't pull from — a different registry, or a brand-new package with no access configured — the preview fails with `ErrImagePull`.
 
 ## mirrord Configuration
 
@@ -239,7 +237,7 @@ The `--force` flag makes repeat runs with the same key replace the existing prev
 
 - **Image tags:** Include both PR number and commit SHA for traceability, e.g. `preview-pr-123-abc1234`.
 
-- **TTL:** Set `ttl_mins` comfortably longer than your typical review session. The TTL is a leak guard, not the primary cleanup — the PR-close job is. Each push replaces the preview (see `--force` above), which also resets the TTL, but a preview on an untouched PR expires quietly once the TTL elapses; re-run the workflow to bring it back.
+- **TTL:** Set `ttl_mins` comfortably longer than your typical review session. The TTL is a leak guard, not the primary cleanup — the PR-close job is. Each push replaces the preview (see `--force` above), which also resets the TTL, but a preview on an untouched PR expires quietly once the TTL elapses; re-run the workflow to bring it back. If you want the preview to live exactly as long as the PR, set `"ttl_mins": "infinite"` and rely on the PR-close job for cleanup — just be aware there's no leak guard if that job ever fails to run.
 
 - **Cleanup:** Always run `mirrord preview stop` when the PR is closed. Use `|| true` so the job doesn't fail if the preview was already stopped or never started:
   ```bash
@@ -252,7 +250,7 @@ The `--force` flag makes repeat runs with the same key replace the existing prev
 
 | Symptom | Cause and fix |
 |---------|---------------|
-| `ErrImagePull`, `failed to authorize` / `401 Unauthorized` | The cluster can't pull the preview image. See [Registry Authentication](#registry-authentication) — most commonly a private GHCR package that needs to be made public or given a pull secret. |
+| `ErrImagePull`, `failed to authorize` / `401 Unauthorized` | The cluster can't pull the preview image. Push preview tags to the same registry and repository the target already pulls from — see [Registry Authentication](#registry-authentication). One common trap: a brand-new `ghcr.io` package created by a workflow's `GITHUB_TOKEN` starts out private. |
 | `preview start` refuses because a session already exists for the key and target | A previous run's session is still alive. Pass `--force` to replace it. |
 | Preview pod never shows `Ready` | Intentional — mirrord inserts a readiness gate that never passes, so the target's Service doesn't route unfiltered traffic to the preview pod. See [Readiness](preview-environments.md#readiness). Use `mirrord preview status` to check the session's actual state. |
 | Preview worked, then disappeared before the PR closed | The session's TTL elapsed. Re-run the workflow to recreate it, and consider a longer `ttl_mins`. |
