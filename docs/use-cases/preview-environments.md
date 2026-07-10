@@ -84,6 +84,7 @@ Example output:
 ```
 
 * If `-k` is omitted, mirrord generates a new key and prints it in the output.
+* The image must be pullable from inside the cluster. The preview pod is a copy of the target's pod spec with the image swapped, so it pulls with the same credentials as the target — use a registry and repository the target already pulls from, otherwise the preview fails with `ErrImagePull`.
 
 ***
 
