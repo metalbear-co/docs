@@ -23,6 +23,20 @@ Because mirrord doesn't know the engine, you declare the connection parameters y
 
 You reference these in `command`, `args`, and `env` using Kubernetes' native `$(VAR)` syntax, so the branch bootstraps itself with the **same values the app already uses**. mirrord then only rewrites the app's `host`/`port` vars to point at the branch - the app's credential vars stay untouched, and they're valid against the branch because it was bootstrapped with those same values.
 
+Concretely, if the target pod has:
+
+```
+DATABASE_URL=postgresql://root@cockroach-main:26257/defaultdb?sslmode=disable
+```
+
+the operator creates the branch pod from your config, and the **local process** sees:
+
+```
+DATABASE_URL=postgresql://root@10.244.0.42:26257/defaultdb?sslmode=disable
+```
+
+Only the fragments captured by your `value_pattern` (here the host) are replaced with the branch pod's address - the scheme, user, database, and query params are untouched, so the app parses the URL exactly as before but now talks to the branch. The override exists only inside the mirrord session: the source database, the target pod, and every other user of it are unaffected.
+
 Two built-in variables are always available alongside the parameters: `MIRRORD_BRANCH_ID`, and `MIRRORD_DATABASE_NAME` when the shared `name` field is set. Use `$$(...)` for a literal `$(...)`.
 
 ## Basic Configuration
@@ -69,7 +83,7 @@ Insecure single-node dev mode needs no bootstrap at all: just the image, the SQL
 }
 ```
 
-Target pod env: `COCKROACH_URL=postgresql://root@cockroach-main:26257/defaultdb?sslmode=disable`.
+Target pod env: `COCKROACH_URL=postgresql://root@cockroach-main:26257/defaultdb?sslmode=disable` - rewritten locally exactly as shown in [How It Works](#how-it-works).
 
 Also demonstrates: an `http_get` readiness probe on a **different port** than the redirected one - health is checked on CockroachDB's admin API (8080) while the app is redirected to the SQL port (26257).
 
@@ -79,7 +93,7 @@ Also demonstrates: an `http_get` readiness probe on a **different port** than th
 
 <summary>Aerospike - minimal config, binary wire protocol</summary>
 
-Community edition ships a default in-memory `test` namespace and no authentication, so like CockroachDB there is nothing to bootstrap. The app talks Aerospike's native binary protocol - generic branching is protocol-agnostic; only the env var rewrite matters:
+The image ships a default in-memory `test` namespace, so like CockroachDB there is nothing to bootstrap. The app talks Aerospike's native binary protocol - generic branching is protocol-agnostic; only the env var rewrite matters:
 
 ```json
 {
@@ -401,13 +415,10 @@ Declaring neither `host` nor `port` is allowed - the branch is still created and
 
 * **No data or schema copy** - branches always start empty. If your service is useless empty, it needs a first-class engine.
 * **No IAM authentication.**
-* **A single redirected port** - multi-port and cluster-shaped services (services that advertise their own addresses to clients) are out of scope.
+* **A single redirected port** - if the app derives all its endpoints from one *hostname* variable, declaring only a `host` param redirects every port to the branch pod (see the Couchbase example above); but cluster-shaped services that advertise their own addresses to clients are out of scope.
+* **No SaaS-only services** - a generic branch runs a container image *in your cluster*, so the service must be self-hostable. Fully managed platforms with no container distribution (Databricks, Snowflake, and the like) have nothing to run. Two escape hatches: if a faithful local **emulator image** exists for the protocol, branch that instead - this is exactly how the built-in [DynamoDB engine](dynamodb.md) works (`amazon/dynamodb-local` in-cluster stands in for the AWS service); and if the managed service speaks a **standard protocol** - for example, Databricks Lakebase is Postgres-compatible - use the matching first-class engine (here, [PostgreSQL branching](postgresql.md)) or a stock image of that engine as the stand-in.
 
 If you find yourself writing a generic config for a common engine, that's a strong signal for us to build first-class support for it - let us know!
-
-## Slow Images and Timeouts
-
-Arbitrary images often pull and boot slower than the built-in engines. If branch creation times out, raise [`creation_timeout_secs`](../db-branching.md#key-fields). Unrecoverable failures don't burn the timeout, though: a bad image reference (`ImagePullBackOff`) or a crashing container (for example `OOMKilled` on an undersized memory limit) fails the branch immediately with the underlying reason.
 
 ## Security
 
