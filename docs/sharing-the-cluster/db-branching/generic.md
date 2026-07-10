@@ -412,7 +412,7 @@ Arbitrary images often pull and boot slower than the built-in engines. If branch
 ## Security
 
 * Generic branching is **off by default** (`operator.genericBranching` in the Helm chart) because it lets users who can create branches run arbitrary container images as branch pods. Enabling it is an explicit admin decision per cluster.
-* Admins can restrict which images users may run with an `allowedImages` glob list in the generic branch config (Helm `genericBranchConfig`). When the field is absent, all images are allowed. A branch using an image outside the list fails immediately with an error naming the image - it does not wait for the creation timeout:
+* Admins can restrict which images users may run with an `allowedImages` glob list in the generic branch config (Helm `genericBranchConfig`). When the field is absent, all images are allowed. A branch using an image outside the list fails immediately with an error naming the image:
 
 ```yaml
 operator:
