@@ -62,6 +62,7 @@ It pairs each queue ID with a queue filter definition, and accepts either an obj
 
 Filter definition contains the following fields:
 * `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, or `BullMQ`
+* `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
 * `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified entries matching.
 * `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, and `BullMQ` queue types.
