@@ -104,7 +104,26 @@ Specifies the HTTP filtering configuration for the given service. Maps directly 
 List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
 ##### `services.*.messages` 
-Specifies queue splitting configuration (Not supported as of now).
+`mirrord up` supports queue splitting automatically for every service in `split` mode, you do need to add any special configuration.
+
+Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
+
+Start the services with a session key, for example:
+
+```sh
+$ mirrord up --key checkout-debug
+```
+
+Messages intended for this session must contain `mirrord-session=checkout-debug`.
+The marker is matched in broker-specific message metadata: SQS message attributes, Google Cloud Pub/Sub attributes,
+Azure Service Bus application properties, or Temporal headers. For Redis Pub/Sub and BullMQ, it is matched in the message payload.
+
+Queue splitting is available in `mirrord up` for Amazon SQS, Google Cloud Pub/Sub, Azure Service Bus, Redis Pub/Sub, Temporal, and BullMQ.
+
+{% hint style="info" %}
+Only messages containing the session key (`checkout-debug` in this case) are filtered by mirrord.
+{% endhint %}
+
 
 ##### `services.*.run` 
 Specifies the command that should be run with mirrord. Has 2 fields:
@@ -145,4 +164,3 @@ Flow:
 1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
 2. **Services** — loops one service at a time, prompting for name, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. Repeats until you answer "no" to *Add another service?*.
 3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
-
