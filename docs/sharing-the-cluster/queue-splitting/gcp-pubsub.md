@@ -36,19 +36,19 @@ The target workload's subscription environment variable is patched to read from 
 
 {% stepper %}
 {% step %}
-**Enable GCP Pub/Sub splitting in the Helm chart**
+#### Enable GCP Pub/Sub splitting in the Helm chart
 
 Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Authenticate the mirrord operator**
+#### Authenticate the mirrord operator
 
 The mirrord operator needs access to the Google Cloud Pub/Sub API to create and manage temporary topics and subscriptions.
 
 In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below.
 
-**Option A: Workload Identity (recommended)**
+##### Option A: Workload Identity (recommended)
 
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. The Kubernetes service account must carry the `iam.gke.io/gcp-service-account` annotation pointing at the GCP service account email.
 
@@ -85,7 +85,7 @@ spec:
       value: my-gcp-project
 ```
 
-**Option B: Service account JSON key**
+##### Option B: Service account JSON key
 
 If you are not using Workload Identity, provide a service account JSON key in the `MirrordPropertyList`. Store the key in a Kubernetes Secret, then reference it:
 
@@ -137,13 +137,13 @@ A good starting point is to assign the `roles/pubsub.editor` role to the operato
 {% endstep %}
 
 {% step %}
-**Authorize deployed consumers**
+#### Authorize deployed consumers
 
 In order to be targeted with Pub/Sub splitting, a deployed consumer must be able to read from the temporary subscriptions created by mirrord. If the consumer's IAM permissions are scoped to specific subscription names, you will need to extend them to cover subscriptions with the `mirrord-tmp-` prefix. This prefix is customizable via the `spec.tmpNameTemplate` field in your `MirrordSplitConfig` resource.
 {% endstep %}
 
 {% step %}
-**Provide application context**
+#### Provide application context
 
 On operator installation with `operator.gcpPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -187,7 +187,7 @@ The `MirrordSplitConfig` above says that:
 4. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
 5. The subscription can be referenced in a mirrord config under ID `user-events`.
 
-**Link the config to the deployed consumer**
+##### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -195,7 +195,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-**Describe consumed subscriptions**
+##### Describe consumed subscriptions
 
 Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions consumed by the workload:
 
@@ -212,13 +212,13 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
 * `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with additional configuration for temporary resources.
 
-**Matching multiple subscriptions with `envLike`**
+##### Matching multiple subscriptions with `envLike`
 
 When a single queue ID uses `envLike` to match several environment variables, each matched subscription is split independently under that one ID. A filter on the queue ID then applies to every matched subscription. The diagram below shows one queue ID whose `envLike` matches two subscription variables, each getting its own session and main resources.
 
 ![One queue ID matching two subscriptions via envLike](../../.gitbook/assets/gcp-multi-subscriptions.svg)
 
-**Subscriptions in multiple GCP projects**
+##### Subscriptions in multiple GCP projects
 
 Each queue's project is resolved from its own `appConfig.projectId`, so different queues can live in different projects. If all projects share one identity (e.g. Workload Identity with cross-project access), one `MirrordPropertyList` is enough - just give each queue its own `projectId`:
 
