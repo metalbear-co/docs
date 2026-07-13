@@ -73,7 +73,7 @@ Supported properties:
 
 **TLS and mutual TLS**
 
-A frontend behind regular TLS (for example Temporal Cloud with an API key) only needs `tls` — and `tlsCaCert` if its certificate is not signed by a publicly trusted CA:
+A frontend behind regular TLS only needs `tls: "true"`. For example, Temporal Cloud with an API key — its certificate is signed by a publicly trusted CA, so nothing else is required:
 
 ```yaml
 spec:
@@ -91,15 +91,17 @@ spec:
           key: apiKey
 ```
 
-If the frontend requires **mutual TLS** (the client must present a certificate, as with Temporal Cloud's mTLS authentication or an mTLS-protected self-hosted cluster), add the client certificate pair. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
+If the frontend's certificate is signed by a private CA instead (common for self-hosted clusters), also set `tlsCaCert` to a PEM CA bundle that can verify it.
+
+If the frontend requires **mutual TLS** (the client must present a certificate, as with Temporal Cloud's mTLS authentication or an mTLS-protected self-hosted cluster), the operator needs its own certificate: set `tlsClientCert` to the client certificate and `tlsClientKey` to that certificate's private key — the two always go together. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
 
 ```yaml
 spec:
   properties:
     - name: address
-      value: my-namespace.a1b2c.tmprl.cloud:7233
+      value: temporal-frontend.mycompany.internal:7233
     - name: namespace
-      value: my-namespace.a1b2c
+      value: production
     - name: tlsCaCert
       valueFrom:
         secretKeyRef:
