@@ -60,12 +60,68 @@ spec:
 
 Supported properties:
 
-| Property    |                                              Description                                              | Required | Default |
-| ----------- | :---------------------------------------------------------------------------------------------------: | :------: | :-----: |
-| `address`   | Temporal frontend address (`host:port` or a full URL). A bare `host:port` is prefixed with `http://`. |     ✓    |         |
-| `namespace` |                                 Temporal namespace the operator polls.                                |     ✓    |         |
-| `tls`       |                                  Set to `"true"` to connect over TLS.                                 |    No    | `false` |
-| `apiKey`    |                                        Temporal Cloud API key.                                        |    No    |         |
+| Property        |                                                       Description                                                       | Required | Default |
+| --------------- | :---------------------------------------------------------------------------------------------------------------------: | :------: | :-----: |
+| `address`       | Temporal frontend address (`host:port` or a full URL). A bare `host:port` gets its scheme from the `tls` setting.       |     ✓    |         |
+| `namespace`     |                                          Temporal namespace the operator polls.                                         |     ✓    |         |
+| `tls`           |          Set to `"true"` to connect over TLS. Implied when any of the `tls*` properties below are set.                  |    No    | `false` |
+| `apiKey`        |                                                 Temporal Cloud API key.                                                 |    No    |         |
+| `tlsCaCert`     |      PEM CA bundle used to verify the frontend's certificate when it is not signed by a publicly trusted root.          |    No    |         |
+| `tlsClientCert` |             PEM client certificate presented to a frontend that requires mutual TLS. Requires `tlsClientKey`.           |    No    |         |
+| `tlsClientKey`  |                     PEM private key for `tlsClientCert`. Requires `tlsClientCert`.                                      |    No    |         |
+| `tlsServerName` |  Overrides the domain name the frontend's certificate is verified against, when the dial address does not match it.     |    No    |         |
+
+**TLS and mutual TLS**
+
+A frontend behind regular TLS (for example Temporal Cloud with an API key) only needs `tls` — and `tlsCaCert` if its certificate is not signed by a publicly trusted CA:
+
+```yaml
+spec:
+  properties:
+    - name: address
+      value: my-namespace.a1b2c.tmprl.cloud:7233
+    - name: namespace
+      value: my-namespace.a1b2c
+    - name: tls
+      value: "true"
+    - name: apiKey
+      valueFrom:
+        secretKeyRef:
+          name: temporal-cloud-api-key
+          key: apiKey
+```
+
+If the frontend requires **mutual TLS** (the client must present a certificate, as with Temporal Cloud's mTLS authentication or an mTLS-protected self-hosted cluster), add the client certificate pair. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
+
+```yaml
+spec:
+  properties:
+    - name: address
+      value: my-namespace.a1b2c.tmprl.cloud:7233
+    - name: namespace
+      value: my-namespace.a1b2c
+    - name: tlsCaCert
+      valueFrom:
+        secretKeyRef:
+          name: temporal-client-tls
+          key: ca.crt
+    - name: tlsClientCert
+      valueFrom:
+        secretKeyRef:
+          name: temporal-client-tls
+          key: tls.crt
+    - name: tlsClientKey
+      valueFrom:
+        secretKeyRef:
+          name: temporal-client-tls
+          key: tls.key
+```
+
+Setting any `tls*` property implies `tls: "true"`, and setting only one of `tlsClientCert`/`tlsClientKey` fails with an error when the split starts. The operator reads the connection settings when a split starts, so rotated certificates are picked up by the next split, not by ones already running.
+
+{% hint style="info" %}
+TLS applies to the connection between the **operator** and the Temporal frontend. Deployed workers patched into a split connect to the operator's in-cluster Temporal proxy over plaintext gRPC.
+{% endhint %}
 {% endstep %}
 
 {% step %}
