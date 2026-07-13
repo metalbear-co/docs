@@ -172,7 +172,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ## Additional Options
 
-**Customizing Temporary Kafka Queue Names**
+### Customizing Temporary Kafka Queue Names
 
 To serve Kafka splitting sessions, the mirrord operator creates temporary queues in the Kafka cluster. The default format for their names is as follows:
 
@@ -191,7 +191,7 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 * `{{FALLBACK}}` will resolve either to `-fallback-` or `-` literal.
 * `{{ORIGINAL_TOPIC}}` will resolve to the name of the original topic that is being split.
 
-**Configuring Workload Restart**
+### Configuring Workload Restart
 
 To inject the names of the temporary queues into the consumer workload, the operator always requires the workload to be restarted. Depending on cluster conditions, and the workload itself, this might take some time.
 
@@ -220,7 +220,7 @@ Two settings control the drain timeout:
 | `0`            | Unpatch immediately. Messages not yet read from the temporary topic are lost.                                    |
 | `N`            | Stay patched for up to `N` seconds so a new session can reuse the split, then unpatch.                           |
 
-**AWS MSK IAM authentication**
+### AWS MSK IAM authentication
 
 For [Amazon Managed Streaming for Apache Kafka](https://aws.amazon.com/msk/) with IAM/OAUTHBEARER authentication, set the operator keys on the `MirrordPropertyList`:
 
@@ -269,7 +269,7 @@ In the example above, the local application will receive a subset of messages fr
 
 ## FAQ
 
-**How do I authenticate the operator's Kafka client with an SSL certificate?**
+### How do I authenticate the operator's Kafka client with an SSL certificate?
 
 Set the PEM contents as Kafka client properties on the `MirrordPropertyList`:
 
@@ -334,7 +334,7 @@ spec:
 By default, the mirrord operator has read access only to the secrets in the operator's namespace. The `MirrordPropertyList` itself lives in the target's namespace.
 {% endhint %}
 
-**How do I authenticate the operator's Kafka client with a Java KeyStore?**
+### How do I authenticate the operator's Kafka client with a Java KeyStore?
 
 The mirrord operator does not support direct use of JKS files. In order to use JKS files with Kafka splitting, first extract all necessary certificates and key to PEM files. You can do it like this:
 

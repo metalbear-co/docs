@@ -17,7 +17,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#amazon-sqs).
 
-The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `MirrordWorkloadQueueRegistry`; with `MirrordSplitConfig`, use [`spec.drainTimeout`](sqs.md#if-all-sqs-sessions-are-over-but-the-remote-service-still-didnt-change-back-to-read-from-the-original-queue) instead.
+The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `MirrordWorkloadQueueRegistry`; with `MirrordSplitConfig`, use [`spec.drainTimeout`](sqs.md#the-remote-service-doesnt-switch-back-to-the-original-queue-after-sessions-end) instead.
 {% endhint %}
 
 ## How It Works
@@ -210,7 +210,7 @@ Each entry in the `spec.queues` list describes one or more SQS queues consumed b
   * `containers` - limit resolution to specific containers (optional, defaults to all containers).
 * `queueConfig` (optional) - name of a `MirrordPropertyList` holding per-queue options (see below).
 
-**Per-queue options (SNS, S3 events, tags)**
+#### Per-queue options (SNS, S3 events, tags)
 
 SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list must be in the same namespace as the `MirrordSplitConfig`. Supported properties:
 
@@ -416,11 +416,11 @@ First, some generally applicable steps:
        kubectl rollout restart deployment mirrord-operator -n mirrord
        ```
 
-**If some (but not all) of the messages that should arrive at the local service arrive at the remote service**
+### Some messages that should reach the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can delete them.
 
-**If all SQS sessions are over but the remote service still didn't change back to read from the original queue**
+### The remote service doesn't switch back to the original queue after sessions end
 
 When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no messages intended for the remote service are lost.
 

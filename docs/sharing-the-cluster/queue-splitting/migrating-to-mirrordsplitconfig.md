@@ -84,7 +84,7 @@ spec:
       value: '{"tool":"mirrord"}'
 ```
 
-**Field mapping:**
+### Field mapping
 
 | `MirrordWorkloadQueueRegistry` _(deprecated)_ | `MirrordSplitConfig` **(NEW)** |
 | -------------------------------------------------- | ------------------------------ |
@@ -105,7 +105,7 @@ spec:
 | `s3Event: true` | `s3_event: "true"` |
 | `tags: {...}` | `tags` (JSON object string) |
 
-**To migrate:**
+### To migrate
 1. Create the new `MirrordSplitConfig`. For any queue that had inline `sns`, `s3Event`, or `tags`, create a `MirrordPropertyList` with those options and point the queue's `queueConfig` at it.
 2. Start a session and verify messages are split as expected.
 3. Delete the old `MirrordWorkloadQueueRegistry`.
@@ -191,7 +191,7 @@ spec:
       value: kafka.default.svc.cluster.local:9092
 ```
 
-Field mapping:
+### Field mapping
 
 | `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig` _(deprecated)_ | `MirrordSplitConfig` **(NEW)** |
 | ---------------------------------------------------------------------------- | ------------------------------ |
@@ -206,7 +206,7 @@ Field mapping:
 
 The `MirrordKafkaClientConfig` properties map one-to-one onto `MirrordPropertyList` properties. The only difference is the namespace: a `MirrordPropertyList` lives in the target's namespace, while `MirrordKafkaClientConfig` lives in the operator's namespace.
 
-To migrate:
+### To migrate
 1. Create a `MirrordPropertyList` in the target's namespace with your Kafka client properties (or keep your existing `MirrordKafkaClientConfig` - the new `clientConfig` falls back to it by name).
 2. Create the new `MirrordSplitConfig` using the mapping above.
 3. Start a session and verify messages are split as expected.
@@ -276,7 +276,7 @@ spec:
               - main
 ```
 
-Field mapping:
+### Field mapping
 
 | `MirrordWorkloadQueueRegistry` _(deprecated)_ | `MirrordSplitConfig` **(NEW)** |
 | -------------------------------------------------- | ------------------------------ |
@@ -294,7 +294,7 @@ Field mapping:
 
 `clusterProperties` and `queueProperties` already pointed to a `MirrordPropertyList` by name; `clientConfig` and `queueConfig` point to the same `MirrordPropertyList` the same way. These rows are just renames - there is no new resource to create.
 
-**To migrate:**
+### To migrate
 1. Create the new `MirrordSplitConfig` using the mapping above. Your existing `MirrordPropertyList` cluster declaration is reused as-is.
 2. Start a session and verify messages are split as expected.
 3. Delete the old `MirrordWorkloadQueueRegistry`.

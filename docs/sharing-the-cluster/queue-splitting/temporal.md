@@ -279,7 +279,7 @@ Filtering on a Temporal header:
 }
 ```
 
-**Filtering with jq**
+### Filtering with jq
 
 `jq_filter` runs against a JSON document the operator builds for each task. Every document has a `task_type` field, set to either `"activity"` or `"workflow"`.
 

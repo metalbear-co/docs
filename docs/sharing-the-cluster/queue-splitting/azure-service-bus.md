@@ -206,7 +206,7 @@ spec:
 
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
 
-**When the topic name is not in an environment variable**
+#### When the topic name is not in an environment variable
 
 Some frameworks (most commonly [MassTransit](https://masstransit.io/)) derive the topic name from the message type, so it never appears in an environment variable. The operator does not change the topic name anyway, it only needs to know it, so just give the name in `fallback`:
 
@@ -254,7 +254,7 @@ queues:
         - envLike: "^SB_QUEUE_.*"
 ```
 
-**Preserving the value format**
+#### Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
 
@@ -448,7 +448,7 @@ If you are having issues with Azure Service Bus splitting, start with these gene
     helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_queue_splitting::azure_service_bus=trace" metalbear/mirrord-operator
     ```
 
-**Messages are not reaching the local application**
+### Messages are not reaching the local application
 
 Check that:
 
@@ -456,12 +456,12 @@ Check that:
 * Your `message_filter` regex patterns match the actual property values. Property values are compared as plain strings.
 * If using `jq_filter`, verify the message body is valid JSON and the jq expression returns `true` for your test messages.
 
-**Authentication errors in operator logs**
+### Authentication errors in operator logs
 
 * **Connection string auth**: verify the connection string is correct and the SAS key has Manage, Send, and Listen claims.
 * **Workload Identity / Managed Identity**: verify the managed identity has the **Azure Service Bus Data Owner** role on the namespace. Check that AKS Workload Identity is properly configured and the operator's service account has the correct annotations.
 * **Service Principal**: verify that `tenant_id`, `client_id`, and `client_secret` are all present in the `MirrordPropertyList` and that the app registration has the correct role assignment.
 
-**Temporary queues are not being cleaned up**
+### Temporary queues are not being cleaned up
 
 After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.
