@@ -65,12 +65,13 @@ Filter definition contains the following fields:
 * `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
 * `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified entries matching.
-* `jq_filter` - supported for `SQS`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, and `BullMQ` queue types.
+* `jq_filter` - supported for `SQS`, `Kafka`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, and `BullMQ` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
     and metadata is fetched successfully. `S3Metadata` follows the [AWS S3 user-defined metadata format](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata):
     a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
+  * For **Kafka**, it runs a jq program on a JSON representation of the record. See the [Kafka page](queue-splitting/kafka.md#setting-a-filter) for the document shape.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
