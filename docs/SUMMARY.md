@@ -77,6 +77,7 @@
   * [DynamoDB](sharing-the-cluster/db-branching/dynamodb.md)
   * [ClickHouse](sharing-the-cluster/db-branching/clickhouse.md)
   * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
+  * [Generic](sharing-the-cluster/db-branching/generic.md)
   * [More](sharing-the-cluster/db-branching/more.md)
     * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
     * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)

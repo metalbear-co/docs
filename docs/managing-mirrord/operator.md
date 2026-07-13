@@ -168,6 +168,8 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | ClickHouse | `docker.io/clickhouse/clickhouse-server:{version}` | `operator.clickhouseBranchConfig` - `dbPod.image` |
 | Spanner    | `gcr.io/cloud-spanner-emulator/emulator:{version}` | `operator.spannerBranchConfig` - `dbPod.image` |
 
+[Generic branches](../sharing-the-cluster/db-branching/generic.md) have no default image - the user supplies the full image reference per branch. Admins can restrict which images are allowed with the `allowedImages` glob list under `operator.genericBranchConfig` - `dbPod.allowedImages` (when absent, all images are allowed), and `imagePullSecrets` in the same config covers private registries.
+
 ### Copying images
 
 We recommend [regctl](https://regclient.org/) for copying multi-arch images:

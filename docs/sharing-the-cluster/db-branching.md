@@ -45,6 +45,7 @@ Copy modes, version requirements, and engine-specific behavior differ per databa
 | [DynamoDB](db-branching/dynamodb.md) | `"dynamodb"` | Remote |
 | [ClickHouse](db-branching/clickhouse.md) | `"clickhouse"` | Remote |
 | [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote |
+| [Generic](db-branching/generic.md) (any other service, using your own image) | `"generic"` | Remote |
 
 ## Prerequisites
 
@@ -93,7 +94,7 @@ Developers define branches in their `mirrord.json`:
 | `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
 | `copy.mode` | Allows developers to control how the database is cloned when creating a branch. Available modes and filtering options differ per engine - see the Copy Modes section on your [database's page](#choose-your-database). |
 | `copy.dump_args` | (MySQL & PostgreSQL only) Customize the arguments passed to `mysqldump` or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments) or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
-| `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. |
+| `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. Unrecoverable pod failures (for example a bad image reference stuck in `ImagePullBackOff`) fail the branch immediately with the underlying error instead of waiting for this timeout. |
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 | `migrations` | (MySQL, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
