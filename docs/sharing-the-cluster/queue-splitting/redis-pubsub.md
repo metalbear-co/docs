@@ -15,7 +15,7 @@ The word "queue" on this page refers to a Redis Pub/Sub channel.
 Queue splitting for Redis Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 The mirrord operator subscribes to the same Redis channel(s) the deployed workload uses, then re-publishes each incoming message to temporary channels based on the users' filters.
 
@@ -27,7 +27,7 @@ Because Redis Pub/Sub channels are created implicitly when a message is publishe
 
 ![Redis Pub/Sub splitting flow](../../.gitbook/assets/redis-pubsub-splitting.svg)
 
-#### Enabling Redis Pub/Sub Splitting in Your Cluster
+## Enabling Redis Pub/Sub Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -129,7 +129,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread messages to be consumed first.
 
@@ -143,7 +143,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread messages may be lost.       |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Redis Pub/Sub uses `queue_type: RedisPubSub`.
 

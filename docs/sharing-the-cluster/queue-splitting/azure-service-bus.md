@@ -12,7 +12,7 @@ This page covers queue splitting for [Azure Service Bus](https://azure.microsoft
 Queue splitting for Azure Service Bus requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both, but each uses a different routing mechanism.
 
@@ -26,7 +26,7 @@ The diagram below shows the two-pass routing used by the Topic/Subscription mode
 
 ![Azure Service Bus topic splitting flow](../../.gitbook/assets/azure-service-bus-splitting.svg)
 
-#### Enabling Azure Service Bus Splitting in Your Cluster
+## Enabling Azure Service Bus Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -375,7 +375,7 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 {% endstep %}
 {% endstepper %}
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Azure Service Bus uses `queue_type: AzureServiceBus`.
 
@@ -421,7 +421,7 @@ This routes only messages whose JSON body contains `"priority": "high"` to the l
 
 Both `message_filter` and `jq_filter` can be combined - a message must match both to be routed to the local application.
 
-#### Troubleshooting Azure Service Bus splitting
+## Troubleshooting Azure Service Bus splitting
 
 If you are having issues with Azure Service Bus splitting, start with these general steps:
 

@@ -18,7 +18,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#rabbitmq).
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a RabbitMQ queue:
 
@@ -34,7 +34,7 @@ If a second user then starts a mirrord RabbitMQ splitting session on the same qu
 
 If the filters defined by the two users both match some message, one of the users will receive the messages at random.
 
-#### Enabling RabbitMQ Splitting in Your Cluster
+## Enabling RabbitMQ Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -213,7 +213,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread messages to be consumed first.
 
@@ -227,7 +227,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread messages may be lost.       |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ` and supports `message_filter` on message headers.
 

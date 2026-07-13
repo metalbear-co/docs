@@ -22,7 +22,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) only affects legacy `MirrordKafkaTopicsConsumer` objects; with `MirrordSplitConfig`, use [`spec.drainTimeout`](kafka.md#configuring-workload-restart) instead.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a Kafka queue:
 
@@ -38,7 +38,7 @@ If a second user then starts a mirrord Kafka splitting session on the same queue
 
 If the filters defined by the two users both match some message, one of the users will receive the message at random.
 
-#### Enabling Kafka Splitting in Your Cluster
+## Enabling Kafka Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -170,7 +170,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Additional Options
+## Additional Options
 
 **Customizing Temporary Kafka Queue Names**
 
@@ -244,7 +244,7 @@ When `mirrord.auth.kind` is `MSK_IAM`, the operator automatically adds `sasl.mec
 
 To produce the authentication tokens, the operator uses the default credentials provider chain. The easiest way to provide the credentials is with IAM role assumption. For that, an IAM role with an appropriate policy has to be assigned to the operator's service account. Please follow [AWS's documentation on how to do that](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html). Note that the operator's service account can be annotated with the IAM role's ARN with the `sa.roleArn` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers.
 
@@ -267,7 +267,7 @@ For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see
 
 In the example above, the local application will receive a subset of messages from the Kafka queue with ID `views-topic`. All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`.
 
-#### FAQ
+## FAQ
 
 **How do I authenticate the operator's Kafka client with an SSL certificate?**
 

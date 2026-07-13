@@ -14,7 +14,7 @@ The word "queue" on this page refers to a Pub/Sub subscription.
 Queue splitting for Google Cloud Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a Google Cloud Pub/Sub subscription.
 
@@ -32,7 +32,7 @@ If the filters defined by the two users both match some message, one of the user
 
 The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
-#### Enabling GCP Pub/Sub Splitting in Your Cluster
+## Enabling GCP Pub/Sub Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -269,7 +269,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Configuring temporary subscriptions
+## Configuring temporary subscriptions
 
 By default the temporary subscriptions mirrord creates are deep copies of the source subscription, so they inherit its settings - including its acknowledgement deadline, message retention, and expiration. You can override these per queue by pointing its `queueConfig` at a `MirrordPropertyList`:
 
@@ -309,7 +309,7 @@ All three values are forwarded to GCP, which enforces its own allowed ranges (se
 * `message_retention_seconds` (integer seconds) - how long unacknowledged messages are kept, so a backlog is not dropped while you debug.
 * `expiration_seconds` (integer seconds, or `never`) - how long the temporary subscription survives without activity before Pub/Sub deletes it. Use `never` to keep it for the whole session, which prevents the subscription from being garbage-collected while the deployed consumer is paused.
 
-#### Preserving the value format
+## Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
 
@@ -329,7 +329,7 @@ queues:
 
 With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
 
-#### Drain timeout
+## Drain timeout
 
 After the last splitting session against a target ends, the operator keeps the split's temporary subscription alive for a while so fallback messages can still be delivered before it tears it down. Two settings control how long it waits:
 
@@ -345,7 +345,7 @@ Whichever value applies is then interpreted as:
 | `0`          | Skip draining; delete the temporary subscription immediately. Undrained messages may be lost. |
 | `N`          | Wait up to `N` to drain, then delete the temporary subscription.                              |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). GCP Pub/Sub uses `queue_type: GCPPubSub`.
 

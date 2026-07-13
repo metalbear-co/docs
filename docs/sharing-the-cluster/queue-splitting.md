@@ -19,7 +19,7 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
-### Choose your queue service
+## Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
@@ -32,7 +32,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [Temporal](queue-splitting/temporal.md)
 * [BullMQ](queue-splitting/bullmq.md)
 
-### How It Works
+## How It Works
 
 When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue.
 That temporary queue is *exclusive* to the target workload.
@@ -54,7 +54,7 @@ Please note that:
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
-### Setting a Filter for a mirrord Run
+## Setting a Filter for a mirrord Run
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://metalbear.com/mirrord/docs/config/options#feature-split_queues) is the configuration field they need to specify in order to filter queue messages.
@@ -80,7 +80,7 @@ Filter definition contains the following fields:
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
-#### One queue or many
+### One queue or many
 
 `feature.split_queues` accepts two shapes.
 

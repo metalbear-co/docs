@@ -20,7 +20,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `MirrordWorkloadQueueRegistry`; with `MirrordSplitConfig`, use [`spec.drainTimeout`](sqs.md#if-all-sqs-sessions-are-over-but-the-remote-service-still-didnt-change-back-to-read-from-the-original-queue) instead.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from an SQS queue:
 
@@ -38,7 +38,7 @@ If the filters defined by the two users both match some message, one of the user
 
 Deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages, so no messages intended for the remote service are lost.
 
-#### Enabling SQS Splitting in Your Cluster
+## Enabling SQS Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -247,7 +247,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`.
 
@@ -375,7 +375,7 @@ Using the `*` wildcard to apply one filter to all queues described in the `Mirro
 
 In the example above, the local application will receive a subset of message from **all** SQS queues described in the `MirrordSplitConfig`. All received messages will have an SQS attribute `baggage` containing `mirrord-session=pr-123`. `*` is a special queue ID for SQS queues, and resolves to all queues described in the `MirrordSplitConfig`.
 
-#### Troubleshooting SQS splitting
+## Troubleshooting SQS splitting
 
 If you're trying to use SQS-splitting and are facing difficulties, here are some steps you can go through to identify and hopefully solve the problem.
 

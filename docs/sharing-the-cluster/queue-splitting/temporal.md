@@ -14,7 +14,7 @@ The word "queue" on this page refers to a Temporal task queue.
 Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 Temporal has no native way to "split" a task queue, so the mirrord operator does it with a small gRPC proxy and a set of virtual task queues.
 
@@ -28,7 +28,7 @@ If two users' filters both match the same task, only one of them gets it: the ta
 
 ![Temporal queue splitting detailed system flow](../../.gitbook/assets/temporal-detailed-flow.svg)
 
-#### Enabling Temporal Splitting in Your Cluster
+## Enabling Temporal Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -213,7 +213,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for in-flight work to finish first.
 
@@ -227,7 +227,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. In-flight work may be lost.        |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Temporal uses `queue_type: Temporal`.
 

@@ -16,7 +16,7 @@ The word "queue" on this page refers to a BullMQ queue (backed by Redis lists, h
 Queue splitting for BullMQ requires mirrord operator `3.175.0` or later and mirrord CLI `3.223.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 ![BullMQ queue splitting flow](../../.gitbook/assets/bullmq.svg)
 
@@ -28,7 +28,7 @@ If a second user starts a session on the same queue, the operator creates anothe
 
 When a session ends, the operator deletes the per-session queue's Redis keys. When all sessions end, the operator restores the workload to read from the original queue and deletes the main queue's Redis keys.
 
-#### Enabling BullMQ Splitting in Your Cluster
+## Enabling BullMQ Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
@@ -130,7 +130,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread jobs to be consumed first.
 
@@ -144,7 +144,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread jobs may be lost.           |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). BullMQ uses `queue_type: BullMQ`.
 
