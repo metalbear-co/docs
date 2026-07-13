@@ -1,3 +1,6 @@
+
+# Migrating to MirrordSplitConfig
+
 All queue services now share a single configuration resource, `MirrordSplitConfig`. Earlier versions of mirrord used a different, broker-specific resource for each service. Those legacy resources are deprecated but still fully supported - the operator reads them on the fly and drives the split through the same unified flow, so existing setups keep working with no change.
 
 This page shows how to move each legacy resource to `MirrordSplitConfig`. We recommend migrating so all your queue splitting configuration lives in one place. New setups should start with `MirrordSplitConfig` directly (see each broker's own page).

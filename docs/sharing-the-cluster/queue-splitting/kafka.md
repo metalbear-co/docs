@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# Kafka
+
 This page covers queue splitting for [Kafka](https://kafka.apache.org/). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
 The word "queue" on this page refers to a Kafka topic.
@@ -340,6 +342,7 @@ The mirrord operator does not support direct use of JKS files. In order to use J
 
 ```sh
 # Convert keystore.jks to PKCS12 format.
+
 keytool -importkeystore \
   -srckeystore keystore.jks \
   -srcstoretype JKS \
