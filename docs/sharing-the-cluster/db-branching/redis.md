@@ -73,6 +73,44 @@ In this example, only keys prefixed with `user:` or `session:` are copied; every
 Redis has no schema, so there is no `"schema"` copy mode - only `"empty"` and `"all"` are available. Filtering is done by key pattern rather than by SQL query.
 {% endhint %}
 
+## TLS-Enabled Custom Images
+
+By default the operator starts a remote branch pod with its own `redis-server` command, so TLS configuration baked into a custom image is not picked up and the branch serves plain TCP. If your apps connect to Redis over TLS (or your platform requires it), configure the branch pod via the `operator.redisBranchConfig` value in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml):
+
+```yaml
+redisBranchConfig:
+  dbPod:
+    image:
+      registry: "myregistry/redis-tls"   # custom image with certificates baked in
+    dbServerArgs:                        # appended to the operator's redis-server command
+      - "--tls-port"
+      - "6379"
+      - "--port"
+      - "0"
+      - "--tls-cert-file"
+      - "/certs/tls.crt"
+      - "--tls-key-file"
+      - "/certs/tls.key"
+      - "--tls-auth-clients"
+      - "no"
+    tls: true                            # the operator connects to the branch over TLS
+```
+
+The two settings play different roles:
+
+* `dbServerArgs` - extra flags appended to the branch's `redis-server` command, after the operator-managed `--requirepass`. Use them to enable the TLS listener with the certificate paths that exist inside your image.
+* `tls` - tells the **operator** that the branch only accepts TLS: the data-copy step connects over TLS, and the connection URL injected into your app uses the `rediss://` scheme.
+
+Requirements:
+
+* Keep the TLS listener on the default port (`--tls-port 6379`) and disable the plaintext listener (`--port 0`). The branch's Service and the connection URL handed to your app are always built for port `6379`.
+* The certificate paths passed in `dbServerArgs` must exist inside the image - the operator does not mount certificate volumes into branch pods.
+* The config applies when a branch is **created**; branches that already exist keep the mode they started with.
+
+{% hint style="info" %}
+TLS branch pods require operator and Helm chart `3.183.0` or later. Local Redis branches are unaffected - they always run a plain local instance.
+{% endhint %}
+
 ## Local Redis
 
 mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
