@@ -44,13 +44,13 @@ Deployed targets will keep reading from the temporary queues as long as their te
 
 {% stepper %}
 {% step %}
-#### Enable SQS splitting in the Helm chart
+### Enable SQS splitting in the Helm chart
 
 Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-#### Authenticate and authorize the mirrord operator
+### Authenticate and authorize the mirrord operator
 
 The mirrord operator will need to be able to perform operations on the SQS queues. To do this, it will build an SQS client, using the default credentials provider chain.
 
@@ -136,7 +136,7 @@ If you enable `s3_event` for an SQS queue (via its `queueConfig`), the operator 
 {% endstep %}
 
 {% step %}
-#### Authorize deployed consumers
+### Authorize deployed consumers
 
 In order to be targeted with SQS splitting, a deployed consumer must be able to use the temporary queues created by mirrord. E.g. if the consumer application retrieves the queue's URL based on its name, lists queue's tags, consumes and deletes messages from the queue — it must be able to do the same on a temporary queue.
 
@@ -146,7 +146,7 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 {% endstep %}
 
 {% step %}
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`. Before you can run sessions with SQS splitting, you must create a `MirrordSplitConfig` for the desired target. This is because the `MirrordSplitConfig` contains additional application context required by the mirrord operator. For example, the operator needs to know which environment variables contain the names of the SQS queues to split.
 
@@ -189,7 +189,7 @@ The `MirrordSplitConfig` above says that:
 3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 4. The `meme-queue` has extra per-queue options defined in the `meme-queue-options` `MirrordPropertyList` (e.g. tags set on temporary queues, SNS parsing).
 
-##### Link the config to the deployed consumer
+### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -197,7 +197,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` - type of the workload. mirrord supports SQS splitting on deployments and Argo rollouts.
 * `name` - name of the workload.
 
-##### Describe consumed queues
+### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more SQS queues consumed by the workload:
 
@@ -212,7 +212,7 @@ Each entry in the `spec.queues` list describes one or more SQS queues consumed b
   * `containers` - limit resolution to specific containers (optional, defaults to all containers).
 * `queueConfig` (optional) - name of a `MirrordPropertyList` holding per-queue options (see below).
 
-#### Per-queue options (SNS, S3 events, tags)
+### Per-queue options (SNS, S3 events, tags)
 
 SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list must be in the same namespace as the `MirrordSplitConfig`. Supported properties:
 

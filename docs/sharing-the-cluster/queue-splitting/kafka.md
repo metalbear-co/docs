@@ -44,13 +44,13 @@ If the filters defined by the two users both match some message, one of the user
 
 {% stepper %}
 {% step %}
-#### Enable Kafka splitting in the Helm chart
+### Enable Kafka splitting in the Helm chart
 
 Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-#### Configure the operator's Kafka client
+### Configure the operator's Kafka client
 
 The mirrord operator needs to be able to perform some operations on the Kafka cluster. The connection settings live in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)), which you reference from the `MirrordSplitConfig` (see the next step).
 
@@ -88,13 +88,13 @@ If no `MirrordPropertyList` with the referenced name exists in the target's name
 {% endstep %}
 
 {% step %}
-#### Authorize deployed consumers
+### Authorize deployed consumers
 
 In order to be targeted with Kafka splitting, a deployed consumer must be able to use the temporary queues created by mirrord. E.g. if the consumer application describes the queue or reads messages from it — it must be able to do the same on a temporary queue. This might require extra actions on your side to adjust the authorization, for example based on queue name prefix. See [customizing temporary queue names](kafka.md#customizing-temporary-kafka-queue-names) for more info.
 {% endstep %}
 
 {% step %}
-#### Provide application context
+### Provide application context
 
 On operator installation with `operator.kafkaSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`. Before you can run sessions with Kafka splitting, you must create a `MirrordSplitConfig` for the desired target. This tells the operator which queues to split and how the application discovers their names.
 
@@ -134,7 +134,7 @@ The `MirrordSplitConfig` above says that:
 3. The Kafka queue can be referenced in a mirrord config under ID `views-topic`.
 4. The Kafka client connection comes from the `kafka-connection` `MirrordPropertyList`.
 
-##### Link the config to the deployed consumer
+### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -142,7 +142,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` - type of the workload. The operator supports Kafka splitting on deployments, stateful sets, and Argo rollouts.
 * `name` - name of the workload.
 
-##### Describe consumed queues
+### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more Kafka queues consumed by the workload:
 

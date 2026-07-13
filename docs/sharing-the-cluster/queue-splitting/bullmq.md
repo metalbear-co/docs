@@ -32,13 +32,13 @@ When a session ends, the operator deletes the per-session queue's Redis keys. Wh
 
 {% stepper %}
 {% step %}
-#### Enable BullMQ splitting in the Helm chart
+### Enable BullMQ splitting in the Helm chart
 
 Enable the `operator.bullmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-#### Create a MirrordPropertyList
+### Create a MirrordPropertyList
 
 The operator needs to connect to your Redis instance to dequeue and re-enqueue jobs. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`).
 
@@ -67,7 +67,7 @@ Supported properties:
 {% endstep %}
 
 {% step %}
-#### Create a MirrordSplitConfig
+### Create a MirrordSplitConfig
 
 On operator installation with `operator.bullmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -101,7 +101,7 @@ The `MirrordSplitConfig` above says that:
 3. The deployment consumes one BullMQ queue, whose name is in environment variable `BULLMQ_QUEUE`.
 4. The queue can be referenced in a mirrord config under ID `orders`.
 
-##### Link the config to the deployed consumer
+### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -109,7 +109,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-##### Describe consumed queues
+### Describe consumed queues
 
 Each entry in the `spec.queues` list describes a BullMQ queue consumed by the workload:
 
