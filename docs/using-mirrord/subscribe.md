@@ -18,10 +18,6 @@ going green.
 In both cases: no active mirrord session = no events.
 
 {% hint style="info" %}
-This feature is available to users on the Team and Enterprise pricing plans.
-{% endhint %}
-
-{% hint style="info" %}
 HTTP events come from redirected requests/responses. Queue events require [queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the session, and every supported broker emits them, with these exceptions:
 
 * **Temporal** is not currently supported.
@@ -212,10 +208,6 @@ A BullMQ job. `message_id` is the job ID, and `properties` are the top-level fie
   }
 }
 ```
-
-{% hint style="info" %}
-Kafka Streams consumers are not currently supported — standard Kafka consumers are.
-{% endhint %}
 
 * **`redis_message`** — a Redis Pub/Sub message relayed to your session. Redis also uses a **different schema**: just the `channel` the message was published to and its `payload_size` in bytes. Pub/Sub messages carry no ID, headers, or attribute bag, and the payload itself is not included.
 
