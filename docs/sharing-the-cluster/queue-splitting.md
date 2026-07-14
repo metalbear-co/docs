@@ -28,7 +28,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [Temporal](queue-splitting/temporal.md)
 * [BullMQ](queue-splitting/bullmq.md)
 
-### How It Works
+## How It Works
 
 When a queue splitting session starts, the mirrord operator patches the target workload (e.g. deployment or rollout) to consume messages from a different, temporary queue.
 That temporary queue is *exclusive* to the target workload.
