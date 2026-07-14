@@ -79,7 +79,7 @@ Injection is enabled through the `operator.injectSessionKeyHeader` setting in th
 The key is not injected in copy-target mode. A copy-target session runs against its own dedicated copy of the workload, so no shared consumer needs to tell sessions apart, and messages routed to the copy are delivered unchanged.
 {% endhint %}
 
-### Setting a Filter for a mirrord Run
+## Setting a Filter for a mirrord Run
 
 Once cluster setup is done, mirrord users can start running sessions with queue message filters in their mirrord configuration files.
 [`feature.split_queues`](https://metalbear.com/mirrord/docs/config/options#feature-split_queues) is the configuration field they need to specify in order to filter queue messages.
