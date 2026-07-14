@@ -13,7 +13,7 @@ going green.
 **When do you receive events?**
 
 * HTTP - you receive an event for each request/response that was routed to or from a target workload by mirrord and matches your subscribed key.
-* Queue (Azure Service Bus, Amazon SQS, Kafka) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
+* Queue (Amazon SQS, Azure Service Bus, GCP Pub/Sub, RabbitMQ, BullMQ, Kafka, Redis Pub/Sub) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
 
 In both cases: no active mirrord session = no events.
 
@@ -22,7 +22,10 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 {% hint style="info" %}
-Only **HTTP request/response** events and **Azure Service Bus** / **Amazon SQS** / **Kafka** queue messages are emitted today. HTTP events come from redirected requests/responses; queue events require [queue splitting](../sharing-the-cluster/queue-splitting.md) (Azure Service Bus, Amazon SQS, or Kafka) configured for the session. Kafka Streams consumers are **not** currently supported — only standard Kafka consumers.
+HTTP events come from redirected requests/responses. Queue events require [queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the session, and every supported broker emits them, with these exceptions:
+
+* **Temporal** is not currently supported.
+* **Kafka Streams** consumers are not currently supported (standard Kafka consumers are).
 
 Need support for more events? [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect)
 {% endhint %}
@@ -115,7 +118,9 @@ mirrord subscribe --key my-key | jq '.data'
 }
 ```
 
-* **`queue_message`** — a queue message routed to your session. `queue_type` is `azure_service_bus` or `sqs`. `message_id` and `correlation_id` are included only when the broker provides them (SQS has no `correlation_id`). `properties` is the message's attribute bag, with values stringified: text as-is, and **binary values base64-encoded**.
+* **`queue_message`** — a queue message routed to your session. `queue_type` is one of `sqs`, `azure_service_bus`, `gcppubsub`, `rmq`, or `bullmq`. `message_id` and `correlation_id` are included only when the broker provides them (SQS, GCP Pub/Sub and BullMQ have no `correlation_id`). `properties` is the message's attribute bag, with values stringified: text as-is, and **binary values base64-encoded**.
+
+An Azure Service Bus message (its application properties become `properties`):
 
 ```json
 {
@@ -130,7 +135,7 @@ mirrord subscribe --key my-key | jq '.data'
 }
 ```
 
-An SQS message, where the `payload` attribute was binary (its bytes come back base64-encoded):
+An SQS message, where the `payload` message attribute was binary (its bytes come back base64-encoded):
 
 ```json
 {
@@ -141,6 +146,52 @@ An SQS message, where the `payload` attribute was binary (its bytes come back ba
     "properties": {
       "tenant": "test",
 	  "payload": "c29tZSBlcGljIHBheWxvYWQ="
+    }
+  }
+}
+```
+
+A GCP Pub/Sub message. `queue_name` is the subscription being split, and `properties` are the message's attributes:
+
+```json
+{
+  "queue_message": {
+    "queue_type": "gcppubsub",
+    "queue_name": "orders-sub",
+    "message_id": "11041...",
+    "properties": {
+      "tenant": "test"
+    }
+  }
+}
+```
+
+A RabbitMQ message. `queue_name` is the queue the message was consumed from, and `properties` are the AMQP headers:
+
+```json
+{
+  "queue_message": {
+    "queue_type": "rmq",
+    "queue_name": "orders",
+    "correlation_id": "trace-123",
+    "properties": {
+      "tenant": "test"
+    }
+  }
+}
+```
+
+A BullMQ job. `message_id` is the job ID, and `properties` are the top-level fields of the job's `data` payload — the same fields BullMQ splits filter on:
+
+```json
+{
+  "queue_message": {
+    "queue_type": "bullmq",
+    "queue_name": "orders",
+    "message_id": "42",
+    "properties": {
+      "tenant": "test",
+      "body": "hello"
     }
   }
 }
@@ -163,8 +214,30 @@ An SQS message, where the `payload` attribute was binary (its bytes come back ba
 ```
 
 {% hint style="info" %}
-Kafka Streams consumers are not currently supported — only standard Kafka consumers.
+Kafka Streams consumers are not currently supported — standard Kafka consumers are.
 {% endhint %}
+
+* **`redis_message`** — a Redis Pub/Sub message relayed to your session. Redis also uses a **different schema**: just the `channel` the message was published to and its `payload_size` in bytes. Pub/Sub messages carry no ID, headers, or attribute bag, and the payload itself is not included.
+
+```json
+{
+  "redis_message": {
+    "channel": "orders",
+    "payload_size": 52
+  }
+}
+```
+
+For a pattern subscription (`PSUBSCRIBE`), `channel` is the concrete channel the message arrived on — not the pattern. So an app subscribed to `orders.*` that receives a message on `orders.created` reports:
+
+```json
+{
+  "redis_message": {
+    "channel": "orders.created",
+    "payload_size": 52
+  }
+}
+```
 
 * **`lagged`** — your consumer fell behind and the operator dropped `count` events:
 
