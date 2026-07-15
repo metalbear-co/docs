@@ -33,7 +33,7 @@ Because Redis Pub/Sub channels are created implicitly when a message is publishe
 
 {% stepper %}
 {% step %}
-### Enable Redis Pub/Sub splitting in the Helm chart
+#### Enable Redis Pub/Sub splitting in the Helm chart
 
 Enable the `operator.redisPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
@@ -102,7 +102,7 @@ The `MirrordSplitConfig` above says that:
 3. The deployment consumes one Redis channel, whose name is in environment variable `REDIS_CHANNEL`.
 4. The channel can be referenced in a mirrord config under ID `notifications`.
 
-### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -110,7 +110,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-### Describe consumed channels
+#### Describe consumed channels
 
 Each entry in the `spec.queues` list describes a Redis channel consumed by the workload:
 

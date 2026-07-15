@@ -38,7 +38,7 @@ The target workload's subscription environment variable is patched to read from 
 
 {% stepper %}
 {% step %}
-### Enable GCP Pub/Sub splitting in the Helm chart
+#### Enable GCP Pub/Sub splitting in the Helm chart
 
 Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
@@ -50,7 +50,7 @@ The mirrord operator needs access to the Google Cloud Pub/Sub API to create and 
 
 In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below.
 
-### Option A: Workload Identity (recommended)
+#### Option A: Workload Identity (recommended)
 
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. The Kubernetes service account must carry the `iam.gke.io/gcp-service-account` annotation pointing at the GCP service account email.
 
@@ -87,7 +87,7 @@ spec:
       value: my-gcp-project
 ```
 
-### Option B: Service account JSON key
+#### Option B: Service account JSON key
 
 If you are not using Workload Identity, provide a service account JSON key in the `MirrordPropertyList`. Store the key in a Kubernetes Secret, then reference it:
 
@@ -189,7 +189,7 @@ The `MirrordSplitConfig` above says that:
 4. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
 5. The subscription can be referenced in a mirrord config under ID `user-events`.
 
-### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -197,7 +197,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-### Describe consumed subscriptions
+#### Describe consumed subscriptions
 
 Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions consumed by the workload:
 

@@ -44,7 +44,7 @@ Deployed targets will keep reading from the temporary queues as long as their te
 
 {% stepper %}
 {% step %}
-### Enable SQS splitting in the Helm chart
+#### Enable SQS splitting in the Helm chart
 
 Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
@@ -189,7 +189,7 @@ The `MirrordSplitConfig` above says that:
 3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 4. The `meme-queue` has extra per-queue options defined in the `meme-queue-options` `MirrordPropertyList` (e.g. tags set on temporary queues, SNS parsing).
 
-### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -197,7 +197,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` - type of the workload. mirrord supports SQS splitting on deployments and Argo rollouts.
 * `name` - name of the workload.
 
-### Describe consumed queues
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more SQS queues consumed by the workload:
 

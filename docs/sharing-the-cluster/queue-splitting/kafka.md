@@ -44,7 +44,7 @@ If the filters defined by the two users both match some message, one of the user
 
 {% stepper %}
 {% step %}
-### Enable Kafka splitting in the Helm chart
+#### Enable Kafka splitting in the Helm chart
 
 Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
@@ -134,7 +134,7 @@ The `MirrordSplitConfig` above says that:
 3. The Kafka queue can be referenced in a mirrord config under ID `views-topic`.
 4. The Kafka client connection comes from the `kafka-connection` `MirrordPropertyList`.
 
-### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -142,7 +142,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` - type of the workload. The operator supports Kafka splitting on deployments, stateful sets, and Argo rollouts.
 * `name` - name of the workload.
 
-### Describe consumed queues
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more Kafka queues consumed by the workload:
 

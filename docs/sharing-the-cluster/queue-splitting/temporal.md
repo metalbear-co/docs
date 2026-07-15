@@ -34,7 +34,7 @@ If two users' filters both match the same task, only one of them gets it: the ta
 
 {% stepper %}
 {% step %}
-### Enable Temporal splitting in the Helm chart
+#### Enable Temporal splitting in the Helm chart
 
 Enable the `operator.temporalSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
@@ -168,7 +168,7 @@ The `MirrordSplitConfig` above says that:
 4. The operator patches `TEMPORAL_ADDRESS` so the worker connects to the operator's Temporal proxy, and reads the Temporal namespace from `TEMPORAL_NAMESPACE`.
 5. The task queue can be referenced in a mirrord config under ID `orders-task-queue`.
 
-### Link the config to the deployed worker
+#### Link the config to the deployed worker
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -176,7 +176,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-### Describe consumed task queues
+#### Describe consumed task queues
 
 Each entry in the `spec.queues` list describes a Temporal task queue consumed by the worker. Each `appConfig` field uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
 

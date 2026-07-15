@@ -40,7 +40,7 @@ If the filters defined by the two users both match some message, one of the user
 
 {% stepper %}
 {% step %}
-### Enable RabbitMQ splitting in the Helm chart
+#### Enable RabbitMQ splitting in the Helm chart
 
 Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
@@ -181,7 +181,7 @@ The `MirrordSplitConfig` above says that:
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
-### Link the config to the deployed consumer
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -189,7 +189,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` — type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` — name of the workload.
 
-### Describe consumed queues
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more RabbitMQ queues consumed by the workload:
 
