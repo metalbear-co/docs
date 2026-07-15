@@ -30,8 +30,6 @@ To write the file by hand instead, start with:
 ```yaml
 services:
   user-auth-service:
-    target:
-      path: deployment/test-app
     run:
       command: ["python", "-m", "http.server"]
 
@@ -42,7 +40,7 @@ services:
       command: ["node", "app.js"]
 ```
 
-This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord` process that will run as part of the `mirrord up` session. 
+This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord` process that will run as part of the `mirrord up` session. You can leave out `target.path` (or the whole `target`) and `mirrord up` will infer it from the service id — see the `services.*.target` section below.
 
 Now, in the same directory of the `mirrord-up.yaml` file, run
 ```sh
@@ -70,6 +68,11 @@ A map from service ids to a `ServiceConfig`. Each entry in this map defines and 
 
 ##### `services.*.target`
 Specifies the target of the session. Has 2 fields: `path` and `namespace`, which map directly to their `mirrord.json` counterparts.
+
+When `path` is omitted, `mirrord up` infers it from the service id (the key in the `services` map) by searching the cluster for a deployment, statefulset, rollout, or pod with that name. If a match is found, it's used automatically, otherwise `mirrord up` prompts you to pick a namespace and workload, and offers to save the choice back to `mirrord-up.yaml` so future runs skip the prompt.
+
+To run a service without a target (outgoing traffic only), set `target: none`.
+
 Examples:
 ```yaml
 # Specify both namespace and path
@@ -79,16 +82,23 @@ target:
 ```
 
 ```yaml
-# Namespace only, will be targetless
+# Path only, will use default namespace
+target:
+  path: deployment/test-app
+```
+
+```yaml
+# Path omitted: inferred from the service id, searching `test-namespace`
 target:
   namespace: test-namespace
 ```
 
 ```yaml
-# Path only, will use default namespace
-target:
-  path: deployment/test-app
+# Targetless — outgoing traffic only
+target: none
 ```
+
+Omitting the `target` field entirely is equivalent to an empty mapping: the path is inferred from the service id in the default namespace.
 
 ##### `services.*.env`
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
@@ -135,7 +145,7 @@ Allows specifying a custom session key. When not supplied, the OS username is us
 
 ## `mirrord up init`
 
-Interactive wizard that generates a skeleton `mirrord-up.yaml`. Targets are entered as freeform strings (e.g. `deployment/foo`) — no cluster lookups are performed.
+Interactive wizard that generates a skeleton `mirrord-up.yaml`. It does not query the cluster; workload inference and prompting happen later, when you run `mirrord up`.
 
 ```sh
 $ mirrord up init [-o path/to/mirrord-up.yaml]
@@ -143,6 +153,6 @@ $ mirrord up init [-o path/to/mirrord-up.yaml]
 
 Flow:
 1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
-2. **Services** — loops one service at a time, prompting for name, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. Repeats until you answer "no" to *Add another service?*.
+2. **Services** — loops one service at a time, prompting for name, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. For the target you choose to infer it from the service name (looked up when you run `mirrord up`), specify one explicitly, or run without a target. Repeats until you answer "no" to *Add another service?*.
 3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
 
