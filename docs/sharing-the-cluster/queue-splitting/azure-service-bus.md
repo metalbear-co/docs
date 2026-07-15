@@ -450,7 +450,7 @@ If you are having issues with Azure Service Bus splitting, start with these gene
     helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_queue_splitting::azure_service_bus=trace" metalbear/mirrord-operator
     ```
 
-### Messages are not reaching the local application
+#### Messages are not reaching the local application
 
 Check that:
 
@@ -458,12 +458,12 @@ Check that:
 * Your `message_filter` regex patterns match the actual property values. Property values are compared as plain strings.
 * If using `jq_filter`, verify the message body is valid JSON and the jq expression returns `true` for your test messages.
 
-### Authentication errors in operator logs
+#### Authentication errors in operator logs
 
 * **Connection string auth**: verify the connection string is correct and the SAS key has Manage, Send, and Listen claims.
 * **Workload Identity / Managed Identity**: verify the managed identity has the **Azure Service Bus Data Owner** role on the namespace. Check that AKS Workload Identity is properly configured and the operator's service account has the correct annotations.
 * **Service Principal**: verify that `tenant_id`, `client_id`, and `client_secret` are all present in the `MirrordPropertyList` and that the app registration has the correct role assignment.
 
-### Temporary queues are not being cleaned up
+#### Temporary queues are not being cleaned up
 
 After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.

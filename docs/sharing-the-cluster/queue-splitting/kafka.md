@@ -310,7 +310,7 @@ If both `message_filter` and `jq_filter` are specified for the same queue, both 
 
 ## FAQ
 
-### How do I authenticate the operator's Kafka client with an SSL certificate?
+#### How do I authenticate the operator's Kafka client with an SSL certificate?
 
 Set the PEM contents as Kafka client properties on the `MirrordPropertyList`:
 
@@ -375,7 +375,7 @@ spec:
 By default, the mirrord operator has read access only to the secrets in the operator's namespace. The `MirrordPropertyList` itself lives in the target's namespace.
 {% endhint %}
 
-### How do I authenticate the operator's Kafka client with a Java KeyStore?
+#### How do I authenticate the operator's Kafka client with a Java KeyStore?
 
 The mirrord operator does not support direct use of JKS files. In order to use JKS files with Kafka splitting, first extract all necessary certificates and key to PEM files. You can do it like this:
 

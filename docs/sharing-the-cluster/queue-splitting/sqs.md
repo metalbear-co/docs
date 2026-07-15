@@ -418,11 +418,11 @@ First, some generally applicable steps:
        kubectl rollout restart deployment mirrord-operator -n mirrord
        ```
 
-### Some messages that should reach the local service arrive at the remote service
+#### Some messages that should reach the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can delete them.
 
-### The remote service doesn't switch back to the original queue after sessions end
+#### The remote service doesn't switch back to the original queue after sessions end
 
 When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no messages intended for the remote service are lost.
 
