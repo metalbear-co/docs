@@ -12,7 +12,7 @@ This page covers generic DB branching - for databases, caches, and other statefu
 A generic branch runs the container image you supply and always starts **empty**: there are no copy modes, no IAM authentication, and a single redirected port. It is the fallback that unblocks you when no first-class engine exists - engines with built-in support offer copy modes, schema handling, and better errors, so prefer them when available.
 
 {% hint style="info" %}
-Generic branching requires operator `<OPERATOR_VERSION>`, mirrord CLI `<CLI_VERSION>`, and operator Helm chart `<CHART_VERSION>` with the `operator.genericBranching` value set to `true`.
+Generic branching requires operator `3.183.0`, mirrord CLI `3.232.0`, and operator Helm chart `3.183.0` with the `operator.genericBranching` value set to `true`.
 
 If the operator doesn't support generic branching (older version, or the Helm value is off), the session fails immediately with a clear "operator does not support generic db branching" error rather than timing out.
 {% endhint %}
