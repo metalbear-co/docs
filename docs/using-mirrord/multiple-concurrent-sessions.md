@@ -75,7 +75,7 @@ Queue splitting is available in `mirrord up` for Amazon SQS, Google Cloud Pub/Su
 Kafka and RabbitMQ aren't supported yet in `mirrord up`.
 
 {% hint style="info" %}
-Only messages containing the session key (`checkout-debug` in this case) are filtered by mirrord.
+Only messages containing the session key (`checkout-debug` in this case) are routed to your local session. All other messages continue to the deployed target.
 {% endhint %}
 
 ### Config file (`mirrord-up.yaml`)
