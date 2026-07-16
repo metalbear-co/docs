@@ -55,6 +55,29 @@ Services default to `split` mode, which steals incoming traffic matching an `htt
 
 ## Configuration
 
+### Queue Splitting
+
+`mirrord up` supports queue splitting automatically for every service in `split` mode, you do need to add any special configuration.
+
+Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
+
+Start the services with a session key, for example:
+
+```sh
+$ mirrord up --key checkout-debug
+```
+
+Messages intended for this session must contain `mirrord-session=checkout-debug`.
+The marker is matched in broker-specific message metadata: SQS message attributes, Google Cloud Pub/Sub attributes,
+Azure Service Bus application properties, or Temporal headers. For Redis Pub/Sub and BullMQ, it is matched in the message payload.
+
+Queue splitting is available in `mirrord up` for Amazon SQS, Google Cloud Pub/Sub, Azure Service Bus, Redis Pub/Sub, Temporal, and BullMQ.
+Kafka and RabbitMQ aren't supported yet in `mirrord up`.
+
+{% hint style="info" %}
+Only messages containing the session key (`checkout-debug` in this case) are filtered by mirrord.
+{% endhint %}
+
 ### Config file (`mirrord-up.yaml`)
 
 #### `common`
@@ -103,28 +126,6 @@ Specifies the HTTP filtering configuration for the given service. Maps directly 
 ##### `services.*.ignore_ports` 
 List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
-##### `services.*.messages` 
-`mirrord up` supports queue splitting automatically for every service in `split` mode, you do need to add any special configuration.
-
-Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
-
-Start the services with a session key, for example:
-
-```sh
-$ mirrord up --key checkout-debug
-```
-
-Messages intended for this session must contain `mirrord-session=checkout-debug`.
-The marker is matched in broker-specific message metadata: SQS message attributes, Google Cloud Pub/Sub attributes,
-Azure Service Bus application properties, or Temporal headers. For Redis Pub/Sub and BullMQ, it is matched in the message payload.
-
-Queue splitting is available in `mirrord up` for Amazon SQS, Google Cloud Pub/Sub, Azure Service Bus, Redis Pub/Sub, Temporal, and BullMQ.
-
-{% hint style="info" %}
-Only messages containing the session key (`checkout-debug` in this case) are filtered by mirrord.
-{% endhint %}
-
-
 ##### `services.*.run` 
 Specifies the command that should be run with mirrord. Has 2 fields:
 - `command`: Array of strings containing the command to be run and its CLI arguments.
@@ -142,7 +143,6 @@ run:
   # `type` defaults to `exec`, no need to specify explicitly
   command: ["node", "app.js"]
 ```
-
 
 ## CLI args
 
