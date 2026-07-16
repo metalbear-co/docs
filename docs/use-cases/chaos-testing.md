@@ -20,10 +20,10 @@ tags:
 mirrord can be used to introduce artificial failures or disruptions to select network traffic and file operations, allowing you to
 test how your app responds under unexpected conditions. Create selectors that turn connections to specific hosts into errors, or just
 add latency. Turn an instant file read into an operation that takes seconds to complete and see how your app reacts to that.
-Increase the latency of some HTTP requests that have a matching header, or match another [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md#filtering-a-subset-of-traffic-with-mirror-or-steal-mode).
+Increase the latency of some HTTP requests that have a matching header, or match some other HTTP filter (link to HTTP filter config docs file).
 
 {% hint style="info" %}
-Currently the only supported chaos operations are interactions with outgoing TCP connections, while file operations, HTTP traffic and more are planned.
+Currently, the only supported chaos operations are interactions with outgoing TCP connections, while file operations, HTTP traffic and more are planned.
 {% endhint %}
 
 #### Prerequisites
@@ -39,10 +39,10 @@ mirrord ui
 ```
 
 {% hint style="info" %}
-For more information on mirrord ui, see [Local UI](../using-mirrord/local-ui.md).
+For more information on mirrord ui, see (link to mirrord ui docs file).
 {% endhint %}
 
-Grab the `API token`, and the ui server address, it should look something like this:
+Grab the `API token` and the ui server address, it should look something like this:
 
 ```sh
 * Web UI:
@@ -102,8 +102,8 @@ to the chaos backend, like so:
 http get --content-type application/json --headers { "x-auth-token": "{mirrord ui token}" } "http://127.0.0.1:59281/api/chaos/rules/{session id}"
 ```
 
-Changing the `x-auth-token` to the `API token` from your mirrord ui, and the session ID to the ID of your session. Sending this request will show all the chaos rules that are active for this session.
-And with the chaos rule ID you want in hand, now we can modify it with an HTTP PUT request:
+Change the `x-auth-token` to the `API token` from your mirrord ui, and the session ID to the ID of your session. Sending this request will show all the chaos rules that are active for this session,
+and the chaos rule ID you want in hand, now we can modify it with an HTTP PUT request:
 
 ```sh
 http put --content-type application/json --headers { "x-auth-token": "60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349" } "http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc/6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924" {
@@ -121,7 +121,7 @@ http put --content-type application/json --headers { "x-auth-token": "60733e94f1
 }
 ```
 
-Here we changed both the `name` of the chaos rule, and its `percentage` (roughly how often this chaos rule will trigger its effect on a matched selector). We also added the rule ID at the end of
+Here we changed both the `name` of the chaos rule and its `percentage` (roughly how often this chaos rule will trigger its effect on a matched selector). We also added the rule ID at the end of
 the url.
 
 To delete a chaos rule, you just need to send an HTTP DELETE request with the ID of the rule you want:
@@ -132,7 +132,7 @@ http delete --content-type application/json --headers { "x-auth-token": "60733e9
 
 The chaos rule (in this example `6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924`) will be deleted, and will stop affecting the session immediately.
 
-#### Chaos rules supported
+#### Supported chaos rules
 
 - Outgoing traffic latency
 
