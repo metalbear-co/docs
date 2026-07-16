@@ -57,7 +57,7 @@ Services default to `split` mode, which steals incoming traffic matching an `htt
 
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service in `split` mode, you do need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` mode. You don't need to add any special configuration.
 
 Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
 
