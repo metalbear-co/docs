@@ -53,6 +53,8 @@ Local container execution is currently only supported in the mirrord CLI tool. I
 
 > Especially relevant when using WSL, but can happen in other scenarios as well.
 
+Since mirrord CLI 3.232.0, mirrord performs container host gateway auto-detection. If you still encounter a proxy connection error, disable gateway auto-detection by setting `container.host_gateway_detection` to `false` and follow the instructions below.
+
 Set `external_proxy.host_ip` to `0.0.0.0` and set `container.override_host_ip` to the host address that is reachable from containers.
 
 To find the `override_host_ip` address:

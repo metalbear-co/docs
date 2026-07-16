@@ -246,7 +246,9 @@ To produce the authentication tokens, the operator uses the default credentials 
 
 #### Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers.
+For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers and `jq_filter` on a JSON representation of the whole record.
+
+**Filtering on headers**
 
 ```json
 {
@@ -266,6 +268,43 @@ For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see
 ```
 
 In the example above, the local application will receive a subset of messages from the Kafka queue with ID `views-topic`. All received messages will have a Kafka header `baggage` containing `mirrord-session=alice`.
+
+**Filtering on message content with jq**
+
+`jq_filter` runs a jq program on a JSON document the operator builds for each record:
+
+* `topic` - the topic name.
+* `partition` - the partition number.
+* `offset` - the record offset.
+* `timestamp` - the record timestamp in milliseconds (present only when the record carries one).
+* `key` - the record key (absent when the record has no key).
+* `payload` - the record value (absent when the record has no value).
+* `headers` - an object mapping header names to their values (always present, possibly empty; a repeated header name keeps the last value).
+
+`key`, `payload`, and header values are UTF-8 strings, or base64-encoded when not valid UTF-8. A record matches if the jq program outputs `true`.
+
+This lets you route messages by fields inside the message body. For example, to receive only messages whose JSON payload has a `merchantId` of `2137` under `data`:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/consumer",
+  "feature": {
+    "split_queues": {
+      "views-topic": {
+        "queue_type": "Kafka",
+        "jq_filter": ".payload | fromjson | .data.merchantId == 2137"
+      }
+    }
+  }
+}
+```
+
+If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to reach the local application. Records for which the jq program errors (for example, a non-JSON payload piped to `fromjson`) are treated as not matching and stay on the deployed application's path.
+
+{% hint style="warning" %}
+`jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later, and is only supported with the default `librdkafka` client. Sessions using the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) fail with a clear error when a `jq_filter` is set.
+{% endhint %}
 
 #### FAQ
 
