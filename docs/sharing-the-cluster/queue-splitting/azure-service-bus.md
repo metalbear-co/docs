@@ -149,6 +149,23 @@ spec:
 | `tenant_id`                 |      Azure AD tenant (directory) ID      |                Only with service principal                |
 | `client_id`                 |         Azure AD app (client) ID         |                Only with service principal                |
 | `client_secret`             |        Azure AD app client secret        |                Only with service principal                |
+| `per_session_subscription_cleanup` | How per-session subscriptions are removed: `auto-delete-on-idle` (default) or `force-delete` | No |
+| `auto_delete_on_idle`       | Idle timeout for `auto-delete-on-idle`, ISO-8601 (default `PT5M`, Azure minimum) | No |
+
+**Per-session subscription cleanup**
+
+For the topic/subscription model, mirrord points your local app at a per-session
+subscription by overriding its endpoint name. Messaging libraries like
+MassTransit and NServiceBus re-provision a subscription with that name whenever
+the app is running and it goes missing, so deleting it while the app is still
+connected makes the app recreate it - leaving an orphaned subscription no
+session owns.
+
+By default (`auto-delete-on-idle`) mirrord creates the subscription with
+`AutoDeleteOnIdle` and never deletes it explicitly, so Azure removes it once your
+app disconnects and it goes idle. Set `per_session_subscription_cleanup` to
+`force-delete` to keep the old behavior of deleting it immediately when the
+session ends - only do this if your app does not re-provision subscriptions.
 {% endstep %}
 
 {% step %}
