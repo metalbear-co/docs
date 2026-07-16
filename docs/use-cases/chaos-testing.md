@@ -239,3 +239,7 @@ curl --request DELETE \
 ```
 
 The chaos rule (in this example `6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924`) will be deleted, and will stop affecting the session immediately.
+
+{% hint style="info" %}
+Your AI assistant can generate and manage chaos rules for you. Install the [mirrord skills plugin](../using-mirrord-with-ai/ai-skills-plugin.md) and ask it, for example, to "add 750ms latency to my service's database connections".
+{% endhint %}
