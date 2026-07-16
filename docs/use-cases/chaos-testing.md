@@ -74,19 +74,23 @@ To create a chaos rule you just need to send an HTTP POST request to the ui serv
 json body of the rule you want to create, for example:
 
 ```sh
-http post --content-type application/json --headers { "x-auth-token": "60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349" } "http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc" {
-  name: "latency for database interactions"
-  priority: 10
-  effect: {
-    latency: {
-      read_ms: 750
+curl --request POST \
+  --header 'Content-Type: application/json' \
+  --header 'x-auth-token: 60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349' \
+  --data '{
+    "name": "latency for database interactions",
+    "priority": 10,
+    "effect": {
+      "latency": {
+        "read_ms": 750
+      }
+    },
+    "selector": {
+      "upstream": "sonic.database.svc.cluster.local",
+      "percentage": 35
     }
-  }
-  selector: {
-    upstream: "sonic.database.svc.cluster.local"
-    percentage: 35
-  }
-}
+  }' \
+  'http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc'
 ```
 
 The outgoing traffic (roughly 35% of it) from the service we are debugging with mirrord will now be affected by latency on read operations, when this traffic is
@@ -99,26 +103,32 @@ To either modify or delete an active chaos rule, we first need to get its ID. Th
 to the chaos backend, like so:
 
 ```sh
-http get --content-type application/json --headers { "x-auth-token": "{mirrord ui token}" } "http://127.0.0.1:59281/api/chaos/rules/{session id}"
+curl --request GET \
+  --header 'x-auth-token: {mirrord ui token}' \
+  'http://127.0.0.1:59281/api/chaos/rules/{session id}'
 ```
 
 Change the `x-auth-token` to the `API token` from your mirrord ui, and the session ID to the ID of your session. Sending this request will show all the chaos rules that are active for this session,
 and the chaos rule ID you want in hand, now we can modify it with an HTTP PUT request:
 
 ```sh
-http put --content-type application/json --headers { "x-auth-token": "60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349" } "http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc/6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924" {
-  name: "latency for database interactions more often"
-  priority: 10
-  effect: {
-    latency: {
-      read_ms: 750
+curl --request PUT \
+  --header 'Content-Type: application/json' \
+  --header 'x-auth-token: 60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349' \
+  --data '{
+    "name": "latency for database interactions more often",
+    "priority": 10,
+    "effect": {
+      "latency": {
+        "read_ms": 750
+      }
+    },
+    "selector": {
+      "upstream": "sonic.database.svc.cluster.local",
+      "percentage": 75
     }
-  }
-  selector: {
-    upstream: "sonic.database.svc.cluster.local"
-    percentage: 75
-  }
-}
+  }' \
+  'http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc/6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924'
 ```
 
 Here we changed both the `name` of the chaos rule and its `percentage` (roughly how often this chaos rule will trigger its effect on a matched selector). We also added the rule ID at the end of
@@ -127,7 +137,9 @@ the url.
 To delete a chaos rule, you just need to send an HTTP DELETE request with the ID of the rule you want:
 
 ```sh
-http delete --content-type application/json --headers { "x-auth-token": "60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349" } "http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc/6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924"
+curl --request DELETE \
+  --header 'x-auth-token: 60733e94f1799442e2f5af9048fac1a0efd6051715a2131992784f9c11876349' \
+  'http://127.0.0.1:59281/api/chaos/rules/c425f391-e9cc-4199-8de9-7bdbb3e7dfcc/6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924'
 ```
 
 The chaos rule (in this example `6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924`) will be deleted, and will stop affecting the session immediately.
