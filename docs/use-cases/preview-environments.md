@@ -226,7 +226,7 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
 ### Idle Mode
 
 Preview Environments can scale to **zero pods while they receive no traffic**, and boot back up
-automatically when traffic arrives — without dropping that traffic. This makes long-lived
+automatically when traffic arrives - without dropping that traffic. This makes long-lived
 previews (for example, one per open PR) essentially free until someone actually uses them.
 
 Enable it in the mirrord configuration:
@@ -237,7 +237,7 @@ Enable it in the mirrord configuration:
     "preview": {
       "idle": {
         "start_idle": true,
-        "timeout_secs": 300,
+        "sleep_after_secs": 300,
         "wake_timeout_secs": 90
       }
     }
@@ -245,12 +245,12 @@ Enable it in the mirrord configuration:
 }
 ```
 
-* `start_idle` — create the Preview Environment with zero pods. The first matching request or
+* `start_idle` - create the Preview Environment with zero pods. The first matching request or
   queue message boots them. `mirrord preview start` returns success as soon as the environment
   is ready to receive traffic, without waiting for a pod to run.
-* `timeout_secs` — scale the preview pods to zero after this many seconds without traffic
+* `sleep_after_secs` - scale the preview pods to zero after this many seconds without traffic
   (minimum 30). When unset, the environment never idles automatically.
-* `wake_timeout_secs` — how long an incoming request is held while the pods boot, before it is
+* `wake_timeout_secs` - how long an incoming request is held while the pods boot, before it is
   failed instead (default 90).
 
 #### How waking works
@@ -258,16 +258,17 @@ Enable it in the mirrord configuration:
 An idle Preview Environment keeps listening: the traffic interception on the target and any
 queue splits stay active while the preview pods are gone. When a request carrying the
 environment's filter arrives, it is **held** while the pods boot and answered by the preview
-once ready — the caller just sees a slower first response. Queue messages don't need holding at
+once ready - the caller just sees a slower first response. Queue messages don't need holding at
 all: they wait in the environment's split queue/topic until the preview consumes them, so
 nothing is lost either way.
 
 While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
-and the session's TTL keeps counting. Idle mode requires a wake source — incoming traffic
-enabled or queues split — since otherwise nothing could ever wake the environment.
+and the session's TTL keeps counting. Idle mode requires a wake source - incoming traffic
+enabled or queues split - since otherwise nothing could ever wake the environment.
 
 Cluster administrators can cap how much traffic a waking environment may hold with the
-`operator.preview.idleHoldBufferMessages` Helm chart value (default 512 protocol messages).
+`operator.preview.idleHoldBufferMessages` and `operator.preview.idleHoldBufferBytes` Helm
+chart values (defaults: 512 protocol messages, 8 MiB of payload).
 
 ***
 
