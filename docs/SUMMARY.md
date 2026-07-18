@@ -71,6 +71,7 @@
   * [Queue Splitting Status](sharing-the-cluster/queue-splitting/status.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [MySQL](sharing-the-cluster/db-branching/mysql.md)
+  * [MariaDB](sharing-the-cluster/db-branching/mariadb.md)
   * [PostgreSQL](sharing-the-cluster/db-branching/postgresql.md)
   * [MSSQL](sharing-the-cluster/db-branching/mssql.md)
   * [MongoDB](sharing-the-cluster/db-branching/mongodb.md)
