@@ -44,6 +44,7 @@ Copy modes, version requirements, and engine-specific behavior differ per databa
 | [Redis](db-branching/redis.md) | `"redis"` | Remote or local |
 | [DynamoDB](db-branching/dynamodb.md) | `"dynamodb"` | Remote |
 | [ClickHouse](db-branching/clickhouse.md) | `"clickhouse"` | Remote |
+| [CockroachDB](db-branching/cockroachdb.md) | `"cockroachdb"` | Remote |
 | [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote |
 | [Generic](db-branching/generic.md) (any other service, using your own image) | `"generic"` | Remote |
 
@@ -97,7 +98,7 @@ Developers define branches in their `mirrord.json`:
 | `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. Unrecoverable pod failures (for example a bad image reference stuck in `ImagePullBackOff`) fail the branch immediately with the underlying error instead of waiting for this timeout. |
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
-| `migrations` | (MySQL, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+| `migrations` | (MySQL, PostgreSQL, MSSQL & CockroachDB only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
 
 ## Running With DB Branches
 

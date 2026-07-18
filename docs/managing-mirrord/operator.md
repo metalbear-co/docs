@@ -166,6 +166,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
 | DynamoDB   | `amazon/dynamodb-local:{version}`          | `operator.dynamodbBranchConfig` - `dbPod.image` |
 | ClickHouse | `docker.io/clickhouse/clickhouse-server:{version}` | `operator.clickhouseBranchConfig` - `dbPod.image` |
+| CockroachDB | `docker.io/cockroachdb/cockroach:{version}` | `operator.cockroachdbBranchConfig` - `dbPod.image` |
 | Spanner    | `gcr.io/cloud-spanner-emulator/emulator:{version}` | `operator.spannerBranchConfig` - `dbPod.image` |
 
 [Generic branches](../sharing-the-cluster/db-branching/generic.md) have no default image - the user supplies the full image reference per branch. Admins can restrict which images are allowed with the `allowedImages` glob list under `operator.genericBranchConfig` - `dbPod.allowedImages` (when absent, all images are allowed), and `imagePullSecrets` in the same config covers private registries.
