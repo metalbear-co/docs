@@ -89,7 +89,8 @@ Developers define branches in their `mirrord.json`:
 | `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse) |
 | `location` | Supported values are `remote` and `local`. The default is `remote`, which provisions a branch in the cluster. `local` spawns the branch on your own machine, and is only available for engines whose [Choose Your Database](#choose-your-database) entry lists a local branch location (see [Local Redis](db-branching/redis.md#local-redis)). |
 | `type` | The database engine to branch. See the [Choose Your Database](#choose-your-database) table for supported values. |
-| `version` | Database engine version. |
+| `version` | Database engine version, used as the tag on the operator's default image (or the registry an admin configured for this engine). Mutually exclusive with `image`. |
+| `image` | Full image reference for the branch container, including the tag (for example `registry.example.com/postgresql:15-partman`). Overrides the operator's default image and any admin-configured registry entirely. Mutually exclusive with `version`, since the tag is part of the reference. Cluster admins can restrict which images are accepted - see [Restricting Branch Images](#restricting-branch-images). (For `generic` branches the image is required and lives in the same field - see the [Generic](db-branching/generic.md) page.) |
 | `name` | Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname. If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case. For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`. |
 | `ttl_secs` / `ttl_mins` | Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes. |
 | `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
@@ -99,6 +100,45 @@ Developers define branches in their `mirrord.json`:
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 | `migrations` | (MySQL, MariaDB, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+
+### Custom Branch Image
+
+By default, mirrord runs each branch on the operator's built-in image for that engine (optionally pointed at an admin-configured registry). Setting `image` on a branch overrides that with a full image reference you supply, including the tag:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "image": "registry.example.com/postgresql:15-partman",
+        "connection": {
+          "url": "DATABASE_URL"
+        }
+      }
+    ]
+  }
+}
+```
+
+This is useful when your service depends on a database image that differs from the stock one - a Postgres build with extra extensions, an internal registry mirror, or a specific patched tag. `image` and `version` are mutually exclusive: the tag is already part of the image reference.
+
+The same image is used for the branch's main container and for the init container that seeds it, so it must be able to run the engine and its client tools (for example `pg_dump`/`psql` for PostgreSQL).
+
+## Restricting Branch Images
+
+Because `image` lets developers run an arbitrary container as a branch pod, cluster admins can restrict which images are accepted, per database engine, with the `allowedImages` list in the operator's Helm values. Each entry is a glob pattern where `*` matches any substring:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      allowedImages:
+        - "registry.example.com/postgresql:*"
+        - "docker.io/library/postgres:*"
+```
+
+A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
 
 ## Running With DB Branches
 
