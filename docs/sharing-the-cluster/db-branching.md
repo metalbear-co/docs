@@ -121,13 +121,13 @@ By default, mirrord runs each branch on the operator's built-in image for that e
 }
 ```
 
-This is useful when your service depends on a database image that differs from the stock one - a Postgres build with extra extensions, an internal registry mirror, or a specific patched tag. `image` and `version` are mutually exclusive: the tag is already part of the image reference.
+This is useful when your service depends on a database image that differs from the stock one - e.g. a Postgres build with extra extensions. `image` and `version` are mutually exclusive: the tag is already part of the image reference.
 
 The same image is used for the branch's main container and for the init container that seeds it, so it must be able to run the engine and its client tools (for example `pg_dump`/`psql` for PostgreSQL).
 
 ## Restricting Branch Images
 
-Because `image` lets developers run an arbitrary container as a branch pod, cluster admins can restrict which images are accepted, per database engine, with the `allowedImages` list in the operator's Helm values. Each entry is a glob pattern where `*` matches any substring:
+Cluster admins can restrict which images are accepted, per database engine, with the `allowedImages` list in the operator's Helm values. Each entry is a glob pattern where `*` matches any substring:
 
 ```yaml
 operator:
