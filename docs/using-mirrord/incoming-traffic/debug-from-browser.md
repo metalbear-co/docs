@@ -26,6 +26,17 @@ There are two ways to use it:
 
 The extension opens as a **side panel** by default (click the mirrord icon in the Chrome toolbar). On browsers without side-panel support it falls back to a popup. It has two tabs, **Sessions** and **Override**, a theme toggle, and a settings gear.
 
+### How the extension and `mirrord ui` work together
+
+On a cluster running the operator, the extension does not talk to your cluster directly. It works through [`mirrord ui`](../local-ui.md), the local dashboard:
+
+1. `mirrord ui` runs a small server on your machine that, using your kubeconfig, knows every operator session in the cluster.
+2. Opening the `mirrord ui` page hands the extension that server's address and a one-time token (the handshake shown in the quick start below). That is why you run `mirrord ui` before using the Sessions tab.
+3. The extension's **Sessions** tab reads its live session list from that server, so it shows exactly the operator sessions you see in the [Local UI](../local-ui.md).
+4. When you **Join** a session, the extension takes that session's HTTP filter, derives a header that matches it, and injects that header into your browser's requests. Traffic that reaches the cluster now matches the filter and is routed to that session's local process.
+
+`mirrord ui` stays the source of truth. The extension polls it for the session list and the details it needs to join. If you close `mirrord ui`, an active join keeps injecting, but the extension cannot refresh the list until you run it again.
+
 ### Prerequisites
 
 1. Google Chrome.
@@ -66,7 +77,7 @@ The dashboard page does an automatic handshake with the extension (over Chrome's
 
 Close the tab and open the extension side panel from the Chrome toolbar. The **Sessions** tab now lists every operator session your kubeconfig can see, grouped by session key. Each card shows the target, owner, namespace, and age, with a **Join** button:
 
-![Sessions tab, joined](../../.gitbook/assets/sessions-tab-joined.png)
+![The Sessions tab listing operator sessions](../../.gitbook/assets/sessions-tab-list.png)
 
 Pick a session and click **Join**. While you're joined, the extension injects the session's HTTP-filter-matching header into every request your browser makes.
 
@@ -83,6 +94,8 @@ The Sessions tab is the operator-driven view. Beyond the session cards, it gives
 When you join a session, a live banner appears at the top of the tab.
 
 #### The live session banner
+
+![The live session banner while joined to a session](../../.gitbook/assets/session-live-banner.png)
 
 The banner reflects the joined session's liveness with three states:
 
