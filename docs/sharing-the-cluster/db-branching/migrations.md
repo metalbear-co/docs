@@ -14,7 +14,7 @@ The `migrations` field closes that gap: mirrord runs your schema migrations agai
 This page covers the `migrations` field of a DB branch config for MySQL, MariaDB, PostgreSQL, and MSSQL. For general concepts and the full list of config fields, see the [DB Branching overview](../db-branching.md).
 
 {% hint style="info" %}
-Schema migrations require mirrord operator `3.182.0`, mirrord CLI `3.230.0`, and operator Helm chart `3.182.0`.
+Schema migrations require mirrord operator `3.182.0`, mirrord CLI `3.230.0`, and operator Helm chart `3.182.0`. For MariaDB branches, they require operator `3.186.0`, mirrord CLI `3.235.0`, and operator Helm chart `3.186.0` - the versions that ship MariaDB branching.
 {% endhint %}
 
 ```json

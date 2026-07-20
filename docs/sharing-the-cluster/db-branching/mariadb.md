@@ -10,7 +10,7 @@ tags:
 This page covers DB branching for MariaDB. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
 {% hint style="info" %}
-MariaDB branching requires an operator, mirrord CLI, and operator Helm chart version that ship MariaDB branching, with the `operator.mariadbBranching` value set to `true`.
+MariaDB branching requires operator `3.186.0`, mirrord CLI `3.235.0`, and operator Helm chart `3.186.0` with the `operator.mariadbBranching` value set to `true`.
 {% endhint %}
 
 MariaDB is a first-class engine, not a MySQL alias. Branches use MariaDB-native tooling (`mariadb-dump` / `mariadb-admin`) and a MariaDB branch image, so MariaDB-only objects such as sequences and system-versioned (temporal) tables are copied correctly - which a MySQL dump and image mishandle.
@@ -110,4 +110,4 @@ In this example, `mariadb-dump` runs with `--single-transaction`, `--no-tablespa
 
 ## IAM Authentication
 
-MariaDB branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.
+MariaDB branches on **AWS RDS** can authenticate to the source database with IAM instead of a password. See [IAM Authentication](iam-authentication.md) for setup and examples. GCP Cloud SQL is not applicable here, as it does not offer a MariaDB engine.
