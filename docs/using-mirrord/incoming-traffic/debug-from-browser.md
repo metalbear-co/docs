@@ -130,8 +130,6 @@ The Sessions tab guides you to a working state depending on what it detects:
 
 If you don't want to use `mirrord ui` (or the cluster doesn't run the operator), the **Override** tab lets you configure header injection directly.
 
-![Override tab, active](../../.gitbook/assets/manual-tab-active.png)
-
 * **Header Name** is the HTTP header to set (for example `x-mirrord-user`).
 * **Header Value** is the value to set on the header for every matching outgoing request.
 * **URL Scope** restricts injection to URLs matching a single pattern. Leave it empty to inject on every request. See [Limiting injection scope by URL](debug-from-browser.md#limiting-injection-scope-by-url).
