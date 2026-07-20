@@ -245,7 +245,7 @@ Enable it in the mirrord configuration:
 ```
 
 * `start_idle` - create the Preview Environment with zero pods. The first matching request or
-  queue message boots them. `mirrord preview start` returns success as soon as the environment
+  queue message starts the preview pods. `mirrord preview start` returns success as soon as the environment
   is ready to receive traffic, without waiting for a pod to run.
 * `sleep_after_secs` - scale the preview pods to zero after this many seconds without traffic
   (minimum 30). When unset, the environment never idles automatically.
