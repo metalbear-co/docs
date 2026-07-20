@@ -98,6 +98,10 @@ To open straight on the Config Wizard tab, run [`mirrord wizard`](../getting-sta
 
 Everything below describes what you see once the dashboard is open on the Session Monitor tab.
 
+![The mirrord ui Session Monitor](../.gitbook/assets/local-ui-overview.png)
+
+_The sessions and event data shown throughout this page come from a demo cluster._
+
 ### The top bar
 
 Along the top of the window you'll find, from left to right:
@@ -114,6 +118,8 @@ The Context and Namespace pickers and the account chip only appear on the Sessio
 ### The session list
 
 The left sidebar lists sessions in two sections. It has a search box at the top (press `Cmd/Ctrl + F` to focus it) and can be resized or collapsed.
+
+![The session list, grouped into Yours and Team](../.gitbook/assets/local-ui-sessions-list.png)
 
 - **Yours** holds your own sessions: your local `mirrord exec` runs plus any operator sessions you own. Local sessions are grouped by session key. Each row shows a status dot, the target, uptime, and the context / namespace it belongs to, with a trash icon on hover to stop that session. When you have local sessions, a **Stop all sessions** button at the top of the section ends them all after a confirmation.
 - **Team** holds every operator session in the selected context and namespace, grouped by session key. Each row shows the owner, the target (or "targetless"), the namespace, and when it was created. Preview environments are flagged with a badge.
@@ -138,11 +144,15 @@ The Events widget is a live log of what your local session is doing, fed over a 
 - **Outgoing** connections (host:port).
 - **Info** events such as a process connecting or disconnecting.
 
+![The live event stream](../.gitbook/assets/local-ui-event-stream.png)
+
 Use the filter chips (**All Events**, **Incoming**, **DNS**, **File Ops**, **Outgoing**) to narrow the stream, or the search box to match on the summary text. The count on the right shows how many events are in view, and a trash button clears the log. Rows that carry structured data are clickable and open a dialog with the raw JSON, so you can inspect a single request or file operation in full. Auto-scroll pauses while your cursor is over the log.
 
 ### Injecting chaos
 
 The **Chaos** tab in a local session's side pane lets you inject faults (latency, resets, timeouts, refused connections) into that session's outgoing TCP traffic. Rules are scoped to your session only and are removed when the session ends. You can also start a rule directly from any outgoing event in the stream. See [Chaos Testing](../use-cases/chaos-testing.md) for the full guide.
+
+![Creating a chaos rule](../.gitbook/assets/local-ui-chaos-rule.png)
 
 ### Connecting the operator
 
