@@ -254,8 +254,8 @@ Enable it in the mirrord configuration:
 #### Idle Behavior
 
 An idle Preview Environment keeps listening: the traffic interception on the target and any
-queue splits stay active while the preview pods are gone. When a request carrying the
-environment's filter arrives, it is **held** while the pods boot and answered by the preview
+queue splits stay active even though the preview's pods are gone. When a request carrying the
+environment's filter arrives, it is **held** while the pods start and answered by the preview
 once ready - the caller just sees a slower first response. Queue messages don't need holding at
 all: they wait in the environment's split queue/topic until the preview consumes them, so
 nothing is lost either way.
