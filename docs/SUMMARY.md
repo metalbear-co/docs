@@ -11,8 +11,8 @@
   * [CLI](installing-mirrord/cli.md)
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
-  * [WSL](installing-mirrord/wsl.md)
   * [mirrord Operator](managing-mirrord/operator.md)
+  * [WSL (deprecated)](installing-mirrord/wsl.md)
 
 ## Use Cases
 
