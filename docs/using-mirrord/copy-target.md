@@ -28,6 +28,12 @@ This can be useful when you want to run your application with access to the reso
 
 The new, copied pod will not have any [liveness, readiness or startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) even if the original pod spec does define them. This means you can [steal](https://metalbear.com/mirrord/docs/config#feature.network.incoming.mode) traffic without having to also answer those probes. This might come in handy when debugging with breakpoints with stolen traffic. Without `copy_target`, if you linger too long on a breakpoint, the application might miss some probes, which could cause a target pod to restart.
 
+## Incoming Traffic
+
+When you [steal incoming traffic](https://metalbear.com/mirrord/docs/config#feature.network.incoming.mode) while using `copy_target`, mirrord steals from the **original workload's pods**, not from the copy. This means an [HTTP filter](https://metalbear.com/mirrord/docs/config#feature.network.incoming.http_filter) covers the whole workload, and requests that don't match the filter keep being served by the original pods. The copy pod itself does not receive any traffic.
+
+When [`scale_down`](https://metalbear.com/mirrord/docs/config#feature.copy_target.scale_down) is set (see below), there are no original pods left, so the copy becomes the only backend and serves the stolen traffic directly. In that case an HTTP filter is **ignored**: with no original pods to serve the non-matching requests, mirrord steals all incoming traffic to your local process.
+
 ## Replacing a Whole Workload Using `scale_down`
 
 When the [`scale_down`](https://metalbear.com/mirrord/docs/config#feature.copy_target.scale_down) option is set, mirrord will [scale](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment) the target workload down to zero, effectively replacing all existing pods of that workload by the one new copied pod, that is then used as the target for the mirrord run. This feature is supported with Deployment, Argo Rollout, StatefulSet, and ReplicaSet (owned by either a Deployment or an Argo Rollout) targets.
