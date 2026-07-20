@@ -225,8 +225,7 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
 
 ### Auto Scaling Idle Mode
 
-Preview Environments can scale to **zero pods while they receive no traffic**, and boot back up
-automatically when traffic arrives - without dropping that traffic. This makes long-lived
+Preview Environments can scale down to **zero pods while they receive no traffic**, then scale back up automatically when matching traffic arrives - without dropping that traffic. This makes long-lived
 previews (for example, one per open PR) essentially free until someone actually uses them.
 
 Enable it in the mirrord configuration:
