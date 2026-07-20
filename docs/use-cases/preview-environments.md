@@ -251,7 +251,7 @@ Enable it in the mirrord configuration:
   (minimum 30). When unset, the environment never idles automatically.
 * `wake_timeout_secs` - How long an incoming request is held while the preview pods start before the request fails (default: 90 seconds).
 
-#### How waking works
+#### Idle Behavior
 
 An idle Preview Environment keeps listening: the traffic interception on the target and any
 queue splits stay active while the preview pods are gone. When a request carrying the
