@@ -249,8 +249,7 @@ Enable it in the mirrord configuration:
   is ready to receive traffic, without waiting for a pod to run.
 * `sleep_after_secs` - scale the preview pods to zero after this many seconds without traffic
   (minimum 30). When unset, the environment never idles automatically.
-* `wake_timeout_secs` - how long an incoming request is held while the pods boot, before it is
-  failed instead (default 90).
+* `wake_timeout_secs` - How long an incoming request is held while the preview pods start before the request fails (default: 90 seconds).
 
 #### How waking works
 
