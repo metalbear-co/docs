@@ -52,6 +52,7 @@ Defaults
 | --- | --- | --- |
 | PostgreSQL | `5432` | `postgres` |
 | MySQL | `3306` | `root` |
+| MariaDB | `3306` | `root` |
 | MSSQL | `1433` | `sa` |
 | MongoDB | `27017` | `root` |
 | Redis | `6379` | `default` |

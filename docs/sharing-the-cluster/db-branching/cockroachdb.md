@@ -10,7 +10,7 @@ tags:
 This page covers DB branching for CockroachDB. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
 {% hint style="info" %}
-CockroachDB branching requires a recent operator, mirrord CLI, and operator Helm chart, with the `operator.cockroachdbBranching` value set to `true`.
+CockroachDB branching requires operator `3.186.0`, mirrord CLI `3.235.0`, and operator Helm chart `3.186.0` with the `operator.cockroachdbBranching` value set to `true`.
 {% endhint %}
 
 CockroachDB speaks the PostgreSQL wire protocol, so your application keeps its existing PostgreSQL driver and connection URL (the branch URL uses the `postgresql` scheme). The branch itself is a single-node `cockroachdb/cockroach` started with `start-single-node --insecure`, and the copy uses CockroachDB-native tooling (`cockroach sql`, `SHOW CREATE ALL TABLES`, `COPY ... TO/FROM STDOUT/STDIN WITH CSV`) rather than the PostgreSQL dump tools.

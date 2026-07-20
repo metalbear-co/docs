@@ -1,9 +1,13 @@
 ---
-title: WSL
+title: WSL (deprecated)
 description: Installing and using mirrord on Windows with WSL
 ---
 
-# WSL
+# WSL (deprecated)
+
+{% hint style="info" %}
+mirrord now runs natively on Windows — no WSL needed. See the [CLI](cli.md), [VS Code](vscode.md), and [JetBrains IDEs](intellij.md) installation guides. This page is kept for users who still prefer to run mirrord through WSL, or for the few JetBrains run configurations that don't support native Windows yet.
+{% endhint %}
 
 Another way to run mirrord on Windows is using the _Linux Subsystem for Windows_ (_WSL_). You’ll also need a Kubernetes cluster. If you don’t have one, you can set one up locally using [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/). mirrord works with any Kubernetes cluster, be it remote or local.
 

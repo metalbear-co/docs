@@ -16,6 +16,7 @@ Support levels vary by platform. The table below shows the current status for ea
   | **[DB Branching](../sharing-the-cluster/db-branching.md)**    | **[PostgreSQL](../sharing-the-cluster/db-branching/postgresql.md)**        | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MongoDB](../sharing-the-cluster/db-branching/mongodb.md)**           | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MySQL](../sharing-the-cluster/db-branching/mysql.md)**             | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[MariaDB](../sharing-the-cluster/db-branching/mariadb.md)**           | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[MSSQL](../sharing-the-cluster/db-branching/mssql.md)**             | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Redis](../sharing-the-cluster/db-branching/redis.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[DynamoDB](../sharing-the-cluster/db-branching/dynamodb.md)**          | `Alpha`       | `Alpha`         | Planned    |
