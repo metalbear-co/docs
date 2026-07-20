@@ -223,7 +223,7 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
       --cert=wildcard.crt --key=wildcard.key -n mirrord
     ```
 
-### Idle Mode
+### Auto Scaling Idle Mode
 
 Preview Environments can scale to **zero pods while they receive no traffic**, and boot back up
 automatically when traffic arrives - without dropping that traffic. This makes long-lived
