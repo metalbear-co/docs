@@ -264,9 +264,15 @@ While idle, `mirrord preview status` shows the environment as `idle (waiting for
 and the session's TTL keeps counting. Idle mode requires a wake source - incoming traffic
 enabled or queues split - since otherwise nothing could ever wake the environment.
 
-Cluster administrators can cap how much traffic a waking environment may hold with the
-`operator.preview.idleHoldBufferMessages` and `operator.preview.idleHoldBufferBytes` Helm
-chart values (defaults: 512 protocol messages, 8 MiB of payload).
+Cluster administrators can cap how much traffic a waking environment may hold with these Helm
+chart values (defaults: 512 protocol messages, 8 MiB of payload):
+
+```yaml
+operator:
+  preview:
+    idleHoldBufferMessages: 512
+    idleHoldBufferBytes: 8388608
+```
 
 ***
 
