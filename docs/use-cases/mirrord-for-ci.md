@@ -11,6 +11,7 @@ description: How to use mirrord in a CI environment with `mirrord ci` commands.
 tags:
   - beta
   - oss
+  - team
   - enterprise
 ---
 
@@ -37,13 +38,13 @@ The CI runner must be able to access the Kubernetes cluster where the service yo
 
 It's recommended that you create a Kubernetes [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for the CI runner.
 
-#### Using mirrord ci with the mirrord Operator
+#### Using mirrord for CI on the Enterprise tier
 
 {% hint style="info" %}
 This section only applies to Enterprise plan users. If you're using the open-source version of mirrord, skip ahead to [Starting a mirrord CI session](#starting-a-mirrord-ci-session).
 {% endhint %}
 
-When the mirrord Operator is installed in the cluster, running mirrord ci requires a CI API key. Generating the key requires an Enterprise plan.
+When the mirrord Operator is installed in the cluster, `mirrord ci` commands require a CI API key. Generating the key requires an Enterprise plan.
 
 You can get the key by running the command:
 
@@ -53,7 +54,7 @@ mirrord ci api-key
 
 Copy it and save it as the **secret** environment variable `MIRRORD_CI_API_KEY` in your CI.
 
-Sessions started with a CI API key don't count towards your seats, so CI runs won't consume them.
+Without the key, every CI runner would register as a new user and take up a seat. Sessions started with a CI API key don't count towards your seats, so CI runs won't consume them.
 
 #### Starting a mirrord CI session
 
