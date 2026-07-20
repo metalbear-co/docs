@@ -161,6 +161,7 @@ DB branch pods pull a database image matching the engine. These are the defaults
 | ---------- | ------------------------------------------ | ----------------------------------------------- |
 | PostgreSQL | `docker.io/library/postgres:{version}`     | `operator.pgBranchConfig` - `dbPod.image`       |
 | MySQL      | `docker.io/library/mysql:{version}`        | `operator.mysqlBranchConfig` - `dbPod.image`    |
+| MariaDB    | `docker.io/library/mariadb:{version}`      | `operator.mariadbBranchConfig` - `dbPod.image`  |
 | MongoDB    | `docker.io/library/mongo:{version}`        | `operator.mongodbBranchConfig` - `dbPod.image`  |
 | MSSQL      | `mcr.microsoft.com/mssql/server:{version}` | `operator.mssqlBranchConfig` - `dbPod.image`    |
 | Redis      | `docker.io/library/redis:{version}`        | `operator.redisBranchConfig` - `dbPod.image`    |
