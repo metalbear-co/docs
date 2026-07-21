@@ -15,7 +15,11 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
-## Choose your queue service
+{% hint style="info" %}
+Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
+{% endhint %}
+
+### Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
