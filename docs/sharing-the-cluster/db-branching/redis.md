@@ -103,8 +103,8 @@ The two settings play different roles:
 
 Requirements:
 
-* Keep the TLS listener on the default port (`--tls-port 6379`) and disable the plaintext listener (`--port 0`). The branch's Service and the connection URL handed to your app are always built for port `6379`.
-* The certificate paths passed in `dbServerArgs` must exist inside the image - the operator does not mount certificate volumes into branch pods.
+* Keep the TLS listener on the default port (`--tls-port 6379`) and disable the plaintext listener (`--port 0`). The operator always points your app and its own data-copy step at port `6379` on the branch pod.
+* The certificate paths passed in `dbServerArgs` must exist inside the image - build them into your custom Redis image, since the operator does not mount certificate volumes into branch pods.
 * The config applies when a branch is **created**; branches that already exist keep the mode they started with.
 
 {% hint style="info" %}
