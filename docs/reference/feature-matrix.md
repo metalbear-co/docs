@@ -21,6 +21,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[Redis](../sharing-the-cluster/db-branching/redis.md)** (both local and remote) | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[DynamoDB](../sharing-the-cluster/db-branching/dynamodb.md)**          | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[ClickHouse](../sharing-the-cluster/db-branching/clickhouse.md)**        | `Alpha`       | `Alpha`         | Planned    |
+  |                 | **[CockroachDB](../sharing-the-cluster/db-branching/cockroachdb.md)**      | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Google Spanner](../sharing-the-cluster/db-branching/spanner.md)**      | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Generic](../sharing-the-cluster/db-branching/generic.md)** (user-supplied image) | `Alpha`       | `Alpha`         | Planned    |
   | **[Queue Splitting](../sharing-the-cluster/queue-splitting.md)** | **[SQS](../sharing-the-cluster/queue-splitting/sqs.md)**               | `Alpha`       | `Alpha`         | Planned    |

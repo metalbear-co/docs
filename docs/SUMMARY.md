@@ -78,6 +78,7 @@
   * [Redis](sharing-the-cluster/db-branching/redis.md)
   * [DynamoDB](sharing-the-cluster/db-branching/dynamodb.md)
   * [ClickHouse](sharing-the-cluster/db-branching/clickhouse.md)
+  * [CockroachDB](sharing-the-cluster/db-branching/cockroachdb.md)
   * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
   * [Generic](sharing-the-cluster/db-branching/generic.md)
   * [More](sharing-the-cluster/db-branching/more.md)
