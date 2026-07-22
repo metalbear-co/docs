@@ -99,7 +99,7 @@ The features under the "OpenTelemetry" heading require at least operator chart v
 OTEL logs and traces can be sent from the operator to a configured OTLP collector endpoint using an HTTP exporter.
 
 {% hint style="info" %}
-As of version `3.186.0`, both `operator.otelLogExportUrl` and `operator.otelTraceExportUrl` may reference values set in `operator.extraEnv`, as they are added to the manifest below `extraEnv`.
+As of version `3.186.0`, both `operator.otelLogExportUrl` and `operator.otelTraceExportUrl` may reference environment variables set in operator.extraEnv using $(VAR_NAME) syntax.
 {% endhint %}
 
 #### Exporting Logs
@@ -116,7 +116,8 @@ To export traces from the operator to an endpoint, set `operator.otelTraceExport
 
 #### Using the downward API
 
-As of version `3.186.0`, values set in `operator.extraEnv` can be map values as an alternative to key value pairs, enabling variables to use the [Kubernetes downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/). This means you can reference downward API values in `operator.otel*ExportUrl` variables, for example:
+As of version `3.186.0`, entries in `operator.extraEnv` can take a full environment variable spec (`valueFrom`) instead of a plain string value. Any valid environment variable source works, not just the downward API: `valueFrom` with `secretKeyRef` or `configMapKeyRef` renders the same way.
+This means you can reference [Kubernetes downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/) values in `operator.otel*ExportUrl` variables, for example:
 
 ```yaml
 # values.yaml
