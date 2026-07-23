@@ -19,11 +19,7 @@ tags:
 
 mirrord can be used to greatly speed up CI runs by enabling testing against a shared staging environment without interrupting it. With mirrord for CI, you're able to keep your staging environment working, while also running your batch of end-to-end and other automated tests. The local app runs in the context of the targeted app that's deployed in your staging cluster, so it gets access to traffic, files, and more, as if it's running in the cluster. This means there's no need to spin up a whole test environment for a CI run, then spin it down when it's done.
 
-![How mirrord for CI works](../.gitbook/assets/mirrord-ci-diagram.png)
-
-{% hint style="info" %}
-mirrord ci works with the open-source version of mirrord, no plan required. Running it with the mirrord Operator requires the Enterprise plan.
-{% endhint %}
+![How mirrord ci works](../.gitbook/assets/mirrord-ci-diagram.png)
 
 While running regular `mirrord exec` can be made to work for this purpose, it requires some finagling to get right, such as wrapping `mirrord exec` in some other command that would start it as a background process. The `mirrord ci start` command is more appropriate for this use case, since it starts your app and mirrord as background processes, allowing you to then run tests while your app is running in the background and connected to the cluster.
 
@@ -45,6 +41,7 @@ This section only applies to Enterprise plan users. If you're using the open-sou
 {% endhint %}
 
 When the mirrord Operator is installed in the cluster, `mirrord ci` commands require a CI API key. Generating the key requires an Enterprise plan.
+Without the key, every CI runner would register as a new user and take up a seat. Sessions started with a CI API key don't count towards your seats, so CI runs won't consume them.
 
 You can get the key by running the command:
 
@@ -53,8 +50,6 @@ mirrord ci api-key
 ```
 
 Copy it and save it as the **secret** environment variable `MIRRORD_CI_API_KEY` in your CI.
-
-Without the key, every CI runner would register as a new user and take up a seat. Sessions started with a CI API key don't count towards your seats, so CI runs won't consume them.
 
 #### Starting a mirrord CI session
 
