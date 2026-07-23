@@ -39,7 +39,7 @@ The `flavor` field selects what the Job runs. Pick by where your migrations live
 | --- | --- |
 | SQL files in the repository you're working in | `flavor: flyway` with `path` |
 | SQL files baked into an image your CI publishes | `flavor: flyway` with `image` + `locations` |
-| Part of your app's own tooling (Rails `rake db:migrate`, a setup script, any CLI) | `flavor: container` |
+| Part of your app's own tooling (a migration script or framework CLI baked into the image) | `flavor: container` |
 
 Using `migrations` requires the branch's `name` field to be set.
 
@@ -98,7 +98,7 @@ With `locations`, nothing is uploaded: the SQL is already baked into a migration
 
 ## Container migrations
 
-Set `"flavor": "container"` to run your own image as the migration Job. This is the fit when migrations aren't standalone SQL files but part of your application's own tooling - for example a Rails app whose image runs `bundle exec rake db:migrate` through a setup script:
+Set `"flavor": "container"` to run your own image as the migration Job. This is the fit when migrations aren't standalone SQL files but part of your application's own tooling - for example an app image whose setup script runs the framework's migration command:
 
 ```json
 {
@@ -107,8 +107,8 @@ Set `"flavor": "container"` to run your own image as the migration Job. This is 
     "image": "registry.example.com/my-app:latest",
     "command": ["bin/migrate"],
     "env": {
-      "RAILS_ENV": "test",
-      "DATABASE_URL": "mysql2://$(MIRRORD_DB_USER):$(MIRRORD_DB_PASSWORD)@$(MIRRORD_DB_HOST):$(MIRRORD_DB_PORT)/$(MIRRORD_DB_NAME)"
+      "APP_ENV": "test",
+      "DATABASE_URL": "mysql://$(MIRRORD_DB_USER):$(MIRRORD_DB_PASSWORD)@$(MIRRORD_DB_HOST):$(MIRRORD_DB_PORT)/$(MIRRORD_DB_NAME)"
     }
   }
 }
@@ -170,7 +170,7 @@ A preview pipeline usually decides the image tag and the command when it prepare
     "image": "registry.example.com/my-app:build-1234",
     "command": ["bin/migrate"],
     "env": {
-      "DATABASE_URL": "mysql2://$(MIRRORD_DB_USER):$(MIRRORD_DB_PASSWORD)@$(MIRRORD_DB_HOST):$(MIRRORD_DB_PORT)/$(MIRRORD_DB_NAME)"
+      "DATABASE_URL": "mysql://$(MIRRORD_DB_USER):$(MIRRORD_DB_PASSWORD)@$(MIRRORD_DB_HOST):$(MIRRORD_DB_PORT)/$(MIRRORD_DB_NAME)"
     }
   }
 }
