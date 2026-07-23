@@ -133,11 +133,6 @@ The container must exit 0 when migrations succeed; any other exit code fails the
 "command": ["sh", "-c", "/app/bin/migrate && /app/bin/seed"]
 ```
 
-```json
-"command": ["sh", "-c", "if [ \"$SEED_DEMO_DATA\" = \"true\" ]; then /app/bin/migrate-and-seed; else /app/bin/migrate; fi"],
-"env": { "SEED_DEMO_DATA": "true" }
-```
-
 Chain multiple scripts with `&&` so the first failure stops the chain and fails the Job.
 
 ### Reaching the branch from your container
