@@ -1,7 +1,7 @@
 ---
 title: Debug from Browser
 date: 2024-07-07T08:39:44.000Z
-lastmod: 2026-04-28T00:00:00.000Z
+lastmod: 2026-07-20T00:00:00.000Z
 draft: false
 menu:
   docs:
@@ -21,8 +21,21 @@ The mirrord browser extension injects HTTP headers into your browser's outgoing 
 
 There are two ways to use it:
 
-* **With operator sessions.** Pick a teammate's running mirrord session (or one of your own) from the popup and click Join. The extension figures out which header to inject from that session's HTTP filter and starts injecting on every browser request. This is the recommended path on a cluster running the [mirrord operator](../../managing-mirrord/operator.md).
-* **Standalone (Manual).** Configure a header name, value, and optional URL scope yourself. No CLI session required.
+* **With operator sessions.** Pick a teammate's running mirrord session (or one of your own) from the **Sessions** tab and click Join. The extension works out which header to inject from that session's HTTP filter and starts injecting on every browser request. This is the recommended path on a cluster running the [mirrord operator](../../managing-mirrord/operator.md).
+* **Standalone (Override).** Configure a header name, value, and optional URL scope yourself on the **Override** tab. No CLI session required.
+
+The extension opens as a **side panel** by default (click the mirrord icon in the Chrome toolbar). On browsers without side-panel support it falls back to a popup. It has two tabs, **Sessions** and **Override**, a theme toggle, and a settings gear.
+
+### How the extension and `mirrord ui` work together
+
+On a cluster running the operator, the extension does not talk to your cluster directly. It works through [`mirrord ui`](../local-ui.md), the local dashboard:
+
+1. `mirrord ui` runs a small server on your machine that, using your kubeconfig, knows every operator session in the cluster.
+2. Opening the `mirrord ui` page hands the extension that server's address and a one-time token (the handshake shown in the quick start below). That is why you run `mirrord ui` before using the Sessions tab.
+3. The extension's **Sessions** tab reads its live session list from that server, so it shows exactly the operator sessions you see in the [Local UI](../local-ui.md).
+4. When you **Join** a session, the extension takes that session's HTTP filter, derives a header that matches it, and injects that header into your browser's requests. Traffic that reaches the cluster now matches the filter and is routed to that session's local process.
+
+`mirrord ui` stays the source of truth. The extension polls it for the session list and the details it needs to join. If you close `mirrord ui`, an active join keeps injecting, but the extension cannot refresh the list until you run it again.
 
 ### Prerequisites
 
@@ -36,13 +49,13 @@ For operator sessions, additionally:
 
 ### Quick start with `mirrord ui`
 
-Run the local UI daemon in a terminal:
+Run the local UI in a terminal:
 
 ```bash
 mirrord ui
 ```
 
-It binds to localhost, prints some details, and opens the UI in your default browser:
+It binds to localhost, prints some details, and opens the dashboard in your default browser:
 
 ```text
 * New mirrord session monitor started
@@ -50,7 +63,7 @@ It binds to localhost, prints some details, and opens the UI in your default bro
  -> ...
 
 * Web UI:
- -> http://127.0.0.1:59281?token=...
+ -> http://127.0.0.1:59281/auth?token=...
 * API token:
 -> x-auth-token: ...
 
@@ -58,40 +71,75 @@ It binds to localhost, prints some details, and opens the UI in your default bro
   -> log file: ...
 ```
 
-The Web UI page does an automatic handshake with the extension (over Chrome's `externally_connectable` mechanism) and hands it the daemon's address and a one-shot token. You should see this confirmation:
+The dashboard page does an automatic handshake with the extension (over Chrome's `externally_connectable` mechanism) and hands it the server's address and a one-shot token. You should see this confirmation:
 
 ![mirrord ui connected](../../.gitbook/assets/mirrord-ui-connected.png)
 
-Close the tab. Open the extension popup from the Chrome toolbar — the **Sessions** tab now lists every operator session your kubeconfig can see. Pick one and click **Join**:
+Close the tab and open the extension side panel from the Chrome toolbar. The **Sessions** tab now lists every operator session your kubeconfig can see, grouped by session key. Each card shows the target, owner, namespace, and age, with a **Join** button:
 
-![Sessions tab — joined](../../.gitbook/assets/sessions-tab-joined.png)
+![The Sessions tab listing operator sessions](../../.gitbook/assets/sessions-tab-list.png)
 
-While you're joined, the extension injects the session's HTTP-filter-matching header into every request your browser makes. The session live banner shows the joined session key; click **Leave** to stop.
+Pick a session and click **Join**. While you're joined, the extension injects the session's HTTP-filter-matching header into every request your browser makes.
 
 For more on `mirrord ui` itself, see [Local UI](../local-ui.md).
 
-### When the popup is empty
+### The Sessions tab
 
-If you haven't run `mirrord ui` yet, the Sessions tab shows a hint card telling you what to do:
+The Sessions tab is the operator-driven view. Beyond the session cards, it gives you:
 
-![Sessions tab — not configured](../../.gitbook/assets/sessions-tab-not-configured.png)
+* A **search box** (shown once there is at least one session) that matches across session key, namespace, owner, target kind and name, and container.
+* A **Context** filter and a **Namespace** filter, shown when there is more than one kube context or namespace to choose from. The Context filter tags your current kubeconfig context as "current"; the Namespace filter defaults to "All". Filtering is client-side, so it's instant.
+* Badges on each card: **PREVIEW** for a preview environment, and **Joined** for the session you're currently riding.
 
-This is also what you'll see if `mirrord ui` was running but you closed it. Re-running brings the operator session list back.
+When you join a session, a live banner appears at the top of the tab.
 
-### Standalone (Manual) mode
+#### The live session banner
 
-If you don't want to use `mirrord ui` (or the cluster doesn't run the operator), the **Manual** tab lets you configure header injection directly.
+![The live session banner while joined to a session](../../.gitbook/assets/session-live-banner.png)
 
-![Manual tab — active](../../.gitbook/assets/manual-tab-active.png)
+The banner reflects the joined session's liveness with three states:
 
-* **Header Name** — the HTTP header to set (e.g. `baggage`, `x-mirrord-user`).
-* **Header Value** — the value to set on the header for every matching outgoing request.
-* **URL Scope** — restrict injection to URLs matching this pattern. Empty means inject on every request. See [Limiting injection scope by URL](debug-from-browser.md#limiting-injection-scope-by-url).
-* **Active** toggle — pause injection without losing your configuration.
-* **Save** — apply changes immediately and update the active rule.
-* **Reset to Default** — revert to the configuration baked into the most recent CLI session, if any.
+| State | What it means | Action |
+| --- | --- | --- |
+| **Session live** | The session is running and the extension is injecting. | **Leave** |
+| **Waiting for session** | The session dropped but is within a 60-second grace window (for example while you restart a local `mirrord` run). Injection is held ready. | **Leave** |
+| **Session ended** | The grace window expired without the session coming back. | **Dismiss** |
 
-Saving on the Manual tab replaces whatever rule the extension is currently injecting, including a rule from a Sessions-tab join.
+Liveness is keyed on the session key, not a single run's ID, so stopping and restarting a local `mirrord` session rides through the "Waiting for session" state instead of ending the join.
+
+The banner also shows:
+
+* The joined **session key** and its targets.
+* A **URL scope** section where you can add and remove match-pattern chips to limit which sites the header is injected on (see [Limiting injection scope by URL](debug-from-browser.md#limiting-injection-scope-by-url)). Each chip has a remove button, and a **+ pattern** input adds more.
+* A **header observed** activity meter, showing how many requests carried the injected header in the last 60 seconds, so you can confirm injection is actually happening.
+* An **injecting** pill showing the exact `header: value` being applied, with a one-click copy.
+
+### When the extension isn't configured yet
+
+The Sessions tab guides you to a working state depending on what it detects:
+
+* **Not configured.** If you haven't run `mirrord ui` yet, the tab shows a hint card with the `mirrord ui` command to run.
+
+![Sessions tab, not configured](../../.gitbook/assets/sessions-tab-not-configured.png)
+
+* **mirrord ui detected.** If `mirrord ui` is running on the default port but the extension doesn't have its token yet, the tab shows an **Open mirrord ui** button that opens the dashboard so the handshake can run.
+* **Token rejected.** If `mirrord ui` restarted with a new token (or another process took its port), the tab explains what happened and lets you re-run `mirrord ui` to reconnect automatically, or paste the current token by hand.
+* **Operator unavailable.** If the operator can't be reached, the tab shows "Showing local sessions only" with a link to install the operator.
+
+### The Override tab
+
+If you don't want to use `mirrord ui` (or the cluster doesn't run the operator), the **Override** tab lets you configure header injection directly.
+
+* **Header Name** is the HTTP header to set (for example `x-mirrord-user`).
+* **Header Value** is the value to set on the header for every matching outgoing request.
+* **URL Scope** restricts injection to URLs matching a single pattern. Leave it empty to inject on every request. See [Limiting injection scope by URL](debug-from-browser.md#limiting-injection-scope-by-url).
+* The **Active** toggle pauses injection without losing your configuration.
+* **Save** applies changes immediately and updates the active rule.
+* **Reset to Default** reverts to the configuration baked into the most recent CLI session, if any.
+
+Saving on the Override tab replaces whatever rule the extension is currently injecting, including a rule from a Sessions-tab join. To switch back cleanly after a join, click **Leave** on the live banner first.
+
+You can also share your Override configuration: the **Share** icon in the top bar copies a config link you can send to a teammate. Opening that link in a browser that has the extension applies the same header (joining a matching live session if one exists), so you can hand off a browser-debug setup without walking someone through the fields.
 
 ### Using it together with `mirrord exec`
 
@@ -115,7 +163,7 @@ The browser extension was originally driven by `mirrord exec` printing a configu
 }
 ```
 
-When you run `mirrord exec` against this config, the CLI prints a `chrome-extension://...` URL and opens it. The extension's configure page reads the embedded backend and token and stores them. After that the popup behaves the same as in the `mirrord ui` flow.
+When you run `mirrord exec` against this config, the CLI prints a `chrome-extension://...` URL and opens it. The extension's configure page reads the embedded backend and token and stores them. After that the extension behaves the same as in the `mirrord ui` flow.
 
 You'll also want HTTP context propagation set up in your app so the header survives across service hops. Most tracing libraries already forward `baggage` or `tracestate` automatically; only add manual forwarding if your stack does not.
 
@@ -123,32 +171,36 @@ This experimental feature still requires the extension to be installed before yo
 
 ### Limiting injection scope by URL
 
-By default, the extension injects on every browser request when the URL Scope field is empty. To restrict:
+By default, the extension injects on every browser request when the URL scope is empty. To restrict:
 
-* **All URLs** — leave the scope empty or set it to `*`.
-* **Specific patterns** — use Chrome's [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax. Examples:
-  * `https://api.example.com/*` — only requests to `api.example.com`.
-  * `https://*.example.com/*` — any subdomain of `example.com`.
+* **All URLs** by leaving the scope empty or setting it to `*`.
+* **Specific patterns** using Chrome's [match patterns](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns) syntax. Examples:
+  * `https://api.example.com/*` for only requests to `api.example.com`.
+  * `https://*.example.com/*` for any subdomain of `example.com`.
 
-Restricting the scope is the right move when you only want one specific app to talk to your local process and want everything else to keep going to staging normally.
+On a joined session you can add several patterns as chips; on the Override tab the scope is a single pattern field. Restricting the scope is the right move when you only want one specific app to talk to your local process and want everything else to keep going to staging normally.
 
 ### Header filter regex
 
-If your `header_filter` in `mirrord.json` is a strict regex, the extension auto-derives a header name and value that satisfies it (for example, `baggage: mirrord-session=browser-debug` from a regex matching that prefix). When the extension can't derive a unique value from your regex, it'll prompt you in the browser for a header that matches — paste in any header line your filter would accept.
+If your `header_filter` in `mirrord.json` is a strict regex, the extension auto-derives a header name and value that satisfies it (for example, `baggage: mirrord-session=browser-debug` from a regex matching that prefix). When the extension can't derive a unique value from your regex, it'll prompt you in the browser for a header that matches; paste in any header line your filter would accept.
+
+### Settings
+
+The gear icon in the top bar opens the extension's settings page. The only setting is a toggle for anonymous usage analytics. The `mirrord ui` backend address and token are set by the auto-configure handshake, not entered here.
 
 ### Verifying it works
 
-Once joined or active, open Chrome DevTools → Network on a request that hits your cluster. Look for the injected header on the outgoing request. If it's there and the operator's HTTP filter matches, the request will be served by your local process; check your local logs to confirm.
+Once joined or active, open Chrome DevTools, then Network, on a request that hits your cluster. Look for the injected header on the outgoing request. If it's there and the operator's HTTP filter matches, the request will be served by your local process; check your local logs to confirm. The **header observed** meter on the live banner is a quick confirmation that the header is going out.
 
 ### Tips
 
-* The extension stores its configuration per browser profile in `chrome.storage.local`, so quitting the popup, closing Chrome, and reopening keeps your join state. Closing `mirrord ui` doesn't wipe the join — it just means the popup can't refresh the session list. Re-run `mirrord ui` to get it back.
-* Use **Reset to Default** on the Manual tab to revert to whatever `mirrord exec` last pushed in.
-* Saving on Manual after a Sessions-tab join overwrites the joined rule. Use **Leave** on the live banner first if you want to switch cleanly.
-* The server runs in the background on your machine. To stop it, run: `mirrord ui stop`.
+* The extension stores its configuration per browser profile in `chrome.storage.local`, so quitting the side panel, closing Chrome, and reopening keeps your join state. Closing `mirrord ui` doesn't wipe the join, it just means the extension can't refresh the session list. Re-run `mirrord ui` to get it back.
+* Use **Reset to Default** on the Override tab to revert to whatever `mirrord exec` last pushed in.
+* Saving on Override after a Sessions-tab join overwrites the joined rule. Use **Leave** on the live banner first if you want to switch cleanly.
+* The `mirrord ui` server runs in the background on your machine. To stop it, run `mirrord ui stop`.
 
 ### What's next?
 
-* [Local UI](../local-ui.md) — full reference for `mirrord ui`.
-* [Filtering Incoming Traffic](filter-incoming-traffic.md) — the operator-side HTTP filter the extension's headers are matching against.
-* [Managing Sessions](../../sharing-the-cluster/sessions.md) — listing and stopping operator sessions from the CLI.
+* [Local UI](../local-ui.md) is the full reference for `mirrord ui`.
+* [Filtering Incoming Traffic](filter-incoming-traffic.md) covers the operator-side HTTP filter the extension's headers are matching against.
+* [Managing Sessions](../../sharing-the-cluster/sessions.md) covers listing and stopping operator sessions from the CLI.
