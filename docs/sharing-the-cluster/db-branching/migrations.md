@@ -20,7 +20,7 @@ Minimum versions per capability:
 | --- | --- | --- | --- |
 | Schema migrations (Flyway, local `path`) | `3.230.0` | `3.182.0` | `3.182.0` |
 | Migrations on MariaDB branches | `3.235.0` | `3.186.0` | `3.186.0` |
-| Image-native Flyway (`locations`), `container` flavor | `3.237.0` | `3.188.0` | `3.188.0` |
+| Image-native Flyway (`locations`), `container` flavor | `3.238.0` | `3.187.0` | `3.187.0` |
 {% endhint %}
 
 ## How it works
