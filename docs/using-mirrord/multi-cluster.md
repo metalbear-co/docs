@@ -154,6 +154,29 @@ Most services behave identically everywhere, with small differences in where tem
 
 ***
 
+## Preview Environments in Multi-Cluster
+
+[Preview environments](../use-cases/preview-environments.md) work in multi-cluster mode in two forms, controlled by one Helm value on every operator: `operator.multiCluster.preview.replicas`.
+
+**Default (`replicas: false`)** — the preview pod runs on the Default cluster only. Queue splitting still applies on every Workload cluster, so matched messages from all clusters reach the preview. Requests carrying the session baggage that land on another cluster are served by the deployed application there — `mirrord preview start` and `status` call this out so it never surprises you. This is the pre-multicluster behavior; upgrading changes nothing.
+
+**With `replicas: true`** — the preview runs a full replica of its pod on **every Workload cluster**:
+
+1. **Traffic is served where it lands.** A request with the session baggage is stolen by the replica on whichever cluster the load balancer picked — no cross-cluster hop. Plain traffic goes to the deployed application everywhere.
+2. **One shared database branch.** All replicas read and write the same [branch](../sharing-the-cluster/db-branching.md), created on the Default cluster. Replicas on other clusters reach it through a small per-branch proxy, so the database is never exposed across clusters.
+3. **Queue messages are consumed exactly once.** Matched messages are compete-consumed across the replicas — whichever cluster's replica picks a message up handles it.
+4. **A failure anywhere fails the preview everywhere.** No half-alive previews: if one cluster cannot run its replica, the whole preview is failed and cleaned up.
+
+[Idle mode](../use-cases/preview-environments.md#auto-scaling-idle-mode) is per-cluster: each cluster's replica idles and wakes independently, and a queue message or held request wakes only the cluster that received it. The branch proxies scale to zero together with their replica.
+
+To see where a preview is serving, run `mirrord preview status` against the Primary cluster — it shows the per-cluster phases (`cluster-a: ready, cluster-b: idle`) plus a message when the preview failed or runs in a reduced form (for example, replicas disabled fleet-wide).
+
+{% hint style="info" %}
+Why is `replicas` off by default? Replicas cost pods on every cluster (plus branch proxies for branching previews). Enable it when your ingress load-balances across clusters and previews must serve from all of them; leave it off when the Default cluster receives the preview's traffic anyway.
+{% endhint %}
+
+***
+
 ## Limitations
 
 * [Targetless mode](targetless.md) is not supported in multi-cluster sessions — a target is required so the operator can resolve it on each Workload cluster.

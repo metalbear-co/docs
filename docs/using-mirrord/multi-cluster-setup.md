@@ -496,6 +496,39 @@ sa:
 The cluster key names in the `clusters` map should match the real cluster names. For EKS clusters this is especially important — the operator uses the key as the EKS cluster name when signing IAM tokens.
 {% endhint %}
 
+### Preview Environment Replicas
+
+To run [preview environments as replicas on every Workload cluster](multi-cluster.md#preview-environments-in-multi-cluster), enable the switch on **every** operator (Primary and Workload clusters alike):
+
+```yaml
+operator:
+  multiCluster:
+    preview:
+      # Run a replica of each preview's pod on every Workload cluster.
+      # Off by default: preview pods then run on the Default cluster only.
+      replicas: true
+
+      # Only needed for previews that use database branching:
+      branchProxy:
+        # Proxy pods per branch on each non-default cluster. Two keep the branch
+        # reachable through a node failure or rollout; set 1 to save a pod per
+        # branch per cluster.
+        replicas: 2
+
+        # How replicas on other clusters reach the Default cluster's apiserver
+        # (the path to the shared branch). Usually auto-detected; set these when
+        # the advertised endpoint is not reachable from the other clusters.
+        # defaultApiServer: "https://api.us-east-1.example.com:6443"
+        # defaultApiServerCa: "LS0tLS1CRUdJTi..."
+
+        # Skip TLS verification of the Default cluster's apiserver. Only for
+        # environments where its CA cannot be obtained (e.g. some local setups);
+        # never in production.
+        insecureTls: false
+```
+
+The branch-proxy RBAC (a dedicated ServiceAccount plus token-minting grants) ships with the chart — no extra setup beyond the values above.
+
 ### Where Data Is Stored
 
 When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `isDefault`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).

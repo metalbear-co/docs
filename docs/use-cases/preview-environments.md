@@ -276,6 +276,12 @@ operator:
 
 ***
 
+### Multi-Cluster
+
+On a [multi-cluster installation](../using-mirrord/multi-cluster.md), a preview can run a replica of its pod on every Workload cluster, so baggage-tagged requests are served wherever the load balancer sends them — with one shared database branch and exactly-once queue consumption across the replicas. This is opt-in; by default the preview pod runs on the Default cluster only. See [Preview Environments in Multi-Cluster](../using-mirrord/multi-cluster.md#preview-environments-in-multi-cluster).
+
+***
+
 ### Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)
