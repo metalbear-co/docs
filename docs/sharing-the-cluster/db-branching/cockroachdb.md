@@ -90,3 +90,60 @@ If both are specified, mirrord ignores the `tables` configuration.
 {% hint style="info" %}
 The `dump_args` field is not supported for CockroachDB. Only MySQL and PostgreSQL branches accept custom dump arguments.
 {% endhint %}
+
+## Source TLS and mutual TLS
+
+With `"schema"` and `"all"` copy modes, the operator connects to your source database to copy from it. If the source's certificate is signed by a private CA (`sslmode=verify-ca`/`verify-full`), or the source requires mutual TLS (the client must present a certificate, as with CockroachDB's certificate authentication), the copy needs certificate files - otherwise it fails with `x509: certificate signed by unknown authority`.
+
+Provide them in a `MirrordPropertyList` named `cockroachdb-source-tls` (the name can be changed cluster-wide with the operator Helm value `operator.cockroachdbBranchConfig.dbPod.sourceTlsPropertyList`), in the same namespace as the target workload. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: cockroachdb-source-tls
+  namespace: my-app-namespace
+spec:
+  properties:
+    - name: tlsCaCert
+      valueFrom:
+        secretKeyRef:
+          name: my-db-certs
+          key: ca.crt
+    - name: tlsClientCert
+      valueFrom:
+        secretKeyRef:
+          name: my-db-certs
+          key: client.myservice.crt
+    - name: tlsClientKey
+      valueFrom:
+        secretKeyRef:
+          name: my-db-certs
+          key: client.myservice.key
+```
+
+Supported properties:
+
+| Property | Description | Required |
+| --- | --- | --- |
+| `tlsCaCert` | PEM CA bundle used to verify the source's certificate when it is not signed by a publicly trusted root. | No |
+| `tlsClientCert` | PEM client certificate presented to a source that requires mutual TLS. Requires `tlsClientKey`. | No |
+| `tlsClientKey` | PEM private key for `tlsClientCert`. Requires `tlsClientCert`. | No |
+
+At least one property must be set. A source behind regular TLS with a private CA only needs `tlsCaCert`; sources requiring mutual TLS also need the client pair - the two always go together. These are the same TLS properties the [Temporal queue splitting connection](../queue-splitting/temporal.md) uses, and values resolve the same way: `secretKeyRef`, `configMapKeyRef`, and inline values all work.
+
+The operator reads the properties when a branch is created, so rotated certificates are picked up by the next branch, not by ones already running.
+
+The property list only provides the certificate files. Whether the copy connection uses TLS is decided by the `sslmode` in your source connection URL:
+
+| `sslmode` in the URL | Property list exists? | Copy connection |
+| --- | --- | --- |
+| `verify-full` / `verify-ca` | yes | TLS, verified with your CA (and client certs, if set) |
+| `verify-full` / `verify-ca` | no | Fails - there is no CA to verify against |
+| `disable` | yes or no | Plain connection; the certificates are not used |
+| not set | yes | Defaults to `verify-full` with your certificates |
+| not set | no | Defaults to `disable` |
+
+In short: the URL decides *whether* to use TLS, the property list decides *with which certificates*.
+
+The certificates are only used for the copy connection to the source. The branch itself runs in insecure mode and the connection URL handed to your application carries `sslmode=disable`, so neither the branch nor your locally running process needs any certificates. `"empty"` mode never contacts the source and works without this setup entirely.
