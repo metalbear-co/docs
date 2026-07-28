@@ -154,6 +154,45 @@ run:
   command: ["node", "app.js"]
 ```
 
+### Templating
+
+The `mirrord-up.yaml` configuration file supports templating using Jinja2-style syntax. This allows you to dynamically populate configuration values based on the session key.
+
+#### Available variables
+
+- `{{ key }}` — The session key (specified via `--key` flag or defaults to OS username)
+
+#### Examples
+
+Use the session key in environment variable overrides:
+
+```yaml
+services:
+  my-service:
+    target:
+      path: deployment/my-app
+    env:
+      override:
+        SESSION_ID: "{{ key }}"
+        DEBUG_TAG: "debug-{{ key }}"
+    run:
+      command: ["node", "app.js"]
+```
+
+Use the session key in commands:
+
+```yaml
+services:
+  logger:
+    run:
+      command: ["python", "logger.py", "--session", "{{ key }}"]
+```
+
+When you run `mirrord up --key my-session`, the above examples will render as:
+- `SESSION_ID: "my-session"`
+- `DEBUG_TAG: "debug-my-session"`
+- Command: `["python", "logger.py", "--session", "my-session"]`
+
 ## CLI args
 
 ### `-f`, `--config-file`
