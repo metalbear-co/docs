@@ -156,11 +156,15 @@ run:
 
 ### Templating
 
-The `mirrord-up.yaml` configuration file supports templating using Jinja2-style syntax. This allows you to dynamically populate configuration values based on the session key.
+The `mirrord-up.yaml` configuration file is rendered with [Tera](https://keats.github.io/tera/docs/) (Jinja2-style syntax) before it is parsed. This lets you populate configuration values dynamically from the session key and from your shell environment.
 
 #### Available variables
 
 - `{{ key }}` — The session key (specified via `--key` flag or defaults to OS username)
+
+#### Available functions
+
+- `{{ get_env(name="VAR") }}` — The value of the environment variable `VAR` from the environment `mirrord up` was started in. Rendering fails if the variable isn't set, unless you pass a fallback: `{{ get_env(name="VAR", default="fallback") }}`.
 
 #### Examples
 
@@ -192,6 +196,22 @@ When you run `mirrord up --key my-session`, the above examples will render as:
 - `SESSION_ID: "my-session"`
 - `DEBUG_TAG: "debug-my-session"`
 - Command: `["python", "logger.py", "--session", "my-session"]`
+
+Pull values from the environment instead of hardcoding them per developer:
+
+```yaml
+services:
+  my-service:
+    target:
+      namespace: "{{ get_env(name='DEV_NAMESPACE', default='default') }}"
+    env:
+      override:
+        API_TOKEN: "{{ get_env(name='API_TOKEN') }}"
+    run:
+      command: ["node", "app.js"]
+```
+
+Here the namespace falls back to `default` when `DEV_NAMESPACE` isn't set, while a missing `API_TOKEN` fails the run with a templating error rather than starting the session with an empty value.
 
 ## CLI args
 
