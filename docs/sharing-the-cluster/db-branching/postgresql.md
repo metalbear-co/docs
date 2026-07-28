@@ -128,7 +128,9 @@ operator:
 
 `empty` (the default) creates each source role as a bare `NOLOGIN` shell - just enough for schema statements that reference roles (policies, user mappings) to restore. The copy strips table ownership and grants, and your app connects through mirrord's env overrides as the branch superuser.
 
-`full` recreates roles with their real attributes (`LOGIN`, `CREATEDB`, connection limits) and `GRANT role TO role` memberships, and the copy keeps table ownership and grants. The branch then enforces the same permissions as the source: a table your role cannot read in the source stays unreadable in the branch. This is useful when your flows depend on role membership or you want branch testing to match production permission behavior. In `full` mode, mirrord's env overrides only redirect the connection address, so the app keeps using its own user and password. This applies to connections configured with individual `params`; a single URL-shaped variable is still replaced whole, with the branch superuser's credentials inside, so apps reading one `DATABASE_URL` connect as the superuser in every mode.
+`full` recreates roles with their real attributes (`LOGIN`, `CREATEDB`, connection limits) and `GRANT role TO role` memberships, and the copy keeps table ownership and grants. The branch then enforces the same permissions as the source: a table your role cannot read in the source stays unreadable in the branch. This is useful when your flows depend on role membership or you want branch testing to match production permission behavior. In `full` mode, mirrord's env overrides only redirect the connection address, so the app keeps using its own user and password (see the table below for how this interacts with `url`-style connections).
+
+The branch copy runs `pg_dump` as the declared connection user, so that user must be able to read everything the copy includes. If it lacks access to some tables (a common setup with per-schema roles), either grant it read access, or exclude those tables with `dump_args`/`tables` filters. Sequences count too: a `SERIAL` column's sequence follows its table's owner and needs its own `SELECT` grant.
 
 ### The source user's password
 
@@ -139,6 +141,8 @@ In `empty` mode this login is a superuser on the throwaway copy; in `full` mode 
 ### Which credentials does my app end up using?
 
 Two things decide it: the `roles` setting, and where your app gets its database credentials when it runs. Apps that read them from env vars get mirrord's rewritten values; apps that fetch them at runtime from somewhere mirrord cannot rewrite - a secret manager like AWS Secrets Manager or Google Secret Manager, Vault, or a config service - keep using the source credentials they fetched.
+
+Your app needs no changes in any mode: whatever variable it reads (`DB_PASSWORD`, `DATABASE_URL`, ...) always holds credentials that work against the branch - mirrord's branch credentials in `empty` mode, your real ones in `full` mode.
 
 | `roles` | Connection config | Where the app gets its credentials | App connects to the branch as |
 | --- | --- | --- | --- |
@@ -151,7 +155,9 @@ Two things decide it: the `roles` setting, and where your app gets its database 
 
 The "Connection config" column is how the branch's `connection` is declared in the mirrord config: individual `params` (host, user, password, ...) or a single `url` variable. In `empty` mode the two behave identically. In `full` mode only `params` lets the app keep its own user and password - a `url` variable is one opaque value, so mirrord can only replace it whole, with the superuser credentials inside.
 
-The `postgres` superuser login with mirrord's branch password is available in every configuration. Roles other than the declared connection user never get a password (PostgreSQL does not expose them); to act as one of them, connect as the superuser and use `SET ROLE`.
+The `postgres` superuser login with mirrord's branch password is available in every configuration.
+
+When a branch does not behave the way you expect, check identity first: have the app log `SELECT current_user`, or compare the host it connected to against the branch pod's IP. Most surprises turn out to be the app connecting as a different user - or to a different database - than assumed (for example, a `DATABASE_URL` exported in your local shell shadowing the overridden variables).
 
 ### Limits
 
