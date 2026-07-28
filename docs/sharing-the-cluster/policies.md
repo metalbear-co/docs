@@ -47,7 +47,6 @@ apiVersion: policies.mirrord.metalbear.co/v1alpha
 kind: MirrordClusterPolicy
 metadata:
   name: block-steal-without-filter
-  namespace: mirrord-operator
 spec:
   targetPath: "*"
   block:
