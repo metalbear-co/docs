@@ -115,6 +115,50 @@ This keeps the PostgreSQL defaults and adds `--exclude-table=audit_logs` so `pg_
 }
 ```
 
+## Roles, Permissions, and Credentials
+
+A branch pod is a fresh PostgreSQL instance, so mirrord recreates the source database's roles in it before restoring the schema. How much of them it recreates is controlled by the operator's Helm values, per cluster:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      roles: "empty" # or "full"
+```
+
+`empty` (the default) creates each source role as a bare `NOLOGIN` shell - just enough for schema statements that reference roles (policies, user mappings) to restore. The copy strips table ownership and grants, and your app connects through mirrord's env overrides as the branch superuser.
+
+`full` recreates roles with their real attributes (`LOGIN`, `CREATEDB`, connection limits) and `GRANT role TO role` memberships, and the copy keeps table ownership and grants. The branch then enforces the same permissions as the source: a table your role cannot read in the source stays unreadable in the branch. This is useful when your flows depend on role membership or you want branch testing to match production permission behavior. In `full` mode, mirrord's env overrides only redirect the connection address, so the app keeps using its own user and password. This applies to connections configured with individual `params`; a single URL-shaped variable is still replaced whole, with the branch superuser's credentials inside, so apps reading one `DATABASE_URL` connect as the superuser in every mode.
+
+### The source user's password
+
+The user declared in the branch's `connection` config can log into the branch with its real password, in both modes. This is useful when your application loads its credentials at runtime (from a secret manager, for example) instead of reading env vars - the credentials it already holds simply work against the branch. Only a salted password hash is written into the branch, never the plaintext.
+
+In `empty` mode this login is a superuser on the throwaway copy; in `full` mode it has the role's real permissions.
+
+### Which credentials does my app end up using?
+
+Two things decide it: the `roles` setting, and where your app gets its database credentials when it runs. Apps that read them from env vars get mirrord's rewritten values; apps that fetch them at runtime from somewhere mirrord cannot rewrite - a secret manager like AWS Secrets Manager or Google Secret Manager, Vault, or a config service - keep using the source credentials they fetched.
+
+| `roles` | Connection config | Where the app gets its credentials | App connects to the branch as |
+| --- | --- | --- | --- |
+| `empty` (default) | `params` or `url` | env vars | `postgres` superuser, mirrord's branch password |
+| `empty` (default) | `params` or `url` | fetched at runtime (secret manager, Vault, ...) | the declared user, its real password (superuser on the branch) |
+| `full` | `params` | env vars | the declared user, its real password, real permissions (mirrord leaves user/password vars untouched) |
+| `full` | `params` | fetched at runtime (secret manager, Vault, ...) | the declared user, its real password, real permissions |
+| `full` | `url` | env vars | `postgres` superuser (the URL var is replaced whole) |
+| any | IAM auth | any | `postgres` superuser (IAM tokens are short-lived, so no source login is created) |
+
+The "Connection config" column is how the branch's `connection` is declared in the mirrord config: individual `params` (host, user, password, ...) or a single `url` variable. In `empty` mode the two behave identically. In `full` mode only `params` lets the app keep its own user and password - a `url` variable is one opaque value, so mirrord can only replace it whole, with the superuser credentials inside.
+
+The `postgres` superuser login with mirrord's branch password is available in every configuration. Roles other than the declared connection user never get a password (PostgreSQL does not expose them); to act as one of them, connect as the superuser and use `SET ROLE`.
+
+### Limits
+
+- PostgreSQL never exposes role passwords (they live in a superuser-only catalog), so roles other than the declared connection user restore without one and cannot log in. To act as another role, connect as the branch superuser and use `SET ROLE`.
+- Roles are recreated when a branch is created. Changing the Helm value or rotating the source password affects new branches, not ones already running.
+- Cloud control-plane roles (`rdsadmin`, `cloudsqladmin`, and similar) are skipped.
+
 ## Connection Settings
 
 `connection_settings` is a map of PostgreSQL settings that mirrord applies to every connection it opens to the source database while building the branch. Each entry is set before any schema dump or data copy runs.
