@@ -91,7 +91,7 @@ Your local process takes over the service entirely. mirrord creates a copy of th
 The original workload is restored when the session ends.
 {% endhint %}
 
-`replace` requires that the targeted workload must be a deployment, statefulset, or replicaset.
+`replace` requires the targeted workload to be a deployment, statefulset, or replicaset.
 
 Any `http_filter` set on a service in `replace` mode is ignored.
 
