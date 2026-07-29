@@ -195,7 +195,7 @@ When using `mirrord chaos` in scripts, it is recommended that you use `--format 
 For more information on the UI server, see [Local UI](../using-mirrord/local-ui.md).
 {% endhint %}
 
-In addition to the `chaos` sub-commands, it is possible to manage and view chaos rules in mirrord's UI server. When running`mirrord chaos` command, it starts the UI silently in the background if it is not already running. To stop the UI server manually, for example if it is misbehaving, run:
+In addition to the `chaos` sub-commands, it is possible to manage and view chaos rules in mirrord's UI server. When running the `mirrord chaos` command, it starts the UI silently in the background if it is not already running. To stop the UI server manually, for example if it is misbehaving, run:
 
 ```sh
 mirrord ui stop
@@ -205,9 +205,9 @@ mirrord ui stop
 
 **Prerequisites:** Minimum mirrord CLI version `3.232.0`
 
-#### Starting the UI server and a session
+#### Setup: UI server and starting a session
 
-Chaos rules are managed through the mirrord UI server, so start it first:
+Chaos rules are managed through the mirrord UI server, so make sure it is running:
 
 ```sh
 mirrord ui
