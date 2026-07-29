@@ -19,7 +19,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 
 `MirrordKafkaTopicsConsumer` + `MirrordKafkaClientConfig` are deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#kafka).
 
-The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) only affects legacy `MirrordKafkaTopicsConsumer` objects; with `MirrordSplitConfig`, use [`spec.drainTimeout`](kafka.md#configuring-workload-restart) instead.
+The older `operator.idleKafkaSplitTtlMillis` Helm value (`OPERATOR_KAFKA_SPLITTING_TTL`) only affects legacy `MirrordKafkaTopicsConsumer` objects that leave `spec.splitTtl` unset. It is not a cluster-wide default for `MirrordSplitConfig`, and there is no cluster-wide equivalent: set [`spec.ttl` and `spec.drainTimeout`](kafka.md#configuring-workload-restart) on each config instead.
 {% endhint %}
 
 #### How It Works
@@ -195,30 +195,33 @@ The provided format must contain the three variables: `{{RANDOM}}`, `{{FALLBACK}
 
 To inject the names of the temporary queues into the consumer workload, the operator always requires the workload to be restarted. Depending on cluster conditions, and the workload itself, this might take some time.
 
-`MirrordSplitConfig` lets you tune this with two optional fields:
+`MirrordSplitConfig` lets you tune this with a few optional fields:
 
 ```yaml
 spec:
   restart:
     timeout: 120
+  ttl: 60
   drainTimeout: 300
 ```
 
-* `spec.restart.timeout` - how long the operator waits for a new pod to become ready after the workload restart is triggered (in seconds, defaults to 60). This silences timeout errors when the workload pods take a long time to start.
-* `spec.drainTimeout` - how long the workload stays patched after its last Kafka splitting session ends (in seconds). While patched, a new session can reuse the split without another restart, and the workload can finish reading the temporary topic.
+`spec.restart.timeout` is how long the operator waits for a new pod to become ready after the workload restart is triggered (in seconds, defaults to 60). This silences timeout errors when the workload pods take a long time to start.
 
-Two settings control the drain timeout:
+When the **last** splitting session on a workload ends, the operator does not tear the split down right away. It passes through two windows before deleting the temporary queues and unpatching the workload (which restarts it back onto the original topic):
 
-| Setting                                          | Unit         | Scope         | Effect                                                 |
-| ------------------------------------------------ | ------------ | ------------- | ------------------------------------------------------ |
-| `spec.drainTimeout` on the `MirrordSplitConfig`  | seconds      | One split     | Wins over the cluster-wide default.                    |
-| `operator.kafkaSplittingDrainTimeout` Helm value | milliseconds | Whole cluster | Default, used only when a config omits `drainTimeout`. |
+1. **Idle window - `spec.ttl`.** The split stays fully live: the operator keeps forwarding the original topic into the temporary topic the patched workload reads. A session that reconnects during this window reuses the split **instantly**, with no restart. This is the "keep it warm" TTL.
+2. **Drain window - limited by `spec.drainTimeout`.** Once the idle window elapses with no reconnect, the operator stops forwarding new messages and lets the patched workload finish consuming what is already in the temporary topic. A session that reconnects during this window reuses the same split and resumes forwarding instead of rebuilding from scratch. The window ends **early** the moment that topic is fully consumed, and is capped at `drainTimeout`.
 
-| `drainTimeout` | Behavior                                                                                                         |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| unset (both)   | Unpatch as soon as the last session ends (same as `0`). Messages not yet read from the temporary topic are lost. |
-| `0`            | Unpatch immediately. Messages not yet read from the temporary topic are lost.                                    |
-| `N`            | Stay patched for up to `N` seconds so a new session can reuse the split, then unpatch.                           |
+Both fields are optional and in seconds:
+
+| Field | Behavior |
+| ----- | -------- |
+| `spec.ttl` | `N`: keep the split warm for up to `N` seconds so a reconnecting session resumes instantly. `0` or unset: do not linger — go straight to the drain window when the last session ends. |
+| `spec.drainTimeout` | `N`: let the workload finish the already-forwarded backlog for up to `N` seconds, ending early once it is drained. `0`: unpatch immediately — messages not yet read from the temporary topic are lost. Unset: no cap — wait until the workload has consumed the backlog. |
+
+{% hint style="info" %}
+`spec.ttl`, and draining the temporary topic before unpatch (capped by `spec.drainTimeout`), require mirrord operator `3.194.0` or later. On earlier operators `spec.drainTimeout` alone controls how long the workload stays patched after the last session.
+{% endhint %}
 
 **AWS MSK IAM authentication**
 

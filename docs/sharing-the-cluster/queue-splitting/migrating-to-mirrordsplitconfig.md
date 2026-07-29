@@ -202,7 +202,7 @@ Field mapping:
 | `topics[].applicationIdSources` | `appConfig.appId[]` |
 | `topics[].clientConfig` (a `MirrordKafkaClientConfig`) | `spec.queues[].clientConfig` (a `MirrordPropertyList` in the target namespace, or the same legacy name as a fallback) |
 | `consumerRestartTimeout` | `spec.restart.timeout` |
-| `splitTtl` | `spec.drainTimeout` |
+| `splitTtl` | `spec.ttl` |
 
 The `MirrordKafkaClientConfig` properties map one-to-one onto `MirrordPropertyList` properties. The only difference is the namespace: a `MirrordPropertyList` lives in the target's namespace, while `MirrordKafkaClientConfig` lives in the operator's namespace.
 
