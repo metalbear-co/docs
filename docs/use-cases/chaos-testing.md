@@ -81,9 +81,9 @@ An effect defines what happens to a matched connection. Two effects are supporte
 
 When multiple rules match the same connection, only one is applied: the rule with the highest `priority` value. If not set, `priority` defaults to 0, the lowest.
 
-## How to use chaos
+## Managing chaos rules
 
-### Option 1: chaos command
+### Option 1: CLI
 
 **Prerequisites:** Minimum mirrord CLI version `3.241.0`
 
@@ -137,7 +137,7 @@ mirrord chaos add -s $SESSION_ID -f path/to/rule.json
 Or, add a new rule straight from `stdin`:
 
 ```sh
-# any command that prints to stdin can be used
+# any command that prints to stdout can be used
 cat path/to/rule.json | mirrord chaos add -s $SESSION_ID
 ```
 
@@ -160,7 +160,7 @@ To edit an existing rule, the rule ID is required - this is printed when a rule 
 ```sh
 export RULE_ID='6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924'
 
-mirrord chaos list -s $SESSION_ID -r $RULE_ID -f path/to/new_rule.json
+mirrord chaos edit -s $SESSION_ID -r $RULE_ID -f path/to/new_rule.json
 ```
 
 As with `mirrord chaos add`, new rules can be provided from a file or `stdin`. Only one rule can be modified at a time.
@@ -189,19 +189,37 @@ By providing the `--format` argument, the output of `mirrord chaos` can be custo
 
 When using `mirrord chaos` in scripts, it is recommended that you use `--format json` as the default `pretty` output may be changed in the future.
 
-#### The UI server
+### Option 2: UI dashboard
 
 {% hint style="info" %}
 For more information on the UI server, see [Local UI](../using-mirrord/local-ui.md).
 {% endhint %}
 
-In addition to the `chaos` sub-commands, it is possible to manage and view chaos rules in mirrord's UI server. When running the `mirrord chaos` command, it starts the UI silently in the background if it is not already running. To stop the UI server manually, for example if it is misbehaving, run:
+**Prerequisites:** Minimum mirrord CLI version `3.235.0`
+
+In addition to the `chaos` sub-commands, it is possible to manage and view chaos rules in mirrord's UI server. When running the `mirrord chaos` command, it starts the UI silently in the background if it is not already running. To start the server and open the dashboard in your browser, run:
+
+```sh
+mirrord ui
+```
+
+The `chaos` tab on the right hand pane allows you to manage chaos rules interactively.
+
+![UI Server Chaos Tab](../.gitbook/assets/ui-server-chaos-tab.png)
+
+You can also see traffic for the session, and add rules from here.
+
+![UI Server Traffic Logs](../.gitbook/assets/ui-server-traffic-hover.png)
+
+#### Stopping the server
+
+To stop the UI server manually, for example if it is misbehaving, run:
 
 ```sh
 mirrord ui stop
 ```
 
-### Option 2: making requests manually
+### Option 3: REST endpoints
 
 **Prerequisites:** Minimum mirrord CLI version `3.232.0`
 
