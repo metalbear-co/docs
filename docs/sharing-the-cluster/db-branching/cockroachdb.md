@@ -146,4 +146,25 @@ The property list only provides the certificate files. Whether the copy connecti
 
 In short: the URL decides *whether* to use TLS, the property list decides *with which certificates*.
 
+In params mode, set the mode with the `sslmode` connection param, either as a [literal value](connection.md#literal-value) or from an env var on the target pod (all [value sources](connection.md) work):
+
+```json
+{
+  "connection": {
+    "type": "env",
+    "params": {
+      "host": "DB_HOST",
+      "user": "DB_USER",
+      "password": "DB_PASSWORD",
+      "database": "DB_NAME",
+      "sslmode": { "env_var_name": "DB_SSLMODE", "value": "verify-full" }
+    }
+  }
+}
+```
+
+To read the mode from the target pod's environment instead, use a plain string: `"sslmode": "DB_SSLMODE"`.
+
+Cluster admins can set a default mode for all branches with the operator Helm value `operator.cockroachdbBranchConfig.dbPod.sourceSslmode`; an explicit `sslmode` in a session's URL or params still wins over it.
+
 The certificates are only used for the copy connection to the source. The branch itself runs in insecure mode and the connection URL handed to your application carries `sslmode=disable`, so neither the branch nor your locally running process needs any certificates. `"empty"` mode never contacts the source and works without this setup entirely.

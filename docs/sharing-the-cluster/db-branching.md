@@ -220,7 +220,7 @@ The list only gates images a developer supplies with `image`. Branches that take
 Profiles work for every engine, each in its own `<engine>BranchConfig` block.
 
 {% hint style="info" %}
-Branch config profiles require operator and Helm chart `TODO` or later, and mirrord CLI `TODO` or later. Against an older operator, a branch that sets `profile` fails with a clear error instead of silently running the default settings.
+Branch config profiles require operator and Helm chart `3.190.0` or later, and mirrord CLI `3.244.1` or later. Against an older operator, a branch that sets `profile` fails with a clear error instead of silently running the default settings.
 {% endhint %}
 
 ## Running With DB Branches
