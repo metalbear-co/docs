@@ -54,6 +54,25 @@ Please note that:
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
+## Sharing Property Lists Across Namespaces
+
+{% hint style="info" %}
+Looking up a property list in the operator's namespace requires mirrord operator `X.Y.Z` or later. Earlier operators only look in the target's namespace.
+{% endhint %}
+
+Every queue service is set up with a `MirrordPropertyList` holding the broker connection details, referenced by name from the `MirrordSplitConfig`. The operator looks that name up in two places, in order:
+
+1. the namespace of the target workload, which is also the namespace of the `MirrordSplitConfig`,
+2. the namespace the operator is installed in.
+
+This is useful when one broker serves many teams. Define the credentials once next to the operator, and every `MirrordSplitConfig` in the cluster can reference that name without each namespace keeping its own copy. A list in the target's namespace still wins, so a team can override the shared one by creating a list with the same name next to their workload.
+
+ConfigMap and Secret references inside a property list are resolved in the namespace the list was found in. A list in the operator's namespace must therefore reference ConfigMaps and Secrets in the operator's namespace.
+
+{% hint style="warning" %}
+A property list in the target's namespace that the operator cannot parse fails the session instead of falling through to the operator's namespace. This keeps a broken local list from silently switching the target onto shared credentials.
+{% endhint %}
+
 ## Session Key Header
 
 When your operator has session key header injection enabled, every message the operator routes to your session is stamped with a `mirrord-key` carrying your session key, so your local application can tell which mirrord session a message belongs to. Only the copy delivered to your session is stamped; the message the deployed application receives is never modified.

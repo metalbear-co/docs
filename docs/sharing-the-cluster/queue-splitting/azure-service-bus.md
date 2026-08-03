@@ -56,7 +56,7 @@ Register an Azure AD application, create a client secret, and assign it the **Az
 {% step %}
 **Create a MirrordPropertyList**
 
-As part of operator installation with `operator.azureServiceBusSplitting` enabled, the `MirrordPropertyList` custom resource type is available in your cluster. Create one with your Service Bus connection details.
+As part of operator installation with `operator.azureServiceBusSplitting` enabled, the `MirrordPropertyList` custom resource type is available in your cluster. Create one with your Service Bus connection details, in the target workload's namespace or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
 {% tabs %}
 {% tab title="Workload Identity / Managed Identity" %}
