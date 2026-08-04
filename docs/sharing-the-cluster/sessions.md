@@ -103,13 +103,16 @@ that owns them. Both go through the same two phases, so there is a matching pair
 operator:
   multiCluster:
     ## How long the session may wait for its first client connection. Default: 180.
-    sessionSetupDeadlineSecs: 180
+    sessionSetupDeadlineSeconds: 180
 
     ## How long it may go unused once a client has connected. Default: 60.
-    sessionTtlSecs: 60
+    sessionTtlSeconds: 60
 ```
 
-Change `sessionSetupDeadlineSecs` and `sessionSetupDeadlineSeconds` together. The primary creates
+Earlier chart versions named these `sessionTtlSecs` and `remoteSessionTimeoutSecs`. Both names
+still work, so an existing values file needs no changes.
+
+Change `multiCluster.sessionSetupDeadlineSeconds` and `sessionSetupDeadlineSeconds` together. The primary creates
 a session on every cluster before a client connects to any of them, so multi-cluster sessions
 spend longer starting up than single-cluster ones. Closing the session on the primary also closes
 it on every other cluster.
