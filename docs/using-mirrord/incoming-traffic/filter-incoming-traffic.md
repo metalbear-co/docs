@@ -99,6 +99,42 @@ To specify a filter on a path, use the `feature.network.incoming.http_filter.pat
 
 Note that both `header_filter` and `path_filter` take regex value, so for example `"header_filter": "^baggage: .*mirrord-session=[^,]+.*"` would work.
 
+### Deriving the filter from your git branch
+
+Hardcoding a value in the filter means everyone sharing the config file also shares the filter, which defeats the isolation. The config file is rendered with the [Tera](https://keats.github.io/tera/) template engine before it is parsed, and mirrord provides a `git_branch` variable holding the branch checked out in the directory you started mirrord from. Committing the config below gives every developer, branch and AI agent its own slice of traffic without anyone editing the file:
+
+```json
+{
+  "key": "{{ git_branch }}",
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "^baggage: .*mirrord-session={{ key }}.*"
+        }
+      }
+    }
+  }
+}
+```
+
+`{{ key }}` is the [session key](https://metalbear.com/mirrord/docs/config/#root-key), so setting `key` from `git_branch` propagates the branch name to every place the key is used.
+
+`git_branch` is left undefined when the branch cannot be determined — the directory is not a git repository, `git` is not installed, or `HEAD` is detached, which is the usual state in CI. Rendering fails in that case unless you supply a fallback with Tera's `default` filter:
+
+```json
+{
+  "key": "{{ git_branch | default(value='shared') }}"
+}
+```
+
+Use single quotes inside a `key` template. mirrord reads the `key` field out of the config file before templating runs, so the file has to be valid JSON as written, and double quotes would end the string early. Every other field is rendered before parsing and accepts either quote style.
+
+You can also set the branch yourself through the `MIRRORD_BRANCH_NAME` environment variable, which takes precedence over asking `git`. The JetBrains plugin sets it to the branch of the project you have open, so running from the IDE uses that project's branch rather than the working directory mirrord happens to inherit.
+
+The same `git_branch` variable is available in `mirrord-up.yaml` when running [multiple concurrent sessions](../multiple-concurrent-sessions.md).
+
 ### Filtering out healthchecks using a negative look-ahead
 
 The HTTP filters both take "fancy" regexes that support negative look-aheads. This can be useful for avoiding the stealing of Kubernetes liveness, readiness and startup probes.
