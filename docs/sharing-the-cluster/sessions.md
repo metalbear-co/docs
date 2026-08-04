@@ -52,6 +52,105 @@ filtering HTTP traffic with the following filter: `baggage: .*mirrord-session=Av
 +------------------+-----------------------------+-----------+---------------------------------------------------------------+----------------------------------------------------------+------------------+
 ```
 
+## How long sessions live
+
+The Operator closes sessions on its own once nobody is using them, so a crashed client or a
+cancelled CI job does not leave agents and patched workloads behind. The defaults suit most
+clusters. This is useful when yours behaves differently, for example when CI runs against a
+cluster that is slow to roll pods.
+
+A session goes through two phases, and a different value applies to each.
+
+```
+     session          first client            client
+     created            connects               gone
+        |                   |                    |
+        |-- starting up ----|--- connected ------|-- unused --> closed
+        |    (setup         |   (kept alive      |    (unused
+        |     deadline)     |    automatically)  |     TTL)
+        |
+        |------------------ max session time ---------------> closed
+```
+
+While a session is **starting up**, no client has reached it yet. The Operator may be patching
+the target for queue splitting and waiting for its pods to roll, which takes time. The setup
+deadline bounds this phase, so the session survives setup but is still cleaned up if a client
+never arrives.
+
+Once a client is **connected**, the session stays alive as long as the client is there. Activity
+is recorded every few seconds, so the unused TTL counts from the moment the client goes away, not
+from the last request.
+
+The maximum session time is a separate cap that applies in both phases. It is the only value that
+closes a session someone is actively using, and it is unset by default.
+
+```yaml
+operator:
+  ## How long a session may wait for its first client connection. Default: 180.
+  sessionSetupDeadlineSeconds: 180
+
+  ## How long a connected session may go unused before it is closed. Default: 30.
+  sessionUnusedTtlSeconds: 30
+
+  ## Cap on total session lifetime, regardless of activity. Unset by default.
+  maxSessionTimeSeconds: 3600
+```
+
+Each value covers its own phase, so none of them overrides another. A session is closed by
+whichever one it reaches first.
+
+### Multi-cluster sessions
+
+A multi-cluster session is tracked twice: one session per cluster, and one session on the primary
+that owns them. Both go through the same two phases, so there is a matching pair of values under
+`operator.multiCluster`.
+
+```yaml
+operator:
+  multiCluster:
+    ## How long the session may wait for its first client connection. Default: 180.
+    sessionSetupDeadlineSecs: 180
+
+    ## How long it may go unused once a client has connected. Default: 60.
+    sessionTtlSecs: 60
+```
+
+Change `sessionSetupDeadlineSecs` and `sessionSetupDeadlineSeconds` together. The primary creates
+a session on every cluster before a client connects to any of them, so multi-cluster sessions
+spend longer starting up than single-cluster ones. Closing the session on the primary also closes
+it on every other cluster.
+
+### Picking values
+
+| Symptom | Value to raise |
+| --- | --- |
+| Sessions fail while starting, with `Session not found`, `is being deleted`, or a queue splitting readiness timeout | `sessionSetupDeadlineSeconds` |
+| Sessions drop for clients on slow or unreliable networks | `sessionUnusedTtlSeconds` |
+
+A longer unused TTL also holds agents and patched workloads for longer after a client really does
+go away, so raise it only as far as you need.
+
+Three values work best within these ranges:
+
+| Value | Range | Reason |
+| --- | --- | --- |
+| `sessionUnusedTtlSeconds` | 6 or more | Activity is recorded every 3 seconds, so a shorter TTL can lapse between two updates while the client is still connected. The Operator raises anything lower to 6. |
+| `sessionSetupDeadlineSeconds` | Above 150 with queue splitting | Queue splitting waits up to 150 seconds for the target's pods to become ready. |
+| `maxSessionTimeSeconds` | Above `sessionSetupDeadlineSeconds` | A cap below the setup deadline reaches sessions before a client can connect to them. The Operator logs a warning on startup. |
+
+The unused TTL and the setup deadline cover separate phases, so they can be set independently.
+
+### Why a session was closed
+
+The Operator records a reason whenever it closes a session, and mirrord reports it to the user.
+
+| Reason | Meaning |
+| --- | --- |
+| `SetupDeadlineExceeded` | No client connected within `sessionSetupDeadlineSeconds` |
+| `Unused` | The client disconnected and did not return within `sessionUnusedTtlSeconds` |
+| `TimeLimitExceeded` | The session reached `maxSessionTimeSeconds` |
+| `StateLost` | The session was created by an Operator instance that has since been replaced |
+
 ## Stop active Operator sessions
 
 Users may also forcefully stop a session with the `mirrord operator session` CLI commands.
