@@ -51,11 +51,53 @@ This will start all defined services, and they will run in parallel. The `mirror
 
 Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`.
 
+If you'd rather have your local process take over a service completely, use `replace` mode — see [Service modes](#service-modes).
+
 ## Configuration
+
+### Service modes
+
+Service modes are set per service with `default_mode` in the config file, or for a whole run with the `--mode` flag.
+
+The following config file sets `replace` mode for `user-auth-service`, while leaving `stage-user-dashboard-app` in the default `split` mode.
+
+```yaml
+services:
+  user-auth-service:
+    default_mode: replace
+    run:
+      command: ["python", "-m", "http.server"]
+
+  stage-user-dashboard-app:
+    target:
+      path: pod/nginx
+    run: 
+      command: ["node", "app.js"]
+```
+
+To override the mode for every service in a run, use `mirrord up --mode replace`.
+
+#### `split`
+
+If none is given, every service uses `split` mode by default. Your local process and the deployed service both keep serving traffic, and only requests matching the service's `http_filter` are stolen to your machine. When no filter is provided, mirrord generates one from the session key: `baggage: .*mirrord-session={key}.*`.
+
+#### `replace`
+
+Your local process takes over the service entirely. mirrord creates a copy of the target workload and scales the original down to zero for the duration of the session, so every request that would have reached the deployed service reaches your machine instead.
+
+{% hint style="warning" %}
+`replace` scales the deployed workload down to zero while your session runs, so *everyone* hitting that service reaches your local process — not just you. On a shared cluster, prefer `split`.
+
+The original workload is restored when the session ends.
+{% endhint %}
+
+`replace` requires the targeted workload to be a deployment, statefulset, or replicaset.
+
+Any `http_filter` set on a service in `replace` mode is ignored.
 
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service in `split` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service, in both `split` and `replace` mode. You don't need to add any special configuration.
 
 Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
 
@@ -127,11 +169,14 @@ Omitting the `target` field entirely is equivalent to an empty mapping: the path
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
 
 ##### `services.*.default_mode`
-So far, only `split` is supported. The incoming mode is set to `steal` with http filter.
-User-provided filter is used if provided, otherwise defaulting to `baggage: .*mirrord-session={key}.*`.
+Either `split` (the default) or `replace`. See [Service modes](#service-modes) for what each one does and when to use it.
+
+The `--mode` flag overrides this for every service being launched.
 
 ##### `services.*.http_filter`
 Specifies the HTTP filtering configuration for the given service. Maps directly to [`feature.network.incoming.http_filter`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
+
+Only applies in `split` mode. A service in `replace` mode receives all incoming traffic, so any filter set on it is ignored.
 
 ##### `services.*.ignore_ports` 
 List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
@@ -218,6 +263,9 @@ Here the namespace falls back to `default` when `DEV_NAMESPACE` isn't set, while
 ### `-f`, `--config-file`
 Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom.yaml`
 
+### `-m`, `--mode`
+Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split` or `replace` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
+
 ### `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.
 
@@ -231,5 +279,5 @@ $ mirrord up init [-o path/to/mirrord-up.yaml]
 
 Flow:
 1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
-2. **Services** — loops one service at a time, prompting for name, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. For the target you choose to infer it from the service name (looked up when you run `mirrord up`), specify one explicitly, or run without a target. Repeats until you answer "no" to *Add another service?*.
+2. **Services** — loops one service at a time, prompting for name, mode, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. For the target you choose to infer it from the service name (looked up when you run `mirrord up`), specify one explicitly, or run without a target. Choosing `replace` mode skips the HTTP filter prompt and drops the targetless option, since neither applies to it. Repeats until you answer "no" to *Add another service?*.
 3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
