@@ -61,16 +61,10 @@ cluster that is slow to roll pods.
 
 A session goes through two phases, and a different value applies to each.
 
-```
-     session          first client            client
-     created            connects               gone
-        |                   |                    |
-        |-- starting up ----|--- connected ------|-- unused --> closed
-        |    (setup         |   (kept alive      |    (unused
-        |     deadline)     |    automatically)  |     TTL)
-        |
-        |------------------ max session time ---------------> closed
-```
+| Phase | Lasts from | Until | Closed after |
+| --- | --- | --- | --- |
+| Starting up | the session is created | the first client connects | `sessionSetupDeadlineSeconds` |
+| Connected | the first client connects | the client goes away | `sessionUnusedTtlSeconds` |
 
 While a session is **starting up**, no client has reached it yet. The Operator may be patching
 the target for queue splitting and waiting for its pods to roll, which takes time. The setup
