@@ -140,7 +140,37 @@ The inherited environment includes your app's real database connection values, s
 
 If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret` or `gcp_secret_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, or declare env-based connection params.
 
-The Job's environment is built in layers, later entries overriding earlier ones by name: injected `MIRRORD_DB_*` first, then the inherited target environment, then the branch-redirected connection variables, then your `migrations.env`. So a `migrations.env` entry is the escape hatch for any inherited value that shouldn't apply to migrations (for example forcing `RAILS_ENV`).
+The Job's environment is built in layers, later entries overriding earlier ones by name: injected `MIRRORD_DB_*` first, then the inherited target environment, then the admin's `migrationEnv` values, then the branch-redirected connection variables, then your `migrations.env`. So a `migrations.env` entry is the escape hatch for any inherited or admin value that shouldn't apply to migrations (for example forcing `RAILS_ENV`).
+
+### Admin control over the Job's environment
+
+Cluster admins tune this behavior per database type - and per branch-config profile - with `migrationEnv` in the operator's Helm values:
+
+```yaml
+mysqlBranchConfig:
+  dbPod:
+    migrationEnv:
+      inherit: true             # the default; set to false to give the Job only MIRRORD_DB_* and migrations.env
+      env:
+        - name: RAILS_ENV
+          value: development
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: migration-secrets
+              key: api-key
+      envFrom:
+        - configMapRef:
+            name: shared-migration-config
+```
+
+| Field | Description |
+| --- | --- |
+| `inherit` | Whether the Job inherits the target container's `env`/`envFrom`. Defaults to `true`. |
+| `env` | Extra variables for every migration Job, in the plain Kubernetes `env` shape - `valueFrom` works, so secret values stay in-cluster. Entries override inherited values of the same name, but never the branch-redirected connection variables. |
+| `envFrom` | Extra ConfigMap/Secret refs, appended after the target's own so their keys win on collisions. |
+
+This is useful for values every migration needs but the target doesn't carry, or - with `inherit: false` - for handing the Job a fully admin-curated environment instead of the app's.
 
 ### Reaching the branch from your container
 
