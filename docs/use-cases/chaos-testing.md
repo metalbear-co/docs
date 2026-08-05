@@ -81,13 +81,151 @@ An effect defines what happens to a matched connection. Two effects are supporte
 
 When multiple rules match the same connection, only one is applied: the rule with the highest `priority` value. If not set, `priority` defaults to 0, the lowest.
 
-## Prerequisites
+## Managing chaos rules
 
-1. Minimum mirrord CLI version `3.232.0`.
+### Option 1: CLI
 
-## Starting the UI server and a session
+**Prerequisites:** Minimum mirrord CLI version `3.241.0`
 
-Chaos rules are managed through the mirrord UI server, so start it first:
+The easiest way to manage chaos rules is with the `mirrord chaos` commands. To see available commands and options:
+
+```bash
+mirrord chaos --help
+```
+
+All you need to manage rules for a mirrord session is the session ID. When starting a session by running `mirrord exec`, for example, this is printed by default:
+
+```sh
+* session ID: c425f391-e9cc-4199-8de9-7bdbb3e7dfcc
+* Running command: ...
+```
+
+Alternatively, you can run `mirrord sessions` to show the details of running sessions.
+
+For convenience, you can export the value:
+
+```sh
+export SESSION_ID='c425f391-e9cc-4199-8de9-7bdbb3e7dfcc'
+```
+
+#### Creating a rule
+
+To add a new rule, for example:
+
+```json
+{
+  "name": "latency for database interactions",
+  "priority": 10,
+  "effect": {
+    "latency": {
+      "read_ms": 750
+    }
+  },
+  "selector": {
+    "upstream": "sonic.database.svc.cluster.local",
+    "percentage": 35
+  }
+}
+```
+
+Either write the rule to a file `path/to/rule.json` and run:
+
+```sh
+mirrord chaos add -s $SESSION_ID -f path/to/rule.json
+```
+
+Or, add a new rule straight from `stdin`:
+
+```sh
+# any command that prints to stdout can be used
+cat path/to/rule.json | mirrord chaos add -s $SESSION_ID
+```
+
+{% hint style="info" %}
+Multiple rules can be added at once by providing an array of rules instead of just one. Note that the rules are still added individually internally, so if one of the rules is invalid, the others may still be added.
+{% endhint %}
+
+#### Listing rules
+
+To show the rules for the session:
+
+```sh
+mirrord chaos list -s $SESSION_ID
+```
+
+#### Modifying a rule
+
+To edit an existing rule, the rule ID is required - this is printed when a rule is added with `mirrord chaos add`, or can be found in `mirrord chaos list`:
+
+```sh
+export RULE_ID='6b8f1c4e-2a73-4d9b-8e56-c3f0a7d1b924'
+
+mirrord chaos edit -s $SESSION_ID -r $RULE_ID -f path/to/new_rule.json
+```
+
+As with `mirrord chaos add`, new rules can be provided from a file or `stdin`. Only one rule can be modified at a time.
+
+#### Deleting a rule
+
+To remove a specific rule:
+
+```sh
+mirrord chaos delete -s $SESSION_ID -r $RULE_ID
+```
+
+To remove all rules for this session:
+
+```sh
+mirrord chaos delete -s $SESSION_ID
+```
+
+#### Formatting
+
+By providing the `--format` argument, the output of `mirrord chaos` can be customised:
+
+- `pretty` (default): print a human readable summary
+- `json`: print output in JSON
+- `silent`: do not print output (errors are still printed to `stderr`)
+
+When using `mirrord chaos` in scripts, it is recommended that you use `--format json` as the default `pretty` output may be changed in the future.
+
+### Option 2: UI dashboard
+
+{% hint style="info" %}
+For more information on the UI server, see [Local UI](../using-mirrord/local-ui.md).
+{% endhint %}
+
+**Prerequisites:** Minimum mirrord CLI version `3.235.0`
+
+In addition to the `chaos` sub-commands, it is possible to manage and view chaos rules in mirrord's UI server. When running the `mirrord chaos` command, it starts the UI silently in the background if it is not already running. To start the server and open the dashboard in your browser, run:
+
+```sh
+mirrord ui
+```
+
+The `chaos` tab on the right hand pane allows you to manage chaos rules interactively.
+
+![UI Server Chaos Tab](../.gitbook/assets/ui-server-chaos-tab.png)
+
+You can also see traffic for the session, and add rules from here.
+
+![UI Server Traffic Logs](../.gitbook/assets/ui-server-traffic-hover.png)
+
+#### Stopping the server
+
+To stop the UI server manually, for example if it is misbehaving, run:
+
+```sh
+mirrord ui stop
+```
+
+### Option 3: REST endpoints
+
+**Prerequisites:** Minimum mirrord CLI version `3.232.0`
+
+#### Setup: UI server and starting a session
+
+Chaos rules are managed through the mirrord UI server, so make sure it is running:
 
 ```sh
 mirrord ui
@@ -128,9 +266,9 @@ export SESSION_ID='c425f391-e9cc-4199-8de9-7bdbb3e7dfcc'
 export CHAOS_URL="$UI_ADDRESS/api/chaos/rules/$SESSION_ID"
 ```
 
-## Managing rules via the API
+#### Managing rules via the API
 
-### Creating a rule
+##### Creating a rule
 
 To create a chaos rule, write it to a JSON file, for example `latency-rule.json`:
 
@@ -183,7 +321,7 @@ The response returns the created rule, including the `id` you'll need to modify 
 
 The outgoing traffic (roughly 35% of it) from the service we are debugging with mirrord will now be affected by latency on read operations, when this traffic is destined to a host that matches the `selector`. In this example, outgoing traffic on this database connection would be impacted by this latency rule, so we can test how the `app.js` service behaves when there's latency requesting data from this database.
 
-### Listing rules
+##### Listing rules
 
 To list all the chaos rules that are active for a session, send an HTTP GET request:
 
@@ -195,7 +333,7 @@ curl --request GET \
 
 The response is an array of rules in the same shape as the creation response, each with its `id`.
 
-### Modifying a rule
+##### Modifying a rule
 
 Modifying or deleting a rule requires its ID, which is returned when the rule is created and included in the list response. To modify a rule, edit the rule's JSON file:
 
@@ -228,7 +366,7 @@ curl --request PUT \
 
 Here we changed both the `name` of the chaos rule and its `percentage`.
 
-### Deleting a rule
+##### Deleting a rule
 
 To delete a chaos rule, send an HTTP DELETE request with the ID of the rule you want:
 

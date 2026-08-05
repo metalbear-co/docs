@@ -63,7 +63,7 @@ Default for `connection.params.host` is `localhost` for all databases.
 
 #### Custom Parameters
 
-Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
+Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accepts `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
 
 ### Secret Source
 
