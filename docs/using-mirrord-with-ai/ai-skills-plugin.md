@@ -22,6 +22,9 @@ Skills are reusable instruction modules that teach AI agents how to work with mi
 - Help set up mirrord in CI pipelines
 - Configure the mirrord operator for team environments
 - Help set up [database branching](../sharing-the-cluster/db-branching.md) for your cluster
+- Configure [queue splitting](../sharing-the-cluster/queue-splitting.md) for Kafka topics
+- Create [preview environments](../use-cases/preview-environments.md), ad hoc or per-PR in CI
+- [Chaos test](../use-cases/chaos-testing.md) your app with per-session latency and connection-error rules
 
 
 ## Available Skills
