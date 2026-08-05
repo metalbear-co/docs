@@ -20,7 +20,7 @@ mirrord is open source and we welcome contributions!
 
 ## Greptile Reviews
 
-Greptile may review pull requests automatically. Authors and maintainers can apply the `no-greptile` label when an
+Greptile may review pull requests automatically. Maintainers can apply the `no-greptile` label when an
 automated review is not needed, such as for a typo-only or other trivial change. Opting out of reviews that are not
 useful helps keep usage within the included monthly review quota. If Greptile's input becomes useful later, tag
 `@greptileai` in the pull request to request a review explicitly.
