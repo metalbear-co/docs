@@ -138,9 +138,11 @@ The Job inherits the target container's `env` and `envFrom` (ConfigMaps and Secr
 
 The inherited environment includes your app's real database connection values, so the operator redirects them: every variable named in the branch's `connection` is set to the branch's value on the Job, taking precedence over the inherited one. Your migration tool reads its usual variable (`DATABASE_URL` for the Rails example above) and lands on the branch - the source database stays out of reach through every variable mirrord knows about.
 
-If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret` or `gcp_secret_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, or declare env-based connection params.
+If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret` or `gcp_secret_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, declare env-based connection params, or have the cluster admin disable `migrationEnv.inherit`.
 
-The Job's environment is built in layers, later entries overriding earlier ones by name: injected `MIRRORD_DB_*` first, then the inherited target environment, then the admin's `migrationEnv` values, then the branch-redirected connection variables, then your `migrations.env`. So a `migrations.env` entry is the escape hatch for any inherited or admin value that shouldn't apply to migrations (for example forcing `RAILS_ENV`).
+On multi-container targets, the Job inherits from the container your target path names (`deployment/app/container/main`). Without a named container, it uses the container that defines one of the declared connection variables, falling back to the first container - so a sidecar listed ahead of your app doesn't donate its environment.
+
+The Job's environment merges five layers; when the same name appears in several, the winner is, strongest first: your `migrations.env`, the injected `MIRRORD_DB_*`, the branch-redirected connection variables, the admin's `migrationEnv`, the inherited target environment. So a `migrations.env` entry is the escape hatch for any inherited or admin value that shouldn't apply to migrations (for example forcing `RAILS_ENV`).
 
 ### Admin control over the Job's environment
 
