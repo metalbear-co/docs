@@ -125,7 +125,7 @@ it on every other cluster.
 
 | Symptom | Value to raise |
 | --- | --- |
-| Sessions fail while starting, with `Session not found`, `is being deleted`, or a queue splitting readiness timeout | `sessionSetupDeadlineSeconds` |
+| Sessions fail while starting, with `Session not found` or `is being deleted` | `sessionSetupDeadlineSeconds` |
 | Sessions drop for clients on slow or unreliable networks | `sessionUnusedTtlSeconds` |
 
 A longer unused TTL also holds agents and patched workloads for longer after a client really does
