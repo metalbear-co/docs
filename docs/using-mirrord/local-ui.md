@@ -44,7 +44,7 @@ The CLI starts an HTTP + WebSocket server bound to localhost, generates a one-sh
  -> ...
 
 * Web UI:
- -> http://127.0.0.1:59281?token=...
+ -> http://127.0.0.1:59281/auth?token=...
 * API token:
 -> x-auth-token: ...
 
@@ -82,7 +82,7 @@ BROWSER="firefox" mirrord ui
 
 ## Authentication
 
-The token is high-entropy and is bound to the running `mirrord ui` process. The first request you make with `?token=...` sets a `mirrord_token` cookie scoped to that origin so subsequent requests don't need to keep the query parameter. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
+The token is high-entropy and is bound to the running `mirrord ui` process. The `?token=...` query parameter is only accepted on a dedicated `/auth` entry point - the URL the CLI prints and opens for you. Visiting `/auth?token=...` validates the token, sets a `mirrord_token` cookie scoped to that origin, and redirects to the dashboard, so the token never appears in ordinary navigation or API URLs afterwards. Every other route authenticates via that cookie. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
 
 Stopping the server with `mirrord ui stop` invalidates the token; the next run mints a new one.
 
