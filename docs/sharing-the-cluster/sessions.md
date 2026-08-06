@@ -54,6 +54,10 @@ filtering HTTP traffic with the following filter: `baggage: .*mirrord-session=Av
 
 ## How long sessions live
 
+{% hint style="info" %}
+Configuring session lifetimes requires mirrord operator `3.191.0` or later and operator Helm chart `3.191.0` or later.
+{% endhint %}
+
 The Operator closes sessions on its own once nobody is using them, so a crashed client or a
 cancelled CI job does not leave agents and patched workloads behind. The defaults suit most
 clusters. This is useful when yours behaves differently, for example when CI runs against a
