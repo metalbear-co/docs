@@ -57,7 +57,7 @@ Please note that:
 ## Sharing Property Lists Across Namespaces
 
 {% hint style="info" %}
-Looking up a property list in the operator's namespace requires mirrord operator `X.Y.Z` or later. Earlier operators only look in the target's namespace.
+Looking up a property list in the operator's namespace requires mirrord operator `3.191.0` or later. Earlier operators only look in the target's namespace.
 {% endhint %}
 
 Every queue service is set up with a `MirrordPropertyList` holding the broker connection details, referenced by name from the `MirrordSplitConfig`. The operator looks that name up in two places, in order:
