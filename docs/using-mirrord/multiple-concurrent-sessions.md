@@ -108,11 +108,11 @@ $ mirrord up --key checkout-debug
 ```
 
 Messages intended for this session must contain `mirrord-session=checkout-debug`.
-The marker is matched in broker-specific message metadata: SQS message attributes, Google Cloud Pub/Sub attributes,
+The marker is matched in broker-specific message metadata: Kafka headers, SQS message attributes, Google Cloud Pub/Sub attributes,
 Azure Service Bus application properties, or Temporal headers. For Redis Pub/Sub and BullMQ, it is matched in the message payload.
 
-Queue splitting is available in `mirrord up` for Amazon SQS, Google Cloud Pub/Sub, Azure Service Bus, Redis Pub/Sub, Temporal, and BullMQ.
-Kafka and RabbitMQ aren't supported yet in `mirrord up`.
+Queue splitting is available in `mirrord up` for Kafka, Amazon SQS, Google Cloud Pub/Sub, Azure Service Bus, Redis Pub/Sub, Temporal, and BullMQ.
+RabbitMQ isn't supported yet in `mirrord up`.
 
 {% hint style="info" %}
 Only messages containing the session key (`checkout-debug` in this case) are routed to your local session. All other messages continue to the deployed target.
