@@ -39,7 +39,7 @@ Enable the `operator.redisPubsubSplitting` setting in the [mirrord-operator Helm
 {% step %}
 **Create a MirrordPropertyList**
 
-The operator needs to connect to your Redis instance to subscribe to and re-publish messages. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`).
+The operator needs to connect to your Redis instance to subscribe to and re-publish messages. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1

@@ -52,7 +52,7 @@ Enable the `operator.kafkaSplitting` setting in the [mirrord-operator Helm chart
 
 The mirrord operator needs to be able to perform some operations on the Kafka cluster. The connection settings live in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)), which you reference from the `MirrordSplitConfig` (see the next step).
 
-The `MirrordPropertyList` must live in the **same namespace as the target workload** (and the `MirrordSplitConfig`). Each property is a Kafka client property; the operator passes them straight to the underlying Kafka client. A few operator-specific keys (prefixed with `mirrord.`) are consumed by the operator and not forwarded to the client.
+The `MirrordPropertyList` lives in the **same namespace as the target workload** (and the `MirrordSplitConfig`), or in the operator's namespace to share one client config across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces). Each property is a Kafka client property; the operator passes them straight to the underlying Kafka client. A few operator-specific keys (prefixed with `mirrord.`) are consumed by the operator and not forwarded to the client.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1

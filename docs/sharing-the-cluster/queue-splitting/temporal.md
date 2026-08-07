@@ -42,7 +42,7 @@ When enabled, the operator runs a Temporal proxy that deployed workers connect t
 {% step %}
 **Create a MirrordPropertyList**
 
-The operator needs to connect to your Temporal frontend to poll the real task queue. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`).
+The operator needs to connect to your Temporal frontend to poll the real task queue. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1

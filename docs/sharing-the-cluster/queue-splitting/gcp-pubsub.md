@@ -46,7 +46,7 @@ Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm c
 
 The mirrord operator needs access to the Google Cloud Pub/Sub API to create and manage temporary topics and subscriptions.
 
-In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below.
+In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below. Put the list in the target workload's namespace, or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
 **Option A: Workload Identity (recommended)**
 
@@ -110,7 +110,9 @@ Whichever option you choose, the operator needs to know which property list to u
 
 1. `spec.queues[].clientConfig` on an individual queue entry in the `MirrordSplitConfig`.
 2. `spec.clientConfigs.googlePubSub` on the `MirrordSplitConfig`, used as the default for all Pub/Sub queues.
-3. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
+3. If neither is set, the operator looks for a `MirrordPropertyList` named `default`.
+
+Whichever name it settles on, the operator looks for it in the target's namespace first and then in its own.
 
 So either name your property list `default`, or point to it explicitly. For example, to share one property list across all Pub/Sub queues:
 
@@ -209,7 +211,7 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
   * `valuePattern` - a regex used when the subscription name is embedded in a larger string such as a Go CDK URL (`gcppubsub://projects/my-project/subscriptions/my-subscription`) or a resource path. See [Preserving the value format](gcp-pubsub.md#preserving-the-value-format) below.
   * `containers` - limit to specific containers (optional, defaults to all).
 * `appConfig.projectId` - how the application discovers the GCP project ID. Uses the same structure as `subscription`.
-* `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default` in the target's namespace.
+* `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default`.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with additional configuration for temporary resources.
 
 **Matching multiple subscriptions with `envLike`**
