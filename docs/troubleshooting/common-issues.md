@@ -213,6 +213,66 @@ By excluding `NX_NEXT_DIR` and `NODE_ENV`, you stop the remote environment from 
 
 ---
 
+## mirrord fails with `Unable to connect to agent`
+
+In sessions that don't go through the mirrord Operator, mirrord spawns an agent in the cluster and connects to it by port-forwarding through the Kubernetes API server. `Unable to connect to agent` means one of these steps failed, and the rest of the error message says which one. The most common cases are listed below.
+
+For anything the error message doesn't explain, the agent pod is the best witness. It is created in the target's namespace (or in [`agent.namespace`](https://metalbear.com/mirrord/docs/config/options#agent-namespace) if set) with the `app=mirrord` label:
+
+```bash
+kubectl get pods -n <namespace> -l app=mirrord
+kubectl describe pod -n <namespace> <mirrord-agent-pod-name>
+```
+
+The events at the bottom of `kubectl describe` explain most scheduling and image problems.
+
+### `agent container failed to pull image (ErrImagePull or ImagePullBackOff)`
+
+The cluster nodes cannot pull the agent image. By default mirrord uses the public image `ghcr.io/metalbear-co/mirrord`, so this typically happens in clusters that cannot access public registries (air-gapped environments, restricted egress). Copy the agent image to a registry your cluster can reach, then point mirrord at it with [`agent.image`](https://metalbear.com/mirrord/docs/config/options#agent-image), adding [`agent.image_pull_secrets`](https://metalbear.com/mirrord/docs/config/options#agent-image_pull_secrets) if the registry requires authentication:
+
+```json
+{
+  "agent": {
+    "image": "internal.registry.example.com/mirrord:latest",
+    "image_pull_secrets": [{ "name": "my-registry-secret" }]
+  }
+}
+```
+
+### `Timeout waiting for agent to be ready`
+
+The agent did not finish starting within [`agent.startup_timeout`](https://metalbear.com/mirrord/docs/config/options#agent-startup_timeout) (60 seconds by default). This is usually a pod that is still scheduling, or a node pulling the agent image for the first time. Check the pod events as shown above. If things are just slow, raise the timeout:
+
+```json
+{
+  "agent": {
+    "startup_timeout": 300
+  }
+}
+```
+
+### `Node <name> is out of pod capacity`
+
+When targeting a workload, the agent pod runs on the same node as the target pod, because it works directly with the target's container on that node. If that node already runs its maximum number of pods, there is no room for the agent. Free some capacity on that node, or target a replica that runs on a less crowded node. mirrord performs this capacity check before creating the agent; [`agent.check_out_of_pods`](https://metalbear.com/mirrord/docs/config/options#agent-check_out_of_pods) can disable the check itself, but if the node truly has no capacity, the agent will still fail to schedule.
+
+### The agent pod is blocked by cluster security policies
+
+The agent requests elevated Linux capabilities in order to work with the target's network and processes (see [`agent.disabled_capabilities`](https://metalbear.com/mirrord/docs/config/options#agent-disabled_capabilities) for the exact list). Admission policies that restrict capabilities can reject the agent pod or keep it from scheduling:
+
+- OpenShift's default security context constraints (see the [limitations FAQ](../faq/limitations.md))
+- Namespaces enforcing the `restricted` [Pod Security Standard](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- Policy engines such as OPA Gatekeeper or Kyverno
+
+`kubectl describe` on the pod, or the policy engine's own events, shows the rejection reason. Depending on your setup you can run the agent in a dedicated, less restricted namespace with [`agent.namespace`](https://metalbear.com/mirrord/docs/config/options#agent-namespace) (not available for targetless runs or ephemeral agents), or disable capabilities you don't need with [`agent.disabled_capabilities`](https://metalbear.com/mirrord/docs/config/options#agent-disabled_capabilities) (the features that rely on them stop working). On hardened node operating systems such as Bottlerocket, the agent may additionally need [`agent.privileged`](https://metalbear.com/mirrord/docs/config/options#agent-privileged). If your organization prefers keeping strict policies as they are, [mirrord for Teams](../managing-mirrord/operator.md) moves agent creation to the mirrord Operator, so cluster admins grant the needed permissions once instead of to every developer.
+
+### Connection drops or port-forward failures
+
+mirrord reaches the agent through the same path as `kubectl port-forward`. If you see errors like `Connection to agent failed` or `Port not found in port forward`, first verify that `kubectl port-forward` works against any pod in the cluster. If it doesn't, fix that first: VPNs, corporate HTTP proxies, and private cluster firewalls commonly break the port-forward path while leaving other kubectl commands working.
+
+If none of these match your case, collect the [mirrord logs](collecting-logs.md) from the failed run before reaching out; they make the difference between a guess and a fix.
+
+---
+
 ## Didn't find your issue here?
 
 - Search or ask on our [Slack community](https://metalbear.com/slack)
