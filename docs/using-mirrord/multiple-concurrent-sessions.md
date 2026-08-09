@@ -22,7 +22,7 @@ toc: true
 
 The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
 ```sh
-$ mirrord up init
+mirrord up init
 ```
 It prompts for common settings and walks you through one or more services, then writes the file (default: `./mirrord-up.yaml`). The generated file contains only the values you set; everything left at its default is omitted. See [`mirrord up init`](#mirrord-up-init) below for details.
 
@@ -44,7 +44,7 @@ This file is the single source of configuration for all running sessions. Each e
 
 Now, in the same directory of the `mirrord-up.yaml` file, run
 ```sh
-$ mirrord up
+mirrord up
 ```
 
 This will start all defined services, and they will run in parallel. The `mirrord up` session will be stopped once it's interrupted (`ctrl-c`) or one of the running mirrord sessions shuts down.
@@ -104,7 +104,7 @@ Before starting the session, set up queue splitting for the target and enable th
 Start the services with a session key, for example:
 
 ```sh
-$ mirrord up --key checkout-debug
+mirrord up --key checkout-debug
 ```
 
 Messages intended for this session must contain `mirrord-session=checkout-debug`.
@@ -274,7 +274,7 @@ Allows specifying a custom session key. When not supplied, the OS username is us
 Interactive wizard that generates a skeleton `mirrord-up.yaml`. It does not query the cluster; workload inference and prompting happen later, when you run `mirrord up`.
 
 ```sh
-$ mirrord up init [-o path/to/mirrord-up.yaml]
+mirrord up init [-o path/to/mirrord-up.yaml]
 ```
 
 Flow:
