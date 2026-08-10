@@ -15,7 +15,11 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
-## Choose your queue service
+{% hint style="info" %}
+Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
+{% endhint %}
+
+### Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
@@ -49,6 +53,25 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
+
+## Sharing Property Lists Across Namespaces
+
+{% hint style="info" %}
+Looking up a property list in the operator's namespace requires mirrord operator `3.191.0` or later. Earlier operators only look in the target's namespace.
+{% endhint %}
+
+Every queue service is set up with a `MirrordPropertyList` holding the broker connection details, referenced by name from the `MirrordSplitConfig`. The operator looks that name up in two places, in order:
+
+1. the namespace of the target workload, which is also the namespace of the `MirrordSplitConfig`,
+2. the namespace the operator is installed in.
+
+This is useful when one broker serves many teams. Define the credentials once next to the operator, and every `MirrordSplitConfig` in the cluster can reference that name without each namespace keeping its own copy. A list in the target's namespace still wins, so a team can override the shared one by creating a list with the same name next to their workload.
+
+ConfigMap and Secret references inside a property list are resolved in the namespace the list was found in. A list in the operator's namespace must therefore reference ConfigMaps and Secrets in the operator's namespace.
+
+{% hint style="warning" %}
+A property list in the target's namespace that the operator cannot parse fails the session instead of falling through to the operator's namespace. This keeps a broken local list from silently switching the target onto shared credentials.
+{% endhint %}
 
 ## Session Key Header
 

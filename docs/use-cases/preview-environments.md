@@ -223,6 +223,59 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
       --cert=wildcard.crt --key=wildcard.key -n mirrord
     ```
 
+### Auto Scaling Idle Mode
+
+Preview Environments can scale down to **zero pods while they receive no traffic**, then scale back up automatically when matching traffic arrives - without dropping that traffic. This makes long-lived
+previews (for example, one per open PR) essentially free until someone actually uses them.
+
+Enable it in the mirrord configuration:
+
+```json
+{
+  "feature": {
+    "preview": {
+      "idle": {
+        "start_idle": true,
+        "sleep_after_secs": 300,
+        "wake_timeout_secs": 90
+      }
+    }
+  }
+}
+```
+
+* `start_idle` - create the Preview Environment with zero pods. The first matching request or
+  queue message starts the preview pods. `mirrord preview start` returns success as soon as the environment
+  is ready to receive traffic, without waiting for a pod to run.
+* `sleep_after_secs` - scale the preview pods to zero after this many seconds without traffic
+  (minimum 30). When unset, the environment never idles automatically.
+* `wake_timeout_secs` - How long an incoming request is held while the preview pods start before the request fails (default: 90 seconds).
+
+#### Idle Behavior
+
+An idle Preview Environment keeps listening: the traffic interception on the target and any
+queue splits stay active even though the preview's pods are gone. When a request carrying the
+environment's filter arrives, it is **held** while the pods start and answered by the preview
+once ready - the caller just sees a slower first response. Queue messages don't need holding at
+all: they wait in the environment's split queue/topic until the preview consumes them, so
+nothing is lost either way.
+
+While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
+and the session's TTL keeps counting. Idle mode requires a wake source - incoming traffic
+enabled or queues split - since otherwise nothing could ever wake the environment.
+
+Cluster administrators can cap how much traffic a waking environment may hold with these Helm
+chart values (defaults: 512 protocol messages, 8 MiB of payload):
+
+```yaml
+operator:
+  preview:
+    idleHoldBufferMessages: 512
+    idleHoldBufferBytes: 8388608
+```
+
+***
+
 ### Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)

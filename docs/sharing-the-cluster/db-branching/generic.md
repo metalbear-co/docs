@@ -43,7 +43,7 @@ Two built-in variables are always available alongside the parameters: `MIRRORD_B
 
 | Field | Description |
 | --- | --- |
-| `image` | *(Required)* Full image reference for the branch container, including the tag. The shared `version` field is not allowed - the tag lives here. |
+| `image` | *(Required)* Full image reference for the branch container, including the tag. The shared `version` field is not allowed - the tag lives here. Admins can restrict which images are accepted via `genericBranchConfig.dbPod.allowedImages` - see [Restricting Branch Images](../db-branching.md#restricting-branch-images). |
 | `port` | *(Required)* The port the branched service listens on. Used for the default readiness probe and as the port the app is redirected to. |
 | `command` / `args` | *(Optional)* Entrypoint override for the branch container. Values may reference `$(MIRRORD_PARAM_<NAME>)`. |
 | `env` | *(Optional)* Extra environment variables for the branch container, with the same `$(VAR)` references. Keys must not start with `MIRRORD_PARAM_`. |

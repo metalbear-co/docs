@@ -38,12 +38,14 @@ Copy modes, version requirements, and engine-specific behavior differ per databa
 | Database | Config `type` | Branch location |
 | --- | --- | --- |
 | [MySQL](db-branching/mysql.md) | `"mysql"` | Remote |
+| [MariaDB](db-branching/mariadb.md) | `"mariadb"` | Remote |
 | [PostgreSQL](db-branching/postgresql.md) | `"pg"` | Remote |
 | [MSSQL](db-branching/mssql.md) | `"mssql"` | Remote |
 | [MongoDB](db-branching/mongodb.md) | `"mongodb"` | Remote |
 | [Redis](db-branching/redis.md) | `"redis"` | Remote or local |
 | [DynamoDB](db-branching/dynamodb.md) | `"dynamodb"` | Remote |
 | [ClickHouse](db-branching/clickhouse.md) | `"clickhouse"` | Remote |
+| [CockroachDB](db-branching/cockroachdb.md) | `"cockroachdb"` | Remote |
 | [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote |
 | [Generic](db-branching/generic.md) (any other service, using your own image) | `"generic"` | Remote |
 
@@ -88,16 +90,138 @@ Developers define branches in their `mirrord.json`:
 | `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. (The `id` field is not used for local Redis instances and has no effect on database selection or reuse) |
 | `location` | Supported values are `remote` and `local`. The default is `remote`, which provisions a branch in the cluster. `local` spawns the branch on your own machine, and is only available for engines whose [Choose Your Database](#choose-your-database) entry lists a local branch location (see [Local Redis](db-branching/redis.md#local-redis)). |
 | `type` | The database engine to branch. See the [Choose Your Database](#choose-your-database) table for supported values. |
-| `version` | Database engine version. |
+| `version` | Database engine version, used as the tag on the operator's default image (or the registry an admin configured for this engine). Mutually exclusive with `image`. |
+| `image` | Full image reference for the branch container, including the tag (for example `registry.example.com/postgresql:15-partman`). Overrides the operator's default image and any admin-configured registry entirely. Mutually exclusive with `version`, since the tag is part of the reference. Cluster admins can restrict which images are accepted - see [Restricting Branch Images](#restricting-branch-images). (For `generic` branches the image is required and lives in the same field - see the [Generic](db-branching/generic.md) page.) |
+| `profile` | Name of a branch config profile the cluster admin defined for this engine. Selects which pod settings the branch runs with - image registry, pull secrets, TLS mode, resources. When omitted, the operator's default settings apply. See [Branch Config Profiles](#branch-config-profiles). |
 | `name` | Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname. If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case. For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`. |
 | `ttl_secs` / `ttl_mins` | Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes. |
 | `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
 | `copy.mode` | Allows developers to control how the database is cloned when creating a branch. Available modes and filtering options differ per engine - see the Copy Modes section on your [database's page](#choose-your-database). |
-| `copy.dump_args` | (MySQL & PostgreSQL only) Customize the arguments passed to `mysqldump` or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments) or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
+| `copy.dump_args` | (MySQL, MariaDB & PostgreSQL only) Customize the arguments passed to `mysqldump`, `mariadb-dump`, or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments), [MariaDB](db-branching/mariadb.md#custom-dump-arguments), or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
 | `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. Unrecoverable pod failures (for example a bad image reference stuck in `ImagePullBackOff`) fail the branch immediately with the underlying error instead of waiting for this timeout. |
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
-| `migrations` | (MySQL, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+| `migrations` | (MySQL, MariaDB, CockroachDB, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+
+### Custom Branch Image
+
+By default, mirrord runs each branch on the operator's built-in image for that engine (optionally pointed at an admin-configured registry). Setting `image` on a branch overrides that with a full image reference you supply, including the tag:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "image": "registry.example.com/postgresql:15-partman",
+        "connection": {
+          "url": "DATABASE_URL"
+        }
+      }
+    ]
+  }
+}
+```
+
+This is useful when your service depends on a database image that differs from the stock one - e.g. a Postgres build with extra extensions. `image` and `version` are mutually exclusive: the tag is already part of the image reference.
+
+The same image is used for the branch's main container and for the init container that seeds it, so it must be able to run the engine and its client tools (for example `pg_dump`/`psql` for PostgreSQL).
+
+## Restricting Branch Images
+
+Cluster admins can restrict which images are accepted, per database engine, with the `allowedImages` list in the operator's Helm values. Each entry is a glob pattern where `*` matches any substring:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      allowedImages:
+        - "registry.example.com/postgresql:*"
+        - "docker.io/library/postgres:*"
+```
+
+A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
+
+## Branch Config Profiles
+
+A profile is a named preset of branch pod settings that a cluster admin defines for an engine. A branch picks one with `profile` and runs with those settings.
+
+Profiles are useful for two reasons:
+
+* **Less to write in `mirrord.json`.** Settings that developers would otherwise repeat in every config - a custom image, a registry, pull secrets, resource limits - live in the profile instead. The branch names the preset and nothing else.
+* **More than one baseline per cluster.** `<engine>BranchConfig.dbPod` is a single cluster-wide baseline: one registry, one set of pull secrets, one TLS mode. With profiles an engine can have several, so teams that need different branch pods can share a cluster - for example one team's Redis branches run a custom TLS image while another team's run a plain image from a different registry.
+
+The admin defines profiles next to the default `dbPod`. A profile takes the same fields as `dbPod`, so an existing block can be moved into one unchanged:
+
+```yaml
+operator:
+  redisBranchConfig:
+    dbPod:
+      allowedImages:
+        - "registry.example.com/plain/redis:*"
+    profiles:
+      tls:
+        dbPod:
+          image:
+            registry: "registry.example.com/tls/redis"
+          imagePullSecrets:
+            - name: "tls-registry-secret"
+          allowedImages:
+            - "registry.example.com/tls/redis:*"
+          tls: true
+          dbServerArgs:
+            - "--tls-port"
+            - "6379"
+            - "--port"
+            - "0"
+            - "--tls-cert-file"
+            - "/certs/tls.crt"
+            - "--tls-key-file"
+            - "/certs/tls.key"
+```
+
+A branch selects it by name, and needs no image, registry, or pull secret of its own:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "redis",
+        "profile": "tls",
+        "connection": {
+          "url": "REDIS_URL"
+        }
+      }
+    ]
+  }
+}
+```
+
+Branches that set no `profile` run with the default `dbPod`, so existing configs are unaffected. Naming a profile the operator does not define fails the session with an error listing the profiles that exist, rather than falling back to the default.
+
+A profile is a complete `dbPod`, not a patch on the default one: fields it leaves unset fall back to the operator's built-in defaults, not to the values in the default `dbPod`. So a profile that sets only `resources` runs the operator's default image, not the registry configured in the default `dbPod`.
+
+When a profile pins `image.registry`, the tag still comes from the branch's `version` or the engine's default tag. If your registry does not publish that default tag, developers set `version` and nothing else.
+
+### Profiles and `allowedImages`
+
+`allowedImages` is the one field a profile inherits, because leaving it unset means "any image is allowed" - a profile added for an unrelated reason should not quietly widen which images branches may run:
+
+| `allowedImages` in the profile | Images the branch may run |
+| --- | --- |
+| not set | whatever the default `dbPod.allowedImages` allows, inherited unchanged |
+| a list of globs | exactly those patterns - the default list does not apply |
+| `["*"]` | any image |
+| `[]` | none; the branch can only run the image the profile or operator provides |
+
+The list only gates images a developer supplies with `image`. Branches that take their image from the profile or the operator's default registry are always allowed, so a profile with `allowedImages: []` still works for everyone who does not pin their own image.
+
+Profiles work for every engine, each in its own `<engine>BranchConfig` block.
+
+{% hint style="info" %}
+Branch config profiles require operator and Helm chart `3.190.0` or later, and mirrord CLI `3.244.1` or later. Against an older operator, a branch that sets `profile` fails with a clear error instead of silently running the default settings.
+{% endhint %}
 
 ## Running With DB Branches
 

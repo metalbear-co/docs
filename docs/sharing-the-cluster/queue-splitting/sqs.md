@@ -212,7 +212,7 @@ Each entry in the `spec.queues` list describes one or more SQS queues consumed b
 
 **Per-queue options (SNS, S3 events, tags)**
 
-SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list must be in the same namespace as the `MirrordSplitConfig`. Supported properties:
+SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list is looked up in the namespace of the `MirrordSplitConfig`, then in the operator's namespace - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces). Supported properties:
 
 * `sns` (`"true"`/`"false"`) - set to `"true"` if the queue contains SQS messages created from SNS notifications. Message bodies are then parsed and matched against users' filters, since SNS notification attributes live in the SQS message body. Defaults to `"false"`.
 * `s3_event` (`"true"`/`"false"`) - set to `"true"` to parse incoming messages as S3 event notifications and, on success, fetch user-defined S3 object metadata for the referenced object and expose it to `jq_filter` as `S3Metadata`.

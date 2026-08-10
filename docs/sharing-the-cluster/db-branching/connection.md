@@ -52,16 +52,18 @@ Defaults
 | --- | --- | --- |
 | PostgreSQL | `5432` | `postgres` |
 | MySQL | `3306` | `root` |
+| MariaDB | `3306` | `root` |
 | MSSQL | `1433` | `sa` |
 | MongoDB | `27017` | `root` |
 | Redis | `6379` | `default` |
 | ClickHouse | `9000` | `default` |
+| CockroachDB | `26257` | `root` |
 
 Default for `connection.params.host` is `localhost` for all databases.
 
 #### Custom Parameters
 
-Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
+Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accepts `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
 
 ### Secret Source
 
@@ -130,7 +132,9 @@ For an individual parameter, use a `gcp_secret_manager` field with the resource 
 }
 ```
 
-`env_var_name` is optional. When set, the operator injects the branch connection under that name for your local process, just like the `secret` and literal-value sources, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch and your app keeps reading its own source.
+`env_var_name` is optional. When set, the operator injects the branch connection under that name for your local process, just like the `secret` and literal-value sources, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch and your local process keeps reading its own source.
+
+One exception: container-flavor [migrations](migrations.md) inherit the target's environment, and the operator must redirect the declared connection variables to the branch inside the migration Job. A `secret` or `gcp_secret_manager` source without `env_var_name` gives it no variable name to redirect, so the migration fails with an error instead of running with the source connection in its environment. Set `env_var_name` to the variable your app reads, or have the cluster admin disable `migrationEnv.inherit` in the operator's branch config.
 
 {% hint style="info" %}
 **Setup**: the branch pod inherits the target pod's service account, so that account's Google identity must have `roles/secretmanager.secretAccessor` on the secret. No operator-level permissions are needed.
