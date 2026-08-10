@@ -186,7 +186,9 @@ The example above will enforce that the user selects either `my-profile-1` or `m
 
 By default, mirrord policies apply to all targets in the namespace or cluster. You can use a target path pattern (`.spec.targetPath`) and/or a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#resources-that-support-set-based-requirements) (`.spec.selector`) in order to limit the targets to which a policy applies.
 
-The target path of a mirrord run is either `targetless` or has the form `<TARGET_TYPE>/<NAME>` followed by an optional `/container/<CONTAINER_NAME>`, where `<TARGET_TYPE>` is one of `deploy`, `pod`, `rollout` and `statefulset`.
+The target path of a mirrord run is either `targetless` or has the form `<TARGET_TYPE>/<NAME>` followed by an optional
+`/container/<CONTAINER_NAME>`, where `<TARGET_TYPE>` is one of `deploy`, `pod`, `rollout`, `statefulset`, `replicaset`, `job`,
+`cronjob`, `service`, or `label`.
 
 Examples for possible target paths:
 

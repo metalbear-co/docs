@@ -36,11 +36,18 @@ mirrord for Teams adds support for the following workloads:
 * CronJobs
 * StatefulSets
 * ReplicaSets
+
+mirrord for Teams also supports targeting:
+
 * Services
+* Labels
 
 In mirrord for Teams, mirrord will always target all pods when a workload with multiple pods is used as the remote target.
 
 When targeting a Service, mirrord resolves the Service to its backing pods via the Service's selector. Jobs and CronJobs require [`copy_target`](../using-mirrord/copy-target.md) to be enabled.
+
+When targeting Labels, mirrord will target all pods that match the label selector. At present, only basic features are supported
+for this target type, meaning it doesn't yet support copy, db branching, preview environments, or queue splitting.
 
 Both in mirrord OSS and mirrord for Teams, if you don't name any specific container to be targeted, mirrord will pick the first container from the pod spec. Some containers, like service mesh proxies, will be automatically ignored.
 
