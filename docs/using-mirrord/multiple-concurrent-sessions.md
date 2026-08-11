@@ -122,7 +122,7 @@ Only messages containing the session key (`checkout-debug` in this case) are rou
 
 `mirrord up` allows you to specify which Kubernetes context to run services in. You can do this either with the `--context` flag, or by setting it in `context` in the config file.
 
-The following config file sets the `minikube` context for `user-auth-service` and `kind` context for `stage-user-dashboard-app` via the `common` field.
+The following config file sets the `kind` context for all services via `common` field, and overrides it to `minikube` for `user-auth-service`.
 
 ```yaml
 common:
@@ -234,7 +234,7 @@ run:
 ```
 
 ##### `services.*.context`
-The name of the Kubernetes context to run services in. See [Context](#context) for precedence rules when used with `common.context`.
+The name of the Kubernetes context to run this service in. See [Context](#context) for precedence rules when used with `common.context`.
 
 The `--context` argument overrides this for every service being launched.
 
