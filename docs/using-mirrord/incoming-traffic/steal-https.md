@@ -163,6 +163,6 @@ When the mirrord Operator finds multiple configuration resources matching the se
 
 ## Configuring delivery of stolen HTTPS to your local application
 
-By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is be made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
+By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
 
-This behavior can be configured in your mirrord config with [`feature.network.incoming.https_delivery`](https://metalbear.com/mirrord/docs/config#feature.network.incoming.https_delivery).
+This behavior can be configured in your mirrord config with [`feature.network.incoming.tls_delivery`](https://metalbear.com/mirrord/docs/config#feature.network.incoming.tls_delivery). The older `feature.network.incoming.https_delivery` option is deprecated, use `tls_delivery` instead.
