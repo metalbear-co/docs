@@ -17,6 +17,7 @@ toc: true
 ---
 ## Introduction
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
+Each service in the file is typically a *different* application with its own target, command, and configuration; this is for debugging several distinct applications together and managing their lifecycle as one unit — not for targeting multiple pods of the same application. For that, see [Targeting Pods by Label](targeting-pods-by-label.md).
 
 ## Getting started
 
