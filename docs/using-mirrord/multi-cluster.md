@@ -160,16 +160,11 @@ Most services behave identically everywhere, with small differences in where tem
 
 | | `default-cluster` (the default) | `replicas` |
 | --- | --- | --- |
-| Preview pods | Default cluster only | Every workload cluster |
-| HTTP entering the Default cluster | Served by the preview | Served by the preview |
-| HTTP entering other clusters | Served by the deployed app | Served by that cluster's replica |
-| Queue messages, from any cluster | Routed to the preview | Consumed exactly once across the replicas |
-| [Branch database](../sharing-the-cluster/db-branching.md) | On the Default cluster | One shared branch for all replicas; writes from any cluster are visible everywhere, nothing reaches the source database |
-| Idle and wake | One cluster | Per cluster - each replica sleeps and wakes on its own traffic |
-| Cluster outage | Preview is down with its cluster | The load balancer fails over to replicas that are already serving |
-| Footprint | One set of pods | One set per workload cluster |
+| Preview pods run on | The Default cluster | Every workload cluster |
+| HTTP reaches the preview from | The Default cluster only | Every cluster |
+| Queue messages reach the preview from | Every cluster | Every cluster |
 
-In both modes the preview is one logical environment: `mirrord preview status` shows a single entry with the phase per cluster, and a failure on any cluster stops the preview everywhere.
+Everything else behaves the same in both modes. With `replicas`, each cluster serves its own traffic and idles on it independently, and all replicas share one [branch database](../sharing-the-cluster/db-branching.md) - a write from any cluster is visible to all of them, and nothing reaches the source database.
 
 Replicas on other clusters reach the branch database through a tunnel between the operators, initiated by the Primary. Workload clusters need no route to the Default cluster, and no cluster credentials are ever placed in your namespaces.
 
