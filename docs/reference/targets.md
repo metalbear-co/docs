@@ -23,7 +23,7 @@ You can specify a target on your cluster for mirrord, giving your local applicat
 {% hint style="info" %}
 **Targeting more than one thing?** To run several *different* applications
 together as one managed group, see [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md).
-To target every pod of one application that spans multiple workloads (or none), see [Targeting Pods by Label] (..using-mirrord/label-targeting.md).
+To target every pod of one application that spans multiple workloads (or none), see [Targeting Pods by Label] (..using-mirrord/targeting-pods-by-label.md).
 {% endhint %}
 
 ## Possible targets
