@@ -21,9 +21,10 @@ description: Possible targets for mirrord and how to set them
 You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](https://metalbear.com/mirrord/docs/config). When a target is specified, a [mirrord-agent](architecture.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.
 
 {% hint style="info" %}
-**Targeting more than one thing?** To run several *different* applications
-together as one managed group, see [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md).
-To target every pod of one application that spans multiple workloads (or none), see [Targeting Pods by Label] (..using-mirrord/targeting-pods-by-label.md).
+**Targeting more than one thing?** 
+
+To run several *different* applications together as one managed group, see [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md).
+To target every pod of one application that spans multiple workloads (or none), see [Targeting Pods by Label](../using-mirrord/targeting-pods-by-label.md).
 {% endhint %}
 
 ## Possible targets
