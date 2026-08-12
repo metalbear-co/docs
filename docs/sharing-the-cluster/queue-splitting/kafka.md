@@ -75,6 +75,7 @@ The operator recognizes these `mirrord.`-prefixed keys:
 * `mirrord.client_implementation` - the Kafka client backend, `librdkafka` (default) or `java`. Use `java` for Kafka Streams consumers (see below).
 * `mirrord.auth.kind` - extra authentication mechanism. The only supported value is `MSK_IAM` (see [MSK IAM authentication](kafka.md#aws-msk-iam-authentication)).
 * `mirrord.auth.aws_region` - the AWS region, required when `mirrord.auth.kind` is `MSK_IAM`.
+* `mirrord.split_topic.replication_factor` - the replication factor for temporary topics (see [Temporary Topic Replication Factor](kafka.md#temporary-topic-replication-factor)).
 
 {% hint style="info" %}
 The Kafka consumer group used by the operator's own client is managed by mirrord, so a `group.id` property is not needed here.
@@ -219,6 +220,32 @@ Two settings control the drain timeout:
 | unset (both)   | Unpatch as soon as the last session ends (same as `0`). Messages not yet read from the temporary topic are lost. |
 | `0`            | Unpatch immediately. Messages not yet read from the temporary topic are lost.                                    |
 | `N`            | Stay patched for up to `N` seconds so a new session can reuse the split, then unpatch.                           |
+
+**Temporary Topic Replication Factor**
+
+By default, the operator creates temporary topics with a replication factor of 1. Some managed Kafka platforms enforce a minimum replication factor and reject these topics - for example, Confluent Cloud requires a factor of 3, so Kafka splitting sessions fail with a `PolicyViolation` broker error.
+
+Set the `mirrord.split_topic.replication_factor` property on the `MirrordPropertyList` to control the factor. This property requires mirrord operator `3.191.0` or later; earlier operators reject it as an unknown `mirrord.` key.
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: kafka-connection
+  namespace: meme
+spec:
+  properties:
+    - name: bootstrap.servers
+      value: kafka.default.svc.cluster.local:9092
+    - name: mirrord.split_topic.replication_factor
+      value: copy
+```
+
+Accepted values:
+
+* a positive number - used as-is for every temporary topic.
+* `copy` - copy the replication factor of the original topic. The original topic already complies with the cluster's policy, so this is the recommended value for managed platforms like Confluent Cloud.
+* `-1` - use the broker's default replication factor.
 
 **AWS MSK IAM authentication**
 
