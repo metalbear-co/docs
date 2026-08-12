@@ -244,7 +244,7 @@ spec:
 Accepted values:
 
 * a positive number - used as-is for every temporary topic.
-* `copy` - copy the replication factor of the original topic. The original topic already complies with the cluster's policy, so this is the recommended value for managed platforms like Confluent Cloud.
+* `copy` - copy the replication factor derived from the original topic. This is recommended when temporary topics must use the same replication factor as source topics on managed platforms like Confluent Cloud.
 * `-1` - use the broker's default replication factor.
 
 **AWS MSK IAM authentication**
