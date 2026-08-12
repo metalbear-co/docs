@@ -306,6 +306,38 @@ If both `message_filter` and `jq_filter` are specified for the same queue, both 
 `jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later, and is only supported with the default `librdkafka` client. Sessions using the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) fail with a clear error when a `jq_filter` is set.
 {% endhint %}
 
+**Filtering on protobuf payloads**
+
+Some topics carry raw protobuf bytes instead of JSON - for example CDC events serialized as plain protobuf, with no JSON envelope and no schema registry prefix. `payload_protobuf` decodes each record's value with your schema before the jq program runs, and exposes the decoded message as an extra `payload_decoded` field:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/consumer",
+  "feature": {
+    "split_queues": {
+      "cdc-topic": {
+        "queue_type": "Kafka",
+        "payload_protobuf": {
+          "schema_file": "schemas/cdc_record.proto",
+          "message_type": "com.example.cdc.Record"
+        },
+        "jq_filter": ".payload_decoded.merchant_id == 2137 and .payload_decoded.metadata.transactionType == \"PURCHASE\""
+      }
+    }
+  }
+}
+```
+
+* `schema_file` - path to the `.proto` file defining the value's message type. The mirrord CLI compiles it locally, resolving imports against the file's own directory (add `include_directories` for extra import roots), so the operator never needs access to your schema files. Users with pre-compiled schemas can set `descriptor_base64` (a base64-encoded `FileDescriptorSet`, as produced by `protoc --descriptor_set_out --include_imports`) instead.
+* `message_type` - the fully-qualified name of the value's message type.
+
+In `payload_decoded`, field names appear exactly as written in the schema, enum values as their names, and 64-bit integers as JSON numbers. Fields at their default value are included. Records whose value fails to decode with the given schema are treated as not matching and stay on the deployed application's path.
+
+{% hint style="warning" %}
+`payload_protobuf` only supports plain protobuf values - schema registry framing (magic byte and schema id prefix) is not supported. Like `jq_filter`, it requires the default `librdkafka` client.
+{% endhint %}
+
 #### FAQ
 
 **How do I authenticate the operator's Kafka client with an SSL certificate?**
