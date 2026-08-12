@@ -19,7 +19,7 @@ given Kubernetes label — instead of one workload name — so traffic from all
 of them is intercepted together, however many separate workloads (or none)
 actually own them.
 
-## When to use this
+### When to use this
 
 - Your codebase is deployed multiple times under different roles in the same namespace,
   sharing a common label.
