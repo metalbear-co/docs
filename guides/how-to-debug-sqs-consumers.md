@@ -370,11 +370,13 @@ For the full resource reference, including per-queue options like SNS parsing an
 
 **Note**: `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later. It replaces the deprecated `MirrordWorkloadQueueRegistry` resource; if you have existing resources of the old kind, see [Migrating to MirrordSplitConfig](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig).
 
-Apply these configurations to your cluster:
+Save the resource above to a file and apply it to your cluster:
 
 ```bash
-kubectl apply -f kube/
+kubectl apply -f sqs-split-config.yaml
 ```
+
+**Note**: The sample repository's `kube/` manifests still contain the legacy `MirrordWorkloadQueueRegistry` resource. The `MirrordSplitConfig` above replaces it, so apply it yourself as shown here.
 
 #### Running your local consumer with queue splitting
 

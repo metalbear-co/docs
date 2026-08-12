@@ -377,7 +377,13 @@ For the full resource reference, see the [Kafka queue splitting documentation](h
 
 **Note**: `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later. It replaces the deprecated `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources; if you have existing resources of the old kinds, see [Migrating to MirrordSplitConfig](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig).
 
-The above configurations have already been applied if `kubectl apply -f ./kube` ran successfully earlier.
+Save both resources above to a file and apply them to your cluster:
+
+```bash
+kubectl apply -f kafka-split-config.yaml
+```
+
+**Note**: The sample repository's `kube/` manifests still contain the legacy `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources. The resources above replace them, so apply them yourself as shown here.
 
 #### Running your local consumer with queue splitting
 
