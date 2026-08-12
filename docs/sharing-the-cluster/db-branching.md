@@ -152,10 +152,10 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 Up to operator `3.190.0`, branches always ran on node-local `emptyDir` volumes. Since `3.191.0`, per-branch PVCs are the default; no config change is needed on upgrade, and every explicit setting keeps its meaning:
 
-| | Up to `3.190.0` | Since `3.191.0` |
+| | Up to `3.x.x` | Since `3.x.x` |
 | --- | --- | --- |
-| Data volume | Node disk (`emptyDir`), 1Gi cap | Own PVC per branch, 20Gi |
-| Dump staging | Node disk (`emptyDir`), 100Mi cap | Own PVC per branch, 20Gi |
+| Data volume | Node disk (`emptyDir`), 1Gi cap | Own PVC per branch; `databasePodVolumeLimit` if set, else 20Gi |
+| Dump staging | Node disk (`emptyDir`), 100Mi cap | Own PVC per branch; `initPodVolumeLimit` if set, else 20Gi |
 | Default memory limit | 512Mi | 2Gi |
 | Cluster without a default StorageClass | n/a | Same `emptyDir` behavior as before, warning in the operator log |
 | Explicit `dbPod.volume` / `initVolume` | Used as given | Unchanged - still overrides everything |
@@ -180,7 +180,7 @@ operator:
     initPvcSize: "50Gi"
 ```
 
-The old `initPodVolumeLimit` / `databasePodVolumeLimit` values still apply whenever branches run on `emptyDir` - the `kind: "emptyDir"` opt-out below, or the automatic fallback.
+The old `initPodVolumeLimit` / `databasePodVolumeLimit` values keep working after the upgrade: on the PVC path they size the claims (so a cluster tuned for 50Gi databases gets 50Gi PVCs, not the 20Gi default), and on `emptyDir` - the `kind: "emptyDir"` opt-out below, or the automatic fallback - they stay the size caps they always were. The new `databasePvcSize` / `initPvcSize` win when both are set.
 
 ### Tuning storage
 
