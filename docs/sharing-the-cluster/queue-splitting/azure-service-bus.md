@@ -50,7 +50,7 @@ The simplest approach for quick setup. Obtain a connection string from your Serv
 
 **Option C: Service Principal with client secret**
 
-Register an Azure AD application, create a client secret, and assign it the **Azure Service Bus Data Owner** role on the Service Bus namespace. You'll provide the `tenant_id`, `client_id`, and `client_secret` as properties.
+Register an Entra ID (formerly Azure AD) application, create a client secret, and assign it the **Azure Service Bus Data Owner** role on the Service Bus namespace. You'll provide the `tenant_id`, `client_id`, and `client_secret` as properties.
 {% endstep %}
 
 {% step %}
@@ -146,9 +146,9 @@ spec:
 | --------------------------- | :--------------------------------------: | :-------------------------------------------------------: |
 | `connection_string`         | Full connection string including SAS key | One of `connection_string` or `fully_qualified_namespace` |
 | `fully_qualified_namespace` |  FQNS like `myns.servicebus.windows.net` | One of `connection_string` or `fully_qualified_namespace` |
-| `tenant_id`                 |      Azure AD tenant (directory) ID      |                Only with service principal                |
-| `client_id`                 |         Azure AD app (client) ID         |                Only with service principal                |
-| `client_secret`             |        Azure AD app client secret        |                Only with service principal                |
+| `tenant_id`                 |      Entra ID tenant (directory) ID      |                Only with service principal                |
+| `client_id`                 |         Entra ID app (client) ID         |                Only with service principal                |
+| `client_secret`             |        Entra ID app client secret        |                Only with service principal                |
 {% endstep %}
 
 {% step %}
