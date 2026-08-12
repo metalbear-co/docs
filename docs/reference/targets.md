@@ -20,6 +20,12 @@ description: Possible targets for mirrord and how to set them
 
 You can specify a target on your cluster for mirrord, giving your local application access to the remote target's network environment, file system and environment variables, according to the [configuration](https://metalbear.com/mirrord/docs/config). When a target is specified, a [mirrord-agent](architecture.md#mirrord-agent) pod will be created on the same node as the target pod. The several kinds of supported targets are detailed below. There are also multiple ways to specify a target for mirrord: you can do it in a configuration file, in an IDE dialog, or in the CLI with an argument or an environment variable.
 
+{% hint style="info" %}
+**Targeting more than one thing?** To run several *different* applications
+together as one managed group, see [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md).
+To target every pod of one application that spans multiple workloads (or none), see [Targeting Pods by Label] (..using-mirrord/label-targeting.md).
+{% endhint %}
+
 ## Possible targets
 
 mirrord OSS supports the following Kubernetes objects as targets:
@@ -46,8 +52,7 @@ In mirrord for Teams, mirrord will always target all pods when a workload with m
 
 When targeting a Service, mirrord resolves the Service to its backing pods via the Service's selector. Jobs and CronJobs require [`copy_target`](../using-mirrord/copy-target.md) to be enabled.
 
-When targeting Labels, mirrord will target all pods that match the label selector. At present, only basic features are supported
-for this target type, meaning it doesn't yet support copy, db branching, preview environments, or queue splitting.
+When targeting Labels, mirrord will target all pods that match the label selector. See [Targeting Pods by Label](../using-mirrord/targeting-pods-by-label.md) for how this behaves, version requirements, and current limitations.
 
 Both in mirrord OSS and mirrord for Teams, if you don't name any specific container to be targeted, mirrord will pick the first container from the pod spec. Some containers, like service mesh proxies, will be automatically ignored.
 
