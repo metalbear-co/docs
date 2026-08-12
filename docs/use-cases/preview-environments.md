@@ -46,6 +46,10 @@ Today, mirrord sessions are tightly coupled to a developer's local process. When
 * Receive **filtered or duplicated staging traffic** using an environment key
 * Stay alive for a **fixed TTL**, independent of any local machine or process
 
+{% hint style="info" %}
+With [multi-cluster](../using-mirrord/multi-cluster.md) mirrord, previews can run replicas on every workload cluster so traffic is served wherever it enters. See [Preview Environments in Multi-Cluster](../using-mirrord/multi-cluster.md#preview-environments-in-multi-cluster).
+{% endhint %}
+
 ***
 
 #### Environment Key

@@ -154,6 +154,31 @@ Most services behave identically everywhere, with small differences in where tem
 
 ***
 
+## Preview Environments in Multi-Cluster
+
+`operator.multiCluster.preview.mode` decides where a [preview environment](../use-cases/preview-environments.md)'s pods run:
+
+| | `default-cluster` (the default) | `replicas` |
+| --- | --- | --- |
+| Preview pods | Default cluster only | Every workload cluster |
+| HTTP entering the Default cluster | Served by the preview | Served by the preview |
+| HTTP entering other clusters | Served by the deployed app | Served by that cluster's replica |
+| Queue messages, from any cluster | Routed to the preview | Consumed exactly once across the replicas |
+| [Branch database](../sharing-the-cluster/db-branching.md) | On the Default cluster | One shared branch for all replicas; writes from any cluster are visible everywhere, nothing reaches the source database |
+| Idle and wake | One cluster | Per cluster - each replica sleeps and wakes on its own traffic |
+| Cluster outage | Preview is down with its cluster | The load balancer fails over to replicas that are already serving |
+| Footprint | One set of pods | One set per workload cluster |
+
+In both modes the preview is one logical environment: `mirrord preview status` shows a single entry with the phase per cluster, and a failure on any cluster stops the preview everywhere.
+
+Replicas on other clusters reach the branch database through a tunnel between the operators, initiated by the Primary. Workload clusters need no route to the Default cluster, and no cluster credentials are ever placed in your namespaces.
+
+![Preview replicas: every workload cluster serves its own traffic, and replicas reach the shared branch database through the operator tunnel](../.gitbook/assets/preview-h2.svg)
+
+Use `replicas` when preview traffic enters through a load balancer spanning your clusters, or when previews should survive a cluster outage. Stay on `default-cluster` when traffic enters one cluster anyway (share links, steered requests) or when queue splitting is the main feature - its coverage is identical in both modes. Setup: [Preview Environment Replicas](multi-cluster-setup.md#preview-environment-replicas).
+
+***
+
 ## Limitations
 
 * [Targetless mode](targetless.md) is not supported in multi-cluster sessions — a target is required so the operator can resolve it on each Workload cluster.

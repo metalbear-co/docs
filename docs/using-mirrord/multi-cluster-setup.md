@@ -543,6 +543,24 @@ EKS IAM and AKS Workload Identity clusters do not need a Secret at all. They aut
 
 ---
 
+## Preview Environment Replicas
+
+To run previews as replicas on every workload cluster (see [Preview Environments in Multi-Cluster](multi-cluster.md#preview-environments-in-multi-cluster)), you need the operator and chart `3.193.0` or later on every cluster, and mirrord `3.247.0` or later. Set the mode on **every** operator - the Primary and all workload clusters:
+
+```yaml
+operator:
+  multiCluster:
+    preview:
+      mode: replicas
+```
+
+For previews that use database branching:
+
+* **Upgrade the Primary and workload operators together.** Mismatched versions refuse to establish the branch tunnel; non-branching previews are unaffected.
+* If your workload namespaces restrict egress, **allow traffic to the operator's namespace on port `4980`** (the `db-tunnel` port on the operator Service).
+
+`operator.multiCluster.preview.maxTunnelStreams` (default `256`) limits how many database connections all the preview replicas in one workload cluster can hold open to branch databases at the same time. It does not limit previews or branches - only open connections. A connection is one entry in an app's database pool: 20 running previews whose apps each pool 10 connections hold 200, and an idle preview holds none because its pods are gone. The default is sized well above what typical setups hold open at once; raise it if you run more. At the limit, new connections fail and the database driver retries; running connections are unaffected.
+
 ## RBAC — How Permissions Work
 
 When the Primary operator connects to a downstream cluster, it needs permissions to list targets, create sessions, run health checks, and more. These permissions are set up automatically by the Helm chart on each downstream cluster.
