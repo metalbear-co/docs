@@ -46,7 +46,7 @@ The `copy` field controls what data gets cloned when creating a CockroachDB bran
 
 | Mode | What gets cloned | Best for |
 | --- | --- | --- |
-| `"empty"` (default) | Nothing - an empty database with no schema or data | Workflows where your application initializes the schema or runs migrations as part of startup |
+| `"empty"` (default) | Nothing - an empty database with no schema or data, unless `tables` narrows a copy set (see [Filtered Data Clone](#filtered-data-clone)) | Workflows where your application initializes the schema or runs migrations as part of startup |
 | `"schema"` | Only the table structures (schemas) from the source database, without any data | Testing schema changes or local development where structure is needed but data is not |
 | `"all"` | Everything from the source database - both schema and data | A full clone of your environment data for debugging or reproducing production-like scenarios |
 
@@ -82,7 +82,11 @@ The schema for all tables is cloned.
 The `users` table copy includes only rows for `alice` and `bob`.
 The `orders` table copy includes only rows created after a certain timestamp.
 
-Filtering can also be combined with `"mode": "empty"`, in which case only the specified tables (and their filtered data) are copied, while all others are excluded.
+Filtering can also be combined with `"mode": "empty"`, in which case only the specified tables (and their filtered data) are copied, while all others are excluded. A foreign key is recreated on the branch only when both of its tables are in the copy set.
+
+Table names are resolved in the `public` schema unless you qualify them. For a source that keeps its tables elsewhere, write the schema explicitly - `"app.users"` - and the branch creates that schema for you. Quote either half if it is case-sensitive: `"\"App\".users"`.
+
+If a table listed under `tables` does not exist in the source database, branch creation fails with an error naming it, rather than producing a branch that silently lacks the table.
 
 Note: Filtering is not compatible with `"mode": "all"`.
 If both are specified, mirrord ignores the `tables` configuration.
@@ -93,7 +97,7 @@ The `dump_args` field is not supported for CockroachDB. Only MySQL and PostgreSQ
 
 ## Source TLS and mutual TLS
 
-With `"schema"` and `"all"` copy modes, the operator connects to your source database to copy from it. If the source's certificate is signed by a private CA (`sslmode=verify-ca`/`verify-full`), or the source requires mutual TLS (the client must present a certificate, as with CockroachDB's certificate authentication), the copy needs certificate files - otherwise it fails with `x509: certificate signed by unknown authority`.
+Whenever there is something to copy - the `"schema"` and `"all"` modes, or `"empty"` with a `tables` copy set - the operator connects to your source database to copy from it. If the source's certificate is signed by a private CA (`sslmode=verify-ca`/`verify-full`), or the source requires mutual TLS (the client must present a certificate, as with CockroachDB's certificate authentication), the copy needs certificate files - otherwise it fails with `x509: certificate signed by unknown authority`.
 
 Provide them in a `MirrordPropertyList` named `cockroachdb-source-tls` (the name can be changed cluster-wide with the operator Helm value `operator.cockroachdbBranchConfig.dbPod.sourceTlsPropertyList`), in the same namespace as the target workload. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
 
@@ -167,4 +171,4 @@ To read the mode from the target pod's environment instead, use a plain string: 
 
 Cluster admins can set a default mode for all branches with the operator Helm value `operator.cockroachdbBranchConfig.dbPod.sourceSslmode`; an explicit `sslmode` in a session's URL or params still wins over it.
 
-The certificates are only used for the copy connection to the source. The branch itself runs in insecure mode and the connection URL handed to your application carries `sslmode=disable`, so neither the branch nor your locally running process needs any certificates. `"empty"` mode never contacts the source and works without this setup entirely.
+The certificates are only used for the copy connection to the source. The branch itself runs in insecure mode and the connection URL handed to your application carries `sslmode=disable`, so neither the branch nor your locally running process needs any certificates. `"empty"` mode without a `tables` copy set never contacts the source and works without this setup entirely.
