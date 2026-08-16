@@ -49,9 +49,13 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 Usually, yes. A common pattern for local development against cloud dependencies is to copy credentials for services like databases and message queues into a local `.env` file so the application can reach them from a developer's machine. Those credentials then persist on laptops, get shared between engineers, and are rarely rotated.
 
-With mirrord, the local process joins the target pod's network context and reads environment variables and files from the target in memory. The developer's machine never needs a copy of those credentials, and access is bounded by the Kubernetes RBAC the user already has. Removing that class of long-lived local credential is often the strongest security argument for adopting mirrord, rather than a cost of it.
+With mirrord, the local process joins the target pod's network context and reads environment variables and files from the target in memory. The developer's machine never needs a persistent copy of those credentials, which removes a class of long-lived local secret.
 
-This is a property of how mirrord works, not a guarantee about your environment: an application can still write secrets to disk itself, and mirrord will do so if explicitly configured to log at debug/trace level.
+**Understand the access boundary before relying on this.** Authorization is enforced at the level of the *target workload*, not the individual Secret. The Operator impersonates the calling user and will only operate on pods or deployments the user has `get` permissions for, but there is no separate authorization check against the Secrets that workload references. A user who is allowed to target a workload can therefore read its environment variables and mounted files, including values sourced from Secrets they would not be able to `get` directly.
+
+The practical control is target scope: grant mirrord access only to targets whose secret material is acceptable for that user, using the `resourceNames` and namespaced-role approaches described [below](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). Note that the [env and file policies](../sharing-the-cluster/policies.md) are documented as convenience features and are explicitly not security controls, so they should not be used as the boundary.
+
+Two further caveats: an application can still write secrets to disk itself, and mirrord will do so if explicitly configured to log at debug/trace level.
 
 ## How do I audit mirrord usage?
 
@@ -65,7 +69,9 @@ Logged events include `Session Start`, `Session End`, `Port Steal`, `Port Mirror
 * `session_id`, `session_duration` - correlation and length of each session
 * `http_filter` - the client's configured HTTP filter
 
-Because `client_user`, `target`, and `http_filter` are recorded together, you can trace which user was receiving which subset of traffic from a shared target at any point in time, including when several engineers are working against the same service concurrently.
+These are session-scoped records, not a per-request delivery log. `http_filter` captures the filter a client *configured* when it began stealing on a port, so together with `client_user`, `target`, and the session start/end times you can establish which users held an active session against a given target during a given window, and what each had subscribed to. That is sufficient to attribute access and to narrow an investigation to a set of users when several engineers are working against the same service concurrently.
+
+It is not sufficient to prove which individual requests were delivered to which client. mirrord does not log per-request routing decisions, so if you need request-level evidence you will need to correlate these logs with your application or ingress telemetry.
 
 ## Can mirrord run air-gapped?
 
@@ -76,7 +82,8 @@ Yes, on the Enterprise plan. Run the [License Server](license-server.md) on-prem
 * The mirrord agent is [open source](https://github.com/metalbear-co/mirrord) and can be audited directly. The Operator is closed source.
 * The Operator is distributed as a versioned container image from `ghcr.io/metalbear-co/operator`, installed via our [public Helm charts](https://github.com/metalbear-co/charts). Each chart release pins a matching `appVersion`, so the chart and the images it deploys move together.
 * Because you control when you bump the chart version, you control when a new Operator or agent image enters your cluster. Chart releases are public and can be reviewed before you upgrade.
-* If we become aware of a vulnerability affecting a released version, we notify affected customers.
+
+For our vulnerability disclosure and customer notification process, see the [Trust Center](https://trust.metalbear.com).
 
 ## What data does the mirrord Operator send to MetalBear cloud?
 
