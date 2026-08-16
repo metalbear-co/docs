@@ -40,18 +40,9 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace. See [below](#does-mirrord-reduce-secret-sprawl-on-developer-machines) for how this reduces secrets held on developer machines.
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
-
-## Does mirrord reduce secret sprawl on developer machines?
-
-Usually, yes. A common pattern for local development against cloud dependencies is to copy credentials for services like databases and message queues into a local `.env` file so the application can reach them from a developer's machine. Those credentials then persist on laptops, get shared between engineers, and are rarely rotated.
-
-With mirrord, the local process joins the target pod's network context and reads environment variables and files from the target in memory. The developer's machine never needs a persistent copy of those credentials, which removes a class of long-lived local secret.
-
-You can scope which targets each user may reach using the `resourceNames` and namespaced-role approaches described [below](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams).
 
 ## How do I audit mirrord usage?
 
