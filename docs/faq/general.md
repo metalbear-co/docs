@@ -51,6 +51,14 @@ No, mirrord doesn't install anything on the cluster, nor does it have any persis
 
 If you have any restrictions for pulling external images inside your cluster, you have to allow pulling of ghcr.io/metalbear-co/mirrord image.
 
+## Does mirrord work with Teleport, Tailscale, or other secure cluster access tools?
+
+Yes, and there's nothing to configure.
+
+mirrord reaches your cluster entirely through the Kubernetes API, using the same kubeconfig `kubectl` uses. The connection between your local process and the [mirrord agent](../reference/architecture.md#mirrord-agent) runs over Kubernetes port forwarding on that same connection, so mirrord never opens a network path of its own.
+
+If `kubectl` works through your access provider, mirrord works through it too. Customers run mirrord behind Teleport and Tailscale today.
+
 ## How does mirrord protect against disrupting my shared environment with my local code?
 
 - By letting you mirror traffic rather than intercept it, the stable version of the code can still run in the cluster and handle requests.
