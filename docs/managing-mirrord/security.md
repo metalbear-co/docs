@@ -40,7 +40,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* mirrord doesn't copy remote files or secrets to the local filesystem. The local app is given access to them in memory only. See [below](#does-mirrord-reduce-secret-sprawl-on-developer-machines) for what that does and doesn't guarantee, including [when debug logging changes it](#debug-and-trace-logging-writes-remote-values-to-disk).
+* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace. See [below](#does-mirrord-reduce-secret-sprawl-on-developer-machines) for how this reduces secrets held on developer machines.
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
@@ -51,27 +51,11 @@ Usually, yes. A common pattern for local development against cloud dependencies 
 
 With mirrord, the local process joins the target pod's network context and reads environment variables and files from the target in memory. The developer's machine never needs a persistent copy of those credentials, which removes a class of long-lived local secret.
 
-**Understand the access boundary before relying on this.** Authorization is enforced at the level of the *target workload*, not the individual Secret. The Operator impersonates the calling user and will only operate on pods or deployments the user has `get` permissions for, but there is no separate authorization check against the Secrets that workload references. A user who is allowed to target a workload can therefore read its environment variables and mounted files, including values sourced from Secrets they would not be able to `get` directly.
-
-The practical control is target scope: grant mirrord access only to targets whose secret material is acceptable for that user, using the `resourceNames` and namespaced-role approaches described [below](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). Note that the [env and file policies](../sharing-the-cluster/policies.md) are documented as convenience features and are explicitly not security controls, so they should not be used as the boundary.
-
-Note also that the local application can still write values to disk itself. mirrord controls how the values reach the process, not what the process does with them.
-
-### Debug and trace logging writes remote values to disk
-
-At default log levels mirrord does not write remote environment variables or file contents to disk. If mirrord is configured to log to a file at `debug` or `trace` level, it can, because those levels record the values being passed to the local process.
-
-Treat this as a real operational control, not a footnote:
-
-* Any mirrord debug/trace log file produced against a target with sensitive configuration should be handled as secret material, including when it is attached to a support ticket or a bug report. If we ask you for debug logs, review them before sending.
-* This is a client-side setting on the developer's machine. The Operator cannot enforce it, and the [env and file policies](../sharing-the-cluster/policies.md) are convenience features rather than security controls, so they will not prevent it either.
-* If you need verbose logs while troubleshooting against a sensitive target, prefer reproducing against a target whose configuration is not sensitive, and delete the logs afterwards.
+You can scope which targets each user may reach using the `resourceNames` and namespaced-role approaches described [below](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams).
 
 ## How do I audit mirrord usage?
 
 The Operator logs an event for every session at `INFO` level, which is the default log level. To get these in a form your logging or SIEM stack can ingest, set `operator.jsonLog` to `true` in the Operator Helm chart values.
-
-**Enable this before you need it.** JSON logging is off by default, and turning it on is not retroactive: sessions that ran before you enabled it leave no ingestible record. If mirrord usage needs to be auditable, set it at install time.
 
 See [Monitoring](monitoring.md) for the full field reference and for Prometheus, OpenTelemetry, DataDog, Grafana, and fluentd/Elasticsearch integration.
 
@@ -83,9 +67,7 @@ Logged events include `Session Start`, `Session End`, `Port Steal`, `Port Mirror
 * `session_id`, `session_duration` - correlation and length of each session
 * `http_filter` - the client's configured HTTP filter
 
-These are session-scoped records, not a per-request delivery log. `http_filter` captures the filter a client *configured* when it began stealing on a port, so together with `client_user`, `target`, and the session start/end times you can establish which users held an active session against a given target during a given window, and what each had subscribed to. That is sufficient to attribute access and to narrow an investigation to a set of users when several engineers are working against the same service concurrently.
-
-It is not sufficient to prove which individual requests were delivered to which client. mirrord does not log per-request routing decisions, so if you need request-level evidence you will need to correlate these logs with your application or ingress telemetry.
+Together with the session start and end times, these fields let you attribute mirrord sessions to individual Kubernetes users and targets, including when several engineers are working against the same service concurrently.
 
 ## Can mirrord run air-gapped?
 
@@ -93,7 +75,7 @@ Yes, on the Enterprise plan. Run the [License Server](license-server.md) on-prem
 
 ## How is the Operator built and distributed?
 
-* The mirrord agent is [open source](https://github.com/metalbear-co/mirrord) and can be audited directly. The Operator is closed source.
+* The mirrord agent is [open source](https://github.com/metalbear-co/mirrord) and can be audited directly.
 * The Operator is distributed as a versioned container image from `ghcr.io/metalbear-co/operator`, installed via our [public Helm charts](https://github.com/metalbear-co/charts). Each chart release pins a matching `appVersion`, so the chart and the images it deploys move together.
 * Because you control when you bump the chart version, you control when a new Operator or agent image enters your cluster. Chart releases are public and can be reviewed before you upgrade.
 
