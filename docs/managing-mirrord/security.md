@@ -40,7 +40,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace. See [below](#does-mirrord-reduce-secret-sprawl-on-developer-machines) for why this often reduces the number of secrets held on developer machines.
+* mirrord doesn't copy remote files or secrets to the local filesystem. The local app is given access to them in memory only. See [below](#does-mirrord-reduce-secret-sprawl-on-developer-machines) for what that does and doesn't guarantee, including [when debug logging changes it](#debug-and-trace-logging-writes-remote-values-to-disk).
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
@@ -55,7 +55,17 @@ With mirrord, the local process joins the target pod's network context and reads
 
 The practical control is target scope: grant mirrord access only to targets whose secret material is acceptable for that user, using the `resourceNames` and namespaced-role approaches described [below](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). Note that the [env and file policies](../sharing-the-cluster/policies.md) are documented as convenience features and are explicitly not security controls, so they should not be used as the boundary.
 
-Two further caveats: an application can still write secrets to disk itself, and mirrord will do so if explicitly configured to log at debug/trace level.
+Note also that the local application can still write values to disk itself. mirrord controls how the values reach the process, not what the process does with them.
+
+### Debug and trace logging writes remote values to disk
+
+At default log levels mirrord does not write remote environment variables or file contents to disk. If mirrord is configured to log to a file at `debug` or `trace` level, it can, because those levels record the values being passed to the local process.
+
+Treat this as a real operational control, not a footnote:
+
+* Any mirrord debug/trace log file produced against a target with sensitive configuration should be handled as secret material, including when it is attached to a support ticket or a bug report. If we ask you for debug logs, review them before sending.
+* This is a client-side setting on the developer's machine. The Operator cannot enforce it, and the [env and file policies](../sharing-the-cluster/policies.md) are convenience features rather than security controls, so they will not prevent it either.
+* If you need verbose logs while troubleshooting against a sensitive target, prefer reproducing against a target whose configuration is not sensitive, and delete the logs afterwards.
 
 ## How do I audit mirrord usage?
 
