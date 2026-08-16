@@ -55,7 +55,7 @@ If you have any restrictions for pulling external images inside your cluster, yo
 
 Yes, and there's nothing to configure.
 
-mirrord reaches your cluster entirely through the Kubernetes API, using the same kubeconfig `kubectl` uses. The connection between your local process and the [mirrord agent](../reference/architecture.md#mirrord-agent) runs over Kubernetes port forwarding on that same connection, so mirrord never opens a network path of its own.
+mirrord reaches your cluster entirely through the Kubernetes API, using the same kubeconfig `kubectl` uses. That covers everything it does: the [mirrord Operator](../managing-mirrord/operator.md) is exposed as a Kubernetes APIService, and the connection to the [mirrord agent](../reference/architecture.md#mirrord-agent) runs over Kubernetes port forwarding. mirrord never opens a network path of its own.
 
 If `kubectl` works through your access provider, mirrord works through it too. Customers run mirrord behind Teleport and Tailscale today.
 
