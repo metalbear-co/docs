@@ -148,11 +148,13 @@ By default, each branch stores its database on its own PersistentVolumeClaims: o
 
 On clusters without a default StorageClass, branches automatically fall back to node-local `emptyDir` volumes, capped at 1Gi for data and 100Mi for the dump.
 
-### Before and after 3.191.0
+### Upgrading from older versions
 
-Up to operator `3.194.0`, branches always ran on node-local `emptyDir` volumes. Since `3.194.0`, per-branch PVCs are the default; no config change is needed on upgrade, and every explicit setting keeps its meaning:
+{% hint style="warning" %}
+Since operator `3.194.0`, per-branch PVCs are the default; older versions always ran branches on node-local `emptyDir` volumes. Upgrading needs **no config change**, and every explicit setting keeps its meaning. On clusters **without a default StorageClass**, branches keep running on `emptyDir` exactly as before (the operator logs a warning). Note that PVCs are provisioned storage: each branch now requests 20Gi for data and 20Gi for dump staging by default, billed by your cloud until the branch is deleted - tune the sizes below if that is too much.
+{% endhint %}
 
-| | Up to `3.194.0` | Since `3.194.0` |
+| | Before | After |
 | --- | --- | --- |
 | Data volume | Node disk (`emptyDir`), 1Gi cap | Own PVC per branch; `databasePodVolumeLimit` if set, else 20Gi |
 | Dump staging | Node disk (`emptyDir`), 100Mi cap | Own PVC per branch; `initPodVolumeLimit` if set, else 20Gi |
@@ -163,17 +165,17 @@ Up to operator `3.194.0`, branches always ran on node-local `emptyDir` volumes. 
 Sizing a branch for a large database used to mean raising the `emptyDir` caps and hoping the branch lands on a node with that much spare disk:
 
 ```yaml
-# Up to 3.194.0: caps on node-local scratch space, shared with everything on the node.
+# Before: caps on node-local scratch space, shared with everything on the node.
 operator:
   dbBranching:
     initPodVolumeLimit: "1Gi"
     databasePodVolumeLimit: "50Gi"
 ```
 
-Since `3.191.0` the branch gets its own disk of the requested size, on any node:
+Now the branch gets its own disk of the requested size, on any node:
 
 ```yaml
-# Since 3.194.0: provisioned per branch, deleted with it.
+# After: provisioned per branch, deleted with it.
 operator:
   dbBranching:
     databasePvcSize: "50Gi"
