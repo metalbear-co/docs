@@ -227,9 +227,16 @@ The `sessions` verbs apply to every session in their scope, not only to the ones
 
 Features enabled through Helm values add their own rules on top of the sets above:
 
-* [Preview environments](../use-cases/preview-environments.md) (`operator.previewEnv`): `create`, `delete`, `get`, `list`, `watch` on `previewsessions` under `preview.mirrord.metalbear.co`, and `get`, `list` on `previews` under `operator.metalbear.co`.
-* [DB branching](../sharing-the-cluster/db-branching.md) (`operator.pgBranching`, `operator.mysqlBranching`, and the other branching values): `get`, `list`, `create`, `watch`, `delete` on `branchdatabases` under `dbs.mirrord.metalbear.co`, plus the per-engine resource for each engine you enable (`pgbranchdatabases`, `mysqlbranchdatabases`, `mongodbbranchdatabases`). With `operator.dbBranchingLiteralCredentials`, add `create` on `branchcredentials` under `operator.metalbear.co`.
-* [Queue splitting](../sharing-the-cluster/queue-splitting.md) adds nothing to the user roles. The queue CRDs are read and written by the Operator alone, and broker credentials (Kafka ACLs, SQS IAM policies, RabbitMQ management access) are configured on the Operator, never per developer. Users only name topics in their mirrord configuration file.
+| Feature | Enabled by | apiGroup | Resources | Verbs |
+| --- | --- | --- | --- | --- |
+| [Preview environments](../use-cases/preview-environments.md) | `operator.previewEnv` | `preview.mirrord.metalbear.co` | `previewsessions` | `create`, `delete`, `get`, `list`, `watch` |
+| | | `operator.metalbear.co` | `previews` | `get`, `list` |
+| [DB branching](../sharing-the-cluster/db-branching.md) | `operator.pgBranching`, `operator.mysqlBranching`, and the other branching values | `dbs.mirrord.metalbear.co` | `branchdatabases` | `create`, `delete`, `get`, `list`, `watch` |
+| | `operator.pgBranching`, `operator.mysqlBranching`, `operator.mongodbBranching` | `dbs.mirrord.metalbear.co` | `pgbranchdatabases`, `mysqlbranchdatabases`, `mongodbbranchdatabases`, one per enabled engine | `create`, `delete`, `get`, `list`, `watch` |
+| | `operator.dbBranchingLiteralCredentials` | `operator.metalbear.co` | `branchcredentials` | `create` |
+| [Queue splitting](../sharing-the-cluster/queue-splitting.md) | `operator.kafkaSplitting`, `operator.sqsSplitting`, and the other splitting values | None | None | None |
+
+Queue splitting adds nothing to the user roles. The queue CRDs are read and written by the Operator alone, and broker credentials (Kafka ACLs, SQS IAM policies, RabbitMQ management access) are configured on the Operator, never per developer. Users only name topics in their mirrord configuration file.
 
 The bundled `mirrord-operator-user` role is templated to contain exactly the rules your enabled features need, so the authoritative reference for your installation is the rendered role in your cluster:
 
