@@ -163,7 +163,7 @@ Up to operator `3.194.0`, branches always ran on node-local `emptyDir` volumes. 
 Sizing a branch for a large database used to mean raising the `emptyDir` caps and hoping the branch lands on a node with that much spare disk:
 
 ```yaml
-# Up to 3.190.0: caps on node-local scratch space, shared with everything on the node.
+# Up to 3.194.0: caps on node-local scratch space, shared with everything on the node.
 operator:
   dbBranching:
     initPodVolumeLimit: "1Gi"
@@ -173,7 +173,7 @@ operator:
 Since `3.191.0` the branch gets its own disk of the requested size, on any node:
 
 ```yaml
-# Since 3.191.0: provisioned per branch, deleted with it.
+# Since 3.194.0: provisioned per branch, deleted with it.
 operator:
   dbBranching:
     databasePvcSize: "50Gi"
