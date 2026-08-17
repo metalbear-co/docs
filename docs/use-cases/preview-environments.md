@@ -278,9 +278,9 @@ operator:
 
 ### Targeting Scaled-to-Zero Services
 
-A Preview Environment that only splits queues can target a service with **no running pods**.
-This is useful when your consumers are auto-scaled on queue lag (for example with KEDA) and sit
-at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
+A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
+or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
 consumer group are read from the workload's spec, and messages flow through the queue itself.
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
 temporary queue and are consumed when the service scales back up, whose new pods start with the
