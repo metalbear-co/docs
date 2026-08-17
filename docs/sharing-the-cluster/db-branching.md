@@ -152,7 +152,7 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 Up to operator `3.190.0`, branches always ran on node-local `emptyDir` volumes. Since `3.191.0`, per-branch PVCs are the default; no config change is needed on upgrade, and every explicit setting keeps its meaning:
 
-| | Up to `3.x.x` | Since `3.x.x` |
+| | Up to `3.194.0` | Since `3.194.0` |
 | --- | --- | --- |
 | Data volume | Node disk (`emptyDir`), 1Gi cap | Own PVC per branch; `databasePodVolumeLimit` if set, else 20Gi |
 | Dump staging | Node disk (`emptyDir`), 100Mi cap | Own PVC per branch; `initPodVolumeLimit` if set, else 20Gi |
