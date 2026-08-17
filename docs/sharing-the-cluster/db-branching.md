@@ -142,6 +142,88 @@ operator:
 
 A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
 
+## Branch Storage
+
+By default, each branch stores its database on its own PersistentVolumeClaims: one for the data directory and one for staging the dump during the copy, 20Gi each. The claims are provisioned with the cluster's default StorageClass when the branch is created and deleted together with it, so branching a large database does not depend on how much spare disk the node happens to have.
+
+On clusters without a default StorageClass, branches automatically fall back to node-local `emptyDir` volumes, capped at 1Gi for data and 100Mi for the dump.
+
+### Upgrading from older versions
+
+{% hint style="warning" %}
+Since operator `3.194.0`, per-branch PVCs are the default; older versions always ran branches on node-local `emptyDir` volumes. Upgrading needs **no config change**, and every explicit setting keeps its meaning. On clusters **without a default StorageClass**, branches keep running on `emptyDir` exactly as before (the operator logs a warning). Note that PVCs are provisioned storage: each branch now requests 20Gi for data and 20Gi for dump staging by default, billed by your cloud until the branch is deleted - tune the sizes below if that is too much.
+{% endhint %}
+
+| | Before | After |
+| --- | --- | --- |
+| Data volume | Node disk (`emptyDir`), 1Gi cap | Own PVC per branch; `databasePodVolumeLimit` if set, else 20Gi |
+| Dump staging | Node disk (`emptyDir`), 100Mi cap | Own PVC per branch; `initPodVolumeLimit` if set, else 20Gi |
+| Default memory limit | 512Mi | 2Gi |
+| Cluster without a default StorageClass | n/a | Same `emptyDir` behavior as before, warning in the operator log |
+| Explicit `dbPod.volume` / `initVolume` | Used as given | Unchanged - still overrides everything |
+
+Sizing a branch for a large database used to mean raising the `emptyDir` caps and hoping the branch lands on a node with that much spare disk:
+
+```yaml
+# Before: caps on node-local scratch space, shared with everything on the node.
+operator:
+  dbBranching:
+    initPodVolumeLimit: "1Gi"
+    databasePodVolumeLimit: "50Gi"
+```
+
+Now the branch gets its own disk of the requested size, on any node:
+
+```yaml
+# After: provisioned per branch, deleted with it.
+operator:
+  dbBranching:
+    databasePvcSize: "50Gi"
+    initPvcSize: "50Gi"
+```
+
+The old `initPodVolumeLimit` / `databasePodVolumeLimit` values keep working after the upgrade: on the PVC path they size the claims (so a cluster tuned for 50Gi databases gets 50Gi PVCs, not the 20Gi default), and on `emptyDir` - the `kind: "emptyDir"` opt-out below, or the automatic fallback - they stay the size caps they always were. The new `databasePvcSize` / `initPvcSize` win when both are set.
+
+### Tuning storage
+
+Cluster admins can tune the storage per engine in the operator's Helm values:
+
+```yaml
+operator:
+  dbBranching:
+    # Cluster-wide default PVC sizes, per branch.
+    databasePvcSize: "50Gi"
+    initPvcSize: "50Gi"
+  pgBranchConfig:
+    dbPod:
+      storage:
+        # "pvc" (default) or "emptyDir".
+        kind: "pvc"
+        # Unset means the cluster's default StorageClass.
+        storageClassName: "fast-ssd"
+        # Per-engine overrides of the sizes above.
+        dataSize: "100Gi"
+        initSize: "100Gi"
+```
+
+To keep an engine's branches on node-local storage instead, opt out with `emptyDir`; the volumes are then capped by the `operator.dbBranching` limits:
+
+```yaml
+operator:
+  dbBranching:
+    # emptyDir caps: only used when branches run on emptyDir.
+    initPodVolumeLimit: "100Mi"
+    databasePodVolumeLimit: "1Gi"
+  pgBranchConfig:
+    dbPod:
+      storage:
+        kind: "emptyDir"
+```
+
+Setting `storageClassName` to a class that does not exist fails the branch with an error naming the fix, rather than leaving it stuck. An explicit `dbPod.volume` overrides the `storage` block entirely. The dump staged on the init volume is roughly the size of the copied data, so size both volumes for the database you branch.
+
+Copying a large database also needs memory: the branch container's default memory limit is 2Gi, and admins can raise it per engine with `<engine>BranchConfig.dbPod.resources`.
+
 ## Branch Config Profiles
 
 A profile is a named preset of branch pod settings that a cluster admin defines for an engine. A branch picks one with `profile` and runs with those settings.
