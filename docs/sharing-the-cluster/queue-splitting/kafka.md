@@ -247,6 +247,34 @@ When `mirrord.auth.kind` is `MSK_IAM`, the operator automatically adds `sasl.mec
 
 To produce the authentication tokens, the operator uses the default credentials provider chain. The easiest way to provide the credentials is with IAM role assumption. For that, an IAM role with an appropriate policy has to be assigned to the operator's service account. Please follow [AWS's documentation on how to do that](https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html). Note that the operator's service account can be annotated with the IAM role's ARN with the `sa.roleArn` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
+**KafkaJS and other clients with custom group protocols (`mirrord.temporary_group_id`)**
+
+This is useful when the split session fails with an `INCONSISTENT_GROUP_PROTOCOL` error. It happens with client libraries that advertise their own partition-assignment protocol names - KafkaJS, for example - which the operator's consumer cannot join a group with.
+
+Set the `mirrord.temporary_group_id` property on the Kafka `MirrordPropertyList`:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: kafka-connection
+  namespace: meme
+spec:
+  properties:
+    - name: bootstrap.servers
+      value: kafka.default.svc.cluster.local:9092
+    - name: mirrord.temporary_group_id
+      value: "true"
+```
+
+Splits then patch the workload's consumer-group environment variables (the ones under `appConfig.groupId`) to a generated temporary group, alongside the topic rewrite. The operator keeps the original group to itself, so it never negotiates a protocol with the application's client - any client library works. Offsets are preserved: the operator keeps committing into the original group, and the workload resumes exactly where it left off when the split ends.
+
+Temporary group names follow the temporary topic name format (`mirrord-tmp-...`), so if you use group ACLs, the application's credentials must be allowed to join groups with that prefix, and the operator's credentials need `DeleteGroups` for cleanup.
+
+{% hint style="info" %}
+`mirrord.temporary_group_id` requires mirrord operator `3.194.0` or later.
+{% endhint %}
+
 #### Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers and `jq_filter` on a JSON representation of the whole record.
