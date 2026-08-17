@@ -150,7 +150,7 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 ### Before and after 3.191.0
 
-Up to operator `3.190.0`, branches always ran on node-local `emptyDir` volumes. Since `3.191.0`, per-branch PVCs are the default; no config change is needed on upgrade, and every explicit setting keeps its meaning:
+Up to operator `3.194.0`, branches always ran on node-local `emptyDir` volumes. Since `3.194.0`, per-branch PVCs are the default; no config change is needed on upgrade, and every explicit setting keeps its meaning:
 
 | | Up to `3.194.0` | Since `3.194.0` |
 | --- | --- | --- |
