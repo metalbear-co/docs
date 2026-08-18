@@ -272,7 +272,7 @@ Splits then patch the workload's consumer-group environment variables (the ones 
 Temporary group names follow the temporary topic name format (`mirrord-tmp-...`), so if you use group ACLs, the application's credentials must be allowed to join groups with that prefix, and the operator's credentials need `DeleteGroups` for cleanup.
 
 {% hint style="info" %}
-`mirrord.temporary_group_id` requires mirrord operator `3.194.0` or later.
+`mirrord.temporary_group_id` requires mirrord operator `3.195.0` or later.
 {% endhint %}
 
 #### Setting a filter
