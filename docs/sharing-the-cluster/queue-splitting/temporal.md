@@ -14,7 +14,7 @@ The word "queue" on this page refers to a Temporal task queue.
 Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 Temporal has no native way to "split" a task queue, so the mirrord operator does it with a small gRPC proxy and a set of virtual task queues.
 
@@ -28,11 +28,11 @@ If two users' filters both match the same task, only one of them gets it: the ta
 
 ![Temporal queue splitting detailed system flow](../../.gitbook/assets/temporal-detailed-flow.svg)
 
-#### Enabling Temporal Splitting in Your Cluster
+## Enabling Temporal Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable Temporal splitting in the Helm chart**
+#### Enable Temporal splitting in the Helm chart
 
 Enable the `operator.temporalSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 
@@ -40,7 +40,7 @@ When enabled, the operator runs a Temporal proxy that deployed workers connect t
 {% endstep %}
 
 {% step %}
-**Create a MirrordPropertyList**
+#### Create a MirrordPropertyList
 
 The operator needs to connect to your Temporal frontend to poll the real task queue. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
@@ -71,7 +71,7 @@ Supported properties:
 | `tlsClientKey`  |                     PEM private key for `tlsClientCert`. Requires `tlsClientCert`.                                      |    No    |         |
 | `tlsServerName` |  Overrides the domain name the frontend's certificate is verified against, when the dial address does not match it.     |    No    |         |
 
-**TLS and mutual TLS**
+#### TLS and mutual TLS
 
 A frontend behind regular TLS only needs `tls: "true"`. For example, Temporal Cloud with an API key — its certificate is signed by a publicly trusted CA, so nothing else is required:
 
@@ -127,7 +127,7 @@ TLS applies to the connection between the **operator** and the Temporal frontend
 {% endstep %}
 
 {% step %}
-**Create a MirrordSplitConfig**
+#### Create a MirrordSplitConfig
 
 On operator installation with `operator.temporalSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -166,7 +166,7 @@ The `MirrordSplitConfig` above says that:
 4. The operator patches `TEMPORAL_ADDRESS` so the worker connects to the operator's Temporal proxy, and reads the Temporal namespace from `TEMPORAL_NAMESPACE`.
 5. The task queue can be referenced in a mirrord config under ID `orders-task-queue`.
 
-**Link the config to the deployed worker**
+#### Link the config to the deployed worker
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -174,7 +174,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-**Describe consumed task queues**
+#### Describe consumed task queues
 
 Each entry in the `spec.queues` list describes a Temporal task queue consumed by the worker. Each `appConfig` field uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
 
@@ -186,7 +186,7 @@ Each entry in the `spec.queues` list describes a Temporal task queue consumed by
 * `appConfig.temporalNamespace` (optional) - the environment variable holding the Temporal namespace.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with per-queue settings (see below).
 
-**Per-queue options**
+#### Per-queue options
 
 Temporal-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`:
 
@@ -213,7 +213,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for in-flight work to finish first.
 
@@ -227,7 +227,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. In-flight work may be lost.        |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Temporal uses `queue_type: Temporal`.
 
@@ -279,7 +279,7 @@ Filtering on a Temporal header:
 }
 ```
 
-**Filtering with jq**
+### Filtering with jq
 
 `jq_filter` runs against a JSON document the operator builds for each task. Every document has a `task_type` field, set to either `"activity"` or `"workflow"`.
 
