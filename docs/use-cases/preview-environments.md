@@ -280,6 +280,24 @@ operator:
 
 ***
 
+### Targeting Scaled-to-Zero Services
+
+A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
+or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
+consumer group are read from the workload's spec, and messages flow through the queue itself.
+Matching messages reach the preview pod right away; unmatched ones wait on the target's
+temporary queue and are consumed when the service scales back up, whose new pods start with the
+split configuration already applied. No extra configuration is needed.
+
+A preview that also uses HTTP filtering or DB branching still needs a running target pod:
+traffic is intercepted at the target's pods, and branch overrides are built from the env values
+the running container sees. Such a session is rejected at creation with
+`no Pod is ready to be a session target` - nothing partial is created. Idle mode (above) scales
+the *preview's* pods to zero; this is about the *target's* pods, and the two combine freely.
+
+***
+
 ### Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)
