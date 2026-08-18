@@ -74,24 +74,14 @@ Yes, on the Enterprise plan. Run the [License Server](license-server.md) on-prem
 
 ### Verifying build provenance
 
-Using the [GitHub CLI](https://cli.github.com):
+Attestations are published to GHCR alongside each image, and to the GitHub release for CLI binaries, under the `metalbear-co` owner. Verify them with [`gh attestation verify`](https://cli.github.com/manual/gh_attestation_verify), for example:
 
 ```bash
-# Operator image
 gh attestation verify \
   oci://ghcr.io/metalbear-co/operator:<version> --owner metalbear-co
-
-# mirrord agent image
-gh attestation verify \
-  oci://ghcr.io/metalbear-co/mirrord:<version> --owner metalbear-co
-
-# A CLI binary downloaded from a GitHub release
-gh attestation verify mirrord_linux_x86_64 --owner metalbear-co
 ```
 
-A successful check reports the source repository, the workflow that built the artifact, and the commit it was built from.
-
-Verification needs a GitHub token with the `read:packages` scope. It does not need access to MetalBear's organization or repositories.
+The same applies to `ghcr.io/metalbear-co/mirrord` and to CLI binaries downloaded from a release. Verification needs a GitHub token with the `read:packages` scope, but no access to MetalBear's organization or repositories.
 
 For our vulnerability disclosure and customer notification process, see the [Trust Center](https://trust.metalbear.com).
 
