@@ -15,7 +15,7 @@ The word "queue" on this page refers to a Redis Pub/Sub channel.
 Queue splitting for Redis Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 The mirrord operator subscribes to the same Redis channel(s) the deployed workload uses, then re-publishes each incoming message to temporary channels based on the users' filters.
 
@@ -27,17 +27,17 @@ Because Redis Pub/Sub channels are created implicitly when a message is publishe
 
 ![Redis Pub/Sub splitting flow](../../.gitbook/assets/redis-pubsub-splitting.svg)
 
-#### Enabling Redis Pub/Sub Splitting in Your Cluster
+## Enabling Redis Pub/Sub Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable Redis Pub/Sub splitting in the Helm chart**
+#### Enable Redis Pub/Sub splitting in the Helm chart
 
 Enable the `operator.redisPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Create a MirrordPropertyList**
+#### Create a MirrordPropertyList
 
 The operator needs to connect to your Redis instance to subscribe to and re-publish messages. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
@@ -66,7 +66,7 @@ Supported properties:
 {% endstep %}
 
 {% step %}
-**Create a MirrordSplitConfig**
+#### Create a MirrordSplitConfig
 
 On operator installation with `operator.redisPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -100,7 +100,7 @@ The `MirrordSplitConfig` above says that:
 3. The deployment consumes one Redis channel, whose name is in environment variable `REDIS_CHANNEL`.
 4. The channel can be referenced in a mirrord config under ID `notifications`.
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -108,7 +108,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-**Describe consumed channels**
+#### Describe consumed channels
 
 Each entry in the `spec.queues` list describes a Redis channel consumed by the workload:
 
@@ -129,7 +129,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread messages to be consumed first.
 
@@ -143,7 +143,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread messages may be lost.       |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Redis Pub/Sub uses `queue_type: RedisPubSub`.
 

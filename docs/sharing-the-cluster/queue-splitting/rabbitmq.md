@@ -18,7 +18,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#rabbitmq).
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a RabbitMQ queue:
 
@@ -34,17 +34,17 @@ If a second user then starts a mirrord RabbitMQ splitting session on the same qu
 
 If the filters defined by the two users both match some message, one of the users will receive the messages at random.
 
-#### Enabling RabbitMQ Splitting in Your Cluster
+## Enabling RabbitMQ Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable RabbitMQ splitting in the Helm chart**
+#### Enable RabbitMQ splitting in the Helm chart
 
 Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Cluster Declaration**
+#### Cluster Declaration
 
 The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters. As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting. A `MirrordPropertyList` lives in the same namespace as the consumer workload (and the `MirrordSplitConfig`), which may very well be different than your RabbitMQ broker's namespace. It can also live in the operator's namespace to share one declaration across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces). `MirrordPropertyList` is modeled after the `env` and `envFrom` fields in a pod's container spec. You can:
 
@@ -106,7 +106,7 @@ spec:
 ```
 {% endhint %}
 
-**Cluster Properties**
+#### Cluster Properties
 
 | Property              |                                                                                                             Description                                                                                                            | Required |                              Type                             |               Default              |
 | --------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----------------------------------------------------------: | :--------------------------------: |
@@ -125,7 +125,7 @@ spec:
 
 ¹ Provide either `url` or `host`. Whenever a part is both present in the `url` and set as its own property, the individual property wins. A `username` and `password` are always required - set them directly or include them in the `url`.
 
-**Queue Declare Properties**
+#### Queue Declare Properties
 
 | Property      |                                                    Description                                                    | Required |           Type           | Default |
 | ------------- | :---------------------------------------------------------------------------------------------------------------: | :------: | :----------------------: | :-----: |
@@ -136,7 +136,7 @@ spec:
 {% endstep %}
 
 {% step %}
-**Provide application context**
+#### Provide application context
 
 On operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`. Before you can run sessions with RabbitMQ splitting, you must create a `MirrordSplitConfig` for the desired target. This tells the operator which queues to split and how the application discovers their names.
 
@@ -179,7 +179,7 @@ The `MirrordSplitConfig` above says that:
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -187,7 +187,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` — type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` — name of the workload.
 
-**Describe consumed queues**
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more RabbitMQ queues consumed by the workload:
 
@@ -213,7 +213,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread messages to be consumed first.
 
@@ -227,7 +227,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread messages may be lost.       |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ` and supports `message_filter` on message headers.
 

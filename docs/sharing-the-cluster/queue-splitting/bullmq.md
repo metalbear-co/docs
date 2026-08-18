@@ -16,7 +16,7 @@ The word "queue" on this page refers to a BullMQ queue (backed by Redis lists, h
 Queue splitting for BullMQ requires mirrord operator `3.175.0` or later and mirrord CLI `3.223.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 ![BullMQ queue splitting flow](../../.gitbook/assets/bullmq.svg)
 
@@ -28,17 +28,17 @@ If a second user starts a session on the same queue, the operator creates anothe
 
 When a session ends, the operator deletes the per-session queue's Redis keys. When all sessions end, the operator restores the workload to read from the original queue and deletes the main queue's Redis keys.
 
-#### Enabling BullMQ Splitting in Your Cluster
+## Enabling BullMQ Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable BullMQ splitting in the Helm chart**
+#### Enable BullMQ splitting in the Helm chart
 
 Enable the `operator.bullmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Create a MirrordPropertyList**
+#### Create a MirrordPropertyList
 
 The operator needs to connect to your Redis instance to dequeue and re-enqueue jobs. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
@@ -67,7 +67,7 @@ Supported properties:
 {% endstep %}
 
 {% step %}
-**Create a MirrordSplitConfig**
+#### Create a MirrordSplitConfig
 
 On operator installation with `operator.bullmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -101,7 +101,7 @@ The `MirrordSplitConfig` above says that:
 3. The deployment consumes one BullMQ queue, whose name is in environment variable `BULLMQ_QUEUE`.
 4. The queue can be referenced in a mirrord config under ID `orders`.
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -109,7 +109,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-**Describe consumed queues**
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes a BullMQ queue consumed by the workload:
 
@@ -130,7 +130,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread jobs to be consumed first.
 
@@ -144,7 +144,7 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread jobs may be lost.           |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). BullMQ uses `queue_type: BullMQ`.
 
