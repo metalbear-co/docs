@@ -108,9 +108,12 @@ Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 ## How do I configure Role Based Access Control for mirrord for Teams?
 
-mirrord for Teams works on top of Kubernetes' built-in RBAC with the following resources, `mirrordoperators`, `mirrordoperators/certificate`, `targets`, and `targets/port-locks` under the `operator.metalbear.co` apiGroup. The first two resources are required at a cluster level, and the last two can be allowed at a namespace level.
+mirrord for Teams works on top of Kubernetes' built-in RBAC, with no separate user management. A mirrord user needs two kinds of permissions:
 
-You can limit a user's ability to use mirrord on specific targets by limiting their access to the `target` resource. The specific verbs for rules to our resources can be copied from the examples below.
+1. **Permissions on the Operator API.** Resources under the `operator.metalbear.co` and `profiles.mirrord.metalbear.co` API groups (plus feature-specific groups), served by the Operator's APIService. The exact minimum is listed [below](#what-are-the-minimum-permissions-a-user-needs).
+2. **Regular Kubernetes `get` permission on the workloads they want to target.** The Operator impersonates the calling user and verifies their access to the target before starting a session, so mirrord never grants a user access to a workload they couldn't already read.
+
+You can limit a user's ability to use mirrord on specific targets by limiting their access to the `targets` resource. The specific verbs for rules to our resources can be copied from the examples below.
 
 For your convenience, mirrord for Teams includes built-in ClusterRoles that control access to the Operator API:
 
@@ -137,9 +140,130 @@ roleRef:
 
 For CI runners, bind the runner's ServiceAccount, Kubernetes group, or other authenticated identity to `mirrord-operator-ci` instead of `mirrord-operator-user`.
 
-In addition, the Operator impersonates any user that calls its API, and thus only operates on pods or deployments for which the user has `get` permissions.
-
 To see the latest definition, we recommend checking our [Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/cluster-role.yaml).
+
+### What are the minimum permissions a user needs?
+
+If your security team prefers to define its own roles instead of binding the bundled ones, this is the full breakdown of what a mirrord user needs. Rules that only serve a specific capability are marked, and can be dropped if you don't use it.
+
+**Cluster-scoped rules.** These must be granted through a ClusterRole with a ClusterRoleBinding:
+
+```yaml
+rules:
+# Detecting the Operator and reading its status - required.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - mirrordoperators
+  verbs:
+  - get
+  - list
+# Obtaining the client credentials mirrord uses to authenticate
+# to the Operator - required.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - mirrordoperators/certificate
+  - mirrordclusteroperatorusercredentials
+  verbs:
+  - create
+# Streaming session events (used by `mirrord subscribe`) - optional.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+# Reading cluster-wide mirrord profiles - only needed if you use profiles.
+- apiGroups:
+  - profiles.mirrord.metalbear.co
+  resources:
+  - mirrordclusterprofiles
+  verbs:
+  - get
+  - list
+```
+
+**Namespace-scopeable rules.** Grant these in the same ClusterRole for cluster-wide access, or as a namespaced Role to restrict users to specific namespaces (see the [next section](#how-do-i-limit-user-access-to-a-specific-namespace)):
+
+```yaml
+rules:
+# Listing available targets and starting sessions on them - required.
+# `proxy` is the verb that actually runs a mirrord session.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - targets
+  - targets/port-locks
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - targets
+  verbs:
+  - proxy
+# `mirrord operator session kill` and `kill-all` - optional.
+# These verbs are not scoped to the caller, see the note below.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - sessions
+  verbs:
+  - delete
+  - deletecollection
+# The copy target feature. Also required to target Jobs and
+# CronJobs, which enable copy target automatically.
+- apiGroups:
+  - operator.metalbear.co
+  resources:
+  - copytargets
+  verbs:
+  - get
+  - list
+  - create
+  - proxy
+# Reading namespaced mirrord profiles - only needed if you use profiles.
+- apiGroups:
+  - profiles.mirrord.metalbear.co
+  resources:
+  - mirrordprofiles
+  verbs:
+  - get
+  - list
+```
+
+The `sessions` verbs apply to every session in their scope, not only to the ones the caller started. A user bound to them can kill another developer's session in that namespace. See [sessions RBAC](../sharing-the-cluster/sessions.md#sessions-rbac) for how to trim this.
+
+Features enabled through Helm values add their own rules on top of the sets above:
+
+| Feature | Enabled by | apiGroup | Resources | Verbs |
+| --- | --- | --- | --- | --- |
+| [Preview environments](../use-cases/preview-environments.md) | `operator.previewEnv` | `preview.mirrord.metalbear.co` | `previewsessions` | `create`, `delete`, `get`, `list`, `watch` |
+| | | `operator.metalbear.co` | `previews` | `get`, `list` |
+| [DB branching](../sharing-the-cluster/db-branching.md) | `operator.pgBranching`, `operator.mysqlBranching`, and the other branching values | `dbs.mirrord.metalbear.co` | `branchdatabases` | `create`, `delete`, `get`, `list`, `watch` |
+| | `operator.pgBranching`, `operator.mysqlBranching`, `operator.mongodbBranching` | `dbs.mirrord.metalbear.co` | `pgbranchdatabases`, `mysqlbranchdatabases`, `mongodbbranchdatabases`, one per enabled engine | `create`, `delete`, `get`, `list`, `watch` |
+| | `operator.dbBranchingLiteralCredentials` | `operator.metalbear.co` | `branchcredentials` | `create` |
+| [Queue splitting](../sharing-the-cluster/queue-splitting.md) | `operator.kafkaSplitting`, `operator.sqsSplitting`, and the other splitting values | None | None | None |
+
+Queue splitting adds nothing to the user roles. The queue CRDs are read and written by the Operator alone, and broker credentials (Kafka ACLs, SQS IAM policies, RabbitMQ management access) are configured on the Operator, never per developer. Users only name topics in their mirrord configuration file.
+
+The bundled `mirrord-operator-user` role is templated to contain exactly the rules your enabled features need, so the authoritative reference for your installation is the rendered role in your cluster:
+
+```bash
+kubectl get clusterrole mirrord-operator-user -o yaml
+```
+
+**Kubernetes permissions on the target.** In addition to the Operator API rules above, the Operator impersonates the calling user and checks that they can access the target. The user needs:
+
+* For a workload target (`deployment`, `pod`, `statefulset`, `replicaset`, `service`, `job`, `cronjob`, or Argo Rollout): `get` on that resource in its namespace.
+* For the [targetless mode](https://metalbear.com/mirrord/docs/config#target): `get` on the target namespace.
+* For a label-selector target: `list` on pods in the target namespace.
+
+Nothing else on your cluster workloads is required. The user roles carry no `create` or `delete` on Pods, Jobs, or any workload, no `pods/exec`, no `pods/portforward` ([`mirrord port-forward`](../using-mirrord/port-forwarding.md) runs through the same Operator session as any other mirrord command), and no write access of any kind to your workloads. The scale-down for [copy target](../using-mirrord/copy-target.md) and the env injection for [queue splitting](../sharing-the-cluster/queue-splitting.md) are performed by the Operator's own ServiceAccount.
 
 ### How do I limit user access to a specific namespace?
 
