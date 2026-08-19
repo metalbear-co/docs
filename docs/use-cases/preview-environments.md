@@ -46,6 +46,10 @@ Today, mirrord sessions are tightly coupled to a developer's local process. When
 * Receive **filtered or duplicated staging traffic** using an environment key
 * Stay alive for a **fixed TTL**, independent of any local machine or process
 
+{% hint style="info" %}
+With [multi-cluster](../using-mirrord/multi-cluster.md) mirrord, previews can run replicas on every workload cluster so traffic is served wherever it enters. See [Preview Environments in Multi-Cluster](../using-mirrord/multi-cluster.md#preview-environments-in-multi-cluster).
+{% endhint %}
+
 ***
 
 #### Environment Key
@@ -273,6 +277,24 @@ operator:
     idleHoldBufferMessages: 512
     idleHoldBufferBytes: 8388608
 ```
+
+***
+
+### Targeting Scaled-to-Zero Services
+
+A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
+or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
+consumer group are read from the workload's spec, and messages flow through the queue itself.
+Matching messages reach the preview pod right away; unmatched ones wait on the target's
+temporary queue and are consumed when the service scales back up, whose new pods start with the
+split configuration already applied. No extra configuration is needed.
+
+A preview that also uses HTTP filtering or DB branching still needs a running target pod:
+traffic is intercepted at the target's pods, and branch overrides are built from the env values
+the running container sees. Such a session is rejected at creation with
+`no Pod is ready to be a session target` - nothing partial is created. Idle mode (above) scales
+the *preview's* pods to zero; this is about the *target's* pods, and the two combine freely.
 
 ***
 

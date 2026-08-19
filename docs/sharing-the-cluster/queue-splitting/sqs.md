@@ -20,7 +20,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 The older `operator.sqsSplittingLingerTimeout` Helm value only affects legacy `MirrordWorkloadQueueRegistry`; with `MirrordSplitConfig`, use [`spec.drainTimeout`](sqs.md#if-all-sqs-sessions-are-over-but-the-remote-service-still-didnt-change-back-to-read-from-the-original-queue) instead.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from an SQS queue:
 
@@ -38,17 +38,17 @@ If the filters defined by the two users both match some message, one of the user
 
 Deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages, so no messages intended for the remote service are lost.
 
-#### Enabling SQS Splitting in Your Cluster
+## Enabling SQS Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable SQS splitting in the Helm chart**
+#### Enable SQS splitting in the Helm chart
 
 Enable the `operator.sqsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Authenticate and authorize the mirrord operator**
+#### Authenticate and authorize the mirrord operator
 
 The mirrord operator will need to be able to perform operations on the SQS queues. To do this, it will build an SQS client, using the default credentials provider chain.
 
@@ -134,7 +134,7 @@ If you enable `s3_event` for an SQS queue (via its `queueConfig`), the operator 
 {% endstep %}
 
 {% step %}
-**Authorize deployed consumers**
+#### Authorize deployed consumers
 
 In order to be targeted with SQS splitting, a deployed consumer must be able to use the temporary queues created by mirrord. E.g. if the consumer application retrieves the queue's URL based on its name, lists queue's tags, consumes and deletes messages from the queue — it must be able to do the same on a temporary queue.
 
@@ -144,7 +144,7 @@ However, if the consumer's access to the queue is controlled by an IAM policy (a
 {% endstep %}
 
 {% step %}
-**Provide application context**
+#### Provide application context
 
 On operator installation with `operator.sqsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`. Before you can run sessions with SQS splitting, you must create a `MirrordSplitConfig` for the desired target. This is because the `MirrordSplitConfig` contains additional application context required by the mirrord operator. For example, the operator needs to know which environment variables contain the names of the SQS queues to split.
 
@@ -187,7 +187,7 @@ The `MirrordSplitConfig` above says that:
 3. The SQS queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 4. The `meme-queue` has extra per-queue options defined in the `meme-queue-options` `MirrordPropertyList` (e.g. tags set on temporary queues, SNS parsing).
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -195,7 +195,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` - type of the workload. mirrord supports SQS splitting on deployments and Argo rollouts.
 * `name` - name of the workload.
 
-**Describe consumed queues**
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more SQS queues consumed by the workload:
 
@@ -210,7 +210,7 @@ Each entry in the `spec.queues` list describes one or more SQS queues consumed b
   * `containers` - limit resolution to specific containers (optional, defaults to all containers).
 * `queueConfig` (optional) - name of a `MirrordPropertyList` holding per-queue options (see below).
 
-**Per-queue options (SNS, S3 events, tags)**
+#### Per-queue options (SNS, S3 events, tags)
 
 SQS-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`. The property list is looked up in the namespace of the `MirrordSplitConfig`, then in the operator's namespace - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces). Supported properties:
 
@@ -247,7 +247,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`.
 
@@ -375,7 +375,7 @@ Using the `*` wildcard to apply one filter to all queues described in the `Mirro
 
 In the example above, the local application will receive a subset of message from **all** SQS queues described in the `MirrordSplitConfig`. All received messages will have an SQS attribute `baggage` containing `mirrord-session=pr-123`. `*` is a special queue ID for SQS queues, and resolves to all queues described in the `MirrordSplitConfig`.
 
-#### Troubleshooting SQS splitting
+## Troubleshooting SQS splitting
 
 If you're trying to use SQS-splitting and are facing difficulties, here are some steps you can go through to identify and hopefully solve the problem.
 
@@ -416,11 +416,11 @@ First, some generally applicable steps:
        kubectl rollout restart deployment mirrord-operator -n mirrord
        ```
 
-**If some (but not all) of the messages that should arrive at the local service arrive at the remote service**
+### If some (but not all) of the messages that should arrive at the local service arrive at the remote service
 
 It's possible the target workload's restart is not complete yet, and there are still pods reading directly from the original queue (those will be pods that DO NOT have a `operator.metalbear.co/patched` label). You can wait a bit for them to be replaced with new pods, patched by mirrord, that read from a temporary queue created by mirrord, or you can delete them.
 
-**If all SQS sessions are over but the remote service still didn't change back to read from the original queue**
+### If all SQS sessions are over but the remote service still didn't change back to read from the original queue
 
 When there are no more queue splitting sessions to a target, the target workload will not immediately be changed to read directly from the original queue. Instead, it will keep reading from the temporary queue until its empty, so that no messages intended for the remote service are lost.
 

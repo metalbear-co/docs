@@ -14,7 +14,7 @@ The word "queue" on this page refers to a Pub/Sub subscription.
 Queue splitting for Google Cloud Pub/Sub requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a Google Cloud Pub/Sub subscription.
 
@@ -32,23 +32,23 @@ If the filters defined by the two users both match some message, one of the user
 
 The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
-#### Enabling GCP Pub/Sub Splitting in Your Cluster
+## Enabling GCP Pub/Sub Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable GCP Pub/Sub splitting in the Helm chart**
+#### Enable GCP Pub/Sub splitting in the Helm chart
 
 Enable the `operator.gcpPubsubSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Authenticate the mirrord operator**
+#### Authenticate the mirrord operator
 
 The mirrord operator needs access to the Google Cloud Pub/Sub API to create and manage temporary topics and subscriptions.
 
 In all cases you must create a `MirrordPropertyList` that tells the operator which GCP project to use. The credentials themselves come from one of the two options below. Put the list in the target workload's namespace, or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
-**Option A: Workload Identity (recommended)**
+#### Option A: Workload Identity (recommended)
 
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) binds a Kubernetes service account to a Google Cloud IAM service account. The Kubernetes service account must carry the `iam.gke.io/gcp-service-account` annotation pointing at the GCP service account email.
 
@@ -85,7 +85,7 @@ spec:
       value: my-gcp-project
 ```
 
-**Option B: Service account JSON key**
+#### Option B: Service account JSON key
 
 If you are not using Workload Identity, provide a service account JSON key in the `MirrordPropertyList`. Store the key in a Kubernetes Secret, then reference it:
 
@@ -139,13 +139,13 @@ A good starting point is to assign the `roles/pubsub.editor` role to the operato
 {% endstep %}
 
 {% step %}
-**Authorize deployed consumers**
+#### Authorize deployed consumers
 
 In order to be targeted with Pub/Sub splitting, a deployed consumer must be able to read from the temporary subscriptions created by mirrord. If the consumer's IAM permissions are scoped to specific subscription names, you will need to extend them to cover subscriptions with the `mirrord-tmp-` prefix. This prefix is customizable via the `spec.tmpNameTemplate` field in your `MirrordSplitConfig` resource.
 {% endstep %}
 
 {% step %}
-**Provide application context**
+#### Provide application context
 
 On operator installation with `operator.gcpPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -189,7 +189,7 @@ The `MirrordSplitConfig` above says that:
 4. The GCP project ID is in environment variable `GCP_PROJECT_ID` in container `consumer`.
 5. The subscription can be referenced in a mirrord config under ID `user-events`.
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -197,7 +197,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-**Describe consumed subscriptions**
+#### Describe consumed subscriptions
 
 Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions consumed by the workload:
 
@@ -214,13 +214,13 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
 * `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default`.
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with additional configuration for temporary resources.
 
-**Matching multiple subscriptions with `envLike`**
+#### Matching multiple subscriptions with `envLike`
 
 When a single queue ID uses `envLike` to match several environment variables, each matched subscription is split independently under that one ID. A filter on the queue ID then applies to every matched subscription. The diagram below shows one queue ID whose `envLike` matches two subscription variables, each getting its own session and main resources.
 
 ![One queue ID matching two subscriptions via envLike](../../.gitbook/assets/gcp-multi-subscriptions.svg)
 
-**Subscriptions in multiple GCP projects**
+#### Subscriptions in multiple GCP projects
 
 Each queue's project is resolved from its own `appConfig.projectId`, so different queues can live in different projects. If all projects share one identity (e.g. Workload Identity with cross-project access), one `MirrordPropertyList` is enough - just give each queue its own `projectId`:
 
@@ -271,7 +271,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Configuring temporary subscriptions
+## Configuring temporary subscriptions
 
 By default the temporary subscriptions mirrord creates are deep copies of the source subscription, so they inherit its settings - including its acknowledgement deadline, message retention, and expiration. You can override these per queue by pointing its `queueConfig` at a `MirrordPropertyList`:
 
@@ -311,7 +311,7 @@ All three values are forwarded to GCP, which enforces its own allowed ranges (se
 * `message_retention_seconds` (integer seconds) - how long unacknowledged messages are kept, so a backlog is not dropped while you debug.
 * `expiration_seconds` (integer seconds, or `never`) - how long the temporary subscription survives without activity before Pub/Sub deletes it. Use `never` to keep it for the whole session, which prevents the subscription from being garbage-collected while the deployed consumer is paused.
 
-#### Preserving the value format
+## Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
 
@@ -331,7 +331,7 @@ queues:
 
 With `PUBSUB_SUBSCRIPTION=gcppubsub://projects/my-project/subscriptions/orders`, the operator captures `orders`, creates a temporary subscription, and rewrites the variable to `gcppubsub://projects/my-project/subscriptions/<temporary-name>`, so the application still gets a full URL.
 
-#### Drain timeout
+## Drain timeout
 
 After the last splitting session against a target ends, the operator keeps the split's temporary subscription alive for a while so fallback messages can still be delivered before it tears it down. Two settings control how long it waits:
 
@@ -347,7 +347,7 @@ Whichever value applies is then interpreted as:
 | `0`          | Skip draining; delete the temporary subscription immediately. Undrained messages may be lost. |
 | `N`          | Wait up to `N` to drain, then delete the temporary subscription.                              |
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). GCP Pub/Sub uses `queue_type: GCPPubSub`.
 

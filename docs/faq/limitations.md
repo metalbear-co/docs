@@ -32,6 +32,14 @@ Yes, mirrord works exactly the same way with and without a service mesh installe
 
 Yes, mirrord works with OpenShift. However, OpenShift usually ships with a default security policy that doesn't let mirrord create pods. To fix this, you would need to tweak your `scc` settings - more information [here](https://docs.openshift.com/container-platform/3.11/admin_guide/manage_scc.html). If you'd rather keep the default security policies, we recommend trying out [mirrord for Teams](../managing-mirrord/operator.md).
 
+#### Does mirrord support Teleport, Tailscale, or other secure cluster access tools?
+
+Yes, and there's nothing to configure.
+
+mirrord reaches your cluster entirely through the Kubernetes API, using the same kubeconfig `kubectl` uses. That covers everything it does: the [mirrord Operator](../managing-mirrord/operator.md) is exposed as a Kubernetes APIService, and the connection to the [mirrord agent](../reference/architecture.md#mirrord-agent) runs over Kubernetes port forwarding. mirrord never opens a network path of its own.
+
+If `kubectl` works through your access provider, mirrord works through it too. Customers run mirrord behind Teleport and Tailscale today.
+
 #### Does mirrord support binaries that are statically compiled? (Linux)
 
 No, mirrord needs to be able to leverage dynamic linking in order to work. This means static binaries are not supported.

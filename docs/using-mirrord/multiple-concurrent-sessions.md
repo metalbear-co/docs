@@ -18,6 +18,8 @@ toc: true
 ## Introduction
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
 
+Each service in the file is typically a *different* application with its own target, command, and configuration; this is for debugging several distinct applications together and managing their lifecycle as one unit, not for targeting multiple pods of the same application. For that, see [Targeting Pods by Label](targeting-pods-by-label.md).
+
 ## Getting started
 
 The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
@@ -118,15 +120,49 @@ RabbitMQ isn't supported yet in `mirrord up`.
 Only messages containing the session key (`checkout-debug` in this case) are routed to your local session. All other messages continue to the deployed target.
 {% endhint %}
 
+### Context
+
+`mirrord up` allows you to specify which Kubernetes context to run services in. You can do this either with the `--context` flag, or by setting it in `context` in the config file.
+
+The following config file sets the `kind` context for all services via `common` field, and overrides it to `minikube` for `user-auth-service`.
+
+```yaml
+common:
+  context: kind
+services:
+  user-auth-service:
+    context: minikube
+    run:
+      command: ["python", "-m", "http.server"]
+
+  stage-user-dashboard-app:
+    target:
+      path: pod/nginx
+    run:
+      command: ["node", "app.js"]
+```
+
+To override the context for every service in a run, use `mirrord up --context minikube`.
+
+#### Context precedence
+
+| common context | service context | `--context` | context used              |
+|----------------|-----------------|-------------|---------------------------|
+| any            | any             | set         | `--context`               |
+| any            | set             | unset       | service context           |
+| set            | unset           | unset       | common context            |
+| unset          | unset           | unset       | default (current context) |
+
 ### Config file (`mirrord-up.yaml`)
 
 #### `common`
-Common configuration options, applied to all defined services. Currently 3 options are supported:
+Common configuration options, applied to all defined services. Currently the following options are supported:
 - [`accept_invalid_certificates`](https://metalbear.com/mirrord/docs/config/options#root-accept_invalid_certificates)
 - [`operator`](https://metalbear.com/mirrord/docs/config/options#root-operator)
 - [`telemetry`](https://metalbear.com/mirrord/docs/config/options#root-telemetry)
+- [`context`](https://metalbear.com/mirrord/docs/config/options#root-kube_context)
 
-All 3 map directly to their `mirrord.json` counterparts.
+All fields map directly to their `mirrord.json` counterparts.
 
 #### `services`
 A map from service ids to a `ServiceConfig`. Each entry in this map defines and configures a mirrord process that will be run as part of the session.
@@ -199,6 +235,11 @@ run:
   command: ["node", "app.js"]
 ```
 
+##### `services.*.context`
+The name of the Kubernetes context to run this service in. See [Context](#context) for precedence rules when used with `common.context`.
+
+The `--context` argument overrides this for every service being launched.
+
 ### Templating
 
 The `mirrord-up.yaml` configuration file is rendered with [Tera](https://keats.github.io/tera/docs/) (Jinja2-style syntax) before it is parsed. This lets you populate configuration values dynamically from the session key and from your shell environment.
@@ -268,6 +309,9 @@ Runs every service in the given mode, ignoring the `default_mode` set in the con
 
 ### `--key`
 Allows specifying a custom session key. When not supplied, the OS username is used.
+
+### `--context`
+Runs every service in the specified context, ignoring the `context` field(s) set in the config file. When omitted, each service uses the `context` in the config file. See [Context](#context) for precedence rules.
 
 ## `mirrord up init`
 
