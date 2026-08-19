@@ -271,7 +271,7 @@ When you run this command, you can use the producer to send messages which will 
 
 ### Approach 2: Queue Splitting for non-disruptive debugging
 
-Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, visit https://metalbear.com/mirrord/docs/using-mirrord/queue-splitting/.
+Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, visit https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting.
 
 #### How queue splitting works
 
@@ -335,35 +335,48 @@ This configuration tells the local mirrord client:
 
 ##### Operator Configuration:
 
-The mirrord operator needs information about the SQS setup. This is configured using Kubernetes custom resources.
+The mirrord operator needs information about the SQS setup. This is configured using a Kubernetes custom resource.
 
-First, create a `MirrordWorkloadQueueRegistry` resource:
+Create a `MirrordSplitConfig` resource:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordWorkloadQueueRegistry
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
 metadata:
-  name: consumer-queue-registry
+  name: sqs-consumer-split
   namespace: default
 spec:
-  queues:
-    sample-queue:
-      queueType: SQS
-      nameSource:
-        envVar: QUEUE_NAME
-      tags:
-        tool: mirrord
-  consumer:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
     name: sqs-consumer
-    container: consumer
-    workloadType: Deployment
+  queues:
+    - id: sample_queue
+      kind: sqs
+      appConfig:
+        queue:
+          - env: QUEUE_NAME
+            containers:
+              - consumer
 ```
 
-Apply these configurations to your cluster:
+This `MirrordSplitConfig` says that:
+
+- It targets the `sqs-consumer` deployment (`spec.targetRef`).
+- The `consumer` container reads the name of the SQS queue from the `QUEUE_NAME` environment variable.
+- The queue is referenced from the local mirrord configuration under the ID `sample_queue` (the queue IDs in `split_queues` have to match the queue IDs in the `MirrordSplitConfig`).
+
+For the full resource reference, including per-queue options like SNS parsing and tags on temporary queues, see the [SQS queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/sqs).
+
+**Note**: `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later. It replaces the deprecated `MirrordWorkloadQueueRegistry` resource; if you have existing resources of the old kind, see [Migrating to MirrordSplitConfig](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig).
+
+Save the resource above to a file and apply it to your cluster:
 
 ```bash
-kubectl apply -f kube/
+kubectl apply -f sqs-split-config.yaml
 ```
+
+**Note**: The sample repository's `kube/` manifests still contain the legacy `MirrordWorkloadQueueRegistry` resource. The `MirrordSplitConfig` above replaces it, so apply it yourself as shown here.
 
 #### Running your local consumer with queue splitting
 
@@ -403,7 +416,7 @@ mirrord distinguishes itself by eliminating the need for repeated building and d
 
 In this guide, we’ve explored how to use mirrord to debug SQS consumer applications in Kubernetes. We’ve seen two powerful approaches:
 
-1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/using-mirrord/queue-splitting/).
+1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
 1. **Copy target with scale down** gives your local application exclusive access to SQS messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target/#replacing-a-whole-deployment-using-scale_down).
 

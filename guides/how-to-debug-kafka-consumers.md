@@ -256,7 +256,7 @@ When you run this command, you can use the producer to send messages which will 
 
 ### Approach 2: Queue Splitting for non-disruptive debugging
 
-Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, visit [https://metalbear.com/mirrord/docs/using-mirrord/queue-splitting/](https://metalbear.com/mirrord/docs/using-mirrord/queue-splitting/).
+Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, visit [https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
 #### How queue splitting works
 
@@ -322,50 +322,68 @@ This configuration tells the local mirrord client:
 
 The mirrord operator needs information about the Kafka setup. This is configured using Kubernetes custom resources.
 
-First, create a `MirrordKafkaClientConfig` resource:
+First, create a `MirrordPropertyList` resource holding the connection settings for the operator's own Kafka client. Each property is passed straight to the underlying Kafka client:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaClientConfig
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
 metadata:
   name: base-config
-  namespace: mirrord
+  namespace: default
 spec:
   properties:
     - name: bootstrap.servers
       value: kafka-0.kafka.default.svc.cluster.local:9092
-    - name: client.id
-      value: mirrord-operator
     - name: security.protocol
       value: PLAINTEXT
 ```
 
-Next, create a `MirrordKafkaTopicsConsumer` resource:
+Next, create a `MirrordSplitConfig` resource:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaTopicsConsumer
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
 metadata:
-  name: kafka-consumer-topics
+  name: kafka-consumer-split
   namespace: default
 spec:
-  consumerApiVersion: apps/v1
-  consumerKind: Deployment
-  consumerName: kafka-consumer
-  topics:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kafka-consumer
+  queues:
     - id: test_topic
+      kind: kafka
       clientConfig: base-config
-      nameSources:
-        - directEnvVar:
-            container: consumer
-            variable: KAFKA_TOPIC
-      groupIdSources:
-        - directEnvVar:
-            container: consumer
-            variable: KAFKA_GROUP_ID
+      appConfig:
+        topic:
+          - env: KAFKA_TOPIC
+            containers:
+              - consumer
+        groupId:
+          - env: KAFKA_GROUP_ID
+            containers:
+              - consumer
 ```
 
-The above configurations have already been applied if `kubectl apply -f ./kube` ran successfully earlier.
+This `MirrordSplitConfig` says that:
+
+- It targets the `kafka-consumer` deployment (`spec.targetRef`).
+- The `consumer` container reads the topic name from the `KAFKA_TOPIC` environment variable and the consumer group ID from `KAFKA_GROUP_ID`.
+- The topic is referenced from the local mirrord configuration under the ID `test_topic` (the queue IDs in `split_queues` have to match the queue IDs in the `MirrordSplitConfig`).
+- The operator connects to Kafka using the settings from the `base-config` `MirrordPropertyList`.
+
+For the full resource reference, see the [Kafka queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/kafka).
+
+**Note**: `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later. It replaces the deprecated `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources; if you have existing resources of the old kinds, see [Migrating to MirrordSplitConfig](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig).
+
+Save both resources above to a file and apply them to your cluster:
+
+```bash
+kubectl apply -f kafka-split-config.yaml
+```
+
+**Note**: The sample repository's `kube/` manifests still contain the legacy `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources. The resources above replace them, so apply them yourself as shown here.
 
 #### Running your local consumer with queue splitting
 
@@ -399,7 +417,7 @@ mirrord distinguishes itself by eliminating the need for repeated building and d
 
 In this guide, we’ve explored how to use mirrord to debug Kafka consumer applications in Kubernetes. We’ve seen two powerful approaches:
 
-1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/using-mirrord/queue-splitting/).
+1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
 2. **Copy target with scale down** gives your local application exclusive access to Kafka messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target/#replacing-a-whole-deployment-using-scale_down).
 
