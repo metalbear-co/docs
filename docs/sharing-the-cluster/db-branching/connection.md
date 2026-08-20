@@ -94,7 +94,9 @@ pgBranchConfig:
           sslmode: "disable"
 ```
 
-`query_params` only affects the branch connection; the copy connection to the source keeps the source's own parameters. On operators without this feature, mirrord fails fast with a message naming it instead of silently ignoring the config.
+`query_params` only affects the branch connection; the copy connection to the source keeps the source's own parameters.
+
+Branch query params require operator and Helm chart `3.197.0` or later, and mirrord CLI `3.250.0` or later. Against an older operator, a branch that sets `query_params` (or an `sslmode` connection param) fails with a clear error instead of silently ignoring it.
 
 ### Secret Source
 
