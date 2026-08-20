@@ -63,7 +63,38 @@ Default for `connection.params.host` is `localhost` for all databases.
 
 #### Custom Parameters
 
-Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accepts `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
+Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, PostgreSQL and [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accept `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
+
+#### Branch Query Parameters (PostgreSQL)
+
+The connection your application receives points at the branch pod, and its query parameters describe the branch rather than the source. `sslmode` is set automatically: `disable` for a regular branch pod, `require` when the operator's branch config enables TLS. So a source that mandates `?sslmode=require` (for example GCP Cloud SQL) works without changes - the branch connection drops the requirement the branch pod cannot serve.
+
+To override the automatic values or add other parameters, set `query_params` on the branch config. This is useful when the branch runs a custom image with its own TLS setup, or when your application needs extra driver parameters on the branch connection:
+
+```json
+{
+  "type": "pg",
+  "connection": {
+    "url": "DATABASE_URL"
+  },
+  "query_params": {
+    "sslmode": "disable"
+  }
+}
+```
+
+Cluster admins can set the same overrides for everyone through the operator's branch config (`pgBranchConfig.dbPod.queryParams` in the Helm values, or on a [branch config profile](../db-branching.md#branch-config-profiles)). The layers merge per key: mirrord derives the default, the admin `queryParams` override it, and a session's own `query_params` from the mirrord config wins over both.
+
+```yaml
+pgBranchConfig:
+  profiles:
+    cloud-sql:
+      dbPod:
+        queryParams:
+          sslmode: "disable"
+```
+
+`query_params` only affects the branch connection; the copy connection to the source keeps the source's own parameters. On operators without this feature, mirrord fails fast with a message naming it instead of silently ignoring the config.
 
 ### Secret Source
 
