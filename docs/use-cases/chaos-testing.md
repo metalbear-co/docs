@@ -28,7 +28,7 @@ A chaos rule pairs a selector, which picks the traffic to disrupt, with an effec
 A selector matches outgoing connections by their destination:
 
 - `upstream`: the destination host, or `host:port` to match a specific port.
-- `percentage`: roughly how often a matched connection gets the effect (0 to 100).
+- `percentage`: roughly how often matching traffic gets the effect (0 to 100). The roll happens on each matched operation rather than once per connection, so a request that reads several times may be affected on some reads and not others.
 
 {% hint style="info" %}
 Currently selectors can only match outgoing TCP connections. Selectors for file operations and HTTP requests are planned.
@@ -39,6 +39,13 @@ Currently selectors can only match outgoing TCP connections. Selectors for file 
 An effect defines what happens to a matched connection. Two effects are supported:
 
 - `latency`: delays the connection's read and/or write operations.
+
+{% hint style="warning" %}
+`read_ms` and `write_ms` are charged per operation, not per request. A request that
+performs several reads pays `read_ms` on each one, so the delay a request sees can be a
+multiple of the configured value. Set these by measuring the effect you want rather than
+by assuming a single charge.
+{% endhint %}
 
 ```json
 {
@@ -58,7 +65,14 @@ An effect defines what happens to a matched connection. Two effects are supporte
 }
 ```
 
-- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`.
+- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`. `after_ms` delays the error, so the connection stalls for that long and then fails.
+
+{% hint style="warning" %}
+An `after_ms` above 0 currently holds the calling thread for the length of the delay. In a
+single-threaded runtime that stalls the event loop, so a client-side timeout implemented as
+a timer will not fire while the fault is in effect. Use `after_ms: 0` when you are testing
+timeout handling.
+{% endhint %}
 
 ```json
 {
