@@ -41,10 +41,10 @@ An effect defines what happens to a matched connection. Two effects are supporte
 - `latency`: delays the connection's read and/or write operations.
 
 {% hint style="warning" %}
-`read_ms` and `write_ms` are charged per operation, not per request. A request that
-performs several reads pays `read_ms` on each one, so the delay a request sees can be a
-multiple of the configured value. Set these by measuring the effect you want rather than
-by assuming a single charge.
+`read_ms` and `write_ms` apply to each read and each write, not to each request. A request
+that reads three times is delayed by three times `read_ms`, so a request is usually delayed
+by more than the number you set. Pick a value by trying one and timing a real request,
+rather than by working back from the delay you want the request to see.
 {% endhint %}
 
 ```json
@@ -66,13 +66,6 @@ by assuming a single charge.
 ```
 
 - `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`. `after_ms` delays the error, so the connection stalls for that long and then fails.
-
-{% hint style="warning" %}
-An `after_ms` above 0 currently holds the calling thread for the length of the delay. In a
-single-threaded runtime that stalls the event loop, so a client-side timeout implemented as
-a timer will not fire while the fault is in effect. Use `after_ms: 0` when you are testing
-timeout handling.
-{% endhint %}
 
 ```json
 {
