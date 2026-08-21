@@ -9,10 +9,10 @@ tags:
 
 This page covers generic DB branching - for databases, caches, and other stateful services that mirrord has no built-in engine for (InfluxDB, Valkey, an internal service, and so on). For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
-A generic branch runs the container image you supply and always starts **empty**: there are no copy modes, no IAM authentication, and a single redirected port. It is the fallback that unblocks you when no first-class engine exists - engines with built-in support offer copy modes, schema handling, and better errors, so prefer them when available.
+A generic branch runs the container image you supply and starts **empty** by default: there are no built-in copy modes, no IAM authentication, and a single redirected port. It is the fallback that unblocks you when no first-class engine exists - engines with built-in support offer copy modes, schema handling, and better errors, so prefer them when available. When an empty branch isn't useful, you can supply a [copy Job](#copying-data-into-the-branch) - your own image that fills the branch with schema and data before the session starts.
 
 {% hint style="info" %}
-Generic branching requires operator `3.183.0`, mirrord CLI `3.232.0`, and operator Helm chart `3.183.0` with the `operator.genericBranching` value set to `true`.
+Generic branching requires operator `3.183.0`, mirrord CLI `3.232.0`, and operator Helm chart `3.183.0` with the `operator.genericBranching` value set to `true`. The [copy Job](#copying-data-into-the-branch) and [profile-supplied branch defaults](#admin-profiles-branch-defaults-and-copy) need a newer operator - a config using them against an older one fails immediately with a clear "operator does not support" error.
 
 If the operator doesn't support generic branching (older version, or the Helm value is off), the session fails immediately with a clear "operator does not support generic db branching" error rather than timing out.
 {% endhint %}
@@ -43,11 +43,13 @@ Two built-in variables are always available alongside the parameters: `MIRRORD_B
 
 | Field | Description |
 | --- | --- |
-| `image` | *(Required)* Full image reference for the branch container, including the tag. The shared `version` field is not allowed - the tag lives here. Admins can restrict which images are accepted via `genericBranchConfig.dbPod.allowedImages` - see [Restricting Branch Images](../db-branching.md#restricting-branch-images). |
-| `port` | *(Required)* The port the branched service listens on. Used for the default readiness probe and as the port the app is redirected to. |
+| `image` | *(Required unless a `profile` supplies it)* Full image reference for the branch container, including the tag. The shared `version` field is not allowed - the tag lives here. Admins can restrict which images are accepted via `genericBranchConfig.dbPod.allowedImages` - see [Restricting Branch Images](../db-branching.md#restricting-branch-images). |
+| `port` | *(Required unless a `profile` supplies it)* The port the branched service listens on. Used for the default readiness probe and as the port the app is redirected to. |
 | `command` / `args` | *(Optional)* Entrypoint override for the branch container. Values may reference `$(MIRRORD_PARAM_<NAME>)`. |
 | `env` | *(Optional)* Extra environment variables for the branch container, with the same `$(VAR)` references. Keys must not start with `MIRRORD_PARAM_`. |
 | `readiness` | *(Optional)* Readiness check for the branch container. Defaults to a TCP probe on `port`. See [Readiness](#readiness). |
+| `copy` | *(Optional)* A one-shot Job that copies schema and data into the branch before it turns Ready. See [Copying Data into the Branch](#copying-data-into-the-branch). |
+| `profile` | *(Optional)* Name of an admin-defined profile in the operator's generic branch config. A profile can supply the branch defaults (`image`, `port`, `command`, `args`, `env`, `readiness`) and a `copy` Job, so your mirrord.json shrinks to `type`/`id`/`profile`/`connection`. See [Admin Profiles](#admin-profiles-branch-defaults-and-copy). |
 
 How you feed the params into the branch depends entirely on how *your image* bootstraps itself - some images take startup flags (use `args`), others read well-known env vars on first boot (use `env`), and some need nothing at all. The examples below cover one of each style, from the most minimal to the most involved.
 
@@ -405,6 +407,89 @@ The probe runs every 2 seconds (first check after 3 seconds) with a 10-second ti
 
 Prefer a probe that captures "actually usable", not just "process started": a plain TCP probe can pass while an image is still initializing. The InfluxDB example uses `http_get` on `/health` precisely so the branch isn't Ready until the setup bootstrap has completed - with only the TCP default, the app could connect before its org and token exist.
 
+## Copying Data into the Branch
+
+By default a generic branch starts empty. When that isn't useful, add a `copy` config: after the empty branch boots and its readiness probe passes, the operator launches a one-shot Kubernetes Job from your copy image, and the branch stays **not Ready** until the Job succeeds. What "copy" means - full data, schema only, a filtered subset - is entirely up to your image; mirrord only wires the connections and gates readiness.
+
+```json
+{
+  "type": "generic",
+  "id": "my-valkey-branch",
+  "image": "valkey/valkey:8-alpine",
+  "port": 6379,
+  "creation_timeout_secs": 300,
+  "connection": { "params": { "host": ..., "port": ..., "password": "VALKEY_PASSWORD" } },
+  "args": ["valkey-server", "--requirepass", "$(MIRRORD_PARAM_PASSWORD)"],
+  "copy": {
+    "image": "ghcr.io/my-org/valkey-copy:1.0",
+    "command": ["./copy.sh"],
+    "args": ["--mode=all"]
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `copy.image` | *(Required)* Full image reference for the copy Job container. Goes through the same admin `allowedImages` policy as the branch image. |
+| `copy.command` / `copy.args` | *(Optional)* Entrypoint override for the copy container. Values may reference the same `$(VAR)`s as the branch container, plus the `MIRRORD_BRANCH_*` built-ins below. |
+
+### The copy Job's environment
+
+The Job's env carries both ends of the copy - read from the source, write into the branch:
+
+| Variable | Meaning |
+| --- | --- |
+| `MIRRORD_PARAM_<NAME>` | The same resolved connection params the branch container got (host/port/user/password/database plus your extras) - this is the **source** connection. Secret-backed params stay `secretKeyRef`s; the operator never reads their values. |
+| `MIRRORD_BRANCH_HOST` | The branch pod's IP - where to write. |
+| `MIRRORD_BRANCH_PORT` | The branch's resolved port. |
+| `MIRRORD_BRANCH_ID` | The branch id. |
+| `MIRRORD_DATABASE_NAME` | The shared `name` field, when set. |
+
+Credentials for the branch side are the source params themselves: the empty branch was bootstrapped to accept them, so `MIRRORD_PARAM_PASSWORD` (or token, etc.) works against both ends.
+
+### Semantics to know
+
+* **The copy runs at most once per branch.** Unlike [migrations](migrations.md), it never re-runs when a Ready branch is reused by a new session, even if the new session's `copy` differs - re-running an arbitrary copy against populated data would duplicate it. Want a fresh copy? Use a new branch `id`.
+* **Failure fails the branch.** A non-zero exit marks the branch `Failed`, and the Job's own logs land in the error your session prints - make your copy script fail loudly.
+* **Both timeouts must cover the copy.** [`creation_timeout_secs`](../db-branching.md#key-fields) (how long the CLI waits for Ready, default 60s) and `ttl_secs` both keep counting while the copy runs. The operator refreshes the branch's TTL clock when the Job starts, so `ttl_secs` needs to cover the copy itself - and `creation_timeout_secs` needs to cover pod boot *plus* the copy.
+* **NetworkPolicy**: the Job runs in the target's namespace and must reach both the source database and the branch pod's IP (the same constraint migration Jobs have).
+
+## Admin Profiles: Branch Defaults and Copy
+
+Writing a copy image and its invocation is often an admin's job, not every developer's. A named profile in the operator's Helm config can carry the whole engine setup - the branch container defaults *and* the copy Job:
+
+```yaml
+operator:
+  genericBranchConfig:
+    dbPod:
+      allowedImages: ["opensearchproject/*", "registry.example.com/dbtools/*"]
+    profiles:
+      opensearch-full:
+        dbPod:
+          branch:
+            image: "opensearchproject/opensearch:2.19.1"
+            port: 9200
+            env: { "discovery.type": "single-node" }
+          copy:
+            image: "registry.example.com/dbtools/opensearch-copy:1.0"
+            command: ["./copy.sh", "--mode=all"]
+```
+
+A developer's mirrord.json then shrinks to the target-specific parts:
+
+```json
+{
+  "type": "generic",
+  "id": "my-opensearch-branch",
+  "profile": "opensearch-full",
+  "connection": { "params": { ... } }
+}
+```
+
+Resolution is per field, and your mirrord.json always wins: a `copy` in the spec replaces the profile's entirely, an `image` in the spec overrides the profile's, and so on. `connection` always comes from mirrord.json - it describes *your target*, so a profile cannot supply it.
+
+`dbPod.branch` and `dbPod.copy` are only honored inside a **named profile**. Setting them on the default-level `dbPod` fails generic branches with a clear error - the default applies to every generic branch regardless of engine, and users wanting an empty branch would have no opt-out.
+
 ## Connection
 
 The `connection` must use **params mode**. URL mode is rejected for generic branches, because rewriting a whole URL requires knowing the engine's scheme and credential layout - for URL-shaped env vars, extract `host` and `port` with [`value_pattern`](connection.md#composite-environment-variables) as in the example above. All the other sources from [Connection Modes](connection.md) work (Kubernetes Secrets, literal values, multiple sources), except `gcp_secret_manager`, which is not supported for generic branches.
@@ -413,7 +498,7 @@ Declaring neither `host` nor `port` is allowed - the branch is still created and
 
 ## What Generic Branches Don't Do
 
-* **No data or schema copy** - branches always start empty. If your service is useless empty, it needs a first-class engine.
+* **No built-in data or schema copy** - branches start empty unless you (or an admin profile) supply a [copy Job](#copying-data-into-the-branch); the copy logic lives in your image, not in mirrord.
 * **No IAM authentication.**
 * **A single redirected port** - if the app derives all its endpoints from one *hostname* variable, declaring only a `host` param redirects every port to the branch pod (see the Couchbase example above); but cluster-shaped services that advertise their own addresses to clients are out of scope.
 * **No SaaS-only services** - a generic branch runs a container image *in your cluster*, so the service must be self-hostable. Fully managed platforms with no container distribution (Databricks, Snowflake, and the like) have nothing to run. Two escape hatches: if a faithful local **emulator image** exists for the protocol, branch that instead - this is exactly how the built-in [DynamoDB engine](dynamodb.md) works (`amazon/dynamodb-local` in-cluster stands in for the AWS service); and if the managed service speaks a **standard protocol** - for example, Databricks Lakebase is Postgres-compatible - use the matching first-class engine (here, [PostgreSQL branching](postgresql.md)) or a stock image of that engine as the stand-in.
@@ -423,7 +508,7 @@ If you find yourself writing a generic config for a common engine, that's a stro
 ## Security
 
 * Generic branching is **off by default** (`operator.genericBranching` in the Helm chart) because it lets users who can create branches run arbitrary container images as branch pods. Enabling it is an explicit admin decision per cluster.
-* Admins can restrict which images users may run with an `allowedImages` glob list in the generic branch config (Helm `genericBranchConfig`). When the field is absent, all images are allowed. A branch using an image outside the list fails immediately with an error naming the image:
+* Admins can restrict which images users may run with an `allowedImages` glob list in the generic branch config (Helm `genericBranchConfig`). When the field is absent, all images are allowed. The list covers the [copy Job's](#copying-data-into-the-branch) image too - both run user-chosen code in the cluster. A branch using an image outside the list fails immediately with an error naming the image:
 
 ```yaml
 operator:
