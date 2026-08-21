@@ -28,7 +28,7 @@ A chaos rule pairs a selector, which picks the traffic to disrupt, with an effec
 A selector matches outgoing connections by their destination:
 
 - `upstream`: the destination host, or `host:port` to match a specific port.
-- `percentage`: roughly how often matching traffic gets the effect (0 to 100). The roll happens on each matched operation rather than once per connection, so a request that reads several times may be affected on some reads and not others.
+- `percentage`: roughly how often matching traffic gets the effect (0 to 100). It is decided separately for each read and each write, not once per connection, so a request that reads several times may be affected on some of those reads and not others.
 
 {% hint style="info" %}
 Currently selectors can only match outgoing TCP connections. Selectors for file operations and HTTP requests are planned.
