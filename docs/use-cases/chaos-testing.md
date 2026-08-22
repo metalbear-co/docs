@@ -65,7 +65,11 @@ rather than by working back from the delay you want the request to see.
 }
 ```
 
-- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`. `after_ms` delays the error, so the connection stalls for that long and then fails.
+- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`. The error fires as soon as the connection is attempted.
+
+{% hint style="info" %}
+Rules still accept an `after_ms`, which was intended to hold the connection open before failing it. It currently has no effect and the error fires immediately.
+{% endhint %}
 
 ```json
 {
