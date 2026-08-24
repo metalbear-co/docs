@@ -75,6 +75,7 @@ The operator recognizes these `mirrord.`-prefixed keys:
 * `mirrord.client_implementation` - the Kafka client backend, `librdkafka` (default) or `java`. Use `java` for Kafka Streams consumers (see below).
 * `mirrord.auth.kind` - extra authentication mechanism. The only supported value is `MSK_IAM` (see [MSK IAM authentication](kafka.md#aws-msk-iam-authentication)).
 * `mirrord.auth.aws_region` - the AWS region, required when `mirrord.auth.kind` is `MSK_IAM`.
+* `mirrord.split_topic.replication_factor` - the replication factor for temporary topics (see [Temporary Topic Replication Factor](kafka.md#temporary-topic-replication-factor)).
 
 {% hint style="info" %}
 The Kafka consumer group used by the operator's own client is managed by mirrord, so a `group.id` property is not needed here.
@@ -216,12 +217,38 @@ Both fields are optional and in seconds:
 
 | Field | Behavior |
 | ----- | -------- |
-| `spec.ttl` | `N`: keep the split warm for up to `N` seconds so a reconnecting session resumes instantly. `0` or unset: do not linger — go straight to the drain window when the last session ends. |
-| `spec.drainTimeout` | `N`: let the workload finish the already-forwarded backlog for up to `N` seconds, ending early once it is drained. `0`: unpatch immediately — messages not yet read from the temporary topic are lost. Unset: no cap — wait until the workload has consumed the backlog. |
+| `spec.ttl` | `N`: keep the split warm for up to `N` seconds so a reconnecting session resumes instantly. `0` or unset: do not linger - go straight to the drain window when the last session ends. |
+| `spec.drainTimeout` | `N`: let the workload finish the already-forwarded backlog for up to `N` seconds, ending early once it is drained. `0`: unpatch immediately - messages not yet read from the temporary topic are lost. Unset: no cap - wait until the workload has consumed the backlog. |
 
 {% hint style="info" %}
 `spec.ttl`, and draining the temporary topic before unpatch (capped by `spec.drainTimeout`), require mirrord operator `3.194.0` or later. On earlier operators `spec.drainTimeout` alone controls how long the workload stays patched after the last session.
 {% endhint %}
+
+### Temporary Topic Replication Factor
+
+By default, the operator creates temporary topics with a replication factor of 1. Some managed Kafka platforms enforce a minimum replication factor and reject these topics - for example, Confluent Cloud requires a factor of 3, so Kafka splitting sessions fail with a `PolicyViolation` broker error.
+
+Set the `mirrord.split_topic.replication_factor` property on the `MirrordPropertyList` to control the factor. This property requires mirrord operator `3.191.0` or later; earlier operators reject it as an unknown `mirrord.` key.
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: kafka-connection
+  namespace: meme
+spec:
+  properties:
+    - name: bootstrap.servers
+      value: kafka.default.svc.cluster.local:9092
+    - name: mirrord.split_topic.replication_factor
+      value: copy
+```
+
+Accepted values:
+
+* a positive number - used as-is for every temporary topic.
+* `copy` - copy the replication factor derived from the original topic. This is recommended when temporary topics must use the same replication factor as source topics on managed platforms like Confluent Cloud.
+* `-1` - use the broker's default replication factor.
 
 ### AWS MSK IAM authentication
 
