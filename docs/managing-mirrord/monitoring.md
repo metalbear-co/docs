@@ -179,6 +179,36 @@ For example, a queue message can produce:
 HTTP headers and message properties can contain credentials, personal information, or other sensitive values. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
 {% endhint %}
 
+##### Querying the logs
+
+You can inspect message processing records directly in the Operator's Kubernetes logs. The following commands assume that the Operator runs in the `mirrord` namespace. Set `operator.jsonLog` to `true` before using the `jq` examples so that each log line is valid JSON.
+
+Stream message processing records as they are emitted:
+
+```bash
+kubectl logs --namespace mirrord deployment/mirrord-operator --follow --tail=5 \
+  | grep --line-buffered '"Message Processing"'
+```
+
+Pipe the records through `jq` to make the JSON easier to read:
+
+```bash
+kubectl logs --namespace mirrord deployment/mirrord-operator --follow --tail=5 \
+  | grep --line-buffered '"Message Processing"' \
+  | jq .
+```
+
+To follow records for one mirrord session, replace `<your-session-key>` with its session key:
+
+```bash
+kubectl logs --namespace mirrord deployment/mirrord-operator --follow --tail=5 \
+  | jq --compact-output 'select(.fields.message == "Message Processing" and .fields.session_key == "<your-session-key>")'
+```
+
+{% hint style="info" %}
+When `grep` writes to another command, it buffers its output by default. On a live stream, this can make the command appear to hang even when matching records are available. `--line-buffered` flushes each matching record immediately.
+{% endhint %}
+
 ### Prometheus
 
 The mirrord Operator can expose Prometheus metrics if enabled (the default endpoint is `:9000/metrics`).
