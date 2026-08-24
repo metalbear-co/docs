@@ -140,3 +140,5 @@ Use either `credentials_json` OR `credentials_path`, not both.
 
 GCP Cloud SQL requires TLS.
 Make sure your `DATABASE_URL` includes: `sslmode=require`
+
+The `sslmode=require` only applies to the source. The branch connection your application receives carries the branch pod's own TLS mode (`sslmode=disable` for a regular branch pod), so the app does not demand TLS the branch cannot serve. See [Branch Query Parameters](connection.md#branch-query-parameters-postgresql) to override it.
