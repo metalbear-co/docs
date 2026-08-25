@@ -181,7 +181,7 @@ HTTP headers and message properties can contain credentials, personal informatio
 
 ##### Querying the logs
 
-You can inspect message processing records directly in the Operator's Kubernetes logs. The following commands assume that the Operator runs in the `mirrord` namespace. Set `operator.jsonLog` to `true` before using the `jq` examples so that each log line is valid JSON.
+You can inspect message processing records directly in the Operator's Kubernetes logs. The following commands assume that the Operator runs in the `mirrord` namespace.
 
 Stream message processing records as they are emitted:
 
@@ -190,6 +190,7 @@ kubectl logs --namespace mirrord deployment/mirrord-operator --follow --tail=5 \
   | grep --line-buffered '"Message Processing"'
 ```
 
+You can set `operator.jsonLog` to `true` (default setting) before using the `jq` examples so that each log line is valid JSON.
 Pipe the records through `jq` to make the JSON easier to read:
 
 ```bash
