@@ -39,8 +39,8 @@ That temporary queue is *exclusive* to the target workload.
 Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue.
 
 {% hint style="warning" %}
-Queue splitting requires that the application read the queue name from an environment variable.
-This lets the operator override the environment variable to change the queue that the application reads from.
+Queue splitting requires that the application read the queue name from an environment variable, or from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)).
+This lets the operator override the name to change the queue that the application reads from.
 {% endhint %}
 
 Once all temporary queues are prepared, the mirrord operator starts consuming messages from the original queue, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
@@ -53,6 +53,45 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
+
+## Queue Names in Mounted Config Files
+
+{% hint style="info" %}
+Mounted config file sources require mirrord operator `3.198.0` or later.
+{% endhint %}
+
+A queue name can also be read from a file mounted from a ConfigMap volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap - and duplicating the names into the pod's environment is not an option.
+
+To use it, set a `volume` source in the `appConfig` entry instead of `env` or `envLike`:
+
+```yaml
+appConfig:
+  topic:
+    - volume:
+        name: app-config          # entry in the pod spec's `volumes` array
+        file: application.yaml    # file within the volume
+      valueSelector: ".kafka.consumer.topic.main.name"
+```
+
+* `volume.name` - name of a `configMap` volume in the target's pod spec. Other volume types are rejected.
+* `volume.file` - path of the file within the volume: the ConfigMap data key, or the item `path` when the volume remaps keys via `items`.
+* `valueSelector` / `valuePattern` - same meaning as for environment variables: a jq expression run over the parsed file (JSON or YAML), or a regex whose capture group marks the name inside the raw text. With neither, the whole file content is the queue name.
+
+`volume` cannot be combined with `env` or `envLike` in the same entry, and `fallback` does not apply to it. A `containers` list is not needed either - the file is shared by every container that mounts the volume.
+
+The operator never modifies your ConfigMap. When a split starts, it:
+
+1. Creates a copy of the ConfigMap with the temporary fallback names substituted. The copy is labeled and managed by the operator.
+2. Redirects the volume in the target's pods to the copy. This restarts the workload, the same way environment variable injection does.
+3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session. Nothing containing session names is written to the cluster.
+
+When the last session ends, the pods are restored to the original ConfigMap and the copy is deleted.
+
+Things to know:
+
+* `valueSelector` rewrites re-serialize the copied file, so YAML comments and formatting are lost in the copy (never in your original). `valuePattern` rewrites keep the file byte-identical outside the swapped name.
+* Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
+* Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
 
 ## Sharing Property Lists Across Namespaces
 

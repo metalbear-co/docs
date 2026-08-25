@@ -176,7 +176,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 
 #### Describe consumed task queues
 
-Each entry in the `spec.queues` list describes a Temporal task queue consumed by the worker. Each `appConfig` field uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
+Each entry in the `spec.queues` list describes a Temporal task queue consumed by the worker. Each `appConfig` field uses the same structure as other queue services (`env`, `envLike`, `volume`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
 
 * `id` - arbitrary queue ID that developers [reference](temporal.md#setting-a-filter) from their mirrord config.
 * `kind` - must be `temporal`.
