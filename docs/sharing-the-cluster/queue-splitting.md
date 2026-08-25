@@ -97,6 +97,19 @@ Things to know:
 * The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
 * Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
 
+## Autoscaled Targets with KEDA
+
+{% hint style="info" %}
+Holding an autoscaled target up requires mirrord operator `3.199.0` or later, and operator Helm chart `3.199.0` with the `operator.pauseKedaScaleIn` value set to `true`.
+{% endhint %}
+
+A target scaled on queue load by KEDA goes idle from its autoscaler's point of view as soon as its queues are split. The autoscaler's triggers still watch the original queue, which the operator is now draining, so they see no load and scale the target to zero. Nothing is then left to consume the target's temporary queue, and its messages are lost when the split ends.
+
+Set `operator.pauseKedaScaleIn` in the operator's Helm values to have the operator handle this. While a split is running, the operator:
+
+1. keeps the target at a minimum of one replica; and
+2. annotates the `ScaledObject` scaling the target with `autoscaling.keda.sh/paused-scale-in`, so KEDA cannot scale it back in.
+
 ## Sharing Property Lists Across Namespaces
 
 {% hint style="info" %}
