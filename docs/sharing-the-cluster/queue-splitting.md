@@ -45,6 +45,8 @@ This lets the operator override the name to change the queue that the applicatio
 
 Once all temporary queues are prepared, the mirrord operator starts consuming messages from the original queue, and publishing them to one of the temporary queues, based on message filters provided by the users in their mirrord configs.
 
+Each message routed to a mirrord session also produces a [`Message Processing` functional log](../managing-mirrord/monitoring.md#message-processing) containing the session key, routing mode, queue or topic name, and any correlation or tracing metadata provided by the broker. These logs make routed messages queryable through the Operator's existing log collection pipeline without requiring a `mirrord subscribe` process.
+
 Each queue service has its own way of creating temporary queues and routing messages. The per-service pages above walk through the exact behavior, including the diagrams for the first and second concurrent sessions.
 
 Temporary queues are managed by the mirrord operator and garbage collected in the background. After all queue splitting sessions end, the operator promptly deletes the allocated resources.
