@@ -119,7 +119,7 @@ Each entry in the `spec.queues` list describes a BullMQ queue consumed by the wo
 * `queueConfig` (optional) - name of a `MirrordPropertyList` with forwarder tuning. Supported properties:
   * `dequeue_timeout` - how long `BLPOP` waits before retrying, in seconds (default: `5`).
   * `jq_time_limit` - max milliseconds for jq filter evaluation per job (default: `200`).
-* `appConfig.queue` - the BullMQ queue name. Uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`).
+* `appConfig.queue` - the BullMQ queue name. Uses the same structure as other queue services (`env`, `envLike`, `volume`, `fallback`, `valueSelector`, `valuePattern`, `containers`).
 
 {% hint style="warning" %}
 The mirrord operator can only read consumer's environment variables if they are either:

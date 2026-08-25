@@ -115,7 +115,7 @@ Each entry in the `spec.queues` list describes a Redis channel consumed by the w
 * `id` - arbitrary queue ID that developers [reference](redis-pubsub.md#setting-a-filter) from their mirrord config.
 * `kind` - must be `redisPubSub`.
 * `clientConfig` (optional) - name of a `MirrordPropertyList` with the Redis connection. Can also be set once for all Redis queues with `spec.clientConfigs.redisPubSub`.
-* Exactly one of the following describes how the application subscribes. Each uses the same structure as other queue services (`env`, `envLike`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
+* Exactly one of the following describes how the application subscribes. Each uses the same structure as other queue services (`env`, `envLike`, `volume`, `fallback`, `valueSelector`, `valuePattern`, `containers`):
   * `appConfig.channel` - exact channel, matching a `SUBSCRIBE`.
   * `appConfig.channelPattern` - glob pattern, matching a `PSUBSCRIBE`.
   * `appConfig.shardChannel` - sharded channel, matching a `SSUBSCRIBE` (Redis 7+).
