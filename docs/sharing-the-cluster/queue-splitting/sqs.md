@@ -206,7 +206,7 @@ Each entry in the `spec.queues` list describes one or more SQS queues consumed b
   * `envLike` - regex selecting multiple environment variables by name.
   * `volume` - read the queue name from a file mounted from a `configMap` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
   * `fallback` - fallback name/URL if the variable is not found (only valid with `env`). The temporary queue name is still injected into the variable.
-  * `valueSelector` - a jq expression to extract queue names from the variable's value. Use `.[]` when the variable holds a JSON object whose string values are queue names/URLs.
+  * `valueSelector` - a selector extracting queue names from the variable's value: nested keys (`.queues.orders`) and `.[]` to iterate arrays or object values. Use `.[]` when the variable holds a JSON object whose string values are queue names/URLs. Pipes, functions, and other jq operators are not supported.
   * `valuePattern` - a regex used when the queue name/URL is embedded in a larger string. The capture group (named `value`, otherwise the first group) marks the part that is the name; only that part is swapped for the temporary queue and the surrounding text is kept as-is.
   * `containers` - limit resolution to specific containers (optional, defaults to all containers).
 * `queueConfig` (optional) - name of a `MirrordPropertyList` holding per-queue options (see below).

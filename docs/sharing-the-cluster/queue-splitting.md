@@ -75,7 +75,8 @@ appConfig:
 
 * `volume.name` - name of a `configMap` volume in the target's pod spec. Other volume types are rejected.
 * `volume.file` - path of the file within the volume: the ConfigMap data key, or the item `path` when the volume remaps keys via `items`.
-* `valueSelector` / `valuePattern` - same meaning as for environment variables: a jq expression run over the parsed file (JSON or YAML), or a regex whose capture group marks the name inside the raw text. With neither, the whole file content is the queue name.
+* `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
+* `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
 `volume` cannot be combined with `env` or `envLike` in the same entry, and `fallback` does not apply to it. A `containers` list is not needed either - the file is shared by every container that mounts the volume.
 
@@ -91,6 +92,7 @@ Things to know:
 
 * `valueSelector` rewrites re-serialize the copied file, so YAML comments and formatting are lost in the copy (never in your original). `valuePattern` rewrites keep the file byte-identical outside the swapped name.
 * Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
+* The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
 * Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
 
 ## Sharing Property Lists Across Namespaces
