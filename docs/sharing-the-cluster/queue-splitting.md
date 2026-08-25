@@ -78,7 +78,7 @@ appConfig:
 * `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
 * `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
-`volume` cannot be combined with `env` or `envLike` in the same entry, and `fallback` does not apply to it. A `containers` list is not needed either - the file is shared by every container that mounts the volume.
+If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containers` list is not needed either - the file is shared by every container that mounts the volume.
 
 The operator never modifies your ConfigMap. When a split starts, it:
 
