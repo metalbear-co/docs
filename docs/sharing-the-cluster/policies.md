@@ -182,6 +182,72 @@ The example above will enforce that the user selects either `my-profile-1` or `m
 
 **Important:** mirrord profiles are applied to the session on the user machine, and should not be used as security features.
 
+### split queues policy
+
+_Added in mirrord Operator version 3.199.0_
+
+Allows the operator to require [queue splitting](queue-splitting.md) and to control which message filters users may split with. This is useful when a session that consumes queue messages without splitting would compete with the deployed workload (and with other users' split sessions) for messages.
+
+The policy only takes effect on targets that have split queues configured (a `MirrordSplitConfig`, or a legacy `MirrordWorkloadQueueRegistry`/`MirrordKafkaTopicsConsumer`). A namespace-wide or cluster-wide policy does not block sessions against targets that consume no queues.
+
+```yaml
+apiVersion: policies.mirrord.metalbear.co/v1alpha
+kind: MirrordPolicy
+metadata: { ... }
+spec:
+  ...
+  splitQueues:
+    # When the target has split queues configured for some broker kind,
+    # the session must split queues of that kind, otherwise it is rejected.
+    #
+    # Optional, defaults to false.
+    requireFilter: true
+    # Requirements checked against the message filters of the session's split queues.
+    # Each entry applies to the split queues whose id matches the `queueId` regex
+    # and whose broker kind is `queueType`.
+    #
+    # Optional.
+    filters:
+      - queueId: "^(ship-queue|order-queue)$"
+        queueType: sqs
+        rules:
+          # The queue's message filter must satisfy every one of these rules.
+          allOf:
+            - key: user_id
+              # Regex applied to the filter pattern the user set for this key.
+              # The user's pattern is itself a regex; use `^exact$` to demand
+              # one exact pattern. When unset, any pattern is accepted.
+              pattern: '^\\d\+$'
+            - key: company_id
+      - queueId: "^click-topic$"
+        queueType: kafka
+        rules:
+          # The queue's message filter must satisfy at least one of these rules.
+          anyOf:
+            - key: author
+            - key: user_id
+```
+
+With `requireFilter: true`, a session against a target with configured SQS and Kafka queues must set `feature.split_queues` entries for both kinds. A split queue with no filter at all is still accepted - such a queue delivers no messages to the session, so it does not disturb anyone.
+
+The `filters` rules only apply to queues the session actually filters. In the example above, a session splitting `order-queue` with:
+
+```yaml
+feature:
+  split_queues:
+    order-queue:
+      queue_type: SQS
+      message_filter:
+        user_id: '\d+'
+        company_id: "42"
+```
+
+passes, because the filter has both required keys and the `user_id` pattern `\d+` matches the policy's `^\\d\+$` regex. A filter missing `company_id`, or one with a different `user_id` pattern, is rejected. A queue covered by rules but filtered only with `jq_filter` is rejected too: the operator cannot verify what a jq program matches, so use `message_filter` (alone or alongside jq) on such queues.
+
+If a `queueId` regex matches none of the session's split queues, the entry simply does not apply to that session.
+
+**Note:** the policy is enforced when a session or copy target is created. It does not apply to preview environments.
+
 ## Restricting targets affected by mirrord policies
 
 By default, mirrord policies apply to all targets in the namespace or cluster. You can use a target path pattern (`.spec.targetPath`) and/or a [label selector](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#resources-that-support-set-based-requirements) (`.spec.selector`) in order to limit the targets to which a policy applies.
