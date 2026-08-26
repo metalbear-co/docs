@@ -112,6 +112,43 @@ Requirements:
 TLS branch pods require operator and Helm chart `3.183.0` or later. Local Redis branches are unaffected - they always run a plain local instance.
 {% endhint %}
 
+## Copying From a TLS Source
+
+With `copy.mode: "all"`, the branch pod's copy step connects to the **source** Redis to read its keys. When the source only accepts TLS, provide the certificate material in a `MirrordPropertyList` named `redis-source-tls` (the name can be changed cluster-wide with the operator Helm value `operator.redisBranchConfig.dbPod.sourceTlsPropertyList`), in the same namespace as the target workload. Keep certificate material in a Kubernetes `Secret` and reference it with `secretKeyRef` rather than inlining it:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: redis-source-tls
+  namespace: my-app-namespace
+spec:
+  properties:
+    - name: tlsCaCert
+      valueFrom:
+        secretKeyRef:
+          name: my-redis-certs
+          key: ca.crt
+```
+
+Supported properties:
+
+| Property | Description | Required |
+| --- | --- | --- |
+| `tlsCaCert` | PEM CA bundle used to verify the source's certificate when it is not signed by a publicly trusted root. | No |
+| `tlsClientCert` | PEM client certificate presented to a source that requires mutual TLS (`--tls-auth-clients yes`). Requires `tlsClientKey`. | No |
+| `tlsClientKey` | PEM private key for `tlsClientCert`. Requires `tlsClientCert`. | No |
+
+At least one property must be set. A source behind regular TLS with a private CA only needs `tlsCaCert`; a source signed by a publicly trusted root can carry that public root in `tlsCaCert` too. These are the same TLS properties the [CockroachDB source TLS](cockroachdb.md) setup uses, and values resolve the same way: `secretKeyRef`, `configMapKeyRef`, and inline values all work.
+
+The property list's presence makes the copy connection use TLS: a plain `redis://` source URL is upgraded to `rediss://`, and connection-parameter sources (`host`/`port` env vars) connect over TLS as well. Without the property list, the URL's own scheme decides - a `rediss://` source URL connects with TLS against the system's trusted roots, and appending `#insecure` to it skips certificate verification entirely.
+
+The operator reads the properties when a branch is created, so rotated certificates are picked up by the next branch, not by ones already running.
+
+{% hint style="info" %}
+Copying from a TLS source requires operator and Helm chart `3.199.0` or later.
+{% endhint %}
+
 ## Local Redis
 
 mirrord can spin up a local Redis instance, automatically redirecting your app's Redis traffic to it.
