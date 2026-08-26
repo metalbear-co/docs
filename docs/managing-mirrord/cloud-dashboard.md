@@ -12,7 +12,7 @@ weight: 536
 toc: true
 description: The mirrord usage dashboard, served from the cloud for operators that authenticate with a cloud API key
 tags:
-  - beta
+  - teams
 ---
 
 # Cloud Dashboard
@@ -20,7 +20,7 @@ tags:
 If your operator authenticates with a cloud API key rather than a self-hosted license server, you get the usage dashboard at [app.metalbear.com](https://app.metalbear.com) with nothing to deploy in your cluster. It shows the same sessions, users, targets, CI, and adoption views as the [license server dashboard](admin-dashboard.md).
 
 {% hint style="info" %}
-The cloud dashboard is in early access and is being rolled out gradually. If you have connected your operator and still don't see it, [get in touch](https://metalbear.com/mirrord/contact/) and we'll turn it on for your organization.
+The cloud API key needs operator chart 3.179.0 or newer; identity detail (usernames and targets) needs 3.193.0 or newer.
 {% endhint %}
 
 ## Cloud dashboard vs. license server dashboard
@@ -47,9 +47,13 @@ The onboarding in the app does these steps for you and checks each one. To set i
 
 1. Sign in at [app.metalbear.com](https://app.metalbear.com) (or create your organization).
 
-2. Generate a cloud API key, choosing whether to share identity-level usage data: leave it on for per-user detail (usernames and targets), or turn it off to keep telemetry anonymized.
+2. Generate a cloud API key (organization admins only, under **API Keys**). Identity sharing is pre-ticked: with it on, the dashboard shows real usernames and service names instead of hashes. It's your organization's choice; turn it off to keep telemetry anonymized.
 
-   Copy the key when it appears. It's only shown once.
+   Copy the key when it appears. It's only shown once, and regenerating replaces the current key.
+
+   {% hint style="info" %}
+   `cloud.anonymizeData: true` in the operator's Helm values overrides identity sharing: telemetry stays anonymized even with consent granted.
+   {% endhint %}
 
 3. Install the operator with the key:
 
@@ -73,31 +77,34 @@ It's the same interface as the license server dashboard: a **Usage** tab with me
 
 Dark mode, your organization, and navigation come from the app around it rather than a standalone app bar. Per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
 
+## Enabling on an existing install
+
+If your operator already runs with a license key (no license server), add the API key to its Helm values and upgrade:
+
+```yaml
+# values.yaml
+cloud:
+  apiKey:
+    keyRef: mirrord-operator-cloud-api-key
+```
+
+```bash
+helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
+```
+
+Existing `license.*` values stay as they are. Create the referenced secret as shown in [Cloud API key](operator.md#cloud-api-key), or use `gsmRef` or an inline `key` instead. The key is read at startup, so the upgrade's pod restart is what picks it up.
+
+Your existing anonymized usage is already on the dashboard; it doesn't start from zero. From the upgrade forward, sessions carry identity (if sharing is on). Usernames also fill in on historical sessions once each developer runs a session with the key in place, since names resolve per user across all time; per-service detail for old sessions doesn't backfill.
+
 ## Migrating from the license server dashboard
 
-Moving from the license server dashboard to the cloud dashboard means switching the operator's credential from a license server to a cloud API key.
+A self-hosted license server is different: an operator configured with `license.licenseServer` authenticates only against it and ignores a cloud API key entirely, so switching means removing that setting.
 
 1. Generate a cloud API key at [app.metalbear.com](https://app.metalbear.com), as above.
 
-2. The cloud dashboard starts from the moment your operator begins reporting to the cloud. If you'd rather not start empty, [get in touch](https://metalbear.com/mirrord/contact/) to import your existing license-server history first.
+2. In your operator Helm values, add `cloud.apiKey` as shown in the previous section and remove `license.licenseServer`, then upgrade.
 
-3. In your operator Helm values, add the cloud API key and remove the license-server configuration, then upgrade:
-
-   ```yaml
-   # values.yaml
-   cloud:
-     apiKey:
-       keyRef: mirrord-operator-cloud-api-key
-   # and remove license.licenseServer
-   ```
-
-   ```bash
-   helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
-   ```
-
-   `license.licenseServer` takes priority over a cloud API key: adding the key while it stays set does nothing. Create the referenced secret as shown in [Cloud API key](operator.md#cloud-api-key). If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
-
-4. Sign in and run a session. Your usage shows up on the dashboard, along with any history you imported.
+3. Sign in and run a session. Your usage shows up on the dashboard. Usage recorded by the license server stays in its database; if you want that history on the cloud dashboard, [get in touch](https://metalbear.com/mirrord/contact/) and we'll import it. Once the operator is reporting to the cloud, the `mirrord-license-server` chart can be uninstalled if you only ran it for the dashboard.
 
 {% hint style="warning" %}
 Don't migrate an air-gapped or network-restricted deployment. The cloud dashboard needs outbound connectivity to the mirrord cloud; keep those clusters on the [license server dashboard](admin-dashboard.md).
