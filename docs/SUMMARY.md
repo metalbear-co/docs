@@ -91,6 +91,7 @@
 ## Managing mirrord
 
 * [Dashboard](managing-mirrord/admin-dashboard.md)
+* [Cloud Dashboard](managing-mirrord/cloud-dashboard.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
