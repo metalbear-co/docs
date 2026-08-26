@@ -73,7 +73,13 @@ Changes how environment variables may be retrieved from the target, overriding w
 The policy takes priority over a user's mirrord config, which means that if the user has a config:
 
 ```json
-{ "feature": { "env": { "include": "*_URL" } } }
+{
+  "feature": {
+    "env": {
+      "include": "*_URL"
+    }
+  }
+}
 ```
 
 If the policy is set with `exclude: ["*_URL"]`, then mirror will **NOT** retrieve env vars that match `*_URL`, even though the user explicitly wanted that in their config.
@@ -97,7 +103,13 @@ Changes file operations behaviour, giving the operator control over which files 
 The policy takes priority over a user's mirrord config, which means that if the user has a config:
 
 ```json
-{ "feature": { "fs": { "read_write": ".+\\.json" } } }
+{
+  "feature": {
+    "fs": {
+      "read_write": ".+\\.json"
+    }
+  }
+}
 ```
 
 If the policy is set with `readOnly: [".+\\.json"]`, and the user tries to open a file that matches this regex in _write_ mode, then mirrord will return an error to the user app, as if the file could not be found, even though the user wanted it to be `read_write`.
@@ -127,23 +139,61 @@ spec:
 If the policy is set with `headerFilter: "^baggage: .+"` at least one header filter must match the `^baggage: .+` regex when user is using the steal mode for incoming traffic.
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "header_filter": "^baggage: .*mirrord-session=alice.*" } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "header_filter": "^baggage: .*mirrord-session=alice.*"
+        }
+      }
+    }
+  }
+}
 ```
 
 this also works _any of_ or _all of_ patterns
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "all_of": [
-  { "header": "^baggage: .*mirrord-session=alice.*" },
-  { "path": "/api.*" }
-] } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "all_of": [
+            {
+              "header": "^baggage: .*mirrord-session=alice.*"
+            },
+            {
+              "path": "/api.*"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 ```
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "any_of": [
-  { "header": "^baggage: .*mirrord-session=alice.*" },
-  { "header": "^tracestate: .*mirrord-session=alice.*" }
-] } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "any_of": [
+            {
+              "header": "^baggage: .*mirrord-session=alice.*"
+            },
+            {
+              "header": "^tracestate: .*mirrord-session=alice.*"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 ```
 
 **Important:** `steal-without-filter` will be automatically enabled once any http filter is specified.
