@@ -288,7 +288,10 @@ queue lag (for example with KEDA) and sit at zero replicas until messages arrive
 consumer group are read from the workload's spec, and messages flow through the queue itself.
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
 temporary queue and are consumed when the service scales back up, whose new pods start with the
-split configuration already applied. No extra configuration is needed.
+split configuration already applied.
+
+See [Autoscaled Targets with KEDA](../sharing-the-cluster/queue-splitting.md#autoscaled-targets-with-keda)
+to see how KEDA autoscaling works with queue splitting.
 
 A preview that also uses HTTP filtering or DB branching still needs a running target pod:
 traffic is intercepted at the target's pods, and branch overrides are built from the env values
