@@ -204,7 +204,7 @@ Use `secret_mounts` instead for sensitive files (credentials, connection strings
 Files are read once at session creation and never refreshed. Re-run `mirrord preview start` with the same key to pick up changes.
 {% endhint %}
 
-Combined payload size across all mounts in a session is bound by Kubernetes' ~1 MiB per-object limit. See the [full config reference](../config/options md#feature-preview-config_mounts) for the complete field list.
+Combined payload size across all mounts in a session is bound by Kubernetes' ~1 MiB per-object limit. See the [full config reference](.../config/options#feature-preview-config_mounts) for the complete field list.
 
 ### Sharing a Preview via a Link
 
