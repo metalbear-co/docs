@@ -158,7 +158,7 @@ Each PR gets an isolated preview keyed by its number. The `{{ key }}` template i
 Testing a config change usually means rebuilding and pushing a new image just to change one file. `config_mounts` and `secret_mounts` override or inject individual files into the preview pod without touching the image, by adding them to the same mirrord configuration file used to start the preview. 
 This is useful when you want to:
 * Try out a new application config (feature flags, app settings) before it's baked into a build.
-* Point the preview at a preview-specific dependency — a sandbox API key, a different database connection string, a test webhook URL.
+* Point the preview at a preview-specific dependency. A sandbox API key, a different database connection string or a test webhook URL for example.
 * Validate a config file your CI already generates (for example, a versioned `ConfigMap` equivalent) alongside the image it was built for, without applying it to the cluster first.
 
 Each entry projects one file onto an absolute path inside the container's filesystem. Source it either inline or from a local file:
@@ -183,7 +183,7 @@ Each entry projects one file onto an absolute path inside the container's filesy
 }
 ```
 
-Use `secret_mounts` instead for sensitive files (credentials, connection strings) — same shape, but the content is stored in a Kubernetes `Secret` rather than on the `PreviewSession` resource:
+Use `secret_mounts` instead for sensitive files (credentials, connection strings), but the content is stored in a Kubernetes `Secret` rather than on the `PreviewSession` resource:
 
 ```json
 {
