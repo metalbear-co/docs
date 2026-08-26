@@ -35,10 +35,10 @@ Which one you get depends on how the operator is licensed:
 | **Where usage data lives** | mirrord cloud | Your license server's database |
 | **Best for** | Teams that can reach the mirrord cloud | Air-gapped or fully self-hosted (Enterprise) installs |
 
-An operator does one or the other, never both. With a license server configured it authenticates there, no identities leave your cluster, and a cloud API key is ignored. With a cloud API key and no license server, it authenticates to the mirrord cloud.
+An operator does one or the other, never both: configure a license server and it authenticates there, no identities leave your cluster, and a cloud API key is ignored.
 
 {% hint style="warning" %}
-The cloud dashboard needs the operator to reach `analytics.metalbear.com` and `app.metalbear.com`. If you run air-gapped or can't allow that traffic, stay on the [license server dashboard](admin-dashboard.md), which keeps everything inside your cluster.
+The cloud dashboard needs the operator to reach `analytics.metalbear.com` and `app.metalbear.com`.
 {% endhint %}
 
 ## New customers: set up the cloud dashboard
@@ -63,7 +63,7 @@ The onboarding in the app does these steps for you and checks each one. To set i
    In production, don't pass the key inline. Put it in a Kubernetes secret and reference it with `cloud.apiKey.keyRef`, or point at Google Secret Manager with `cloud.apiKey.gsmRef`. See [Cloud API key](operator.md#cloud-api-key).
    {% endhint %}
 
-4. Run a session. Install the mirrord CLI and run one (`mirrord wizard` generates a config to start from).
+4. Install the mirrord CLI and run a session (`mirrord wizard` generates a config to start from).
 
 Once the operator is connected and a session has been recorded, your **Home** page at app.metalbear.com is the usage dashboard.
 
@@ -95,7 +95,7 @@ Moving from the license server dashboard to the cloud dashboard means switching 
    helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
    ```
 
-   `license.licenseServer` takes priority over a cloud API key, so it has to go, not just sit unset. Create the referenced secret as shown in [Cloud API key](operator.md#cloud-api-key). If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
+   `license.licenseServer` takes priority over a cloud API key: adding the key while it stays set does nothing. Create the referenced secret as shown in [Cloud API key](operator.md#cloud-api-key). If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
 
 4. Sign in and run a session. Your usage shows up on the dashboard, along with any history you imported.
 
