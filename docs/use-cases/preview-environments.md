@@ -153,6 +153,59 @@ jobs:
 
 Each PR gets an isolated preview keyed by its number. The `{{ key }}` template in the filter is replaced by mirrord with the session key at runtime, routing only matching traffic to the preview pod. When the PR is closed, the session is stopped and the preview pod is cleaned up. For the full list of inputs and configuration options, see the [action documentation](https://github.com/metalbear-co/mirrord-preview).
 
+### Overriding Config and Secret Files
+
+Testing a config change usually means rebuilding and pushing a new image just to change one file. `config_mounts` and `secret_mounts` override or inject individual files into the preview pod without touching the image, by adding them to the same mirrord configuration file used to start the preview. 
+This is useful when you want to:
+* Try out a new application config (feature flags, app settings) before it's baked into a build.
+* Point the preview at a preview-specific dependency — a sandbox API key, a different database connection string, a test webhook URL.
+* Validate a config file your CI already generates (for example, a versioned `ConfigMap` equivalent) alongside the image it was built for, without applying it to the cluster first.
+
+Each entry projects one file onto an absolute path inside the container's filesystem. Source it either inline or from a local file:
+
+```json
+{
+  "feature": {
+    "preview": {
+      "config_mounts": [
+        {
+          "mount_at": "/etc/app/config.yaml",
+          "type": "text",
+          "payload": "server:\n  listen: 8080\n"
+        },
+        {
+          "mount_at": "/usr/local/bin/probe",
+          "from_file": "./build/probe"
+        }
+      ]
+    }
+  }
+}
+```
+
+Use `secret_mounts` instead for sensitive files (credentials, connection strings) — same shape, but the content is stored in a Kubernetes `Secret` rather than on the `PreviewSession` resource:
+
+```json
+{
+  "feature": {
+    "preview": {
+      "secret_mounts": [
+        {
+          "mount_at": "/app/appsettings.ci.json",
+          "from_file": "./appsettings.ci.json"
+        }
+      ]
+    }
+  }
+}
+```
+
+{% hint style="info" %}
+Files are read once at session creation and never refreshed. Re-run `mirrord preview start` with the same key to pick up changes.
+{% endhint %}
+
+Combined payload size across all mounts in a session is bound by Kubernetes' ~1 MiB per-object limit. See the [full config reference](../config/options md#feature-preview-config_mounts) for the complete field list.
+
 ### Sharing a Preview via a Link
 
 By default, opening a Preview Environment as a recipient requires the mirrord browser extension, which injects the `baggage: mirrord-session=<key>` header the operator routes on. That works for developers, but it's a non-starter for sharing a preview with a non-technical stakeholder.
