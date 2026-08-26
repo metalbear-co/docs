@@ -95,7 +95,7 @@ Moving from the license server dashboard to the cloud dashboard means switching 
    helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
    ```
 
-   Leaving `license.licenseServer` set keeps the operator on license-server auth (see above), so remove it or the cloud API key is ignored. If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
+   `license.licenseServer` takes priority over a cloud API key, so it has to go, not just sit unset. Create the referenced secret as shown in [Cloud API key](operator.md#cloud-api-key). If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
 
 4. Sign in and run a session. Your usage shows up on the dashboard, along with any history you imported.
 
