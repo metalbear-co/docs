@@ -17,7 +17,7 @@ tags:
 
 # Cloud Dashboard
 
-If your operator authenticates with a cloud API key rather than a self-hosted license server, you get the usage dashboard at [app.metalbear.com](https://app.metalbear.com) with nothing to deploy in your cluster. It shows the same sessions, users, targets, CI, and adoption views as the [self-hosted dashboard](admin-dashboard.md).
+If your operator authenticates with a cloud API key rather than a self-hosted license server, you get the usage dashboard at [app.metalbear.com](https://app.metalbear.com) with nothing to deploy in your cluster. It shows the same sessions, users, targets, CI, and adoption views as the [license server dashboard](admin-dashboard.md).
 
 {% hint style="info" %}
 The cloud dashboard is in early access and is being rolled out gradually. If you have connected your operator and still don't see it, [get in touch](https://metalbear.com/mirrord/contact/) and we'll turn it on for your organization.
@@ -47,10 +47,7 @@ The onboarding in the app does these steps for you and checks each one. To set i
 
 1. Sign in at [app.metalbear.com](https://app.metalbear.com) (or create your organization).
 
-2. Generate a cloud API key. When you generate it, choose whether to share identity-level usage data:
-
-   * Leave it on to get per-user detail (usernames and targets) in the dashboard.
-   * Turn it off to keep telemetry anonymized; the dashboard then shows activity without attributing it to named users or targets.
+2. Generate a cloud API key, choosing whether to share identity-level usage data: leave it on for per-user detail (usernames and targets), or turn it off to keep telemetry anonymized.
 
    Copy the key when it appears. It's only shown once.
 
@@ -72,13 +69,13 @@ Once the operator is connected and a session has been recorded, your **Home** pa
 
 ## Using the dashboard
 
-It's the same interface as the self-hosted dashboard: a **Usage** tab with metric cards and a searchable session-activity table, **Users** and **Targets** analytics, and an **ROI Calculator**. The [Dashboard](admin-dashboard.md#usage-tab) page walks through every view and metric.
+It's the same interface as the license server dashboard: a **Usage** tab with metric cards and a searchable session-activity table, **Users** and **Targets** analytics, and an **ROI Calculator**. The [Dashboard](admin-dashboard.md#usage-tab) page walks through every view and metric.
 
-Two things differ from the self-hosted version. Dark mode, your organization, and navigation come from the app around it rather than a standalone app bar. And per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
+Dark mode, your organization, and navigation come from the app around it rather than a standalone app bar. Per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
 
 ## Migrating from the license server dashboard
 
-Moving from a self-hosted license server to the cloud dashboard is a matter of switching the operator's credential from a license server to a cloud API key.
+Moving from the license server dashboard to the cloud dashboard means switching the operator's credential from a license server to a cloud API key.
 
 1. Generate a cloud API key at [app.metalbear.com](https://app.metalbear.com), as above.
 
@@ -90,7 +87,7 @@ Moving from a self-hosted license server to the cloud dashboard is a matter of s
    helm upgrade --set cloud.apiKey.key=<YOUR_API_KEY> mirrord-operator metalbear/mirrord-operator
    ```
 
-   Since an operator uses a license server or the cloud but not both, leaving `license.licenseServer` set keeps it on license-server auth and the cloud API key is ignored. If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
+   Leaving `license.licenseServer` set keeps the operator on license-server auth (see above), so remove it or the cloud API key is ignored. If you ran the separate `mirrord-license-server` chart only for its dashboard, uninstall it once the operator is reporting to the cloud.
 
 4. Sign in and run a session. Your usage shows up on the dashboard, along with any history you imported.
 
