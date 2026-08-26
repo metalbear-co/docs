@@ -246,7 +246,7 @@ passes, because the filter has both required keys and the `user_id` pattern `\d+
 
 If a `queueId` regex matches none of the session's split queues, the entry simply does not apply to that session.
 
-**Note:** the policy is enforced when a session or copy target is created. It does not apply to preview environments.
+**Note:** the policy is enforced at creation time - of the session, the copy target, or the preview environment.
 
 ## Restricting targets affected by mirrord policies
 
