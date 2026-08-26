@@ -167,10 +167,51 @@ For an individual parameter, use a `gcp_secret_manager` field with the resource 
 
 `env_var_name` is optional. When set, the operator injects the branch connection under that name for your local process, just like the `secret` and literal-value sources, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch and your local process keeps reading its own source.
 
-One exception: container-flavor [migrations](migrations.md) inherit the target's environment, and the operator must redirect the declared connection variables to the branch inside the migration Job. A `secret` or `gcp_secret_manager` source without `env_var_name` gives it no variable name to redirect, so the migration fails with an error instead of running with the source connection in its environment. Set `env_var_name` to the variable your app reads, or have the cluster admin disable `migrationEnv.inherit` in the operator's branch config.
+One exception: container-flavor [migrations](migrations.md) inherit the target's environment, and the operator must redirect the declared connection variables to the branch inside the migration Job. A `secret`, `gcp_secret_manager`, or `aws_secrets_manager` source without `env_var_name` gives it no variable name to redirect, so the migration fails with an error instead of running with the source connection in its environment. Set `env_var_name` to the variable your app reads, or have the cluster admin disable `migrationEnv.inherit` in the operator's branch config.
 
 {% hint style="info" %}
 **Setup**: the branch pod inherits the target pod's service account, so that account's Google identity must have `roles/secretmanager.secretAccessor` on the secret. No operator-level permissions are needed.
+{% endhint %}
+
+### AWS Secrets Manager Source
+
+Any connection value can also be read from [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). This works the same way as the Google Secret Manager source: the branch init container fetches the value when it copies the data, using the target pod's service account through IRSA or EKS Pod Identity - the same way [AWS RDS IAM](iam-authentication.md#aws-rds-iam-authentication) works. mirrord and the operator never read the secret themselves.
+
+The secret reference is a secret name or a full ARN. For the full URL, use `type: aws_secrets_manager` with a `secret_ref`:
+
+```json
+{
+  "connection": {
+    "url": {
+      "type": "aws_secrets_manager",
+      "secret_ref": "arn:aws:secretsmanager:us-east-1:123456789012:secret:db-url",
+      "env_var_name": "DATABASE_URL"
+    }
+  }
+}
+```
+
+For an individual parameter, use an `aws_secrets_manager` field:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": "DB_HOST",
+      "password": {
+        "aws_secrets_manager": "db-password",
+        "env_var_name": "DB_PASSWORD"
+      },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+`env_var_name` and the migration exception work exactly as described for the Google Secret Manager source above.
+
+{% hint style="info" %}
+**Setup**: the branch pod inherits the target pod's service account, so that account's AWS identity must be allowed `secretsmanager:GetSecretValue` on the secret. The region comes from the ARN when a full ARN is given; for a plain secret name, `AWS_REGION` or `AWS_DEFAULT_REGION` must be set in the target pod spec.
 {% endhint %}
 
 ### Literal Value

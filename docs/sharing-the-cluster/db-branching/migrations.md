@@ -138,7 +138,7 @@ The Job inherits the target container's `env` and `envFrom` (ConfigMaps and Secr
 
 The inherited environment includes your app's real database connection values, so the operator redirects them: every variable named in the branch's `connection` is set to the branch's value on the Job, taking precedence over the inherited one. Your migration tool reads its usual variable (`DATABASE_URL` for the Rails example above) and lands on the branch - the source database stays out of reach through every variable mirrord knows about.
 
-If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret` or `gcp_secret_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, declare env-based connection params, or have the cluster admin disable `migrationEnv.inherit`.
+If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret`, `gcp_secret_manager`, or `aws_secrets_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, declare env-based connection params, or have the cluster admin disable `migrationEnv.inherit`.
 
 On multi-container targets, the Job inherits from the container your target path names (`deployment/app/container/main`). Without a named container, it uses the container that defines one of the declared connection variables, falling back to the first container - so a sidecar listed ahead of your app doesn't donate its environment.
 
