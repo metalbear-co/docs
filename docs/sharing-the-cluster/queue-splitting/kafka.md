@@ -76,6 +76,7 @@ The operator recognizes these `mirrord.`-prefixed keys:
 * `mirrord.auth.kind` - extra authentication mechanism. The only supported value is `MSK_IAM` (see [MSK IAM authentication](kafka.md#aws-msk-iam-authentication)).
 * `mirrord.auth.aws_region` - the AWS region, required when `mirrord.auth.kind` is `MSK_IAM`.
 * `mirrord.split_topic.replication_factor` - the replication factor for temporary topics (see [Temporary Topic Replication Factor](kafka.md#temporary-topic-replication-factor)).
+* `mirrord.ssl.truststore.base64`, `mirrord.ssl.keystore.base64`, `mirrord.ssl.keystore.alias` - TLS credentials held in Java KeyStores (see [authenticating with a Java KeyStore](kafka.md#how-do-i-authenticate-the-operators-kafka-client-with-a-java-keystore)).
 
 {% hint style="info" %}
 The Kafka consumer group used by the operator's own client is managed by mirrord, so a `group.id` property is not needed here.
@@ -452,7 +453,102 @@ By default, the mirrord operator has read access only to the secrets in the oper
 
 ### How do I authenticate the operator's Kafka client with a Java KeyStore?
 
-The mirrord operator does not support direct use of JKS files. In order to use JKS files with Kafka splitting, first extract all necessary certificates and key to PEM files. You can do it like this:
+{% hint style="info" %}
+Reading credentials from Java KeyStores requires mirrord operator `3.199.0` or later. On earlier versions, unpack the stores into PEM files yourself (see [Unpacking a Java KeyStore by hand](kafka.md#unpacking-a-java-keystore-by-hand)).
+{% endhint %}
+
+Put the same `ssl.*` properties your JVM application already uses on the `MirrordPropertyList`. The operator loads the stores, unpacks them, and hands the certificates and the private key to its Kafka client as PEM, so you do not have to run `keytool`/`openssl` or keep a second copy of the credentials just for Kafka splitting.
+
+The store itself can be given in two ways:
+
+* **Inline**, base64-encoded, in the `mirrord.ssl.truststore.base64` / `mirrord.ssl.keystore.base64` properties. Recommended: nothing has to be mounted into the operator pod.
+* **As a file**, in the standard `ssl.truststore.location` / `ssl.keystore.location` properties. The path is read from the **operator pod's** filesystem, so the store has to be mounted there - not into the target workload.
+
+Base64-encode the stores and put them in a `Secret`, next to their passwords:
+
+```sh
+kubectl create secret generic kafka-stores --namespace meme \
+  --from-literal=truststore.jks.base64="$(base64 < truststore.jks | tr -d '\n')" \
+  --from-literal=keystore.jks.base64="$(base64 < keystore.jks | tr -d '\n')" \
+  --from-literal=truststore.password=changeit \
+  --from-literal=keystore.password=changeit
+```
+
+{% hint style="warning" %}
+The `Secret` must hold the **base64 text** of the store, not the raw store bytes. Property values are read as UTF-8 strings, so a key created with `--from-file=keystore.jks` cannot be read.
+{% endhint %}
+
+Then reference the secret keys from the `MirrordPropertyList`:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: kafka-connection
+  namespace: meme
+spec:
+  properties:
+    - name: bootstrap.servers
+      value: kafka.default.svc.cluster.local:9093
+    - name: security.protocol
+      value: SSL
+    # Truststore: the CAs the broker's certificate is verified against.
+    - name: mirrord.ssl.truststore.base64
+      valueFrom:
+        secretKeyRef:
+          name: kafka-stores
+          key: truststore.jks.base64
+    - name: ssl.truststore.password
+      valueFrom:
+        secretKeyRef:
+          name: kafka-stores
+          key: truststore.password
+    # Keystore: the client certificate and private key, for mutual TLS.
+    - name: mirrord.ssl.keystore.base64
+      valueFrom:
+        secretKeyRef:
+          name: kafka-stores
+          key: keystore.jks.base64
+    - name: ssl.keystore.password
+      valueFrom:
+        secretKeyRef:
+          name: kafka-stores
+          key: keystore.password
+```
+
+If the broker does not require client certificates, set only the truststore properties.
+
+{% hint style="info" %}
+The `Secret` is resolved in the namespace the `MirrordPropertyList` was found in, and by default the operator can only read secrets in its own namespace. Either grant it read access to secrets in the target's namespace, or keep both the `Secret` and the `MirrordPropertyList` next to the operator - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
+{% endhint %}
+
+The properties the operator understands:
+
+| Property                                | Meaning                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ssl.truststore.location`               | Path of the truststore, read from the operator pod's filesystem.                                                                                |
+| `mirrord.ssl.truststore.base64`         | Base64-encoded truststore, given inline instead of a file.                                                                                      |
+| `ssl.truststore.password`               | Optional. A truststore holds only public certificates, so it is unpacked without one; the password only verifies the store's integrity digest.   |
+| `ssl.keystore.location`                 | Path of the keystore, read from the operator pod's filesystem.                                                                                  |
+| `mirrord.ssl.keystore.base64`           | Base64-encoded keystore, given inline instead of a file.                                                                                        |
+| `ssl.keystore.password`                 | Required for a JKS keystore, which is encrypted.                                                                                                |
+| `ssl.key.password`                      | Password of the private key inside the keystore. Defaults to the keystore password, like the JVM client.                                         |
+| `mirrord.ssl.keystore.alias`            | Which key entry to authenticate with. Required only when the keystore holds more than one private key.                                           |
+| `ssl.endpoint.identification.algorithm` | Passed through. The JVM's empty value (hostname verification off) is translated for the operator's client.                                       |
+
+A few things to keep in mind:
+
+* `ssl.truststore.type` and `ssl.keystore.type` are ignored - the format is detected from the store's contents. `keytool` writes PKCS#12 by default since JDK 9, so a store named `.jks` is routinely PKCS#12 and the declared type disagrees with the file. JKS, JCEKS, PKCS#12 and PEM stores are all recognized.
+* A **PKCS#12 keystore** is passed to the Kafka client untouched, since it reads that format natively. It therefore has to be given as a file with `ssl.keystore.location`; an inline base64 PKCS#12 keystore is rejected.
+* A **PKCS#12 truststore** is not supported. Convert it to JKS with `keytool -importkeystore -deststoretype JKS`, or extract the certificates and set `ssl.ca.pem` as described in [authenticating with an SSL certificate](kafka.md#how-do-i-authenticate-the-operators-kafka-client-with-an-ssl-certificate).
+* Credentials given as PEM in the Kafka properties (`ssl.truststore.certificates`, `ssl.keystore.certificate.chain`, `ssl.keystore.key`, i.e. `ssl.keystore.type=PEM`) are accepted too, and mapped to the client's `ssl.ca.pem`, `ssl.certificate.pem` and `ssl.key.pem`.
+* This conversion belongs to the default `librdkafka` client backend. With `mirrord.client_implementation: java`, the JVM sidecar reads the stores itself, so use `ssl.truststore.location` / `ssl.keystore.location` with the stores mounted into the operator pod; the inline `mirrord.ssl.*.base64` properties are rejected for that backend.
+
+If a store fails to load, the mirrord session that tried to use it fails with the reason - wrong password, ambiguous key alias, unreadable path, and so on.
+
+### Unpacking a Java KeyStore by hand
+
+On operators older than `3.199.0`, extract the certificates and the key into PEM files first:
 
 ```sh
 # Convert keystore.jks to PKCS12 format.
