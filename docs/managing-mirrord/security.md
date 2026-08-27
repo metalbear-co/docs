@@ -106,10 +106,10 @@ None of these fields identify an individual developer or a workload in your clus
 
 ### Sent only with identity sharing enabled
 
-Identity sharing is a choice your organization makes when an organization admin generates a [cloud API key](operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com). It is ticked by default for new keys; untick it to keep usage metrics fully anonymized. With it enabled, each session event also carries:
+Identity sharing is an organization-level setting. An organization admin chooses it when generating a [cloud API key](operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com), where it is ticked by default, and can change it later for the current key on the same page. With it enabled, the Operator's events also carry, where applicable:
 
-1. Kubernetes username of the client, as resolved by your cluster's RBAC
-2. Local username and hostname of the client machine
+1. Kubernetes username of the client, as authenticated by your Kubernetes API server
+2. Display name of the local account and hostname of the client machine
 3. Namespace, kind, name, and container of the session's target
 
 These are what the usage dashboard at app.metalbear.com uses to show usernames and service names instead of hashes. Anonymized metrics go to `analytics.metalbear.com`; events that carry identity go to `app.metalbear.com`.
@@ -119,9 +119,9 @@ Identity is not sent when:
 * The cloud API key was generated with identity sharing unticked.
 * `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting.
 * The Operator authenticates with a legacy license key instead of a cloud API key.
-* The Operator authenticates against a self-hosted [License Server](license-server.md). Nothing is sent to MetalBear in that configuration.
+* The Operator authenticates against a self-hosted [License Server](license-server.md). A cloud API key is ignored in that configuration and usage metrics stay anonymized.
 
-To change the setting on an existing installation, generate a new cloud API key and roll the Operator over to it.
+Changing the setting takes effect at the Operator's next cloud token refresh, without regenerating the key or restarting the Operator.
 
 In the Enterprise offering, this communication can be disabled entirely.
 
