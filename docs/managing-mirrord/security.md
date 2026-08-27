@@ -87,7 +87,7 @@ For our vulnerability disclosure and customer notification process, see the [Tru
 
 ## What data does the mirrord Operator send to MetalBear cloud?
 
-mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and usage metrics. What the usage metrics contain depends on the identity sharing setting of your organization, described below.
+mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and usage metrics. What the usage metrics contain depends on your organization's identity sharing setting.
 
 ### Always sent (anonymized)
 
@@ -112,16 +112,16 @@ Identity sharing is a choice your organization makes when an organization admin 
 2. Local username and hostname of the client machine
 3. Namespace, kind, name, and container of the session's target
 
-This is what lets the usage dashboard at app.metalbear.com show real usernames and service names instead of hashes. It is the only data beyond the anonymized fields above that the Operator sends. Anonymized metrics go to `analytics.metalbear.com`; events that carry identity go to `app.metalbear.com`.
+These are what the usage dashboard at app.metalbear.com uses to show usernames and service names instead of hashes. Anonymized metrics go to `analytics.metalbear.com`; events that carry identity go to `app.metalbear.com`.
 
-Identity is never sent when any of the following apply:
+Identity is not sent when:
 
 * The cloud API key was generated with identity sharing unticked.
-* `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting, so you can enforce anonymized metrics at the cluster level regardless of who generated the key.
+* `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting.
 * The Operator authenticates with a legacy license key instead of a cloud API key.
-* The Operator authenticates against a self-hosted [License Server](license-server.md). In that configuration nothing is sent to MetalBear at all.
+* The Operator authenticates against a self-hosted [License Server](license-server.md). Nothing is sent to MetalBear in that configuration.
 
-To change the setting for an existing installation, generate a new cloud API key with the choice you want and roll the Operator over to it.
+To change the setting on an existing installation, generate a new cloud API key and roll the Operator over to it.
 
 In the Enterprise offering, this communication can be disabled entirely.
 
