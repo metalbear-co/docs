@@ -44,6 +44,8 @@ curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator
 
 The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
 
+When generating the key you also choose whether to enable **identity sharing**. With it on, usage metrics include developer usernames and session targets so the usage dashboard can show them by name; with it off, usage metrics stay anonymized. The fields are listed under [What data does the Operator send to MetalBear cloud](security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud). Set `cloud.anonymizeData: true` in your Helm values to keep metrics anonymized regardless of the key.
+
 Provide the key to the chart in one of three ways:
 
 **Kubernetes secret (recommended)** — reference a secret via `cloud.apiKey.keyRef`, so the key never lives in your `values.yaml`:

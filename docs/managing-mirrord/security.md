@@ -1,7 +1,7 @@
 ---
 title: Security
 date: 2022-07-10T08:48:57.000Z
-lastmod: 2024-03-01T00:00:00.000Z
+lastmod: 2026-08-27T00:00:00.000Z
 draft: false
 images: []
 linktitle: Security
@@ -28,7 +28,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)) which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics include developer usernames and session targets when identity sharing is on, which is the default for cloud API keys; your organization can turn it off to keep them anonymized.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
@@ -87,7 +87,9 @@ For our vulnerability disclosure and customer notification process, see the [Tru
 
 ## What data does the mirrord Operator send to MetalBear cloud?
 
-mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and anonymous usage metrics. The fields shared are:
+mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and usage metrics. What the usage metrics contain depends on your organization's identity sharing setting.
+
+### Always sent (anonymized)
 
 1. User ID (randomly generated hash, stored on user machine)
 2. Duration of session
@@ -99,6 +101,27 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 8. cluster_id (the UID of the cluster's `default` namespace, used as a stable, anonymous per-cluster identifier)
 9. cluster_name (optional; only sent if you set the `operator.clusterName` Helm value to give the cluster a recognizable label)
 10. kubernetes_version (the version of the Kubernetes cluster the Operator is running in)
+
+None of these fields identify an individual developer or a workload in your cluster.
+
+### Sent only with identity sharing enabled
+
+Identity sharing is an organization-level setting. An organization admin chooses it when generating a [cloud API key](operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com), where it is ticked by default, and can change it later for the current key on the same page. With it enabled, the Operator's events also carry, where applicable:
+
+1. Kubernetes username of the client, as authenticated by your Kubernetes API server
+2. Display name of the local account and hostname of the client machine
+3. Namespace, kind, name, and container of the session's target
+
+These are what the usage dashboard at app.metalbear.com uses to show usernames and service names instead of hashes. Anonymized metrics go to `analytics.metalbear.com`; events that carry identity go to `app.metalbear.com`.
+
+Identity is not sent when:
+
+* The cloud API key was generated with identity sharing unticked, or the organization's key predates the setting and it was never turned on.
+* `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting.
+* The Operator authenticates with a legacy license key instead of a cloud API key.
+* The Operator authenticates against a self-hosted [License Server](license-server.md). A cloud API key is ignored in that configuration and usage metrics stay anonymized.
+
+Changing the setting takes effect at the Operator's next cloud token refresh, without regenerating the key or restarting the Operator.
 
 In the Enterprise offering, this communication can be disabled entirely.
 
