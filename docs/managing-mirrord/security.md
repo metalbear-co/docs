@@ -28,7 +28,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics are anonymized by default; whether developer usernames and session targets are included is a setting your organization controls.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics include developer usernames and session targets when identity sharing is on, which is the default for cloud API keys generated at app.metalbear.com; your organization can turn it off to keep them anonymized.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
@@ -116,7 +116,7 @@ These are what the usage dashboard at app.metalbear.com uses to show usernames a
 
 Identity is not sent when:
 
-* The cloud API key was generated with identity sharing unticked.
+* The cloud API key was generated with identity sharing unticked, or the organization's key predates the setting and it was never turned on.
 * `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting.
 * The Operator authenticates with a legacy license key instead of a cloud API key.
 * The Operator authenticates against a self-hosted [License Server](license-server.md). A cloud API key is ignored in that configuration and usage metrics stay anonymized.
