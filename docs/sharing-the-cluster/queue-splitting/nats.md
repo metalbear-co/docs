@@ -66,6 +66,9 @@ Supported properties:
 | `token`       | Authentication token.                                                                                                       | No       |         |
 | `credentials` | Contents of a JWT `.creds` file.                                                                                            | No       |         |
 | `nkey`        | NKey seed.                                                                                                                  | No       |         |
+| `ca_cert`     | PEM contents of the CA bundle that signs the server's certificate, for servers with a private CA. Implies TLS.              | No       |         |
+| `client_cert` | PEM contents of the client certificate chain, for mTLS. Used together with `client_key`. Implies TLS.                       | No       |         |
+| `client_key`  | PEM contents of the client certificate's private key. Used together with `client_cert`.                                     | No       |         |
 
 Set the auth properties matching how your NATS server authenticates clients. Keep secrets in a Kubernetes Secret and reference them with `valueFrom`. Username and password:
 
@@ -112,6 +115,28 @@ An NKey seed:
           name: nats-auth
           key: nkey.seed
 ```
+
+TLS with a private CA, or mutual TLS (the properties hold the PEM contents, not paths; providing any of them makes the operator connect over TLS even on a `nats://` URL):
+
+```yaml
+    - name: ca_cert
+      valueFrom:
+        secretKeyRef:
+          name: nats-tls
+          key: ca.crt
+    - name: client_cert
+      valueFrom:
+        secretKeyRef:
+          name: nats-tls
+          key: tls.crt
+    - name: client_key
+      valueFrom:
+        secretKeyRef:
+          name: nats-tls
+          key: tls.key
+```
+
+Without `ca_cert`, the server's certificate is verified against the standard public roots, so `client_cert` + `client_key` alone give mTLS against a publicly-trusted server.
 {% endstep %}
 
 {% step %}
