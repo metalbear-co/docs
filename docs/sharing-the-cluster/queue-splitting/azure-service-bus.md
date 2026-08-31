@@ -376,18 +376,13 @@ Azure Service Bus resource names can be up to 260 characters. If the rendered na
 
 #### Temporary subscription cleanup
 
-In the Topic/Subscription model, the operator creates one subscription on your topic per mirrord session. The operator never deletes these subscriptions directly, because messaging frameworks like MassTransit and NServiceBus recreate a missing subscription while the client is still running, which would leave an unmanaged copy behind.
+In the Topic/Subscription model, the operator creates one subscription on your topic per mirrord session. Cleanup is automatic:
 
-Instead, a per-session subscription has no expiry while its session is running, so it survives any quiet period, including preview environments that scale to zero while idle. When the session ends, the operator sets the subscription's `AutoDeleteOnIdle` to 5 minutes (the Azure minimum), and Azure removes it about 5 minutes after the last client activity. If the session ends uncleanly, for example when the operator restarts mid-teardown, the operator applies the same expiry when it comes back up.
+1. While the session runs, the subscription has no expiry, so it survives any quiet period - including preview environments that scale to zero while idle.
+2. When the session ends, the operator sets the subscription's `AutoDeleteOnIdle` to 5 minutes (the Azure minimum).
+3. Azure removes the subscription about 5 minutes after the last client activity. If the session ended uncleanly, the operator applies the same expiry when it recovers.
 
-Two properties on the `MirrordPropertyList` control this behavior:
-
-| Property                            |                             Description                            |        Default        |
-| ----------------------------------- | :----------------------------------------------------------------: | :-------------------: |
-| `per_session_subscription_cleanup`  |              `auto-delete-on-idle` or `force-delete`               | `auto-delete-on-idle` |
-| `auto_delete_on_idle`               | ISO-8601 idle expiry set at session end (Azure minimum is `PT5M`)  |         `PT5M`        |
-
-Only use `force-delete` (immediate deletion at session end) when your application does not provision its own subscriptions.
+The operator sets an expiry instead of deleting the subscription itself because frameworks like MassTransit and NServiceBus recreate a missing subscription while the client is still running, which would leave an unmanaged copy behind.
 {% endstep %}
 {% endstepper %}
 
