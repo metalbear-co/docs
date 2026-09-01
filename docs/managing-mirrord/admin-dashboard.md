@@ -23,7 +23,7 @@ mirrord serves this dashboard two ways, depending on how your operator is licens
 | | [License Server Setup](dashboard/license-server.md) | [Cloud Setup](dashboard/cloud.md) |
 | --- | --- | --- |
 | **Operator credential** | Self-hosted license server (`license.licenseServer`) | Cloud API key (`cloud.apiKey`) |
-| **Plan** | Enterprise | Team or Enterprise (^) |
+| **Plan** | Enterprise | Team or Enterprise |
 | **Where you view it** | In-cluster, via `kubectl port-forward` | [app.metalbear.com](https://app.metalbear.com), behind your login |
 | **Access control** | Your cluster networking | Your organization's members, through login |
 | **Where usage data lives** | Your license server's database | mirrord cloud |

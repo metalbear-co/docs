@@ -4,6 +4,7 @@ description: Set up the mirrord usage dashboard served from the cloud
 tags:
   - alpha
   - team
+  - enterprise
 ---
 
 # Cloud Setup

@@ -3,7 +3,6 @@ title: License Server Setup
 description: Set up the mirrord dashboard served by a self-hosted license server
 tags:
   - alpha
-  - team
   - enterprise
 ---
 
@@ -24,20 +23,15 @@ This is the dashboard for self-hosted installs, nothing leaves your cluster. It 
 dashboard:
   enabled: true
 ```
-
 2. Upgrade the license server:
-
-```bash
+```bash 
 helm repo update metalbear
 helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
 ```
-
 3. Via `kubectl port-forward`: Forward the dashboard port to your local machine:
-
 ```bash
 kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
 ```
-
 4. Open <http://localhost:8050/> in your browser.
 
 Target workload breakdowns (namespace, deployment name) are available for sessions recorded after the upgrade.
@@ -69,4 +63,4 @@ curl -H "x-license-key: <your-license-key>" \
   http://localhost:8050/api/v1/reports/usage?format=json
 ```
 
-For spreadsheet reports (Excel format), see [Getting a Utilisation Report](../license-server.md#getting-a-utilisation-report-from-the-license-server).
+For spreadsheet reports (Excel format), see Getting a Utilisation Report (../license-server.md#getting-a-utilisation-report-from-the-license-server)
