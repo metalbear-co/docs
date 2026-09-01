@@ -44,12 +44,12 @@ The onboarding in the app does these steps for you and checks each one. To set i
    helm install --set cloud.apiKey.key=<YOUR_API_KEY> mirrord-operator metalbear/mirrord-operator
     ```
    {% hint style="info" %}
-   In production, don't pass the key inline. Put it in a Kubernetes secret and reference it with `cloud.apiKey.keyRef`, or point at Google Secret Manager with `cloud.apiKey.gsmRef.` See ![Cloud API key](../operator.md#cloud-api-key).
+   In production, don't pass the key inline. Put it in a Kubernetes secret and reference it with `cloud.apiKey.keyRef`, or point at Google Secret Manager with `cloud.apiKey.gsmRef`. See [Cloud API key](../operator.md#cloud-api-key).
    {% endhint %}
 
 4. Install the mirrord CLI and run a session (mirrord wizard generates a config to start from).
 
-Once the operator is connected and a session has been recorded, your Home page at `app.metalbear.com` is the usage dashboard — see ![Dashboard](../admin-dashboard.md) for what you'll see there.
+Once the operator is connected and a session has been recorded, your Home page at `app.metalbear.com` is the usage dashboard - see [Dashboard](../admin-dashboard.md) for what you'll see there.
 
 Per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
 
