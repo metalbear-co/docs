@@ -37,7 +37,7 @@ Before configuring any AI tool, create a mirrord config at `.mirrord/mirrord.jso
 
 For repos with multiple services, create one config per service: `.mirrord/mirrord-<service>.json`.
 
-**Tip:** You can auto-generate configs and agent instructions for your entire repo using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) for any tool. The sections below show what to set up manually if you prefer.
+**Tip:** You can auto-generate configs and agent instructions for your entire repo using the [mirrord skills package](https://github.com/metalbear-co/skills) for Claude Code, or the meta-prompt in [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai) for any tool. The sections below show what to set up manually if you prefer.
 
 ## Claude Code
 
@@ -203,7 +203,7 @@ mirrord configs are in .mirrord/, one per service.
 
 ## Using the meta-prompt for any tool
 
-Instead of writing configs manually, you can paste the meta-prompt from [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) into any AI tool. It will:
+Instead of writing configs manually, you can paste the meta-prompt from [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai) into any AI tool. It will:
 
 1. Scan your repo to discover services
 2. Ask you which deployments to target
@@ -247,4 +247,4 @@ If the agent skips the mirrord step, strengthen the language in your instruction
 
 - [How to Test AI-Generated Code with mirrord](testing-ai-generated-code.md): test AI-generated code against your Kubernetes cluster step by step
 - [Autonomous AI Workflows with mirrord](running-ai-agents-with-mirrord.md): the full agent loop with E2E guardrails and AGENTS.md setup
-- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai): the meta-prompt and detailed setup reference
+- [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai): the meta-prompt and detailed setup reference

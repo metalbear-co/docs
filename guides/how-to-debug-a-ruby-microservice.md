@@ -164,7 +164,7 @@ Let’s update the new config file created and opened in the editor. The configu
 }
 ```
 
-If you want to mirror traffic from a multipod deployment, you can learn more about mirrord for teams [/mirrord/docs/overview/teams/](https://metalbear.com/mirrord/docs/overview/teams/) which provides this feature. Right now we only have one pod in this deployment and mirrord’s OSS features should work perfectly for us.
+If you want to mirror traffic from a multipod deployment, you can learn more about mirrord for teams [/mirrord/docs/overview/teams/](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord) which provides this feature. Right now we only have one pod in this deployment and mirrord’s OSS features should work perfectly for us.
 
 2. **How to run the application with and without mirrord in the RubyMine IDE?**
 
@@ -205,7 +205,7 @@ Now that we can run the application, let’s understand our setup with the mirro
 
 ![alt text](how-to-debug-a-ruby-microservice/screenshot-2024-12-18-at-15-04-22-1.png)
 
-If you would like to learn more about how the mirrord-agent in the above architecture works, go check out the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture/#mirrord-agent).
+If you would like to learn more about how the mirrord-agent in the above architecture works, go check out the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture#mirrord-agent).
 
 We can now be sure that mirrord is working properly.
 
@@ -244,7 +244,7 @@ The microservice needs access to the “redis” service hosted on the cluster. 
 
 2. **Installing mirrord**
 
-Install the mirrord CLI tool and run Guestbook with the required Kubernetes context. Follow the installation guide for mirrord here [/mirrord/docs/overview/quick-start/#installation](https://metalbear.com/mirrord/docs/overview/quick-start/#installation) and run the below command.
+Install the mirrord CLI tool and run Guestbook with the required Kubernetes context. Follow the installation guide for mirrord here [/mirrord/docs/overview/quick-start/#installation](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation) and run the below command.
 
 3. **Run the Guestbook application with ruby and mirrord in the CLI**
 

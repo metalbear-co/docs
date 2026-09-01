@@ -89,7 +89,7 @@ This run is expected to fail in most setups because local execution does not hav
 
 ### 2) Install mirrord
 
-Install mirrord by following the [quick start installation steps](https://metalbear.com/mirrord/docs/overview/quick-start/#installation).
+Install mirrord by following the [quick start installation steps](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation).
 
 ### 3) Run the application with mirrord
 
@@ -136,7 +136,7 @@ Click the mirrord icon in the VS Code status bar and choose **Select active conf
 
 ![Select active mirrord config in VS Code](how-to-debug-a-python-miscroservice/using-mirrord-with-visual-studio-extension.png)
 
-If you expect multiple replicas and need advanced traffic behavior, check [mirrord for Teams](https://metalbear.com/mirrord/docs/overview/teams/).
+If you expect multiple replicas and need advanced traffic behavior, check [mirrord for Teams](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord).
 
 ### 3) Run and debug without mirrord first
 

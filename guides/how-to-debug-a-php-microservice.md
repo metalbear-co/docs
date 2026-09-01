@@ -118,7 +118,7 @@ The microservice needs access to the “redis” service hosted on the cluster. 
 
 2. Installing mirrord
 
-Install the mirrord CLI tool and run Guestbook with the required Kubernetes context. Follow the installation guide for mirrord [here](https://metalbear.com/mirrord/docs/overview/quick-start/#installation) .
+Install the mirrord CLI tool and run Guestbook with the required Kubernetes context. Follow the installation guide for mirrord [here](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation) .
 
 3. Run the Guestbook application with php and mirrord in the CLI
 

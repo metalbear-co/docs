@@ -1,6 +1,6 @@
 # Content to add to the AI section of the docs
 
-> This file is NOT a guide. It contains the "why" content extracted from the guides that should be added to the [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/using-mirrord-with-ai) docs page (or a new sibling page). Delete this file after the content has been moved.
+> This file is NOT a guide. It contains the "why" content extracted from the guides that should be added to the [Using mirrord with AI Agents](https://metalbear.com/mirrord/docs/use-cases/using-mirrord-with-ai) docs page (or a new sibling page). Delete this file after the content has been moved.
 
 ---
 

@@ -143,7 +143,7 @@ As a new config file is opened up in your editor, you can update the contents of
 }
 ```
 
-If you want to mirror traffic from a multipod deployment, you can learn more about mirrord for teams [/mirrord/docs/overview/teams/](https://metalbear.com/mirrord/docs/overview/teams/) which provides this feature. Right now we only have one pod in this deployment and mirrord’s OSS features should work perfectly for us.
+If you want to mirror traffic from a multipod deployment, you can learn more about mirrord for teams [/mirrord/docs/overview/teams/](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord) which provides this feature. Right now we only have one pod in this deployment and mirrord’s OSS features should work perfectly for us.
 
 #### Testrun without mirrord enabled
 
@@ -182,7 +182,7 @@ Now that we are able to run the application, let’s understand what our setup l
 
 ![alt text](how-to-debug-a-java-microservice/screenshot-2024-12-03-at-08-43-53-1.png)
 
-If you would like to learn more about how the mirrord-agent in the above architecture works, go checkout the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture/#mirrord-agent).
+If you would like to learn more about how the mirrord-agent in the above architecture works, go checkout the reference here [/mirrord/docs/reference/architecture/#mirrord-agent](https://metalbear.com/mirrord/docs/reference/architecture#mirrord-agent).
 
 We can now be sure that mirrord is working properly.
 
@@ -221,7 +221,7 @@ The microservice needs access to the “mongo” and “minio” services hosted
 
 #### Installing mirrord
 
-Let’s install mirrord CLI tool and run knote with the required Kubernetes context. Follow the installation guide for mirrord here [/mirrord/docs/overview/quick-start/#installation](https://metalbear.com/mirrord/docs/overview/quick-start/#installation) and run the below command.
+Let’s install mirrord CLI tool and run knote with the required Kubernetes context. Follow the installation guide for mirrord here [/mirrord/docs/overview/quick-start/#installation](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation) and run the below command.
 
 #### Running the SpringBoot application with mirrord
 
