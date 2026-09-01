@@ -32,7 +32,7 @@ Need support for more events? [Open a GitHub issue](https://github.com/metalbear
 
 ### Prerequisites
 
-* A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass `--key`, the key defaults to your OS username.
+* A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass `--key`, a random key is generated for the session (`mirrord up` is the exception, it defaults to your OS username).
 
 ### Usage
 
