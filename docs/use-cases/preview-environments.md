@@ -128,4 +128,8 @@ For the full list of inputs and configuration options, see the [action documenta
 
 ### Readiness
 
-Pods created by preview environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
+Pods created by preview environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"`, so the target's `Service` never routes traffic to it through Kubernetes endpoints.
+
+The readiness gate alone is not enough on every dataplane. Some load balancers program their backends straight from the `Service` selector and ignore pod readiness - for example GKE container-native load balancing, where the NEG controller adds every selector-matching pod and only its own health check gates traffic. To keep preview pods out of those backends too, the operator drops any label inherited from the target that a `Service` in the namespace selects by. All other labels and annotations from the target's pod spec are copied as-is.
+
+To keep such a label anyway, list it in `feature.preview.labels.include` in [the mirrord configuration file](https://metalbear.com/mirrord/docs/config); an explicitly included label is never dropped. A `Service` created after the preview pods is not checked - for it, only the readiness gate applies.
