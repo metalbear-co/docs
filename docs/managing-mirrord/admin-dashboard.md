@@ -3,7 +3,7 @@ title: Dashboard
 description: Dashboard for monitoring mirrord usage
 tags:
   - alpha
-  - teams
+  - team
   - enterprise
 ---
 
