@@ -63,7 +63,7 @@ Default for `connection.params.host` is `localhost` for all databases.
 
 #### Custom Parameters
 
-Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, PostgreSQL and [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accept `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots.
+Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, PostgreSQL and [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accept `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots. One difference from the fixed slots: a `value_pattern` on a custom parameter must name its capture group `value` (or use a plain first group) - per-name groups like `(?P<sslmode>...)` only work for the fixed slots.
 
 #### Branch Query Parameters (PostgreSQL)
 
