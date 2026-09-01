@@ -73,7 +73,13 @@ Changes how environment variables may be retrieved from the target, overriding w
 The policy takes priority over a user's mirrord config, which means that if the user has a config:
 
 ```json
-{ "feature": { "env": { "include": "*_URL" } } }
+{
+  "feature": {
+    "env": {
+      "include": "*_URL"
+    }
+  }
+}
 ```
 
 If the policy is set with `exclude: ["*_URL"]`, then mirror will **NOT** retrieve env vars that match `*_URL`, even though the user explicitly wanted that in their config.
@@ -97,7 +103,13 @@ Changes file operations behaviour, giving the operator control over which files 
 The policy takes priority over a user's mirrord config, which means that if the user has a config:
 
 ```json
-{ "feature": { "fs": { "read_write": ".+\\.json" } } }
+{
+  "feature": {
+    "fs": {
+      "read_write": ".+\\.json"
+    }
+  }
+}
 ```
 
 If the policy is set with `readOnly: [".+\\.json"]`, and the user tries to open a file that matches this regex in _write_ mode, then mirrord will return an error to the user app, as if the file could not be found, even though the user wanted it to be `read_write`.
@@ -127,23 +139,61 @@ spec:
 If the policy is set with `headerFilter: "^baggage: .+"` at least one header filter must match the `^baggage: .+` regex when user is using the steal mode for incoming traffic.
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "header_filter": "^baggage: .*mirrord-session=alice.*" } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "header_filter": "^baggage: .*mirrord-session=alice.*"
+        }
+      }
+    }
+  }
+}
 ```
 
 this also works _any of_ or _all of_ patterns
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "all_of": [
-  { "header": "^baggage: .*mirrord-session=alice.*" },
-  { "path": "/api.*" }
-] } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "all_of": [
+            {
+              "header": "^baggage: .*mirrord-session=alice.*"
+            },
+            {
+              "path": "/api.*"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 ```
 
 ```json
-{ "feature": { "network": { "incoming": { "http_filter": { "any_of": [
-  { "header": "^baggage: .*mirrord-session=alice.*" },
-  { "header": "^tracestate: .*mirrord-session=alice.*" }
-] } } } } }
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "http_filter": {
+          "any_of": [
+            {
+              "header": "^baggage: .*mirrord-session=alice.*"
+            },
+            {
+              "header": "^tracestate: .*mirrord-session=alice.*"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
 ```
 
 **Important:** `steal-without-filter` will be automatically enabled once any http filter is specified.
@@ -265,13 +315,97 @@ Examples for possible target paths:
 
 By specifying a `targetPath` pattern in the policy, you limit the policy to only apply to runs that have a target path that matches the specified pattern.
 
-The target path pattern can contain `?`, which will match a single character, and `*`, which will match arbitrarily many characters. For example, `"deploy/*"` will make a policy apply for any run with a deployment target. `"*boats*"` will make a policy apply to any target with `boats` in its name, e.g. `pod/boats-2kljw9`, `pod/whatever-23oije2/container/boats-container`, etc.
+The target path pattern can contain `?`, which will match a single character, and `*`, which will match arbitrarily many characters. For example, `"deploy/*"` will make a policy apply for any run with a deployment target. `"*boats*"` will make a policy apply to any target with `boats` in its resource name, e.g. `pod/boats-2kljw9`.
 
-> **Note**: when mirrord user specifies a container for the mirrord run, the target path ends with `/container/<CONTAINER_NAME>`.
->
-> This means the pattern `deploy/my-deployment` will not match when a container is specified. That pattern can be changed to `deploy/my-deployment*` to also match on runs with a specified container (but will then also match `deploy/my-deployment-1` etc.)
+### Operator versions 3.200.0 and higher
 
-Please note that the policy is applied according to the target given to mirrord. It is possible for a policy to apply to a deployment target, but not to apply to the deployment's pods when targeted directly. For example, the following policy:
+#### Inheritance
+
+Resources inherit policies from their [owning resources](https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/) (and their owners, and so on). This means that a policy with target `deploy/my-deployment` will apply to `my-deployment`, the replica set it owns _and_ all pods owned by that replica set.
+
+Policies do not work in the opposite direction, so a policy with target `pod/my-pod` will not apply to the owners of the pod.
+
+An example of a policy:
+
+```yaml
+apiVersion: policies.mirrord.metalbear.co/v1alpha
+kind: MirrordPolicy
+metadata:
+  name: block-unfiltered-stealing-from-deployments
+  namespace: books
+spec:
+  targetPath: "deploy/*"
+  block:
+    - steal-without-filter
+    - mirror
+```
+
+This policy blocks mirroring and unfiltered stealing of traffic coming to all deployments and all resources owned by deployments (replica sets, pods) in the namespace `books`.
+
+##### Labels and inheritance
+
+When both the target path and a label selector are specified, policies are inherited by dependents of resources that match both. This can lead to subtle differences in behaviour depending on how you write a policy.
+
+Take this policy:
+
+```yaml
+apiVersion: policies.mirrord.metalbear.co/v1alpha
+kind: MirrordPolicy
+metadata:
+  name: block-mirroring-from-blue-deployments
+  namespace: default
+spec:
+  targetPath: "deploy/*"
+  selector:
+    matchLabels:
+      colour: blue
+  block:
+    - mirror
+```
+
+This policy blocks mirroring of traffic coming to all deployments which are marked with label `colour: blue`, and their dependent resources. If a deployment `my-deployment` has the label `colour: blue`, the policy applies to all of its pods regardless of the pod's `color`.
+
+However, if a deployment `your-deployment` has the label `colour: yellow`, and owns pods with the label `colour: blue`, this policy _will not apply to the blue pods_. To apply a policy to blue pods in `your-deployment`, you can instead use something like:
+
+```yaml
+...
+spec:
+  targetPath: "pod/your-deployment*"
+  selector:
+    matchLabels:
+      colour: blue
+...
+```
+
+#### Containers
+
+A target path is considered in two parts: a resource path like `pod/boats-5fffb9767c-w92qh`, and an optional container path like `container/appcontainer`. Policies that have a target without a container specified will apply to all containers.
+
+To apply a policy to specific containers, `/container/` _must_ be explicitly present **without wildcards** in the target path. The path `deploy/*abc` will match all containers on all deployments where the deployment name ends in `abc` (and their dependents), but will not match `deploy/my-deployment/container/abc`.
+
+For example, in a policy:
+
+```yaml
+apiVersion: policies.mirrord.metalbear.co/v1alpha
+kind: MirrordPolicy
+metadata:
+  name: block-stealing-from-lib-containers
+  namespace: books
+spec:
+  targetPath: "*/container/lib*"
+  block:
+    - steal
+```
+
+This blocks stealing from any container name starting with `lib` in the namespace `books`, regardless of resource type.
+
+{% hint style="warning" %}
+Ensure the target path has wildcards if required. `/container/*` will match resources with an empty resource path, and therefore will match nothing. `*/container/*` is the correct syntax to target all resources.
+{% endhint %}
+
+### Operator versions lower than 3.200.0
+
+Policies are applied according to the session target given to mirrord. It is possible for a policy to apply to a deployment target, but not to apply to the deployment's pods when targeted directly. For example, the following policy:
 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
@@ -287,24 +421,11 @@ spec:
 
 prevents mirrord users from stealing traffic when using the whole `boats` deployment as a target. However, a user could still use a specific pod out of that deployment as a target for mirrord and steal its traffic. In order to prevent that, the `targetPath` pattern or the label selector needs to be changed to match the pods of that deployment.
 
+#### Labels
+
 If a workload is used as a target, this workload's labels will be used to match against policies' `selector`, if set. If a pod is used as a target, the pod's labels will be used.
 
-Another example of a policy:
+#### Containers
 
-```yaml
-apiVersion: policies.mirrord.metalbear.co/v1alpha
-kind: MirrordPolicy
-metadata:
-  name: block-unfiltered-stealing-from-webserver-deployments
-  namespace: books
-spec:
-  targetPath: "deploy/*"
-  selector:
-    matchLabels:
-      component: webserver
-  block:
-    - steal-without-filter
-    - mirror
-```
-
-This policy blocks mirroring and unfiltered stealing of traffic coming to all deployments in the namespace `books` which are marked with label `component: webserver`.
+> **Note**: Containers in target paths are not treated differently from other parts of the path.
+> This means the pattern `deploy/my-deployment` will not match when a container is specified. That pattern can be changed to `deploy/my-deployment*` to also match on runs with a specified container (but will then also match `deploy/my-deployment-1` etc.)
