@@ -21,6 +21,10 @@ tags:
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
 
 {% hint style="info" %}
+This page covers the dashboard served by a self-hosted license server. If your operator authenticates with a cloud API key instead of a license server, see [Cloud Dashboard](cloud-dashboard.md).
+{% endhint %}
+
+{% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan. See [Quick Start](admin-dashboard.md#quick-start) below to enable it.
 {% endhint %}
 
