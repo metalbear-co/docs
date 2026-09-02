@@ -131,6 +131,7 @@ Where the key is placed depends on the queue service. Services with a metadata c
 | Apache Kafka | Metadata | Message header |
 | Azure Service Bus | Metadata | Application property |
 | Temporal | Metadata | Activity task header |
+| NATS | Metadata | Message header |
 | BullMQ | JSON payload | Job `data` object |
 | Redis Pub/Sub | JSON payload | Message payload |
 
