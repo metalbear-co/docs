@@ -317,7 +317,7 @@ Pods created by Preview Environments will never be in the "Ready" state, this is
 
 #### Service Meshes
 
-On Istio-injected targets the preview pod gets a sidecar like any other pod, and the sidecar would normally capture the operator's incoming connections - the ones delivering the session's matched requests - and reject them (for example under `STRICT` mTLS). The operator therefore annotates the preview pod with [`traffic.sidecar.istio.io/excludeInboundPorts`](https://istio.io/latest/docs/reference/config/annotations/) for the session's subscribed ports. The sidecar stays in the pod, so the preview app's outgoing traffic still goes through the mesh, and ports already excluded on the target's template are preserved.
+On mesh-injected targets the preview pod gets a sidecar like any other pod, and the sidecar would normally capture the operator's incoming connections - the ones delivering the session's matched requests - and reject them (for example under `STRICT` mTLS). The operator therefore annotates the preview pod with [`traffic.sidecar.istio.io/excludeInboundPorts`](https://istio.io/latest/docs/reference/config/annotations/) (Istio) and [`config.linkerd.io/skip-inbound-ports`](https://linkerd.io/2/reference/proxy-configuration/) (Linkerd) for the session's subscribed ports. The sidecar stays in the pod, so the preview app's outgoing traffic still goes through the mesh, and ports already excluded on the target's template are preserved. Sidecars that do not honor a port-exclusion annotation are not handled automatically.
 
 #### Resources
 
