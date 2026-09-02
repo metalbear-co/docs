@@ -55,7 +55,7 @@ Other tools use VPNs to connect your machine to the cluster. mirrord works at th
 * **Fine-grained control** - Choose exactly what happens remotely vs locally. Read some files locally, others remotely. Route some traffic through the cluster, keep other connections local.
 * **No root access needed** locally
 * **Fast startup** - 15 seconds or less
-* **Run multiple sessions** - Each local process can target a different remote pod simultaneously
+* **Run multiple sessions** - Each local process can target a different remote pod simultaneously, and [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) can start and manage several services from a single config file
 * **Cluster-agnostic** - Works regardless of network setup (service mesh, VPN, etc.) and scales to 10,000+ pod clusters
 
 [**Get started →**](../getting-started/quick-start.md)
