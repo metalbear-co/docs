@@ -61,19 +61,6 @@ This can happen in some clusters using a service mesh when stealing incoming tra
 {"agent": {"flush_connections": false}}
 ```
 
-## Traffic sent to the target through a Service ClusterIP is not stolen or mirrored on clusters using Cilium
-
-On some clusters running Cilium as a kube-proxy replacement, requests sent to the target through a Service ClusterIP are handled by the remote target instead of your local process. Traffic sent directly to the pod IP (for example via `kubectl port-forward`) is stolen as expected.
-
-Setting `bpf.hostLegacyRouting=true` on the Cilium Helm release works around it:
-
-```bash
-helm upgrade cilium cilium/cilium --namespace kube-system --reuse-values --set bpf.hostLegacyRouting=true
-kubectl -n kube-system rollout restart daemonset cilium
-```
-
-We're still investigating the root cause. Follow [this issue](https://github.com/metalbear-co/mirrord/issues/4672) for updates, and add your cluster setup there if you hit this.
-
 ## My application is trying to read a file locally instead of from the cluster
 
 mirrord has a list of path patterns that are read locally by default regardless of the configured fs mode. You can override this behavior in the configuration.
