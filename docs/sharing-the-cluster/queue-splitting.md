@@ -39,7 +39,7 @@ That temporary queue is *exclusive* to the target workload.
 Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue.
 
 {% hint style="warning" %}
-Queue splitting requires that the application read the queue name from an environment variable, or from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)).
+Queue splitting requires that the application read the queue name from an environment variable, from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)), or from a file injected into its pods, for example by Vault (see [Queue Names Injected by Vault or CSI Drivers](#queue-names-injected-by-vault-or-csi-drivers)).
 This lets the operator override the name to change the queue that the application reads from.
 {% endhint %}
 
@@ -96,6 +96,45 @@ Things to know:
 * Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
 * The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
 * Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
+
+## Queue Names Injected by Vault or CSI Drivers
+
+{% hint style="info" %}
+Injected file sources require mirrord operator `3.201.0` or later.
+{% endhint %}
+
+A queue name can also be read from a file that exists only inside the running pods, with no ConfigMap or Secret behind it. This is useful when vault-agent-injector renders the names into `/vault/secrets/`, or a secrets-store CSI driver projects them at mount time, and moving them into the pod's environment is not an option.
+
+To use it, set a `podFile` source in the `appConfig` entry:
+
+```yaml
+appConfig:
+  topic:
+    - podFile:
+        path: /vault/secrets/kafka-config   # absolute path inside the container
+      valueSelector: ".kafka.consumer.topic.main.name"
+```
+
+* `podFile.path` - absolute path of the file inside the container.
+* `podFile.container` - container the operator reads the file from. Defaults to the `vault-agent` sidecar when the pod has one, otherwise the pod's first application container. Set it when the file is only mounted in a specific container, or when the default container has no `cat` binary (a distroless image).
+* `valueSelector` and `valuePattern` work exactly as for `volume` sources above.
+
+Because no API object holds the file, the operator reads it by running `cat` in a running pod of the target. The target must have at least one running pod when the split starts, and the operator needs `get` and `create` on `pods/exec` in the target namespace - the operator Helm chart grants this when queue splitting is enabled.
+
+The operator never touches Vault or the injector. When a split starts, it:
+
+1. Creates a Secret with the file's content and the temporary fallback names substituted. The Secret is labeled and managed by the operator, holds only the referenced file, and also caches the original content so later resolutions never depend on the pods again.
+2. Mounts that Secret over the file's exact path in the target's application containers. This restarts the workload, the same way environment variable injection does. The injector's own sidecar keeps its original view of the file, so it can keep rendering it underneath.
+3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session, exactly as for `volume` sources.
+
+When the last session ends, the pods are restored to the injected file and the Secret is deleted.
+
+Things to know:
+
+* The referenced file's content is pinned for the length of the split. If the same file also carries values that rotate, such as credentials, the deployed application keeps reading the values from when the split started. Other injected files are untouched.
+* If both a `podFile` source and an `env`/`envLike` or `volume` source are set on the same entry, the other source takes precedence and `podFile` is ignored. `fallback` does not apply to `podFile`.
+* A `containers` list on the entry limits which containers get the overriding mount. Without one, every application container gets it.
+* The remote file system and directory file descriptor notes for `volume` sources apply here as well.
 
 ## Autoscaled Targets with KEDA
 
