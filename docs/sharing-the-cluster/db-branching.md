@@ -284,6 +284,8 @@ Branches that set no `profile` run with the default `dbPod`, so existing configs
 
 A profile is a complete `dbPod`, not a patch on the default one: fields it leaves unset fall back to the operator's built-in defaults, not to the values in the default `dbPod`. So a profile that sets only `resources` runs the operator's default image, not the registry configured in the default `dbPod`.
 
+Every profile setting lives under the profile's `dbPod` key, exactly as in the example above. A key placed beside `dbPod` instead - `profiles.tls.tls` rather than `profiles.tls.dbPod.tls` - is not a valid profile setting, and a branch selecting that profile fails with an error naming the misplaced key and where it belongs. Unrecognized keys outside profiles are ignored with a warning in the operator logs.
+
 When a profile pins `image.registry`, the tag still comes from the branch's `version` or the engine's default tag. If your registry does not publish that default tag, developers set `version` and nothing else.
 
 ### Profiles and `allowedImages`
