@@ -253,6 +253,10 @@ In the example above, the local application will receive a subset of messages fr
 
 ### Filtering with jq
 
+{% hint style="info" %}
+JQ filters on RabbitMQ require operator version `>=3.201.0` and CLI version `>=3.253.0`
+{% endhint %}
+
 `message_filter` only matches individual headers by name. Use `jq_filter` to match on the message body, or on headers whose name you don't know in advance. The jq program runs on this JSON document:
 
 ```json
@@ -271,7 +275,7 @@ In the example above, the local application will receive a subset of messages fr
 
 * `headers` is the AMQP basic-properties headers table. It is always present, and may be empty.
 * `properties` holds the remaining basic properties that carry a value: `content_type`, `content_encoding`, `delivery_mode`, `priority`, `correlation_id`, `reply_to`, `expiration`, `message_id`, `timestamp`, `type`, `user_id`, and `app_id`. Properties the publisher did not set are absent.
-* `payload` is the message body. It, and every header value, is a UTF-8 string, or base64-encoded when the bytes are not valid UTF-8.
+* `payload` is the message body.
 
 A message matches when the program outputs `true`. To filter on the body, parse it with `fromjson` first:
 
