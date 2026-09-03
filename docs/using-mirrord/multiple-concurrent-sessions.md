@@ -7,7 +7,7 @@ tags:
   - enterprise
 description: "How to use mirrord up"
 date: 2026-04-014T16:25:00+04:00
-lastmod: 2026-04-014T16:25:00+04:00 
+lastmod: 2026-04-014T16:25:00+04:00
 draft: false
 menu:
   docs:
@@ -16,6 +16,7 @@ weight: 140
 toc: true
 ---
 ## Introduction
+
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.
 
 Each service in the file is typically a *different* application with its own target, command, and configuration; this is for debugging several distinct applications together and managing their lifecycle as one unit, not for targeting multiple pods of the same application. For that, see [Targeting Pods by Label](targeting-pods-by-label.md).
@@ -23,12 +24,15 @@ Each service in the file is typically a *different* application with its own tar
 ## Getting started
 
 The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
+
 ```sh
 mirrord up init
 ```
+
 It prompts for common settings and walks you through one or more services, then writes the file (default: `./mirrord-up.yaml`). The generated file contains only the values you set; everything left at its default is omitted. See [`mirrord up init`](#mirrord-up-init) below for details.
 
 To write the file by hand instead, start with:
+
 ```yaml
 services:
   user-auth-service:
@@ -38,13 +42,14 @@ services:
   stage-user-dashboard-app:
     target:
       path: pod/nginx
-    run: 
+    run:
       command: ["node", "app.js"]
 ```
 
 This file is the single source of configuration for all running sessions. Each entry in `services` defines a `mirrord` process that will run as part of the `mirrord up` session. You can leave out `target.path` (or the whole `target`) and `mirrord up` will infer it from the service id — see the `services.*.target` section below.
 
 Now, in the same directory of the `mirrord-up.yaml` file, run
+
 ```sh
 mirrord up
 ```
@@ -73,7 +78,7 @@ services:
   stage-user-dashboard-app:
     target:
       path: pod/nginx
-    run: 
+    run:
       command: ["node", "app.js"]
 ```
 
@@ -159,6 +164,7 @@ To override the context for every service in a run, use `mirrord up --context mi
 ### Config file (`mirrord-up.yaml`)
 
 #### `common`
+
 Common configuration options, applied to all defined services. Currently the following options are supported:
 - [`accept_invalid_certificates`](https://metalbear.com/mirrord/docs/config/options#root-accept_invalid_certificates)
 - [`operator`](https://metalbear.com/mirrord/docs/config/options#root-operator)
@@ -168,9 +174,11 @@ Common configuration options, applied to all defined services. Currently the fol
 All fields map directly to their `mirrord.json` counterparts.
 
 #### `services`
+
 A map from service ids to a `ServiceConfig`. Each entry in this map defines and configures a mirrord process that will be run as part of the session.
 
 ##### `services.*.target`
+
 Specifies the target of the session. Has 2 fields: `path` and `namespace`, which map directly to their `mirrord.json` counterparts.
 
 When `path` is omitted, `mirrord up` infers it from the service id (the key in the `services` map) by searching the cluster for a deployment, statefulset, rollout, or pod with that name. If a match is found, it's used automatically, otherwise `mirrord up` prompts you to pick a namespace and workload, and offers to save the choice back to `mirrord-up.yaml` so future runs skip the prompt.
@@ -178,6 +186,7 @@ When `path` is omitted, `mirrord up` infers it from the service id (the key in t
 To run a service without a target (outgoing traffic only), set `target: none`.
 
 Examples:
+
 ```yaml
 # Specify both namespace and path
 target:
@@ -205,27 +214,49 @@ target: none
 Omitting the `target` field entirely is equivalent to an empty mapping: the path is inferred from the service id in the default namespace.
 
 ##### `services.*.env`
+
 Specifies the environment variable configuration for the given service. Maps directly (1:1) to [`feature.env`](https://metalbear.com/mirrord/docs/config/options#feature-env)
 
 ##### `services.*.default_mode`
+
 Either `split` (the default) or `replace`. See [Service modes](#service-modes) for what each one does and when to use it.
 
 The `--mode` flag overrides this for every service being launched.
 
 ##### `services.*.http_filter`
+
 Specifies the HTTP filtering configuration for the given service. Maps directly to [`feature.network.incoming.http_filter`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
 Only applies in `split` mode. A service in `replace` mode receives all incoming traffic, so any filter set on it is ignored.
 
-##### `services.*.ignore_ports` 
+##### `services.*.ignore_ports`
+
 List of ports that should be ignored in incoming traffic. Maps directly to [`feature.network.incoming.ignore_ports`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
-##### `services.*.run` 
+##### `services.*.config_patch`
+
+Some mirrord configuration options are not available in the `mirrord-up.yaml` format. With `config_patch` you're able to expand what's supported and use
+regular `mirrord.json` options for a specific service. Prefer using the dedicated `mirrord-up.yaml` fields whenever possible, the `config_patch` is
+an escape hatch while other settings are being ported over to `mirrord up`.
+
+```yaml
+config_patch:
+  feature:
+    split_queues:
+      "*"
+        queue_type: SQS
+        jq_filter: '.Body | fromjson | .headers["x-meow-id"] == "{{ key }}"'
+```
+
+##### `services.*.run`
+
 Specifies the command that should be run with mirrord. Has 2 fields:
+
 - `command`: Array of strings containing the command to be run and its CLI arguments.
 - `type`: can be either `exec` or `container`, defaults to `exec`. Specifies how mirrord should be run (i.e. with `mirrord exec` or `mirrord container`)
 
 Examples:
+
 ```yaml
 run:
   type: container
@@ -282,6 +313,7 @@ services:
 ```
 
 When you run `mirrord up --key my-session`, the above examples will render as:
+
 - `SESSION_ID: "my-session"`
 - `DEBUG_TAG: "debug-my-session"`
 - Command: `["python", "logger.py", "--session", "my-session"]`
@@ -305,15 +337,19 @@ Here the namespace falls back to `default` when `DEV_NAMESPACE` isn't set, while
 ## CLI args
 
 ### `-f`, `--config-file`
+
 Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom.yaml`
 
 ### `-m`, `--mode`
+
 Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split` or `replace` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
 
 ### `--key`
+
 Allows specifying a custom session key. When not supplied, the OS username is used.
 
 ### `--context`
+
 Runs every service in the specified context, ignoring the `context` field(s) set in the config file. When omitted, each service uses the `context` in the config file. See [Context](#context) for precedence rules.
 
 ## `mirrord up init`
@@ -325,6 +361,7 @@ mirrord up init [-o path/to/mirrord-up.yaml]
 ```
 
 Flow:
+
 1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
 2. **Services** — loops one service at a time, prompting for name, mode, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. For the target you choose to infer it from the service name (looked up when you run `mirrord up`), specify one explicitly, or run without a target. Choosing `replace` mode skips the HTTP filter prompt and drops the targetless option, since neither applies to it. Repeats until you answer "no" to *Add another service?*.
 3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
