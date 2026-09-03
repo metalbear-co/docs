@@ -102,13 +102,32 @@ Example output:
 mirrord preview status
 ```
 
-2. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
+Add `--failed` to list the environments that failed instead of the active ones.
+
+2. **Logs:** Print what a Preview Environment's pods have written. This is normally where the
+reason for a failure lives — a missing config file, a failed connection, a stack trace from the
+application itself:
+
+```bash
+mirrord preview logs --key <environment-key>
+```
+
+Pass `-t <target>` to read a single environment when several share a key. Failed environments are
+included, and are retained for a short inspection window before they are cleaned up, so this
+works for a while after a failure but not indefinitely. `mirrord preview start` prints the same
+output at the moment it gives up.
+
+`mirrord preview logs` requires mirrord `3.254.0` or later, and mirrord operator `3.203.0` or
+later with operator Helm chart `3.203.0` or later. The operator serves the output, so an earlier
+one cannot answer the command.
+
+3. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
 
 ```bash
 mirrord preview stop --key <environment-key>
 ```
 
-3. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
+4. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
 
 ```bash
 mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
