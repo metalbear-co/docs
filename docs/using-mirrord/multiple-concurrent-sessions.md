@@ -243,7 +243,7 @@ an escape hatch while other settings are being ported over to `mirrord up`.
 config_patch:
   feature:
     split_queues:
-      "*"
+      "*":
         queue_type: SQS
         jq_filter: '.Body | fromjson | .headers["x-meow-id"] == "{{ key }}"'
 ```
