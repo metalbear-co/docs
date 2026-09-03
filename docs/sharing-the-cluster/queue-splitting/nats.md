@@ -1,17 +1,17 @@
 ---
-title: NATS JetStream
+title: NATS
 tags:
   - alpha
   - team
   - enterprise
 ---
 
-This page covers queue splitting for [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
+This page covers queue splitting for [NATS](https://nats.io). Most of it describes [JetStream](https://docs.nats.io/nats-concepts/jetstream) (persisted streams consumed through a durable pull consumer); [core NATS pub/sub](#core-nats-pubsub-no-jetstream) (plain subject subscriptions) is covered in its own section. For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
-The word "queue" on this page refers to a JetStream stream consumed through a durable pull consumer.
+Unless the [core pub/sub](#core-nats-pubsub-no-jetstream) section says otherwise, "queue" on this page refers to a JetStream stream consumed through a durable pull consumer.
 
 {% hint style="info" %}
-NATS splitting works with JetStream only: the application must consume through a durable pull consumer on a stream. Core NATS (plain subject subscriptions) is not supported yet. The NATS server must be version `2.2` or later, since splitting relies on message headers.
+The NATS server must be version `2.2` or later, since splitting relies on message headers.
 {% endhint %}
 
 ## How It Works
@@ -302,7 +302,7 @@ When the operator's `operator.injectSessionKeyHeader` setting is enabled, every 
 
 ## Core NATS pub/sub (no JetStream)
 
-Applications that subscribe to plain subjects (`nc.Subscribe(...)`, no streams, no durables) can be split with the separate `natsPubSub` queue kind. The mechanics mirror Redis Pub/Sub: the operator subscribes to the original subject and republishes each message under a temporary subject prefix - the session's on a filter match, the workload's fallback prefix otherwise. The application's subject value is rewritten to `<prefix>.<original>`, so wildcard subscriptions (`orders.*`, `orders.>`) keep working unchanged.
+Applications that subscribe to plain subjects (`nc.Subscribe(...)`, no streams, no durables) can be split with the separate `natsPubSub` queue kind. The operator subscribes to the original subject and republishes each message under a temporary subject prefix - the session's on a filter match, the workload's fallback prefix otherwise. The application's subject value is rewritten to `<prefix>.<original>`, so wildcard subscriptions (`orders.*`, `orders.>`) keep working unchanged.
 
 {% hint style="warning" %}
 Core NATS stores nothing, so delivery is **best-effort**: messages published while the split is being set up, torn down, or while the operator is briefly unavailable are not replayed. Applications that must not miss messages belong on JetStream, covered by the rest of this page.

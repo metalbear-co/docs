@@ -11,8 +11,8 @@ If your application consumes messages from a queue service, you should choose a 
 3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
-The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" in the context of NATS JetStream, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [NATS](https://nats.io) (JetStream and core pub/sub), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" or "subject" in the context of NATS, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
 {% hint style="info" %}
@@ -28,7 +28,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [RabbitMQ](queue-splitting/rabbitmq.md)
 * [Google Cloud Pub/Sub](queue-splitting/gcp-pubsub.md)
 * [Azure Service Bus](queue-splitting/azure-service-bus.md)
-* [NATS JetStream](queue-splitting/nats.md)
+* [NATS](queue-splitting/nats.md)
 * [Redis Pub/Sub](queue-splitting/redis-pubsub.md)
 * [Temporal](queue-splitting/temporal.md)
 * [BullMQ](queue-splitting/bullmq.md)
