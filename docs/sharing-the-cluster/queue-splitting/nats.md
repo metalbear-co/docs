@@ -1,17 +1,17 @@
 ---
-title: NATS JetStream
+title: NATS
 tags:
   - alpha
   - team
   - enterprise
 ---
 
-This page covers queue splitting for [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream). For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
+This page covers queue splitting for [NATS](https://nats.io). Most of it describes [JetStream](https://docs.nats.io/nats-concepts/jetstream) (persisted streams consumed through a durable pull consumer); [core NATS pub/sub](#core-nats-pubsub-no-jetstream) (plain subject subscriptions) is covered in its own section. For the general concepts and the message filter reference shared by all queue services, see the [Queue Splitting overview](../queue-splitting.md).
 
-The word "queue" on this page refers to a JetStream stream consumed through a durable pull consumer.
+Unless the [core pub/sub](#core-nats-pubsub-no-jetstream) section says otherwise, "queue" on this page refers to a JetStream stream consumed through a durable pull consumer.
 
 {% hint style="info" %}
-NATS splitting works with JetStream only: the application must consume through a durable pull consumer on a stream. Core NATS (plain subject subscriptions) is not supported yet. The NATS server must be version `2.2` or later, since splitting relies on message headers.
+The NATS server must be version `2.2` or later, since splitting relies on message headers.
 {% endhint %}
 
 ## How It Works
@@ -300,9 +300,30 @@ In the example above, the local application will receive only messages whose JSO
 When the operator's `operator.injectSessionKeyHeader` setting is enabled, every message delivered to your session carries a `mirrord-key` header with your session key - see [Session Key Header](../queue-splitting.md#session-key-header).
 {% endhint %}
 
+## Core NATS pub/sub (no JetStream)
+
+Applications that subscribe to plain subjects (`nc.Subscribe(...)`, no streams, no durables) can be split with the separate `natsPubSub` queue kind. The operator subscribes to the original subject and republishes each message under a temporary subject prefix - the session's on a filter match, the workload's fallback prefix otherwise. The application's subject value is rewritten to `<prefix>.<original>`, so wildcard subscriptions (`orders.*`, `orders.>`) keep working unchanged.
+
+{% hint style="warning" %}
+Core NATS stores nothing, so delivery is **best-effort**: messages published while the split is being set up, torn down, or while the operator is briefly unavailable are not replayed. Applications that must not miss messages belong on JetStream, covered by the rest of this page.
+{% endhint %}
+
+Enable it with `operator.natsPubsubSplitting: true` in the Helm chart. The `MirrordSplitConfig` entry uses `kind: natsPubSub` and a `subject` reference, and shares `clientConfigs.nats` (same server, same credentials as JetStream splitting):
+
+```yaml
+  queues:
+    - id: orders-pubsub
+      kind: natsPubSub
+      appConfig:
+        subject:
+          - env: NATS_SUBJECT
+```
+
+In the mirrord configuration, filters use `queue_type: NATSPubSub` with the same `message_filter` (headers) and `jq_filter` (`subject` / `headers` / `payload` document) as JetStream splitting. No temporary resources exist on the server - subjects are just names - so there is nothing to clean up when sessions end beyond restoring the workload's env.
+
 ## Notes and limitations
 
-* JetStream only. The application must consume through a durable pull consumer on a stream. Core NATS (plain subject subscriptions) is not supported yet.
+* The rest of this page covers JetStream: the application must consume through a durable pull consumer on a stream. Plain subject subscriptions are covered by [Core NATS pub/sub](#core-nats-pubsub-no-jetstream) with best-effort delivery.
 * The NATS server must be version `2.2` or later, since splitting relies on message headers.
 * Each queue entry in the `MirrordSplitConfig` describes exactly one stream and one consumer. Add one entry per consumer.
 * Republished messages carry the subject `<temporary stream>.<original subject>` - the original subject is kept, prefixed with the temporary stream's name. An application that routes on exact subjects sees the prefixed subject while a split is active, so match on the subject's suffix (or a wildcard) instead of the full subject.

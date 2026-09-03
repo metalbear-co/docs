@@ -64,7 +64,7 @@
   * [RabbitMQ](sharing-the-cluster/queue-splitting/rabbitmq.md)
   * [Google Cloud Pub/Sub](sharing-the-cluster/queue-splitting/gcp-pubsub.md)
   * [Azure Service Bus](sharing-the-cluster/queue-splitting/azure-service-bus.md)
-  * [NATS JetStream](sharing-the-cluster/queue-splitting/nats.md)
+  * [NATS](sharing-the-cluster/queue-splitting/nats.md)
   * [Redis Pub/Sub](sharing-the-cluster/queue-splitting/redis-pubsub.md)
   * [Temporal](sharing-the-cluster/queue-splitting/temporal.md)
   * [BullMQ](sharing-the-cluster/queue-splitting/bullmq.md)
