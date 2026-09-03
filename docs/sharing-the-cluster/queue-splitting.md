@@ -220,6 +220,7 @@ Where the key is placed depends on the queue service. Services with a metadata c
 | Azure Service Bus | Metadata | Application property |
 | Temporal | Metadata | Activity task header |
 | NATS | Metadata | Message header |
+| NATS Pub/Sub | Metadata | Message header |
 | BullMQ | JSON payload | Job `data` object |
 | Redis Pub/Sub | JSON payload | Message payload |
 
@@ -242,11 +243,11 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 It pairs each queue ID with a queue filter definition, and accepts either an object keyed by queue ID or an array of entries (see [One queue or many](#one-queue-or-many)).
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, or `NATS`
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, or `NATSPubSub`
 * `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS, NATS pub/sub), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified entries matching.
-* `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, and `NATS` queue types.
+* `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, and `NATSPubSub` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -259,7 +260,7 @@ Filter definition contains the following fields:
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
   * For **BullMQ**, it runs a jq program on the parsed JSON value of the job's `data` field.
-  * For **NATS**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
+  * For **NATS** and **NATS pub/sub**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
   * A message matches if the jq program outputs `true`.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
