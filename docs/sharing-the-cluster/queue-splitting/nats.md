@@ -23,6 +23,8 @@ When the first mirrord NATS splitting session starts, the operator creates a tem
 * A message that matches a user's filter is republished to that session's temporary stream, and the local application reads it from there.
 * A message that matches no filter is republished to the main-output stream, and the deployed workload reads it from there.
 
+![NATS queue splitting flow](../../.gitbook/assets/nats.svg)
+
 In the default `steal` mode a matched message goes only to the session's temporary stream. In `mirror` mode it goes to both the session's temporary stream and the main output, so the deployed workload also processes a copy.
 
 Delivery is at-least-once: a message is acknowledged on the original consumer only after the JetStream server has acknowledged the republish, so a message can be redelivered but never silently dropped.

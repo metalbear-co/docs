@@ -17,6 +17,7 @@
 ## Use Cases
 
 * [Remocal Development](use-cases/local-development.md)
+* [mirrord up (Multiple Concurrent Sessions)](using-mirrord/multiple-concurrent-sessions.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
@@ -46,7 +47,6 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
-* [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 * [Targeting Pods by Label](using-mirrord/targeting-pods-by-label.md)
 * [Local UI](using-mirrord/local-ui.md)
 * [Subscribing to Events](using-mirrord/subscribe.md)
@@ -92,6 +92,8 @@
 ## Managing mirrord
 
 * [Dashboard](managing-mirrord/admin-dashboard.md)
+  * [License Server Setup](managing-mirrord/dashboard/license-server.md)
+  * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)

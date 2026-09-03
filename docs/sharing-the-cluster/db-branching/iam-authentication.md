@@ -17,6 +17,10 @@ DynamoDB branches also authenticate to the source account with `"iam_auth": { "t
 **Default environment variables**: If you do not specify custom credential sources, mirrord automatically looks for standard environment variables in the target pod (e.g., `AWS_REGION`, `GOOGLE_APPLICATION_CREDENTIALS`). You only need additional configuration if your pod uses non-standard variable names.
 {% endhint %}
 
+## Connecting to the branch
+
+IAM only authenticates against the real cloud database - the branch is a plain database pod the cloud provider knows nothing about, so an IAM token is not a valid password there. For PostgreSQL branches, mirrord solves this by running the branch pod with trust authentication whenever `iam_auth` is set: the branch accepts whatever credentials your application already sends, the IAM token included, so the application connects without any changes. The source database is unaffected, and branches without `iam_auth` keep regular password authentication.
+
 ## AWS RDS IAM Authentication
 
 ### Minimal Configuration

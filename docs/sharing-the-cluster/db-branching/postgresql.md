@@ -202,6 +202,32 @@ Setting it through `connection_settings` makes the copy read past the policy:
 
 These settings only apply while mirrord reads from the source, they are never written into the branch itself.
 
+## Server Arguments
+
+`dbServerArgs` is a list of extra command-line flags for the branch's `postgres` server, set per cluster via the `operator.pgBranchConfig` value in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This is useful when every branch needs a server setting the image's defaults don't provide - for example serving TLS with certificates baked into a custom image:
+
+```yaml
+pgBranchConfig:
+  dbPod:
+    image:
+      registry: "myregistry/postgres-tls" # custom image with certificates baked in
+    dbServerArgs:
+      - "-c"
+      - "ssl=on"
+      - "-c"
+      - "ssl_cert_file=/etc/ssl/certs/server.pem"
+      - "-c"
+      - "ssl_key_file=/etc/ssl/private/server.key"
+```
+
+Requirements:
+
+* Any file a flag points at must exist inside the image - the operator does not mount certificate volumes into branch pods, and PostgreSQL requires the key file to be owned by the server user with `0600` permissions.
+* Keep the listener on the default port `5432` - the seeding step, schema migrations, and the operator all connect there.
+* The flags also apply to the temporary server the branch runs while it restores the copied data, so a flag the server cannot start with fails the branch at creation.
+* The config applies when a branch is **created**; branches that already exist keep the flags they started with.
+* `pgBranchConfig.dbPod` is one cluster-wide setting, so every PostgreSQL branch gets the same flags. To use different flags for different branches, define each set as a profile and let branches pick one - see [Branch Config Profiles](../db-branching.md#branch-config-profiles).
+
 ## IAM Authentication
 
 PostgreSQL branches can authenticate to the source database with IAM instead of a password, on both **AWS RDS** and **GCP Cloud SQL**. See [IAM Authentication](iam-authentication.md) for setup and examples.

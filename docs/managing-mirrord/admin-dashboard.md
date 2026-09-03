@@ -1,67 +1,41 @@
 ---
 title: Dashboard
-date: 2026-02-24T00:00:00.000Z
-lastmod: 2026-02-24T00:00:00.000Z
-draft: false
-images: []
-linktitle: Dashboard
-menu:
-  docs:
-    teams: null
-weight: 535
-toc: true
 description: Dashboard for monitoring mirrord usage
 tags:
   - alpha
+  - team
   - enterprise
 ---
 
 # Dashboard
 
-The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends, all served directly from the license server.
+The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends.
 
-{% hint style="info" %}
-This feature is available to users on the Enterprise pricing plan. See [Quick Start](admin-dashboard.md#quick-start) below to enable it.
-{% endhint %}
 
 {% hint style="success" %}
 Want to see the dashboard in action? Check out our [live playground](https://playground.metalbear.dev/dashboard/).
 {% endhint %}
 
+
+mirrord serves this dashboard two ways, depending on how your operator is licensed:
+
+
+| | [License Server Setup](dashboard/license-server.md) | [Cloud Setup](dashboard/cloud.md) |
+| --- | --- | --- |
+| **Operator credential** | Self-hosted license server (`license.licenseServer`) | Cloud API key (`cloud.apiKey`) |
+| **Plan** | Enterprise | Team or Enterprise |
+| **Where you view it** | In-cluster, via `kubectl port-forward` | [app.metalbear.com](https://app.metalbear.com), behind your login |
+| **Access control** | Your cluster networking | Your organization's members, through login |
+| **Where usage data lives** | Your license server's database | mirrord cloud |
+| **Best for** | Self-hosted installs — air-gapped, compliance, or by preference | Teams that can reach the mirrord cloud |
+
+An operator does one or the other, never both. Pick your setup path, then come back here — the interface below is identical either way.
+
+
 | Dark mode                                                       | Light mode                                                        |
 | --------------------------------------------------------------- | ----------------------------------------------------------------- |
 | ![Dashboard - Dark Mode](../.gitbook/assets/dashboard-dark.png) | ![Dashboard - Light Mode](../.gitbook/assets/dashboard-light.png) |
 
-## Quick Start
-
-1. Add `dashboard.enabled: true` to your license server Helm values:
-
-```yaml
-# values.yaml
-dashboard:
-  enabled: true
-```
-
-2. Upgrade the license server:
-
-```bash
-helm repo update metalbear
-helm upgrade mirrord-operator-license-server metalbear/mirrord-license-server -f ./values.yaml --wait
-```
-
-3. **Via `kubectl port-forward`:** Forward the dashboard port to your local machine:
-
-```bash
-kubectl port-forward -n mirrord svc/mirrord-operator-license-server 8050:8050
-```
-
-4. Open [http://localhost:8050/](http://localhost:8050/) in your browser.
-
-The dashboard reads from the license server's existing session database, so your historical usage data appears immediately. Target workload breakdowns (namespace, deployment name) are available for sessions recorded after the upgrade.
-
-{% hint style="info" %}
-The dashboard does not require authentication beyond network access to the license server. Access control is handled by your cluster networking configuration.
-{% endhint %}
 
 ## Usage Tab
 
@@ -140,28 +114,3 @@ Click the **Sync** button in the app bar to manually refresh all dashboard data.
 ### Operator Version
 
 The operator version is displayed in the app bar for quick reference (e.g., `v3.142.0`).
-
-## Helm Configuration
-
-| Setting             | Default | Description                     |
-| ------------------- | ------- | ------------------------------- |
-| `dashboard.enabled` | `false` | Enable the dashboard            |
-| `dashboard.port`    | `8050`  | Port the dashboard is served on |
-
-The chart automatically configures the container port, service port, and required environment variables when `dashboard.enabled` is set to `true`.
-
-## API Endpoints
-
-The dashboard consumes two API endpoints from the license server. These are also available for programmatic access:
-
-* `GET /api/v1/reports/usage?format=json` returns the full usage report (users, targets, sessions, CI metrics, machines).
-* `GET /api/v1/reports/usage/trends?days=30` returns time-series data (daily sessions, active users, CI sessions, user adoption).
-
-Both endpoints require the `x-license-key` header. This is the license key configured in the license server's Helm values (`license.key`). When the dashboard is served by the license server, this header is injected automatically. For direct API access (e.g., via `curl`), pass it manually:
-
-```bash
-curl -H "x-license-key: <your-license-key>" \
-  http://localhost:8050/api/v1/reports/usage?format=json
-```
-
-For spreadsheet reports (Excel format), see [Getting a Utilisation Report](license-server.md#getting-a-utilisation-report-from-the-license-server).
