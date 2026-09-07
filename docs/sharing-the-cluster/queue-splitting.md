@@ -11,8 +11,8 @@ If your application consumes messages from a queue service, you should choose a 
 3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
-The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" in the context of NATS JetStream, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
 {% hint style="info" %}
@@ -28,6 +28,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [RabbitMQ](queue-splitting/rabbitmq.md)
 * [Google Cloud Pub/Sub](queue-splitting/gcp-pubsub.md)
 * [Azure Service Bus](queue-splitting/azure-service-bus.md)
+* [NATS JetStream](queue-splitting/nats.md)
 * [Redis Pub/Sub](queue-splitting/redis-pubsub.md)
 * [Temporal](queue-splitting/temporal.md)
 * [BullMQ](queue-splitting/bullmq.md)
@@ -64,16 +65,37 @@ Mounted config file sources require mirrord operator `3.198.0` or later.
 
 A queue name can also be read from a file mounted from a ConfigMap volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap - and duplicating the names into the pod's environment is not an option.
 
-To use it, set a `volume` source in the `appConfig` entry instead of `env` or `envLike`:
+To use it, set a `volume` source in the `appConfig` entry instead of `env` or `envLike`. A complete `MirrordSplitConfig` for a Kafka consumer reading both its topic and group from a mounted `application.yaml`:
 
 ```yaml
-appConfig:
-  topic:
-    - volume:
-        name: app-config          # entry in the pod spec's `volumes` array
-        file: application.yaml    # file within the volume
-      valueSelector: ".kafka.consumer.topic.main.name"
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: my-split-config
+  namespace: my-namespace
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-consumer
+  queues:
+    - id: orders                    # the queue ID users reference in split_queues
+      kind: kafka
+      clientConfig: kafka-connection
+      appConfig:
+        topic:
+          - volume:
+              name: app-config          # entry in the pod spec's `volumes` array
+              file: application.yaml    # file within the volume
+            valueSelector: ".kafka.consumer.topic.main.name"
+        groupId:
+          - volume:
+              name: app-config
+              file: application.yaml
+            valueSelector: ".kafka.consumer.group"
 ```
+
+The `volume` source fields:
 
 * `volume.name` - name of a `configMap` volume in the target's pod spec. Other volume types are rejected.
 * `volume.file` - path of the file within the volume: the ConfigMap data key, or the item `path` when the volume remaps keys via `items`.
@@ -96,6 +118,62 @@ Things to know:
 * Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
 * The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
 * Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
+
+### Preview Environments
+
+A [preview environment](../use-cases/preview-environments.md) pod runs in the cluster and reads real mounted files, so the operator delivers session queue names by preparing the files each reader mounts. The queue names are located inside each file with the same `valueSelector` / `valuePattern` from the split config (see [the field reference above](#queue-names-in-mounted-config-files)). With a split running, every reader of the "same" config file sees its own version - and your original ConfigMap is never modified:
+
+![Preview environments with mounted-config queue splitting](../.gitbook/assets/preview-configmap-split.svg)
+
+Which queues get split, and where their names live, comes from the same two places as any split session - nothing preview-specific to set up:
+
+* The cluster's `MirrordSplitConfig` for the target defines the queue IDs and points at the file with `volume` sources (the [`appConfig` setup above](#queue-names-in-mounted-config-files)).
+* Your mirrord config picks the queue IDs to split and the message filter with [`feature.split_queues`](#setting-a-filter-for-a-mirrord-run), next to the `config_mounts` entry:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": {
+        "queue_type": "Kafka",
+        "message_filter": { "user_id": "^my-preview$" }
+      }
+    },
+    "preview": {
+      "config_mounts": [
+        {
+          "mount_at": "/config-pr/application.yaml",
+          "from_file": "./application.yaml"
+        }
+      ]
+    }
+  }
+}
+```
+
+The per-session copies are owned by the `PreviewSession` and deleted with it; the fallback copy goes when the last session ends.
+
+`config_mounts` entries compose with this. When the file content your mirrord config sends (`feature.preview.config_mounts` in `mirrord.json`) carries the same queue config, the operator bakes the session's queue names into it before mounting, and keeps every other value. For a session whose split renamed `orders`:
+
+Content your `mirrord.json` provided:
+
+```yaml
+kafka:
+  consumer:
+    topic: orders
+logLevel: debug       # your own override
+```
+
+Content the preview pod mounts:
+
+```yaml
+kafka:
+  consumer:
+    topic: mirrord-tmp-a1b2c3-orders   # this session's queue
+logLevel: debug                        # kept as-is
+```
+
+The rewrite is content-based, not path-based: a mount can sit anywhere (a file inside a ConfigMap volume directory cannot be overlaid, so mount at a sibling path and point the app there), and a mount whose content does not carry the split's names is left byte-identical.
 
 ## Queue Names Injected by Vault or CSI Drivers
 
@@ -182,6 +260,7 @@ Where the key is placed depends on the queue service. Services with a metadata c
 | Apache Kafka | Metadata | Message header |
 | Azure Service Bus | Metadata | Application property |
 | Temporal | Metadata | Activity task header |
+| NATS | Metadata | Message header |
 | BullMQ | JSON payload | Job `data` object |
 | Redis Pub/Sub | JSON payload | Message payload |
 
@@ -204,22 +283,24 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 It pairs each queue ID with a queue filter definition, and accepts either an object keyed by queue ID or an array of entries (see [One queue or many](#one-queue-or-many)).
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, or `BullMQ`
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, or `NATS`
 * `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
+* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
   The local application will only see queue messages that have **all** of the specified entries matching.
-* `jq_filter` - supported for `SQS`, `Kafka`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, and `BullMQ` queue types.
+* `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, and `NATS` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
     and metadata is fetched successfully. `S3Metadata` follows the [AWS S3 user-defined metadata format](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata):
     a flat key-value map where keys are lowercase strings (without the `x-amz-meta-` prefix) and values are strings.
   * For **Kafka**, it runs a jq program on a JSON representation of the record. See the [Kafka page](queue-splitting/kafka.md#setting-a-filter) for the document shape.
+  * For **RabbitMQ**, it runs a jq program on a JSON representation of the message. See the [RabbitMQ page](queue-splitting/rabbitmq.md#setting-a-filter) for the document shape.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
   * For **BullMQ**, it runs a jq program on the parsed JSON value of the job's `data` field.
+  * For **NATS**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
   * A message matches if the jq program outputs `true`.
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.

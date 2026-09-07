@@ -230,7 +230,7 @@ After the last session against a target ends, the operator keeps the split's tem
 
 ## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ` and supports `message_filter` on message headers.
+For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ`, and supports both `message_filter` on message headers and `jq_filter` on the whole message.
 
 ```json
 {
@@ -250,3 +250,50 @@ For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see
 ```
 
 In the example above, the local application will receive a subset of messages from the RabbitMQ queue described in the `MirrordSplitConfig` under ID `meme-queue`. All received messages will have a message header `baggage` containing `mirrord-session=alice`.
+
+### Filtering with jq
+
+{% hint style="info" %}
+JQ filters on RabbitMQ require operator version `>=3.201.0` and CLI version `>=3.253.0`
+{% endhint %}
+
+`message_filter` only matches individual headers by name. Use `jq_filter` to match on the message body, or on headers whose name you don't know in advance. The jq program runs on this JSON document:
+
+```json
+{
+  "headers": {
+    "baggage": "mirrord-session=alice"
+  },
+  "properties": {
+    "content_type": "application/json",
+    "message_id": "5f2c...",
+    "timestamp": 1755600000
+  },
+  "payload": "{\"priority\":\"high\"}"
+}
+```
+
+* `headers` is the AMQP basic-properties headers table. It is always present, and may be empty.
+* `properties` holds the remaining basic properties that carry a value: `content_type`, `content_encoding`, `delivery_mode`, `priority`, `correlation_id`, `reply_to`, `expiration`, `message_id`, `timestamp`, `type`, `user_id`, and `app_id`. Properties the publisher did not set are absent.
+* `payload` is the message body.
+
+A message matches when the program outputs `true`. To filter on the body, parse it with `fromjson` first:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "meme-queue": {
+        "queue_type": "RMQ",
+        "jq_filter": ".payload | fromjson | .priority == \"high\""
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application receives only messages whose body is a JSON object with `"priority": "high"`. Messages whose body is not valid JSON never match.
+
+If both `message_filter` and `jq_filter` are set for a queue, a message must match both. The header filter runs first, so the jq program only sees messages that already passed it.

@@ -30,6 +30,8 @@ For the full architecture, see the [Architecture reference](../reference/archite
 
 The same model powers **mirrord for CI** — running integration and end-to-end tests against a shared staging cluster without spinning up a dedicated test environment. See [mirrord for CI](../use-cases/mirrord-for-ci.md).
 
+Working on several microservices at once? [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) runs multiple mirrord sessions from a single config file, like `docker compose` for mirrord.
+
 ### mirrord for Teams
 
 mirrord's core functionality is free and open source. Individual developers can install it and start using it immediately.
