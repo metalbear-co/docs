@@ -46,11 +46,28 @@ Using `migrations` requires the branch's `name` field to be set.
 
 The branch's `creation_timeout_secs` covers the whole startup: cloning the source, pulling the migration image, and running the migrations. Raise it if your migrations are slow or your migration image is large.
 
+## Carrying migration history onto the branch
+
+`"copy": { "mode": "schema" }` copies table definitions and no rows—including the table your migration tool records applied migrations in.
+
+To carry the migration history onto the branch, name the history table under `tables` so its rows are copied along with its definition:
+
+```json
+{
+  "copy": {
+    "mode": "schema",
+    "tables": {
+      "flyway_schema_history": {}
+    }
+  }
+}
+```
+
 ## Flyway migrations
 
 Set `"flavor": "flyway"` to run versioned SQL files (`V1__create_users.sql`, `V2__add_orders.sql`, ...) with [Flyway](https://documentation.red-gate.com/flyway). Flyway records applied migrations in a `flyway_schema_history` table inside the branch, so re-runs apply only what's new.
 
-Mind the interaction with `copy.mode`: Flyway refuses to migrate a schema that already has objects but no `flyway_schema_history` table. If your source database isn't itself Flyway-managed, use `"copy": { "mode": "empty" }` and let the migrations build the branch schema from scratch. If the source is Flyway-managed, `schema` and `all` copy modes work - the history table comes along with the copy, and the Job applies only your newer files.
+Mind the interaction with `copy.mode`: Flyway refuses to migrate a schema that already has objects but no `flyway_schema_history` table. If your source database isn't itself Flyway-managed, use `"copy": { "mode": "empty" }` and let the migrations build the branch schema from scratch. If the source is Flyway-managed, `all` brings the history table's rows across with everything else and the Job applies only your newer files, and `schema` needs [special configuration](#carrying-migration-history-onto-the-branch).
 
 | Field | Description |
 | --- | --- |
@@ -138,7 +155,7 @@ The Job inherits the target container's `env` and `envFrom` (ConfigMaps and Secr
 
 The inherited environment includes your app's real database connection values, so the operator redirects them: every variable named in the branch's `connection` is set to the branch's value on the Job, taking precedence over the inherited one. Your migration tool reads its usual variable (`DATABASE_URL` for the Rails example above) and lands on the branch - the source database stays out of reach through every variable mirrord knows about.
 
-If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret` or `gcp_secret_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, declare env-based connection params, or have the cluster admin disable `migrationEnv.inherit`.
+If the operator cannot tell which variables carry the connection - a `connection` declared through a `secret`, `gcp_secret_manager`, or `aws_secrets_manager` source without `env_var_name` - the migration fails with an error rather than run with the source connection in the environment. Add `env_var_name` to the source, declare env-based connection params, or have the cluster admin disable `migrationEnv.inherit`.
 
 On multi-container targets, the Job inherits from the container your target path names (`deployment/app/container/main`). Without a named container, it uses the container that defines one of the declared connection variables, falling back to the first container - so a sidecar listed ahead of your app doesn't donate its environment.
 

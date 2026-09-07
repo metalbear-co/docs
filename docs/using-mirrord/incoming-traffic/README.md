@@ -29,6 +29,8 @@ Steal mode can be configured in your mirrord config:
 }
 ```
 
+To steal filtered traffic for several services at once, [`mirrord up`](../multiple-concurrent-sessions.md) manages multiple sessions from a single config file.
+
 ## What's in this section
 
 - **[Filter Incoming Traffic](filter-incoming-traffic.md)** - Steal only a subset of traffic using HTTP header, W3C `baggage`/`tracestate`, path, or method filters

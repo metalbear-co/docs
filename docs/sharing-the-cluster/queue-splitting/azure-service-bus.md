@@ -373,6 +373,16 @@ The template must contain all three placeholders:
 * `{{ORIGINAL}}` - name of the original queue/topic being split.
 
 Azure Service Bus resource names can be up to 260 characters. If the rendered name exceeds this limit, the original portion is truncated with a hash suffix.
+
+#### Temporary subscription cleanup
+
+In the Topic/Subscription model, the operator creates one subscription on your topic per mirrord session. Cleanup is automatic:
+
+1. While the session runs, the subscription has no expiry, so it survives any quiet period - including preview environments that scale to zero while idle.
+2. When the session ends, the operator sets the subscription's `AutoDeleteOnIdle` to 5 minutes (the Azure minimum).
+3. Azure removes the subscription about 5 minutes after the last client activity. If the session ended uncleanly, the operator applies the same expiry when it recovers.
+
+The operator sets an expiry instead of deleting the subscription itself because frameworks like MassTransit and NServiceBus recreate a missing subscription while the client is still running, which would leave an unmanaged copy behind.
 {% endstep %}
 {% endstepper %}
 

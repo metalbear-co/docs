@@ -492,7 +492,7 @@ Resolution is per field, and your mirrord.json always wins: a `copy` in the spec
 
 ## Connection
 
-The `connection` must use **params mode**. URL mode is rejected for generic branches, because rewriting a whole URL requires knowing the engine's scheme and credential layout - for URL-shaped env vars, extract `host` and `port` with [`value_pattern`](connection.md#composite-environment-variables) as in the example above. All the other sources from [Connection Modes](connection.md) work (Kubernetes Secrets, literal values, multiple sources), except `gcp_secret_manager`, which is not supported for generic branches.
+The `connection` must use **params mode**. URL mode is rejected for generic branches, because rewriting a whole URL requires knowing the engine's scheme and credential layout - for URL-shaped env vars, extract `host` and `port` with [`value_pattern`](connection.md#composite-environment-variables) as in the example above. All the other sources from [Connection Modes](connection.md) work (Kubernetes Secrets, literal values, multiple sources), except `gcp_secret_manager` and `aws_secrets_manager`, which are not supported for generic branches.
 
 Declaring neither `host` nor `port` is allowed - the branch is still created and bootstrapped, but nothing is redirected (mirrord warns about this at config load).
 
