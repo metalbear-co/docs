@@ -94,7 +94,6 @@
 * [Dashboard](managing-mirrord/admin-dashboard.md)
   * [License Server Setup](managing-mirrord/dashboard/license-server.md)
   * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
-  * [Cloud Dashboard](managing-mirrord/cloud-dashboard.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
