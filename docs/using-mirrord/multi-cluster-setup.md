@@ -44,11 +44,11 @@ No Kubernetes Secret is needed - authentication is entirely through IAM.
 
 ### AKS Workload Identity (`authType: aks`)
 
-For Azure AKS clusters. The Primary operator generates tokens by exchanging its projected ServiceAccount token with Azure AD. No secrets to manage - tokens are generated and refreshed automatically at the halfway point of the token's lifetime (~12 hours for a typical 24-hour Azure AD token).
+For Azure AKS clusters. The Primary operator generates tokens by exchanging its projected ServiceAccount token with Entra ID (formerly Azure AD). No secrets to manage - tokens are generated and refreshed automatically at the halfway point of the token's lifetime (~12 hours for a typical 24-hour Entra ID token).
 
-On the Primary cluster, the operator pod gets Azure credentials through [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (`sa.azureClientId`). The Workload Identity webhook injects a projected ServiceAccount token (SA token) file and environment variables into the pod. An SA token is a short-lived JWT that Kubernetes issues for a pod's ServiceAccount and refreshes automatically; here it acts as proof of the pod's identity. The operator exchanges this SA token with Azure AD for an access token scoped to the AKS API server. The downstream AKS cluster validates the token with Azure AD, then maps the identity to a Kubernetes group via Azure RBAC or a ClusterRoleBinding.
+On the Primary cluster, the operator pod gets Azure credentials through [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) (`sa.azureClientId`). The Workload Identity webhook injects a projected ServiceAccount token (SA token) file and environment variables into the pod. An SA token is a short-lived JWT that Kubernetes issues for a pod's ServiceAccount and refreshes automatically; here it acts as proof of the pod's identity. The operator exchanges this SA token with Entra ID for an access token scoped to the AKS API server. The downstream AKS cluster validates the token with Entra ID, then maps the identity to a Kubernetes group via Azure RBAC or a ClusterRoleBinding.
 
-No Kubernetes Secret is needed - authentication is entirely through Azure AD.
+No Kubernetes Secret is needed - authentication is entirely through Entra ID.
 
 ### mTLS (`authType: mtls`)
 
@@ -248,7 +248,7 @@ See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) sect
 
 ### AKS Workload Identity Clusters
 
-AKS Workload Identity lets the Primary operator authenticate to downstream AKS clusters using its Azure Managed Identity. No Kubernetes Secrets to manage - the operator exchanges its projected SA token with Azure AD for access tokens.
+AKS Workload Identity lets the Primary operator authenticate to downstream AKS clusters using its Azure Managed Identity. No Kubernetes Secrets to manage - the operator exchanges its projected SA token with Entra ID for access tokens.
 
 #### How AKS Workload Identity Authentication Works
 
@@ -256,27 +256,27 @@ The Primary operator pod needs to talk to downstream AKS clusters. To do that, i
 
 1. **The pod gets Azure credentials** - the `sa.azureClientId` annotation on the Primary operator's ServiceAccount tells the Workload Identity webhook to inject Azure credentials (env vars + a projected SA token file) into the pod. The SA token itself is minted and refreshed by the Primary cluster's kubelet for the operator's ServiceAccount, so it is always fresh and needs no manual management.
 
-2. **The pod creates a token** - the operator reads the projected SA token from the file and sends it to Azure AD, asking for an access token scoped to the AKS API server (app ID `6dae42f8-4368-4678-94ff-3960e28e3630`).
+2. **The pod creates a token** - the operator reads the projected SA token from the file and sends it to Entra ID, asking for an access token scoped to the AKS API server (app ID `6dae42f8-4368-4678-94ff-3960e28e3630`).
 
-3. **Azure AD validates and issues a token** - Azure AD checks the SA token's signature against the Primary cluster's OIDC issuer, verifies it matches a Federated Identity Credential, and returns an access token (~24 hour lifetime).
+3. **Entra ID validates and issues a token** - Entra ID checks the SA token's signature against the Primary cluster's OIDC issuer, verifies it matches a Federated Identity Credential, and returns an access token (~24 hour lifetime).
 
-4. **The downstream cluster validates the token** - when the downstream AKS cluster receives this token, it validates it with Azure AD. Azure AD confirms the identity.
+4. **The downstream cluster validates the token** - when the downstream AKS cluster receives this token, it validates it with Entra ID. Entra ID confirms the identity.
 
-5. **Kubernetes RBAC grants permissions** - the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberAzureGroup`) grant the Azure AD group the necessary permissions.
+5. **Kubernetes RBAC grants permissions** - the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberAzureGroup`) grant the Entra ID group the necessary permissions.
 
 #### What Goes Where
 
 | Component | Where | Purpose |
 |-----------|-------|---------|
 | Workload Identity + OIDC issuer | Primary AKS cluster | Enables the pod to get Azure credentials via a projected SA token |
-| User-Assigned Managed Identity | Azure AD | The identity the operator pod uses. Has no Azure permissions - only used as a Kubernetes identity |
-| Federated Identity Credential | Azure AD | Links the Primary cluster's SA token to the Managed Identity |
+| User-Assigned Managed Identity | Entra ID | The identity the operator pod uses. Has no Azure permissions - only used as a Kubernetes identity |
+| Federated Identity Credential | Entra ID | Links the Primary cluster's SA token to the Managed Identity |
 | `sa.azureClientId` in Helm | Primary cluster | Annotates the operator's ServiceAccount so the webhook injects Azure credentials |
 | Azure RBAC role assignment or K8s RBAC | Each downstream AKS cluster | Grants the Managed Identity access to the cluster |
-| `multiClusterMemberAzureGroup` in Helm | Each downstream cluster | Creates ClusterRoleBindings that grant permissions to the Azure AD group |
+| `multiClusterMemberAzureGroup` in Helm | Each downstream cluster | Creates ClusterRoleBindings that grant permissions to the Entra ID group |
 
 {% hint style="info" %}
-The Primary cluster does **not** need special RBAC for itself. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount - no Azure AD token needed. The Federated Identity Credential and role assignments are only needed for downstream clusters where the pod authenticates from the outside.
+The Primary cluster does **not** need special RBAC for itself. The operator pod runs inside the Primary cluster, so it authenticates using its ServiceAccount - no Entra ID token needed. The Federated Identity Credential and role assignments are only needed for downstream clusters where the pod authenticates from the outside.
 {% endhint %}
 
 #### Setup Steps
@@ -315,7 +315,7 @@ Note the `clientId` from the output - you'll need it for `sa.azureClientId`.
 
 #### Create a Federated Identity Credential
 
-This tells Azure AD: "when a token comes from the Primary cluster's OIDC issuer, signed for the `mirrord-operator` ServiceAccount, trust it as this Managed Identity."
+This tells Entra ID: "when a token comes from the Primary cluster's OIDC issuer, signed for the `mirrord-operator` ServiceAccount, trust it as this Managed Identity."
 
 ```bash
 # Get the Primary cluster's OIDC issuer URL
@@ -341,9 +341,9 @@ The `--subject` must match the operator's ServiceAccount namespace and name exac
 {% endstep %}
 {% step %}
 
-#### Enable Azure AD on each downstream AKS cluster
+#### Enable Entra ID on each downstream AKS cluster
 
-Each downstream AKS cluster must have Azure AD integration enabled so it can validate Azure AD tokens from the Managed Identity:
+Each downstream AKS cluster must have Entra ID integration enabled so it can validate Entra ID tokens from the Managed Identity:
 
 ```bash
 az aks update \
@@ -353,7 +353,7 @@ az aks update \
 ```
 
 {% hint style="warning" %}
-If you skip this step, the downstream cluster's API server won't understand Azure AD tokens and will return `401 Unauthorized`.
+If you skip this step, the downstream cluster's API server won't understand Entra ID tokens and will return `401 Unauthorized`.
 {% endhint %}
 
 {% endstep %}
@@ -500,7 +500,7 @@ The cluster key names in the `clusters` map should match the real cluster names.
 
 When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `isDefault`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).
 
-For EKS IAM and AKS Workload Identity clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM/Azure AD, not stored credentials.
+For EKS IAM and AKS Workload Identity clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM/Entra ID, not stored credentials.
 
 ### Manual Secret Creation
 
@@ -543,6 +543,24 @@ EKS IAM and AKS Workload Identity clusters do not need a Secret at all. They aut
 
 ---
 
+## Preview Environment Replicas
+
+To run previews as replicas on every workload cluster (see [Preview Environments in Multi-Cluster](multi-cluster.md#preview-environments-in-multi-cluster)), you need the operator and chart `3.193.0` or later on every cluster, and mirrord `3.247.0` or later. Set the mode on **every** operator - the Primary and all workload clusters:
+
+```yaml
+operator:
+  multiCluster:
+    preview:
+      mode: replicas
+```
+
+For previews that use database branching:
+
+* **Upgrade the Primary and workload operators together.** Mismatched versions refuse to establish the branch tunnel; non-branching previews are unaffected.
+* If your workload namespaces restrict egress, **allow traffic to the operator's namespace on port `4980`** (the `db-tunnel` port on the operator Service).
+
+`operator.multiCluster.preview.maxTunnelStreams` (default `256`) limits how many database connections all the preview replicas in one workload cluster can hold open to branch databases at the same time. It does not limit previews or branches - only open connections. A connection is one entry in an app's database pool: 20 running previews whose apps each pool 10 connections hold 200, and an idle preview holds none because its pods are gone. The default is sized well above what typical setups hold open at once; raise it if you run more. At the limit, new connections fail and the database driver retries; running connections are unaffected.
+
 ## RBAC — How Permissions Work
 
 When the Primary operator connects to a downstream cluster, it needs permissions to list targets, create sessions, run health checks, and more. These permissions are set up automatically by the Helm chart on each downstream cluster.
@@ -568,7 +586,7 @@ A ClusterRole by itself doesn't grant anything — it only defines what actions 
 
 For EKS IAM, the Access Entry maps the IAM role to the `mirrord-operator-envoy` Kubernetes group. The ClusterRoleBindings grant permissions to that group. So the chain is: **IAM role -> Access Entry -> Kubernetes group -> ClusterRoleBinding -> ClusterRole -> permissions**.
 
-For AKS Workload Identity, Azure RBAC or a K8s ClusterRoleBinding maps the Managed Identity to the `mirrord-operator-envoy` group. The chain is: **Managed Identity -> Azure AD token -> Kubernetes group -> ClusterRoleBinding -> ClusterRole -> permissions**.
+For AKS Workload Identity, Azure RBAC or a K8s ClusterRoleBinding maps the Managed Identity to the `mirrord-operator-envoy` group. The chain is: **Managed Identity -> Entra ID token -> Kubernetes group -> ClusterRoleBinding -> ClusterRole -> permissions**.
 
 In practice:
 
@@ -613,7 +631,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 |-----------|------------------|-------|
 | Bearer Token | Automatic via TokenRequest API | Refreshed at the halfway point of remaining lifetime. Only the initial token is manual. |
 | EKS IAM | Automatic every 10 minutes | Tokens are presigned STS URLs, valid for 15 minutes. No Secrets involved. |
-| AKS Workload Identity | Automatic every ~30 minutes | Tokens from Azure AD, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
+| AKS Workload Identity | Automatic every ~30 minutes | Tokens from Entra ID, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
 | mTLS | **Not auto-refreshed** | You must rotate certificates manually before they expire. |
 
 ---
@@ -641,5 +659,5 @@ A: No. The IAM role used for EKS IAM authentication has zero AWS permissions. It
 **Q: Does the Azure Managed Identity need Azure permissions?**
 A: Only the "Azure Kubernetes Service Cluster User Role" on each downstream cluster (if using Azure RBAC). The Managed Identity itself has no other Azure permissions - it's only used as a Kubernetes identity. All actual session permissions come from Kubernetes RBAC.
 
-**Q: What if Azure AD is temporarily unavailable during AKS token refresh?**
-A: The operator retries with exponential backoff (up to 15 minutes). Unlike bearer token auth, AKS Workload Identity has no chicken-and-egg problem - even if the old token expired days ago, the operator can always generate a fresh one because it uses the pod's projected SA token (managed by kubelet, always valid) to authenticate with Azure AD.
+**Q: What if Entra ID is temporarily unavailable during AKS token refresh?**
+A: The operator retries with exponential backoff (up to 15 minutes). Unlike bearer token auth, AKS Workload Identity has no chicken-and-egg problem - even if the old token expired days ago, the operator can always generate a fresh one because it uses the pod's projected SA token (managed by kubelet, always valid) to authenticate with Entra ID.

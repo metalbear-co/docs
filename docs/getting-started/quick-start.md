@@ -92,6 +92,16 @@ mirrord container --target pod/app-pod-01 -- docker run nginx
 
 Use `mirrord exec --help` or `mirrord container --help` for all options.
 
+### Multiple services
+
+To run several services together from one config file (think `docker compose`, but for mirrord), use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md):
+
+```bash
+mirrord up init
+```
+
+This walks you through an interactive wizard and writes a `mirrord-up.yaml` for you, so you don't need to write any config by hand. Once you have a `mirrord-up.yaml`, start the services by running `mirrord up`.
+
 ### IDE Extensions
 
 1. **VS Code:** Click **Enable mirrord** in the status bar at the bottom of the window.
@@ -117,6 +127,20 @@ By default, mirrord does the following:
 
 Your remote pod continues running normally — nothing is disrupted.
 
+## Watch your sessions
+
+Launch the local dashboard to see your mirrord sessions live:
+
+```bash
+mirrord ui
+```
+
+It opens in your browser and shows every active session on your machine, with a live event stream (HTTP requests, file operations, DNS, outgoing connections). With the mirrord Operator installed, it also shows your teammates' sessions across the cluster. See [Local UI](../using-mirrord/local-ui.md).
+
+## Test from your browser
+
+Install the [mirrord browser extension](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) to route requests you make from Chrome to your local process. It works together with a running mirrord session that steals traffic with an [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md): join the session from the extension popup (with `mirrord ui` running), and the extension injects the header matching the session's filter into every browser request. Hit a staging URL in Chrome and your local code answers, without changing any application code or configuring proxies. No operator? Set the header manually in the extension to match your session's filter. See [Debugging from Browser](../using-mirrord/incoming-traffic/debug-from-browser.md) for setup.
+
 {% hint style="info" %}
 **Working with a team?** [mirrord for Teams](https://app.metalbear.com) adds access control, traffic policies, and concurrent session management so your whole team can use mirrord safely.
 {% endhint %}
@@ -140,6 +164,8 @@ Not sure where to start? Run `mirrord wizard` to walk through common use cases i
 | Goal | Guide |
 |------|-------|
 | **Test against live traffic** | [Steal incoming traffic](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) so your local process responds to real requests instead of the remote pod |
+| **Debug several microservices together** | [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) runs multiple sessions from a single config file and manages their lifecycle as one |
+| **Test through your browser** | The [browser extension](../using-mirrord/incoming-traffic/debug-from-browser.md) routes requests from Chrome to your local process, no proxy setup needed |
 | **Debug a queue consumer** | [Queue splitting](../sharing-the-cluster/queue-splitting.md) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
 | **Use mirrord with an AI agent** | [Set up Claude Code, Cursor, or Codex](../using-mirrord-with-ai/) to test generated code against your cluster automatically |
