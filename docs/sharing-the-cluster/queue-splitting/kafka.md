@@ -316,6 +316,15 @@ spec:
 
 Splits then patch the workload's consumer-group environment variables (the ones under `appConfig.groupId`) to a generated temporary group, alongside the topic rewrite. The operator keeps the original group to itself, so it never negotiates a protocol with the application's client - any client library works. Offsets are preserved: the operator keeps committing into the original group, and the workload resumes exactly where it left off when the split ends.
 
+The operator can only join the original group once every pod of the previous generation has left it, so the split waits for the workload's rollout to finish. By default it waits 180 seconds and then fails the session. If your rollout takes longer (many replicas, a long termination grace period, a consumer that stays in the group until its session timeout expires), raise the wait with the `mirrord.group_join_timeout` property, in seconds:
+
+```yaml
+    - name: mirrord.temporary_group_id
+      value: "true"
+    - name: mirrord.group_join_timeout
+      value: "600"
+```
+
 Temporary group names follow the temporary topic name format (`mirrord-tmp-...`), so if you use group ACLs, the application's credentials must be allowed to join groups with that prefix, and the operator's credentials need `DeleteGroups` for cleanup.
 
 {% hint style="info" %}
