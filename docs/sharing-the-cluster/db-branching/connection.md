@@ -126,6 +126,89 @@ In this example, `host` and `database` are read from environment variables, whil
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
 {% endhint %}
 
+### ConfigMap Source
+
+Any individual connection parameter can also be read from a Kubernetes ConfigMap. This is useful when your application takes its database settings from a config file mounted from a ConfigMap rather than from environment variables.
+
+Instead of a plain string, use an object with `configmap`, `key`, and optionally `value_selector` (or `value_pattern`) and `env_var_name`:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": {
+        "configmap": { "volume": "app-config" },
+        "key": "config.yml",
+        "value_selector": ".database.host",
+        "env_var_name": "DB_HOST"
+      },
+      "port": {
+        "configmap": { "volume": "app-config" },
+        "key": "config.yml",
+        "value_selector": ".database.port",
+        "env_var_name": "DB_PORT"
+      },
+      "user": "DB_USER",
+      "password": "DB_PASSWORD"
+    }
+  }
+}
+```
+
+The fields:
+
+* `configmap` - which ConfigMap to read. Either its name (`"configmap": "app-config"`), or a `configMap` volume of the target pod (`"configmap": { "volume": "app-config" }`). Prefer the volume form when your deployment tool renames the ConfigMap on every release (for example a version suffix added by ArgoCD or Helm): the volume name in the pod spec stays the same while the ConfigMap it points at changes.
+* `key` - the entry in the ConfigMap's `data`. With the volume form, this is the file name inside the volume, so a volume that remaps keys via `items` is resolved through that mapping.
+* `value_selector` - a selector run over the entry parsed as JSON or YAML. It supports nested keys (`.database.host`) and `.[]` to iterate arrays or object values; pipes, functions, and other jq operators are not supported. The selector must land on exactly one string, number, or boolean.
+* `value_pattern` - a regex whose capture group marks the value inside the raw entry text, for entries that are not JSON or YAML. It follows the same capture group rules as [composite environment variables](#composite-environment-variables). Mutually exclusive with `value_selector`.
+* `env_var_name` - optional. When set, mirrord injects the branch connection under that name for your local process, just like the `secret` source, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch.
+
+Without `value_selector` or `value_pattern`, the whole entry (trimmed) is the value.
+
+#### Setting the ConfigMap once in a profile
+
+When every developer's config would repeat the same `configmap` and `key`, the cluster admin can set them once with `dbPod.sourceConfigMap` in the operator's branch config, either on the default `dbPod` or on a [branch config profile](../db-branching.md#branch-config-profiles):
+
+```yaml
+mysqlBranchConfig:
+  profiles:
+    app-config:
+      dbPod:
+        sourceConfigMap:
+          volume: app-config     # or `name: <ConfigMap name>`
+          key: config.yml        # optional; params can name their own key
+```
+
+A param then only carries its selector and the local variable name, and picks the profile:
+
+```json
+{
+  "type": "mysql",
+  "profile": "app-config",
+  "connection": {
+    "params": {
+      "host": { "value_selector": ".database.host", "env_var_name": "MYSQL_HOST" },
+      "port": { "value_selector": ".database.port", "env_var_name": "MYSQL_PORT" },
+      "database": { "value_selector": ".database.name", "env_var_name": "MYSQL_DB" },
+      "user": "MYSQL_USERNAME",
+      "password": "MYSQL_PASSWORD"
+    }
+  }
+}
+```
+
+The layering is per field: a param's own `configmap` or `key` wins over the profile's, and the profile fills in whatever the param leaves out. A param that omits `configmap` on a profile without `sourceConfigMap` (or omits `key` on both sides) fails the branch with an error naming both places to fix it.
+
+One rule to remember: a param with only `value_pattern` and `env_var_name` is an [environment variable pattern](#composite-environment-variables), not a ConfigMap source. To use `value_pattern` against the profile's ConfigMap, keep `key` (or `configmap`) on the param so it stays a ConfigMap source. `value_selector` has no such overlap.
+
+The operator reads the ConfigMap itself when the branch is created, so it needs `get` on ConfigMaps in the target namespace; the operator Helm chart grants this together with the other DB branching permissions.
+
+ConfigMap sources need an operator that supports them. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates.
+
+{% hint style="info" %}
+Your local application still has to pick the branch up. With `env_var_name`, the branch host is delivered as an environment variable, which works when your app lets an environment variable override the value from its config file. If your app only ever reads the mounted file, the file itself is not rewritten.
+{% endhint %}
+
 ### Google Secret Manager Source
 
 Any connection value can be read from [Google Secret Manager](https://cloud.google.com/secret-manager) instead of an environment variable or a Kubernetes Secret. This is useful when your application already loads its database credentials from Secret Manager at runtime and never puts them in the pod spec.
