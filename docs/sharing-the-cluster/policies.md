@@ -278,7 +278,7 @@ This policy blocks mirroring and unfiltered stealing of traffic coming to all de
 
 ##### Labels and inheritance
 
-When both the target path and a label selector are specified, policies are inherited by dependents of resources that match both. This can lead to subtle differences in behaviour depending on how you write a policy.
+When both the target path and a label selector are specified, policies are inherited  only by dependents (such as pods) of resources that match both the path and the selector. This can lead to subtle differences in behaviour depending on how you write a policy.
 
 Take this policy:
 
