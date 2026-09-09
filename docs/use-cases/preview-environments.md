@@ -302,7 +302,8 @@ operator:
 ### Targeting Scaled-to-Zero Services
 
 A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
-or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+or StatefulSet) with **no running pods**. (A [CronJob target](#targeting-cronjobs) never needs
+running pods either.) This is useful when your consumers are auto-scaled on
 queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
 consumer group are read from the workload's spec, and messages flow through the queue itself.
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
@@ -317,6 +318,61 @@ traffic is intercepted at the target's pods, and branch overrides are built from
 the running container sees. Such a session is rejected at creation with
 `no Pod is ready to be a session target` - nothing partial is created. Idle mode (above) scales
 the *preview's* pods to zero; this is about the *target's* pods, and the two combine freely.
+
+***
+
+### Targeting CronJobs
+
+A Preview Environment can target a CronJob, so a flow that depends on a scheduled job (a
+nightly scan, a report generator, a cleanup) can be previewed with your image too:
+
+```bash
+mirrord preview start -t cronjob/nightly-scan -i myrepo/scan:pr-4821 -k pr-4821 -f mirrord.json
+```
+
+Instead of a Deployment, the operator creates an isolated CronJob named after the session. It
+copies the source CronJob's job settings (concurrency policy, history limits, deadlines, time
+zone) and pod spec, swaps in your image, and applies the same environment overrides, database
+branches, and file mounts any other preview gets. The copy is never suspended, even when the
+source is, and the source CronJob is not modified.
+
+Right after creating it, the operator triggers the CronJob once, so you see a run immediately
+instead of waiting for the next scheduled time. The run is a Job named `<session>-start`,
+marked with the `cronjob.kubernetes.io/instantiate: manual` annotation like a
+`kubectl create job --from=cronjob/...` run. After that, the CronJob keeps running on its
+schedule until the session ends, and every Job and pod it created is deleted with the session.
+
+The schedule is inherited from the source CronJob. Override it with
+`feature.preview.cronjob.schedule`, in Kubernetes CronJob syntax:
+
+```json
+{
+  "target": "cronjob/nightly-scan",
+  "feature": {
+    "preview": {
+      "image": "myrepo/scan:pr-4821",
+      "cronjob": {
+        "schedule": "*/30 * * * *"
+      }
+    }
+  }
+}
+```
+
+Omit `cronjob` (or set `schedule` to `null`) to keep the source schedule. A schedule that is
+not five fields or a `@hourly`-style macro is rejected before anything is created; the API
+server validates the field contents when the CronJob is created, and its message becomes the
+session's failure message.
+
+A CronJob preview has no long-running pod, so `feature.network.incoming` is ignored (with a
+warning), `feature.preview.idle` is rejected, and `feature.preview.replicas` does not apply.
+Database branch parameters with a `value_pattern` need a running target pod to read the
+runtime value from, which a CronJob does not have, so they are rejected as well; plain
+variable parameters work.
+
+Requires operator 3.205.0 or later and CLI 3.256.0 or later, plus `create`, `delete`, and
+`patch` on `batch/cronjobs` and `create` on `batch/jobs` for the operator, which the Helm chart
+grants when `operator.previewEnv` is enabled.
 
 ***
 
@@ -343,6 +399,8 @@ Only Istio and Linkerd are handled automatically. On another mesh (for example K
 #### Resources
 
 Preview Environments consist of a Deployment, to manage and maintain the underlying pods, and a [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), to route traffic to the dynamic set of pods. Because the Service doesn't have a Cluster IP, exhaustion of IP addresses when deploying a large number of Preview Environments is not a concern.
+
+A preview of a [CronJob target](#targeting-cronjobs) consists of a CronJob and the Jobs it creates instead, with no Service.
 
 #### Interaction with `mirrord exec`
 
