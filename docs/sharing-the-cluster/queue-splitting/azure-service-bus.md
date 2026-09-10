@@ -12,7 +12,7 @@ This page covers queue splitting for [Azure Service Bus](https://azure.microsoft
 Queue splitting for Azure Service Bus requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 Azure Service Bus supports two messaging models - **Queues** (point-to-point) and **Topics/Subscriptions** (pub/sub). Queue splitting works with both, but each uses a different routing mechanism.
 
@@ -26,35 +26,35 @@ The diagram below shows the two-pass routing used by the Topic/Subscription mode
 
 ![Azure Service Bus topic splitting flow](../../.gitbook/assets/azure-service-bus-splitting.svg)
 
-#### Enabling Azure Service Bus Splitting in Your Cluster
+## Enabling Azure Service Bus Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable Azure Service Bus splitting in the Helm chart**
+#### Enable Azure Service Bus splitting in the Helm chart
 
 Enable the `operator.azureServiceBusSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Authenticate the mirrord operator**
+#### Authenticate the mirrord operator
 
 The mirrord operator needs to connect to your Azure Service Bus namespace to consume and re-route messages. You have three options for authentication:
 
-**Option A: Workload Identity / Managed Identity (recommended for AKS)**
+#### Option A: Workload Identity / Managed Identity (recommended for AKS)
 
 If your AKS cluster has Workload Identity enabled, the operator can authenticate automatically without storing any keys. Assign the **Azure Service Bus Data Owner** role (or a custom role with Send, Listen, and Manage rights) to the operator's managed identity on the Service Bus namespace.
 
-**Option B: Connection string (SAS key)**
+#### Option B: Connection string (SAS key)
 
 The simplest approach for quick setup. Obtain a connection string from your Service Bus namespace in the Azure portal. The key needs **Manage**, **Send**, and **Listen** claims on the namespace.
 
-**Option C: Service Principal with client secret**
+#### Option C: Service Principal with client secret
 
-Register an Azure AD application, create a client secret, and assign it the **Azure Service Bus Data Owner** role on the Service Bus namespace. You'll provide the `tenant_id`, `client_id`, and `client_secret` as properties.
+Register an Entra ID (formerly Azure AD) application, create a client secret, and assign it the **Azure Service Bus Data Owner** role on the Service Bus namespace. You'll provide the `tenant_id`, `client_id`, and `client_secret` as properties.
 {% endstep %}
 
 {% step %}
-**Create a MirrordPropertyList**
+#### Create a MirrordPropertyList
 
 As part of operator installation with `operator.azureServiceBusSplitting` enabled, the `MirrordPropertyList` custom resource type is available in your cluster. Create one with your Service Bus connection details, in the target workload's namespace or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
@@ -140,19 +140,19 @@ spec:
 {% endtab %}
 {% endtabs %}
 
-**Property Reference**
+#### Property Reference
 
 | Property                    |                Description               |                          Required                         |
 | --------------------------- | :--------------------------------------: | :-------------------------------------------------------: |
 | `connection_string`         | Full connection string including SAS key | One of `connection_string` or `fully_qualified_namespace` |
 | `fully_qualified_namespace` |  FQNS like `myns.servicebus.windows.net` | One of `connection_string` or `fully_qualified_namespace` |
-| `tenant_id`                 |      Azure AD tenant (directory) ID      |                Only with service principal                |
-| `client_id`                 |         Azure AD app (client) ID         |                Only with service principal                |
-| `client_secret`             |        Azure AD app client secret        |                Only with service principal                |
+| `tenant_id`                 |      Entra ID tenant (directory) ID      |                Only with service principal                |
+| `client_id`                 |         Entra ID app (client) ID         |                Only with service principal                |
+| `client_secret`             |        Entra ID app client secret        |                Only with service principal                |
 {% endstep %}
 
 {% step %}
-**Create a MirrordSplitConfig**
+#### Create a MirrordSplitConfig
 
 Create a `MirrordSplitConfig` resource for the target workload. Azure Service Bus uses `kind: azureServiceBus` in queue entries and supports both the Queue model and the Topic/Subscription model.
 
@@ -206,7 +206,7 @@ spec:
 
 The `clientConfigs.azureServiceBus` field points to the `MirrordPropertyList` you created in the previous step. You can override it per-queue using the `clientConfig` field on individual queue entries.
 
-**When the topic name is not in an environment variable**
+#### When the topic name is not in an environment variable
 
 Some frameworks (most commonly [MassTransit](https://masstransit.io/)) derive the topic name from the message type, so it never appears in an environment variable. The operator does not change the topic name anyway, it only needs to know it, so just give the name in `fallback`:
 
@@ -226,7 +226,7 @@ queues:
 
 The subscription is different: its env var **is** read and rewritten to point your local process at its own session subscription, so `subscription.env` must be the real variable your app uses. In MassTransit you can set the subscription name explicitly (for example via `SubscriptionEndpoint`) and expose it through that variable.
 
-**AppConfig reference fields**
+#### AppConfig reference fields
 
 Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that describes how to find the resource name in the workload's environment:
 
@@ -234,6 +234,7 @@ Each item in `queue`, `topic`, or `subscription` is an `AppConfigRef` that descr
 | --------------- | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------: |
 | `env`           |                                                                                                                                        Exact environment variable name                                                                                                                                        | One of `env` or `envLike` |
 | `envLike`       |                                                                                                                           Regex pattern matching multiple environment variable names                                                                                                                          | One of `env` or `envLike` |
+| `volume`        | File mounted from a `configMap` volume (`volume.name` + `volume.file`), used instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files). | Instead of `env`/`envLike` |
 | `fallback`      | Value to use when the `env` variable is not present in the pod. Useful for topics whose name is fixed but not exposed via an environment variable (see [When the topic name is not in an environment variable](azure-service-bus.md#when-the-topic-name-is-not-in-an-environment-variable)). Only with `env`. |             No            |
 | `valueSelector` |                                                                                                                JSON selector to extract value(s) from the variable content (e.g. `.key`, `.[]`)                                                                                                               |             No            |
 | `valuePattern`  |                                                           Regex that captures the resource name embedded in a larger value (a URL, path, or connection string). See [Preserving the value format](azure-service-bus.md#preserving-the-value-format).                                                          |             No            |
@@ -254,7 +255,7 @@ queues:
         - envLike: "^SB_QUEUE_.*"
 ```
 
-**Preserving the value format**
+#### Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
 
@@ -274,7 +275,7 @@ queues:
 
 With `SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://my-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=...;EntityPath=orders`, the operator captures `orders`, creates a temporary queue, and rewrites only the `EntityPath` to the temporary name, so the application still gets a full connection string.
 
-**Per-queue client configuration**
+#### Per-queue client configuration
 
 To use a different `MirrordPropertyList` for a specific queue entry (instead of the default from `clientConfigs.azureServiceBus`), set the `clientConfig` field:
 
@@ -288,7 +289,7 @@ queues:
         - env: SERVICE_BUS_QUEUE_NAME
 ```
 
-**Wildcard queue ID**
+#### Wildcard queue ID
 
 You can use `*` as a queue ID in the mirrord config to apply a filter to all queues defined in the `MirrordSplitConfig`:
 
@@ -318,11 +319,11 @@ The mirrord operator can only read the consumer's environment variables if they 
 {% endstep %}
 
 {% step %}
-**Additional options**
+#### Additional options
 
 The `MirrordSplitConfig` supports several optional fields that control restart behavior, temporary resource naming, and drain timing.
 
-**Restart policy**
+#### Restart policy
 
 Controls how the workload is restarted when patched for queue splitting:
 
@@ -340,7 +341,7 @@ spec:
 | `timeout`     |         Seconds to wait for pods to become ready after restart        |            60           |
 | `waitForPods` | Number of patched pods required before sessions may start, or `"all"` |            1            |
 
-**Drain timeout**
+#### Drain timeout
 
 After all splitting sessions end, the operator will wait for the fallback subscription to drain before deleting temporary resources. Two settings control how long it waits:
 
@@ -356,7 +357,7 @@ Whichever value applies is then interpreted as:
 | `0`          | Skip draining; delete temporary resources immediately. Unread messages may be lost.         |
 | `N`          | Wait up to `N` for the fallback subscription to drain, then delete temporary resources.     |
 
-**Temporary resource name template**
+#### Temporary resource name template
 
 You can customize the naming format of temporary queues/topics created by the operator:
 
@@ -372,10 +373,20 @@ The template must contain all three placeholders:
 * `{{ORIGINAL}}` - name of the original queue/topic being split.
 
 Azure Service Bus resource names can be up to 260 characters. If the rendered name exceeds this limit, the original portion is truncated with a hash suffix.
+
+#### Temporary subscription cleanup
+
+In the Topic/Subscription model, the operator creates one subscription on your topic per mirrord session. Cleanup is automatic:
+
+1. While the session runs, the subscription has no expiry, so it survives any quiet period - including preview environments that scale to zero while idle.
+2. When the session ends, the operator sets the subscription's `AutoDeleteOnIdle` to 5 minutes (the Azure minimum).
+3. Azure removes the subscription about 5 minutes after the last client activity. If the session ended uncleanly, the operator applies the same expiry when it recovers.
+
+The operator sets an expiry instead of deleting the subscription itself because frameworks like MassTransit and NServiceBus recreate a missing subscription while the client is still running, which would leave an unmanaged copy behind.
 {% endstep %}
 {% endstepper %}
 
-#### Setting a filter
+## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Azure Service Bus uses `queue_type: AzureServiceBus`.
 
@@ -421,7 +432,7 @@ This routes only messages whose JSON body contains `"priority": "high"` to the l
 
 Both `message_filter` and `jq_filter` can be combined - a message must match both to be routed to the local application.
 
-#### Troubleshooting Azure Service Bus splitting
+## Troubleshooting Azure Service Bus splitting
 
 If you are having issues with Azure Service Bus splitting, start with these general steps:
 
@@ -448,7 +459,7 @@ If you are having issues with Azure Service Bus splitting, start with these gene
     helm upgrade mirrord-operator --reuse-values --set operator.logLevel "mirrord=info,operator=info,operator_queue_splitting::azure_service_bus=trace" metalbear/mirrord-operator
     ```
 
-**Messages are not reaching the local application**
+### Messages are not reaching the local application
 
 Check that:
 
@@ -456,12 +467,12 @@ Check that:
 * Your `message_filter` regex patterns match the actual property values. Property values are compared as plain strings.
 * If using `jq_filter`, verify the message body is valid JSON and the jq expression returns `true` for your test messages.
 
-**Authentication errors in operator logs**
+### Authentication errors in operator logs
 
 * **Connection string auth**: verify the connection string is correct and the SAS key has Manage, Send, and Listen claims.
 * **Workload Identity / Managed Identity**: verify the managed identity has the **Azure Service Bus Data Owner** role on the namespace. Check that AKS Workload Identity is properly configured and the operator's service account has the correct annotations.
 * **Service Principal**: verify that `tenant_id`, `client_id`, and `client_secret` are all present in the `MirrordPropertyList` and that the app registration has the correct role assignment.
 
-**Temporary queues are not being cleaned up**
+### Temporary queues are not being cleaned up
 
 After all splitting sessions end, the operator deletes temporary queues. If they linger, check that the operator has `Manage` rights on the Service Bus namespace and that the operator pod is running. You can also set `drainTimeout` in the `MirrordSplitConfig` to control how long fallback queues are kept alive after sessions end.

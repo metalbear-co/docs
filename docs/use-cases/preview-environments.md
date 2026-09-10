@@ -46,6 +46,10 @@ Today, mirrord sessions are tightly coupled to a developer's local process. When
 * Receive **filtered or duplicated staging traffic** using an environment key
 * Stay alive for a **fixed TTL**, independent of any local machine or process
 
+{% hint style="info" %}
+With [multi-cluster](../using-mirrord/multi-cluster.md) mirrord, previews can run replicas on every workload cluster so traffic is served wherever it enters. See [Preview Environments in Multi-Cluster](../using-mirrord/multi-cluster.md#preview-environments-in-multi-cluster).
+{% endhint %}
+
 ***
 
 #### Environment Key
@@ -98,13 +102,32 @@ Example output:
 mirrord preview status
 ```
 
-2. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
+Add `--failed` to list the environments that failed instead of the active ones.
+
+2. **Logs:** Print what a Preview Environment's pods have written. This is normally where the
+reason for a failure lives — a missing config file, a failed connection, a stack trace from the
+application itself:
+
+```bash
+mirrord preview logs --key <environment-key>
+```
+
+Pass `-t <target>` to read a single environment when several share a key. Failed environments are
+included, and are retained for a short inspection window before they are cleaned up, so this
+works for a while after a failure but not indefinitely. `mirrord preview start` prints the same
+output at the moment it gives up.
+
+`mirrord preview logs` requires mirrord `3.255.0` or later, and mirrord operator `3.205.0` or
+later with operator Helm chart `3.205.0` or later. The operator serves the output, so an earlier
+one cannot answer the command.
+
+3. **Stop:** Manually remove a Preview Environment and its associated preview pods when it is no longer needed.
 
 ```bash
 mirrord preview stop --key <environment-key>
 ```
 
-3. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
+4. **Replace:** Re-run `mirrord preview start` with the same key and target using `--force` (for example, after changing the image):
 
 ```bash
 mirrord preview start -f <mirrord.json> -i <image> -k <key> --force
@@ -158,12 +181,12 @@ By default, opening a Preview Environment as a recipient requires the mirrord br
 The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
 
 {% hint style="info" %}
-Only previews using the default key-derived traffic filter get a share host. A preview that sets a custom HTTP filter is not served and no share host is minted for it.
+The preview URL works with any HTTP filter. A preview with a custom filter (a path filter, a different header, composed filters) additionally routes requests carrying the share link's injected baggage header, so its own filter keeps working for regular traffic while the link always reaches the preview.
 {% endhint %}
 
 #### How it works
 
-`mirrord-share-ingress` runs as its own Deployment and Service. It watches Preview Environments and, on each request, matches the request host to a live preview, injects `baggage: mirrord-session=<key>`, and forwards to that preview's target Service in-cluster. The operator's filtered steal at the target then routes the request to the preview pod, exactly as the browser extension's header would.
+`mirrord-share-ingress` runs as its own Deployment and Service. It watches Preview Environments and, on each request, matches the request host to a live preview, injects `baggage: mirrord-session=<key>`, and forwards to that preview's target Service in-cluster. The operator's filtered steal at the target then routes the request to the preview pod, exactly as the browser extension's header would - the operator matches the injected header in addition to the session's own filter.
 
 TLS and the public-facing ingress are owned by your platform team. You put an Ingress (or equivalent gateway) in front of the share-ingress Service that terminates TLS with a wildcard `*.<shareDomain>` certificate, preserves the `Host` header, and routes to the Service. Access control to the link is your responsibility as part of configuring that ingress.
 
@@ -276,6 +299,27 @@ operator:
 
 ***
 
+### Targeting Scaled-to-Zero Services
+
+A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
+or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
+consumer group are read from the workload's spec, and messages flow through the queue itself.
+Matching messages reach the preview pod right away; unmatched ones wait on the target's
+temporary queue and are consumed when the service scales back up, whose new pods start with the
+split configuration already applied.
+
+See [Autoscaled Targets with KEDA](../sharing-the-cluster/queue-splitting.md#autoscaled-targets-with-keda)
+to see how KEDA autoscaling works with queue splitting.
+
+A preview that also uses HTTP filtering or DB branching still needs a running target pod:
+traffic is intercepted at the target's pods, and branch overrides are built from the env values
+the running container sees. Such a session is rejected at creation with
+`no Pod is ready to be a session target` - nothing partial is created. Idle mode (above) scales
+the *preview's* pods to zero; this is about the *target's* pods, and the two combine freely.
+
+***
+
 ### Preview Environment Workflow
 
 ![Preview Environment Creation Workflow](../.gitbook/assets/create-env.svg)
@@ -289,6 +333,12 @@ operator:
 #### Readiness
 
 Pods created by Preview Environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
+
+#### Service Meshes
+
+On mesh-injected targets the preview pod gets a sidecar like any other pod, and the sidecar would normally capture the operator's incoming connections - the ones delivering the session's matched requests - and reject them (for example under `STRICT` mTLS). The operator therefore annotates the preview pod with [`traffic.sidecar.istio.io/excludeInboundPorts`](https://istio.io/latest/docs/reference/config/annotations/) (Istio) and [`config.linkerd.io/skip-inbound-ports`](https://linkerd.io/2/reference/proxy-configuration/) (Linkerd) for the session's subscribed ports. The sidecar stays in the pod, so the preview app's outgoing traffic still goes through the mesh, and ports already excluded on the target's template are preserved.
+
+Only Istio and Linkerd are handled automatically. On another mesh (for example Kuma), the preview pod's sidecar still captures the operator's incoming connections and preview-matched requests fail. If you run a mesh we don't handle yet, please [reach out](https://metalbear.com/slack) so we can add support for it. In the meantime, if your mesh has an inbound-port-exclusion annotation, a cluster administrator can set it for all preview pods through the operator's preview pod configuration, pointing it at the ports your previews serve.
 
 #### Resources
 

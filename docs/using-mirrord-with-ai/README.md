@@ -14,3 +14,4 @@ Here are some ways you can connect mirrord to your AI coding workflow:
 
 - **[Agent skills for mirrord](./ai-skills-plugin.md)** - Install skills that give your AI assistant built-in mirrord expertise.
 - **[Configure AI Agents to Use mirrord](./the-meta-prompt.md)** - A prompt generator that creates project-specific `AGENTS.md` files and configurations automatically, saving hours of manual setup across multiple services.
+- **[metalbear.com/agents.md](https://metalbear.com/agents.md)** - A short operational reference written for agents rather than people: install commands, finding targets, running code through mirrord, configuration, and etiquette on a shared cluster. Point an agent at the URL directly when you want it to pick mirrord up without any repository setup.

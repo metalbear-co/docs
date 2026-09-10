@@ -1,7 +1,7 @@
 ---
 title: Security
 date: 2022-07-10T08:48:57.000Z
-lastmod: 2024-03-01T00:00:00.000Z
+lastmod: 2026-08-27T00:00:00.000Z
 draft: false
 images: []
 linktitle: Security
@@ -28,7 +28,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is analytics and license verification (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)) which can be customized or disabled upon request. The analytics don't contain PII or any sensitive information.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics include developer usernames and session targets when identity sharing is on, which is the default for cloud API keys; your organization can turn it off to keep them anonymized.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
@@ -40,12 +40,56 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* mirrord doesn't copy remote files or secrets to the local filesystem. The local app only gets access to remote files and secrets in memory, and so they'll only be written to the local filesystem if done by the local app, or if mirrord was explicitly configured to log to files with a log level of debug/trace.
+* Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
+* mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
+* Released container images and CLI binaries carry signed SLSA Build Level 2 provenance, so you can verify what you pulled before installing it. See [How is the Operator built and distributed](#how-is-the-operator-built-and-distributed).
 * Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
+
+## How do I audit mirrord usage?
+
+The Operator logs an event for every session at `INFO` level, which is the default log level. To get these in a form your logging or SIEM stack can ingest, set `operator.jsonLog` to `true` in the Operator Helm chart values.
+
+See [Monitoring](monitoring.md) for the full field reference and for Prometheus, OpenTelemetry, DataDog, Grafana, and fluentd/Elasticsearch integration.
+
+Logged events include `Session Start`, `Session End`, `Port Steal`, `Port Mirror`, `Port Release`, and `Copy Target`. Fields relevant to an audit trail include:
+
+* `client_user` - the Kubernetes user of the client, resolved via Kubernetes RBAC
+* `client_hostname`, `client_name`, `client_id` - identity of the machine and client certificate
+* `target` - the session's target
+* `session_id`, `session_duration` - correlation and length of each session
+* `http_filter` - the client's configured HTTP filter
+
+Together with the session start and end times, these fields let you attribute mirrord sessions to individual Kubernetes users and targets, including when several engineers are working against the same service concurrently.
+
+## Can mirrord run air-gapped?
+
+Yes, on the Enterprise plan. Run the [License Server](license-server.md) on-prem to manage seats locally. In this configuration the Operator sends no telemetry or license verification traffic to MetalBear.
+
+## How is the Operator built and distributed?
+
+* The mirrord agent is [open source](https://github.com/metalbear-co/mirrord) and can be audited directly.
+* The Operator is distributed as a versioned container image from `ghcr.io/metalbear-co/operator`, installed via our [public Helm charts](https://github.com/metalbear-co/charts). Each chart release pins a matching `appVersion`, so the chart and the images it deploys move together.
+* Because you control when you bump the chart version, you control when a new Operator or agent image enters your cluster. Chart releases are public and can be reviewed before you upgrade.
+* Released container images and CLI binaries are published with signed [SLSA](https://slsa.dev) Build Level 2 provenance. It is generated by our release pipeline on GitHub Actions, signed through Sigstore, and published alongside the artifact, so you can confirm that what you pulled was built by us from the source you expect.
+
+### Verifying build provenance
+
+Attestations are published to GHCR alongside each image, and to the GitHub release for CLI binaries, under the `metalbear-co` owner. Verify them with [`gh attestation verify`](https://cli.github.com/manual/gh_attestation_verify), for example:
+
+```bash
+gh attestation verify \
+  oci://ghcr.io/metalbear-co/operator:<version> --owner metalbear-co
+```
+
+The same applies to `ghcr.io/metalbear-co/mirrord` and to CLI binaries downloaded from a release. Verification needs a GitHub token with the `read:packages` scope, but no access to MetalBear's organization or repositories.
+
+For our vulnerability disclosure and customer notification process, see the [Trust Center](https://trust.metalbear.com).
 
 ## What data does the mirrord Operator send to MetalBear cloud?
 
-mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and anonymous usage metrics. The fields shared are:
+mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and usage metrics. What the usage metrics contain depends on your organization's identity sharing setting.
+
+### Always sent (anonymized)
 
 1. User ID (randomly generated hash, stored on user machine)
 2. Duration of session
@@ -57,6 +101,27 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 8. cluster_id (the UID of the cluster's `default` namespace, used as a stable, anonymous per-cluster identifier)
 9. cluster_name (optional; only sent if you set the `operator.clusterName` Helm value to give the cluster a recognizable label)
 10. kubernetes_version (the version of the Kubernetes cluster the Operator is running in)
+
+None of these fields identify an individual developer or a workload in your cluster.
+
+### Sent only with identity sharing enabled
+
+Identity sharing is an organization-level setting. An organization admin chooses it when generating a [cloud API key](operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com), where it is ticked by default, and can change it later for the current key on the same page. With it enabled, the Operator's events also carry, where applicable:
+
+1. Kubernetes username of the client, as authenticated by your Kubernetes API server
+2. Display name of the local account and hostname of the client machine
+3. Namespace, kind, name, and container of the session's target
+
+These are what the usage dashboard at app.metalbear.com uses to show usernames and service names instead of hashes. Anonymized metrics go to `analytics.metalbear.com`; events that carry identity go to `app.metalbear.com`.
+
+Identity is not sent when:
+
+* The cloud API key was generated with identity sharing unticked, or the organization's key predates the setting and it was never turned on.
+* `cloud.anonymizeData` is `true` in the Operator's Helm values. This overrides the key's setting.
+* The Operator authenticates with a legacy license key instead of a cloud API key.
+* The Operator authenticates against a self-hosted [License Server](license-server.md). A cloud API key is ignored in that configuration and usage metrics stay anonymized.
+
+Changing the setting takes effect at the Operator's next cloud token refresh, without regenerating the key or restarting the Operator.
 
 In the Enterprise offering, this communication can be disabled entirely.
 

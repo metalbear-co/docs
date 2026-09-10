@@ -36,3 +36,7 @@ For the full list of skills, what each one covers, and example prompts, see <a h
 The mirrord skills are distributed as a plugin that you install into your AI coding assistant. Installation steps depend on your tool.
 
 Check the <a href="https://github.com/metalbear-co/skills/" target="_blank" rel="noopener noreferrer">mirrord skills repository</a> for the latest installation instructions...
+
+## Agents That Don't Support Agent Skills
+
+GitHub Copilot and Cline read repository rules files instead of Agent Skills. The skills repository ships drop-in equivalents carrying the same core content in its <a href="https://github.com/metalbear-co/skills/tree/main/ports" target="_blank" rel="noopener noreferrer">ports directory</a>: copy `ports/github-copilot/copilot-instructions.md` into your repository's `.github/` folder, or `ports/cline/.clinerules` into the repository root.

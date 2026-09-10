@@ -18,7 +18,7 @@ Queue splitting via `MirrordSplitConfig` requires mirrord operator `3.170.0` or 
 `MirrordWorkloadQueueRegistry` is deprecated and replaced by `MirrordSplitConfig`. Existing resources continue to work for backward compatibility, but we recommend migrating to `MirrordSplitConfig`. See [Migrating to MirrordSplitConfig](migrating-to-mirrordsplitconfig.md#rabbitmq).
 {% endhint %}
 
-#### How It Works
+## How It Works
 
 First, we have a consumer app reading messages from a RabbitMQ queue:
 
@@ -34,17 +34,17 @@ If a second user then starts a mirrord RabbitMQ splitting session on the same qu
 
 If the filters defined by the two users both match some message, one of the users will receive the messages at random.
 
-#### Enabling RabbitMQ Splitting in Your Cluster
+## Enabling RabbitMQ Splitting in Your Cluster
 
 {% stepper %}
 {% step %}
-**Enable RabbitMQ splitting in the Helm chart**
+#### Enable RabbitMQ splitting in the Helm chart
 
 Enable the `operator.rmqSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
 {% endstep %}
 
 {% step %}
-**Cluster Declaration**
+#### Cluster Declaration
 
 The mirrord operator needs a way to connect to your RabbitMQ cluster to consume and re-route messages according to filters. As part of operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordPropertyList`. Use this resource to define the cluster and queue connection parameters for splitting. A `MirrordPropertyList` lives in the same namespace as the consumer workload (and the `MirrordSplitConfig`), which may very well be different than your RabbitMQ broker's namespace. It can also live in the operator's namespace to share one declaration across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces). `MirrordPropertyList` is modeled after the `env` and `envFrom` fields in a pod's container spec. You can:
 
@@ -106,7 +106,7 @@ spec:
 ```
 {% endhint %}
 
-**Cluster Properties**
+#### Cluster Properties
 
 | Property              |                                                                                                             Description                                                                                                            | Required |                              Type                             |               Default              |
 | --------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----------------------------------------------------------: | :--------------------------------: |
@@ -125,7 +125,7 @@ spec:
 
 ¹ Provide either `url` or `host`. Whenever a part is both present in the `url` and set as its own property, the individual property wins. A `username` and `password` are always required - set them directly or include them in the `url`.
 
-**Queue Declare Properties**
+#### Queue Declare Properties
 
 | Property      |                                                    Description                                                    | Required |           Type           | Default |
 | ------------- | :---------------------------------------------------------------------------------------------------------------: | :------: | :----------------------: | :-----: |
@@ -136,7 +136,7 @@ spec:
 {% endstep %}
 
 {% step %}
-**Provide application context**
+#### Provide application context
 
 On operator installation with `operator.rmqSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster — `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`. Before you can run sessions with RabbitMQ splitting, you must create a `MirrordSplitConfig` for the desired target. This tells the operator which queues to split and how the application discovers their names.
 
@@ -179,7 +179,7 @@ The `MirrordSplitConfig` above says that:
 3. The container consumes two RabbitMQ queues. Their names are read from environment variables `INCOMING_MEME_QUEUE_NAME` and `AD_QUEUE_NAME`.
 4. The queues can be referenced in a mirrord config under IDs `meme-queue` and `ad-queue`, respectively.
 
-**Link the config to the deployed consumer**
+#### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource, so it can only reference a consumer deployed in the same namespace. The target workload reference is specified with `spec.targetRef`:
 
@@ -187,7 +187,7 @@ The `MirrordSplitConfig` is a namespaced resource, so it can only reference a co
 * `kind` — type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` — name of the workload.
 
-**Describe consumed queues**
+#### Describe consumed queues
 
 Each entry in the `spec.queues` list describes one or more RabbitMQ queues consumed by the workload:
 
@@ -198,8 +198,9 @@ Each entry in the `spec.queues` list describes one or more RabbitMQ queues consu
 * `appConfig.queue` — how the application discovers the queue name. Each entry can use:
   * `env` — exact environment variable name containing the queue name.
   * `envLike` — regex matching environment variable names.
+  * `volume` - read the queue name from a file mounted from a `configMap` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
   * `fallback` — fallback queue name if the variable is not found. The env var is still rewritten to point at the temporary queue.
-  * `valueSelector` — a jq expression to extract the queue name from the variable's value. Useful when the env var holds JSON rather than a plain name.
+  * `valueSelector` — a selector extracting the queue name from the variable's value: nested keys and `.[]` to iterate arrays or object values. Useful when the env var holds JSON rather than a plain name. Pipes, functions, and other jq operators are not supported.
   * `valuePattern` — a regex used when the queue name is embedded in a larger string. The capture group (named `value`, otherwise the first group) marks the part that is the name; only that part is swapped for the temporary queue and the surrounding text is kept as-is.
   * `containers` — limit to specific containers (optional, defaults to all non-infra containers).
 * `appConfig.exchange` (optional) — when the application reads an exchange name from the environment, the operator injects a dummy exchange name there so the local app does not publish to or bind against the real exchange. Uses the same structure as `appConfig.queue`.
@@ -213,7 +214,7 @@ The mirrord operator can only read consumer's environment variables if they are 
 {% endstep %}
 {% endstepper %}
 
-#### Drain timeout
+## Drain timeout
 
 After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread messages to be consumed first.
 
@@ -227,9 +228,9 @@ After the last session against a target ends, the operator keeps the split's tem
 | `0`            | Tear down immediately. Unread messages may be lost.       |
 | `N`            | Keep resources for up to `N` seconds, then tear down.     |
 
-#### Setting a filter
+## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ` and supports `message_filter` on message headers.
+For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). RabbitMQ uses `queue_type: RMQ`, and supports both `message_filter` on message headers and `jq_filter` on the whole message.
 
 ```json
 {
@@ -249,3 +250,50 @@ For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see
 ```
 
 In the example above, the local application will receive a subset of messages from the RabbitMQ queue described in the `MirrordSplitConfig` under ID `meme-queue`. All received messages will have a message header `baggage` containing `mirrord-session=alice`.
+
+### Filtering with jq
+
+{% hint style="info" %}
+JQ filters on RabbitMQ require operator version `>=3.201.0` and CLI version `>=3.253.0`
+{% endhint %}
+
+`message_filter` only matches individual headers by name. Use `jq_filter` to match on the message body, or on headers whose name you don't know in advance. The jq program runs on this JSON document:
+
+```json
+{
+  "headers": {
+    "baggage": "mirrord-session=alice"
+  },
+  "properties": {
+    "content_type": "application/json",
+    "message_id": "5f2c...",
+    "timestamp": 1755600000
+  },
+  "payload": "{\"priority\":\"high\"}"
+}
+```
+
+* `headers` is the AMQP basic-properties headers table. It is always present, and may be empty.
+* `properties` holds the remaining basic properties that carry a value: `content_type`, `content_encoding`, `delivery_mode`, `priority`, `correlation_id`, `reply_to`, `expiration`, `message_id`, `timestamp`, `type`, `user_id`, and `app_id`. Properties the publisher did not set are absent.
+* `payload` is the message body.
+
+A message matches when the program outputs `true`. To filter on the body, parse it with `fromjson` first:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "meme-queue": {
+        "queue_type": "RMQ",
+        "jq_filter": ".payload | fromjson | .priority == \"high\""
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application receives only messages whose body is a JSON object with `"priority": "high"`. Messages whose body is not valid JSON never match.
+
+If both `message_filter` and `jq_filter` are set for a queue, a message must match both. The header filter runs first, so the jq program only sees messages that already passed it.
