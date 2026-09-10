@@ -10,7 +10,7 @@ tags:
 # Usage API
 
 {% hint style="info" %}
-This is the cloud dashboard's data over HTTPS. It only has something to return if your operator reports to the cloud, see [Cloud Setup](cloud.md). With a self-hosted license server your usage data never leaves the cluster, so there is nothing here for you.
+This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). An operator without one sends no identified session data to us, so there is nothing here to read. Running a self-hosted license server does not by itself rule this out: an operator can use a license server and a cloud API key at the same time.
 {% endhint %}
 
 The dashboard at [app.metalbear.com](https://app.metalbear.com) is fine for looking at usage. It is less fine when you want the numbers in Looker, or a weekly script that lists who stopped using mirrord. The usage API returns the same report and trends the dashboard renders, plus the raw session rows the dashboard never shows, behind a key you can give to a cron job.
@@ -27,7 +27,7 @@ The page that shows the new key also shows the calls below, filled in with your 
 
 ![A freshly generated key with the curl snippets](../../.gitbook/assets/usage-api-key-generated.png)
 
-One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now. The page shows when the key was last used, which is a cheap way to spot a job that silently died.
+One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now. The page shows when the key was last used, meaning the last time it was exchanged for a token, not the last data call. A job that gets a token and then fails still moves it.
 
 ![The active key with Rotate and Revoke](../../.gitbook/assets/usage-api-key-row.png)
 
@@ -59,16 +59,16 @@ The object the dashboard is drawn from, for the period you ask for:
 
 | Field | What it holds |
 | --- | --- |
-| `generalMetrics` | Tier, active users in the period, operator version, the resolved `reportPeriod` |
-| `allTimeMetrics` | Session and CI session totals since the organization started reporting |
-| `ciMetrics` | CI sessions in the period, peak concurrency, average duration |
+| `generalMetrics` | Tier, seat count, active users in the period, the resolved `reportPeriod`. `operatorVersion` and `lastOperatorEvent` are always `null` here |
+| `allTimeMetrics` | `totalSessionCount` and `totalSessionTimeSeconds` for `exec` sessions, plus `totalCiSessionCount` for machine sessions, since the organization started reporting |
+| `ciMetrics` | Machine sessions in the period: `totalCiSessions`, `maxConcurrentCiSessions`, `avgCiSessionDurationSeconds`. `currentRunningSessions` is the exception, it counts `ci` only |
 | `userMetrics` | One row per engineer: `identifier`, `displayName`, `firstActive`, `lastSeen`, `totalSessionCount`, `totalSessionTimeSeconds`, daily and per-session averages |
 | `targetMetrics` | Sessions and unique users per target (`namespace`, `target`) |
 | `userTargetMetrics` | The same broken down by engineer and target |
-| `authErrorMetrics` | Operator authentication errors, period and all time, by type |
-| `adoptionActionItems` | What blocked engineers, a policy, a disabled feature, a bad target name, the license, with how many users hit each |
 
-`ciPipelineMetrics`, `ciProviderMetrics`, `uniqueMachines` and `rejectedConnectionCount` are also present when the operator reports them.
+Despite the names, everything labelled "CI" above counts **machine sessions**, which is `ci` and `preview` rows together. Only `exec` sessions count towards `totalSessionCount` and `activeUsers`. If you want CI and preview environments apart, take them from the session rows and group by `kind`.
+
+`authErrorMetrics`, `adoptionActionItems`, `ciPipelineMetrics`, `ciProviderMetrics`, `uniqueMachines` and `rejectedConnectionCount` belong to the self-hosted license server's report and are never returned here. Pipeline and provider names in particular reach us hashed, so the cloud cannot name them. They are omitted from the JSON rather than sent empty, so read them defensively if you share code with the license server's API.
 
 ### Trends
 
@@ -77,6 +77,8 @@ GET /api/v1/usage/trends?days=30
 ```
 
 Daily series for charts: `dailySessions` (count and total duration per day), `dailyActiveUsers`, `dailyCiSessions`, and `userAdoption` with `newUsers` and `cumulativeUsers` per day. `days` defaults to 30 and is capped at 3650.
+
+`dailySessions` and `dailyActiveUsers` are `exec` only; `dailyCiSessions` counts machine sessions, so `ci` and `preview` together. The window ends now and runs back `days`, so it ignores `from` and `to`.
 
 ### Sessions
 
@@ -114,31 +116,36 @@ Raw rows, oldest first, one object per session:
 }
 ```
 
-`kind` is `exec` for an engineer's session, `ci` for `mirrord ci`, `preview` for a preview environment. `ci` and `preview` rows have no target, so those fields come back `null`.
+`kind` is `exec` for an engineer's session, `ci` for `mirrord ci start`, `preview` for a preview environment. Preview rows have no target, so with identity sharing on their `target` object is present with every field `null`. A `ci` row can carry a target.
 
 Pages hold up to `limit` rows, 500 by default and 1000 at most. Every non-empty page carries a `nextCursor`; pass it back as `cursor=` to get the next one. The first page that comes back empty is the end. Cursors are opaque, don't try to build one.
+
+Send the first request with no `cursor` at all. An empty `cursor=` is rejected with `400 invalid cursor`, so build the query string rather than always interpolating the variable:
 
 ```bash
 cursor=""
 while :; do
-  page=$(curl -sSf -H "Authorization: Bearer $TOKEN" \
-    "https://app.metalbear.com/api/v1/usage/sessions?from=2026-08-01&to=2026-08-31&limit=1000&cursor=$cursor")
+  url="https://app.metalbear.com/api/v1/usage/sessions?from=2026-08-01&to=2026-08-31&limit=1000"
+  [ -n "$cursor" ] && url="$url&cursor=$cursor"
+  page=$(curl -sSf -H "Authorization: Bearer $TOKEN" "$url")
   rows=$(jq '.sessions | length' <<<"$page")
   [ "$rows" -eq 0 ] && break
   jq -c '.sessions[]' <<<"$page" >> august.jsonl
-  cursor=$(jq -r '.nextCursor' <<<"$page")
+  cursor=$(jq -r '.nextCursor // empty' <<<"$page")
 done
 ```
 
 ## Dates and periods
 
-`from` and `to` accept a date (`2026-08-01`), a timestamp with an offset (`2026-08-01T09:00:00+02:00`), or a timestamp without one, which is read as UTC. A date given as `to` covers that whole day, so `to=2026-08-31` includes August 31. Otherwise the window is half-open: `from` is included, `to` is not. Leave `from` out and it starts at the beginning of time; leave `to` out and it ends now. `from` has to be before `to` or you get a 400.
+`from` and `to` accept a date (`2026-08-01`), a timestamp with an offset (`2026-08-01T09:00:00+02:00`), or a timestamp without one, which is read as UTC. An offset's `+` has to be percent-encoded as `%2B` in the query string, otherwise it arrives as a space and you get a 400. `curl --get --data-urlencode` does it for you. A date given as `to` covers that whole day, so `to=2026-08-31` includes August 31. Otherwise the window is half-open: `from` is included, `to` is not. Leave `from` out and it starts at the beginning of time; leave `to` out and it ends now. `from` has to be before `to` or you get a 400.
 
-A session belongs to the period it started in. That is the same rule for the report, the trends and the session rows, so counting the rows for a window gives you the report's numbers for that window. A session that started at 23:50 on August 31 and ended at 00:20 on September 1 is an August session everywhere.
+A session belongs to the period it started in. That is the same rule for the report, the trends and the session rows. A session that started at 23:50 on August 31 and ended at 00:20 on September 1 is an August session everywhere.
+
+The rows do reconcile with the report, but only once you group by `kind`: rows where `kind` is `exec` match `totalSessionCount`, and `ci` plus `preview` together match `totalCiSessions`. Counting every row and comparing it against either one on its own will not add up.
 
 ## Identity sharing
 
-The report and the session rows carry engineer identities only while identity sharing is on for your organization, the same switch that decides what the dashboard shows. It is set when the operator's cloud API key is generated and can be changed under **Settings**. With it off, `displayName` and `user.id` are pseudonymous hashes, `kubernetesUsername`, `clientUsername` and `clientHostname` are `null`, and `target` is `null`. A change applies to the next token you fetch, not to one you already hold.
+The report and the session rows carry engineer identities only while identity sharing is on for your organization, the same switch that decides what the dashboard shows. It is set when the operator's cloud API key is generated and can be changed under **Settings**. With it off, `displayName` and `user.id` are pseudonymous hashes, and `kubernetesUsername`, `clientUsername` and `clientHostname` are `null`. `target` is dropped from the session rows entirely rather than sent as `null`, and `targetMetrics` and `userTargetMetrics` disappear from the report the same way. A change applies to the next token you fetch, not to one you already hold.
 
 ## Errors and limits
 
