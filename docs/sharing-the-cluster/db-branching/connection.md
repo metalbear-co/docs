@@ -203,7 +203,7 @@ One rule to remember: a param with only `value_pattern` and `env_var_name` is an
 
 The operator reads the ConfigMap itself when the branch is created, so it needs `get` on ConfigMaps in the target namespace; the operator Helm chart grants this together with the other DB branching permissions.
 
-ConfigMap sources require operator and Helm chart `3.204.0` or later, and mirrord CLI `3.255.0` or later. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates; an older CLI rejects the config as unknown.
+ConfigMap sources require operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates; an older CLI rejects the config as unknown.
 
 {% hint style="info" %}
 Your local application still has to pick the branch up. With `env_var_name`, the branch host is delivered as an environment variable, which works when your app lets an environment variable override the value from its config file. If your app only ever reads the mounted file, the file itself is not rewritten.
