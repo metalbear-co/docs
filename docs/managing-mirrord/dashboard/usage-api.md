@@ -27,7 +27,7 @@ The page that shows the new key also shows the calls below, filled in with your 
 
 ![A freshly generated key with the curl snippets](../../.gitbook/assets/usage-api-key-generated.png)
 
-One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now, though a token already minted from it keeps working until its ten minutes are up. The page shows when the key was last used, meaning the last time it was exchanged for a token, not the last data call. A job that gets a token and then fails still moves it, and the timestamp only advances once a minute, so treat it as "recently alive" rather than an exact time.
+One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now, though a token already minted from it keeps working until its ten minutes are up. The page shows when the key was last used, meaning the last time it was exchanged for a token, not the last data call. A job that gets a token and then fails still moves it, the timestamp only advances once a minute, and the write is best-effort, so an exchange can succeed without moving it at all. Treat it as "recently alive", not an exact time.
 
 ![The active key with Rotate and Revoke](../../.gitbook/assets/usage-api-key-row.png)
 
@@ -63,8 +63,8 @@ The object the dashboard is drawn from, for the period you ask for:
 | `allTimeMetrics` | `totalSessionCount` and `totalSessionTimeSeconds` for `exec` sessions, plus `totalCiSessionCount` for machine sessions, since the organization started reporting |
 | `ciMetrics` | Machine sessions in the period: `totalCiSessions`, `maxConcurrentCiSessions`, `avgCiSessionDurationSeconds`. `currentRunningSessions` is different twice over: it counts `ci` only, and it is what is running right now, not something about the period |
 | `userMetrics` | One row per engineer: `identifier`, `displayName`, `firstActive`, `lastSeen`, `totalSessionCount`, `totalSessionTimeSeconds`, daily and per-session averages |
-| `targetMetrics` | Sessions and unique users per target (`namespace`, `target`), top 50 by session count |
-| `userTargetMetrics` | The same broken down by engineer and target, top 200 by session count |
+| `targetMetrics` | `exec` sessions and unique users per target (`namespace`, `target`), top 50 by session count |
+| `userTargetMetrics` | The same broken down by engineer and target, top 200 by session count, `exec` only |
 
 Despite the names, everything labelled "CI" above counts **machine sessions**, which is `ci` and `preview` rows together. Only `exec` sessions count towards `totalSessionCount` and `activeUsers`. If you want CI and preview environments apart, take them from the session rows and group by `kind`.
 
@@ -78,7 +78,7 @@ GET /api/v1/usage/trends?days=30
 
 Daily series for charts: `dailySessions` (count and total duration per day), `dailyActiveUsers`, `dailyCiSessions`, and `userAdoption` with `newUsers` and `cumulativeUsers` per day. `days` defaults to 30 and is capped at 3650.
 
-`dailySessions` and `dailyActiveUsers` are `exec` only; `dailyCiSessions` counts machine sessions, so `ci` and `preview` together. The window ends now and runs back `days`, so it ignores `from` and `to`. The three activity series start at the beginning of that UTC day, `userAdoption` starts at the exact instant, so the two can disagree by a few hours at the far edge.
+`dailySessions` and `dailyActiveUsers` are `exec` only; `dailyCiSessions` counts machine sessions, so `ci` and `preview` together. The window ends now and runs back `days`, so it ignores `from` and `to`. The three activity series start at the beginning of that UTC day, `userAdoption` starts at the exact instant, so on the oldest day the two can disagree by anything up to a full day.
 
 These are sparse, not dense. A day with no sessions has no entry at all, and `userAdoption` only carries days that gained a user. Fill the gaps yourself if you are drawing a continuous axis.
 
@@ -120,7 +120,9 @@ Raw rows, oldest first, one object per session:
 
 `kind` is `exec` for an engineer's session, `ci` for `mirrord ci start`, `preview` for a preview environment. Preview rows have no target, so with identity sharing on their `target` object is present with every field `null`. A `ci` row can carry a target.
 
-Pages hold up to `limit` rows, 500 by default and 1000 at most. Every non-empty page carries a `nextCursor`; pass it back as `cursor=` to get the next one. The first page that comes back empty is the end. Cursors are opaque, don't try to build one.
+`user` is not on every row. A session recorded without one, a preview environment being the usual case, omits the whole object rather than sending it empty, so reach for `.user.id` defensively.
+
+Pages hold up to `limit` rows, 500 by default and 1000 at most. Every non-empty page carries a `nextCursor`; pass it back as `cursor=` to get the next one. The first page that comes back empty is the end. Treat cursors as opaque and pass back what you were given; the endpoint checks a cursor's shape, not that it issued it, so a hand-built one fails in ways that are yours to debug.
 
 Send the first request with no `cursor` at all. An empty `cursor=` is rejected with `400 invalid cursor`, so build the query string rather than always interpolating the variable:
 
@@ -155,7 +157,7 @@ The report and the session rows carry engineer identities only while identity sh
 
 | Status | Meaning |
 | --- | --- |
-| `400` | A bad parameter: `from` at or after `to`, a date outside 1970 to 9999, an unparseable date, or a `cursor` you did not get from `nextCursor` (an empty one included) |
+| `400` | A bad parameter: `from` at or after `to`, an unparseable date, a resolved bound outside 1970 to 9999, or a malformed `cursor` (an empty one included). `to=9999-12-31` is rejected too, because an inclusive date is resolved to the start of the next day |
 | `401` | No token, a malformed one, or an expired one. Fetch a new token |
 | `403` | Right token, wrong door: an operator token on this API, or a usage token on an operator endpoint |
 | `429` | Over the limit. `Retry-After` says how many seconds to wait |
