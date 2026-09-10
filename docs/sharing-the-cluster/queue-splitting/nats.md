@@ -308,6 +308,8 @@ Applications that subscribe to plain subjects (`nc.Subscribe(...)`, no streams, 
 Core NATS stores nothing, so delivery is **best-effort**: messages published while the split is being set up, torn down, or while the operator is briefly unavailable are not replayed. Applications that must not miss messages belong on JetStream, covered by the rest of this page.
 {% endhint %}
 
+Core NATS pub/sub splitting requires operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later.
+
 Enable it with `operator.natsPubsubSplitting: true` in the Helm chart. The `MirrordSplitConfig` entry uses `kind: natsPubSub` and a `subject` reference, and shares `clientConfigs.nats` (same server, same credentials as JetStream splitting):
 
 ```yaml
