@@ -10,7 +10,7 @@ tags:
 # Usage API
 
 {% hint style="info" %}
-This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). An operator without one sends no identified session data to us, so there is nothing here to read. Running a self-hosted license server does not by itself rule this out: an operator can use a license server and a cloud API key at the same time.
+This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). Configuring a self-hosted license server rules that out: the operator then ignores any cloud API key you set, logs a warning, authenticates with its license key against your own server, and sends us no identities, so there is nothing here to read. Anonymized product telemetry still leaves the cluster either way.
 {% endhint %}
 
 The dashboard at [app.metalbear.com](https://app.metalbear.com) is fine for looking at usage. It is less fine when you want the numbers in Looker, or a weekly script that lists who stopped using mirrord. The usage API returns the same report and trends the dashboard renders, plus the raw session rows the dashboard never shows, behind a key you can give to a cron job.
@@ -31,7 +31,7 @@ One usage key is active per organization. **Rotate** issues a new key and keeps 
 
 ![The active key with Rotate and Revoke](../../.gitbook/assets/usage-api-key-row.png)
 
-Store it as a secret anyway. With identity sharing on it returns your engineers' usernames and hostnames.
+Store it as a secret anyway. With identity sharing on it returns your engineers' usernames and hostnames. Identity sharing is not the only switch: `cloud.anonymizeData: true` in the operator's Helm values overrides it and anonymizes the telemetry at source, so write scripts that tolerate a `null` username either way.
 
 ## Get a token
 
