@@ -40,15 +40,15 @@ The agent installs the Operator with that key as `cloud.apiKey.key` (see [Cloud 
 
 ## Claiming the organization
 
-Open the claim URL and sign in. What happens next depends on the account you use.
+Open the claim URL. You can sign in with an existing account or create one on the spot; the link survives either, including the verification mail that account creation sends you. What happens next depends on the account you use.
 
 | You sign in as | Result |
 | --- | --- |
-| A new account with no organization | A new organization is created for you, keeping the trial's expiry date |
+| A new account with no organization | A new organization is created for you, keeping the trial's expiry date and everything the agent already did |
 | An admin of an existing organization | The agent's cloud API key moves into your existing organization |
 | A member of an existing organization who is not an admin | Rejected. Ask an admin to open the link |
 
-Claiming also deletes the provisional organization, so the cluster keeps working against your real one without reinstalling anything.
+Claiming also deletes the provisional organization, so the cluster keeps working against your real one without reinstalling anything. A new organization inherits the agent's history along with the license, so the getting-started checklist already counts the Operator as installed and your usage shows the sessions the agent ran before you claimed. An organization that already existed keeps its own license, and so its own history.
 
 An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. Revoke or rotate the existing key first, under **API Keys**. Read-only keys are a different scope and don't collide, so they can stay.
 
