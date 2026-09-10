@@ -305,7 +305,7 @@ When the operator's `operator.injectSessionKeyHeader` setting is enabled, every 
 Applications that subscribe to plain subjects (`nc.Subscribe(...)`, no streams, no durables) can be split with the separate `natsPubSub` queue kind. The operator subscribes to the original subject and republishes each message under a temporary subject prefix - the session's on a filter match, the workload's fallback prefix otherwise. The application's subject value is rewritten to `<prefix>.<original>`, so wildcard subscriptions (`orders.*`, `orders.>`) keep working unchanged.
 
 {% hint style="warning" %}
-Core NATS stores nothing, so delivery is **best-effort**: messages published while the split is being set up, torn down, or while the operator is briefly unavailable are not replayed. Applications that must not miss messages belong on JetStream, covered by the rest of this page.
+Core NATS stores nothing, so delivery is **best-effort**: messages published while the split is being set up, torn down, or while the operator is briefly unavailable are not replayed. Applications that must not miss messages belong on JetStream, covered by the sections above.
 {% endhint %}
 
 Core NATS pub/sub splitting requires operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later.
@@ -325,7 +325,7 @@ In the mirrord configuration, filters use `queue_type: NATSPubSub` with the same
 
 ## Notes and limitations
 
-* The rest of this page covers JetStream: the application must consume through a durable pull consumer on a stream. Plain subject subscriptions are covered by [Core NATS pub/sub](#core-nats-pubsub-no-jetstream) with best-effort delivery.
+* Except for the [Core NATS pub/sub](#core-nats-pubsub-no-jetstream) section, this page covers JetStream: the application must consume through a durable pull consumer on a stream. Plain subject subscriptions are split with best-effort delivery instead.
 * The NATS server must be version `2.2` or later, since splitting relies on message headers.
 * Each queue entry in the `MirrordSplitConfig` describes exactly one stream and one consumer. Add one entry per consumer.
 * Republished messages carry the subject `<temporary stream>.<original subject>` - the original subject is kept, prefixed with the temporary stream's name. An application that routes on exact subjects sees the prefixed subject while a split is active, so match on the subject's suffix (or a wildcard) instead of the full subject.
