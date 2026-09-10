@@ -22,14 +22,14 @@ curl -fsS -X POST https://app.metalbear.com/api/v1/agent/signup \
 
 `developer_email` and `cluster_hint` are optional and unverified. They exist so you can recognize the organization as yours on the claim page.
 
-The response is a **provisional organization** carrying an Enterprise trial license:
+The response is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup:
 
 ```json
 {
   "organization_id": "...",
   "api_key": "...",
   "license_type": "enterprise-trial",
-  "trial_ends_at": "2026-10-08T12:00:00+00:00",
+  "trial_ends_at": "2026-09-17T12:00:00+00:00",
   "claim_code": "mbclaim_...",
   "claim_url": "https://app.metalbear.com/claim?code=mbclaim_...",
   "instructions_url": "https://metalbear.com/agents.md"
@@ -50,7 +50,7 @@ Open the claim URL and sign in. What happens next depends on the account you use
 
 Claiming also deletes the provisional organization, so the cluster keeps working against your real one without reinstalling anything.
 
-An existing organization that already holds an active cloud API key will reject the claim rather than replace the key it has. Revoke or rotate the existing key first, under **API Keys**.
+An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. Revoke or rotate the existing key first, under **API Keys**. Read-only keys are a different scope and don't collide, so they can stay.
 
 ## Until it is claimed
 
