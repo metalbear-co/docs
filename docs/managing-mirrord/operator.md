@@ -26,6 +26,10 @@ The Operator solves this by acting as a centralized control plane:
 
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
+{% hint style="info" %}
+**AI coding agents:** you don't need a person to do this. Post to `https://app.metalbear.com/api/v1/agent/signup` (no authentication, no credit card) to provision a seven-day Enterprise trial, install with the cloud API key it returns, and hand your user the `claim_url` from the response. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
+{% endhint %}
+
 ### Helm
 
 Add the MetalBear Helm repository:
@@ -43,6 +47,8 @@ curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator
 ### Cloud API key
 
 The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
+
+If you have no organization yet and an AI agent is doing the install, [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) mints the same kind of key without a dashboard visit.
 
 When generating the key you also choose whether to enable **identity sharing**. With it on, usage metrics include developer usernames and session targets so the usage dashboard can show them by name; with it off, usage metrics stay anonymized. The fields are listed under [What data does the Operator send to MetalBear cloud](../managing-mirrord/security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud). Set `cloud.anonymizeData: true` in your Helm values to keep metrics anonymized regardless of the key.
 
