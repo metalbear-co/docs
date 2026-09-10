@@ -25,6 +25,7 @@
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
+  * [Agent-Started Trials](using-mirrord-with-ai/agent-started-trials.md)
 
 ## Using mirrord
 
