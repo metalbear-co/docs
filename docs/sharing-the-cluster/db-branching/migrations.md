@@ -22,6 +22,7 @@ Minimum versions per capability:
 | Migrations on MariaDB branches | `3.235.0` | `3.186.0` | `3.186.0` |
 | Image-native Flyway (`locations`), `container` flavor | `3.238.0` | `3.187.0` | `3.187.0` |
 | Inherited target environment (`container` flavor) | `3.238.0` | `3.191.0` | `3.191.0` |
+| Liquibase migrations (`liquibase` flavor) | `3.257.0` | `3.206.0` | `3.206.0` |
 {% endhint %}
 
 ## How it works
@@ -32,14 +33,16 @@ When your session starts a branch whose config has `migrations`:
 2. Once the branch database accepts connections, the operator runs your migrations as a one-shot Kubernetes Job next to it. The Job connects to the branch - never to the source database - using the branch's own admin credentials.
 3. The branch becomes ready only after the Job succeeds, and your session starts against the fully migrated branch. If the Job fails, your session aborts and mirrord prints the Job's log output, so your app never runs against a half-migrated schema.
 
-When a session reuses an existing branch with a changed migration set, the operator runs a new Job for the delta. A migration that conflicts with one already applied (for example, an edited already-applied Flyway file) fails your session only; the branch stays usable for other sessions.
+When a session reuses an existing branch with a changed migration set, the operator runs a new Job for the delta. A migration that conflicts with one already applied (for example, an edited already-applied Flyway file or Liquibase changeset) fails your session only; the branch stays usable for other sessions.
 
 The `flavor` field selects what the Job runs. Pick by where your migrations live:
 
 | Your migrations are... | Use |
 | --- | --- |
-| SQL files in the repository you're working in | `flavor: flyway` with `path` |
-| SQL files baked into an image your CI publishes | `flavor: flyway` with `image` + `locations` |
+| Flyway SQL files in the repository you're working in | `flavor: flyway` with `path` |
+| Flyway SQL files baked into an image your CI publishes | `flavor: flyway` with `image` + `locations` |
+| Liquibase changelogs in the repository you're working in | `flavor: liquibase` with `path` |
+| Liquibase changelogs baked into an image your CI publishes | `flavor: liquibase` with `image` + `search_path` |
 | Part of your app's own tooling (a migration script or framework CLI baked into the image) | `flavor: container` |
 
 Using `migrations` requires the branch's `name` field to be set.
@@ -48,7 +51,7 @@ The branch's `creation_timeout_secs` covers the whole startup: cloning the sourc
 
 ## Carrying migration history onto the branch
 
-`"copy": { "mode": "schema" }` copies table definitions and no rows—including the table your migration tool records applied migrations in.
+`"copy": { "mode": "schema" }` copies table definitions and no rows—including the table (or tables) your migration tool records applied migrations in.
 
 To carry the migration history onto the branch, name the history table under `tables` so its rows are copied along with its definition:
 
@@ -58,6 +61,20 @@ To carry the migration history onto the branch, name the history table under `ta
     "mode": "schema",
     "tables": {
       "flyway_schema_history": {}
+    }
+  }
+}
+```
+
+Liquibase keeps two tables, and both have to come across:
+
+```json
+{
+  "copy": {
+    "mode": "schema",
+    "tables": {
+      "DATABASECHANGELOG": {},
+      "DATABASECHANGELOGLOCK": {}
     }
   }
 }
@@ -75,9 +92,11 @@ Mind the interaction with `copy.mode`: Flyway refuses to migrate a schema that a
 | `locations` | Flyway locations inside `image` holding the migration files, for images with the SQL baked in. Mutually exclusive with `path`, and requires `image`. |
 | `image` | Migration runner image. Optional with `path` (defaults to `flyway/flyway:12`), required with `locations`. |
 
+Exactly one of `path` or `locations` is required.
+
 ### From a local directory
 
-With `path`, mirrord uploads the directory (up to 1 MiB) and the Job runs the stock Flyway image against it. This is the fit when the migration files live in the repository you're working in:
+With `path`, mirrord uploads the directory (up to 1 MiB compressed) and the Job runs the stock Flyway image against it. This is the fit when the migration files live in the repository you're working in:
 
 ```json
 {
@@ -113,6 +132,64 @@ With `locations`, nothing is uploaded: the SQL is already baked into a migration
 ```
 
 `locations` accepts multiple entries, joined into `FLYWAY_LOCATIONS`.
+
+## Liquibase migrations
+
+Set `"flavor": "liquibase"` to run [Liquibase](https://docs.liquibase.com) changelogs, in XML, YAML, JSON or formatted SQL. Liquibase records applied changesets in a `DATABASECHANGELOG` table inside the branch, so re-runs apply only what's new.
+
+Liquibase starts from a single root changelog rather than scanning a directory, so `changelog_file` is required.
+
+| Field | Description |
+| --- | --- |
+| `changelog_file` | Root changelog file, resolved inside the search root. Recorded in `DATABASECHANGELOG`, so changing it re-runs every changeset. |
+| `path` | Local directory of changelog files, resolved relative to your working directory. Mutually exclusive with `search_path`. |
+| `search_path` | Liquibase search path inside `image`. Mutually exclusive with `path`, and requires `image`. |
+| `image` | Migration runner image. Optional with `path` (defaults to `liquibase/liquibase:4.33`), required with `search_path`. |
+
+Exactly one of `path` or `search_path` is required. Liquibase 4.33 bundles the PostgreSQL, MariaDB and SQL Server drivers; a custom `image` must carry the driver for your dialect, and MySQL branches are reached over `jdbc:mariadb://`.
+
+Mind the interaction with `copy.mode`: if your source database isn't itself Liquibase-managed, use `"copy": { "mode": "empty" }` and let the changelogs build the branch schema from scratch. If the source is Liquibase-managed, `all` brings both history tables across with everything else, and `schema` needs [special configuration](#carrying-migration-history-onto-the-branch).
+
+### From a local directory
+
+With `path`, mirrord uploads the directory (up to 1 MiB compressed) and the Job runs the stock Liquibase image against it. `changelog_file` names the root changelog inside that directory, and `include` / `includeAll` paths resolve against it:
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "version": "17",
+        "name": "users-database-name",
+        "connection": { "url": "DATABASE_URL" },
+        "migrations": {
+          "flavor": "liquibase",
+          "path": "./changelog",
+          "changelog_file": "db.changelog-master.xml"
+        }
+      }
+    ]
+  }
+}
+```
+
+### From a migration image
+
+With `search_path`, nothing is uploaded: the changelogs are already baked into an image, and the Job runs that image with Liquibase pointed at the in-image paths:
+
+```json
+{
+  "migrations": {
+    "flavor": "liquibase",
+    "image": "registry.example.com/my-migrations:latest",
+    "search_path": ["/liquibase/changelog"],
+    "changelog_file": "db.changelog-master.xml"
+  }
+}
+```
+
+`search_path` accepts multiple entries, joined into `LIQUIBASE_SEARCH_PATH`; Liquibase looks for `changelog_file` under each in turn.
 
 ## Container migrations
 
@@ -233,8 +310,10 @@ A failed migration aborts your session, and the error mirrord prints is the Job'
 - The branch resource records the outcome: `kubectl get branchdatabases -n <namespace>` and look at `status.migrations` (phase, and the error text on failure).
 - The Jobs are named `mirrord-migrations-<branch-uid>-<generation>`; `kubectl logs job/<name>` shows the full run, including successful ones.
 
-Failures you may hit: a migration with a SQL error (fix the file; a fresh session re-runs it), an edited already-applied Flyway file on a reused branch (checksum conflict - fails your session only), an image rejected by the admin's `allowedImages` list, an image that can't be pulled, or a `container` migration whose `connection` variables the operator cannot redirect (see [The Job runs with your app's environment](#the-job-runs-with-your-apps-environment)).
+Failures you may hit: a migration with a SQL error (fix the file; a fresh session re-runs it), an edited already-applied Flyway file or Liquibase changeset on a reused branch (checksum conflict - fails your session only), an image rejected by the admin's `allowedImages` list, an image that can't be pulled, a `DATABASECHANGELOGLOCK` row left held by an interrupted Liquibase migration, or a `container` migration whose `connection` variables the operator cannot redirect (see [The Job runs with your app's environment](#the-job-runs-with-your-apps-environment)).
 
 ## Restricting migration images
 
-Cluster admins can restrict which images are accepted with the per-database `dbPod.allowedImages` list in the operator's Helm values. The list applies to migration images that users supply (`container` flavor and image-native Flyway) the same way it applies to branch database images; a disallowed image fails the migration with a clear error before anything runs.
+Cluster admins can restrict which images are accepted with the per-database `dbPod.allowedImages` list in the operator's Helm values. The list applies to every migration image a user supplies — the `container` flavor's `image`, and any `migrations.image` override on the `flyway` or `liquibase` flavors, whether the migration files are uploaded or baked into the image — the same way it applies to branch database images. A disallowed image fails the migration with a clear error before anything runs.
+
+The flavor defaults are not matched against the list; `dbPod.migrationImages.<tool>.registry` controls where those come from.
