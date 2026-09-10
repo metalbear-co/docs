@@ -328,7 +328,7 @@ The operator can only join the original group once every pod of the previous gen
 Temporary group names follow the temporary topic name format (`mirrord-tmp-...`), so if you use group ACLs, the application's credentials must be allowed to join groups with that prefix, and the operator's credentials need `DeleteGroups` for cleanup.
 
 {% hint style="info" %}
-`mirrord.temporary_group_id` requires mirrord operator `3.195.0` or later.
+`mirrord.temporary_group_id` requires mirrord operator `3.195.0` or later, and `mirrord.group_join_timeout` requires operator `3.205.0` or later - earlier operators reject it as an unknown `mirrord.` key.
 {% endhint %}
 
 ## Setting a filter
