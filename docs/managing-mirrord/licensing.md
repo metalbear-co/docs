@@ -106,4 +106,6 @@ Enterprise licenses additionally support persistent sessions, which survive oper
 
 Register at [app.metalbear.com](https://app.metalbear.com) to get a Teams license key. For Enterprise licensing, [contact us](mailto:hi@metalbear.com).
 
+An AI coding agent working on an unlicensed cluster can also start a trial itself and hand you a link to claim the organization. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md).
+
 Once you have a key, see the [Operator installation guide](operator.md) for setup instructions.
