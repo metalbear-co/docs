@@ -27,7 +27,7 @@ The page that shows the new key also shows the calls below, filled in with your 
 
 ![A freshly generated key with the curl snippets](../../.gitbook/assets/usage-api-key-generated.png)
 
-One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now. The page shows when the key was last used, meaning the last time it was exchanged for a token, not the last data call. A job that gets a token and then fails still moves it.
+One usage key is active per organization. **Rotate** issues a new key and keeps the old one working for a grace period you pick, 0 for immediate. **Revoke** stops it now, though a token already minted from it keeps working until its ten minutes are up. The page shows when the key was last used, meaning the last time it was exchanged for a token, not the last data call. A job that gets a token and then fails still moves it, and the timestamp only advances once a minute, so treat it as "recently alive" rather than an exact time.
 
 ![The active key with Rotate and Revoke](../../.gitbook/assets/usage-api-key-row.png)
 
@@ -61,10 +61,10 @@ The object the dashboard is drawn from, for the period you ask for:
 | --- | --- |
 | `generalMetrics` | Tier, seat count, active users in the period, the resolved `reportPeriod`. `operatorVersion` and `lastOperatorEvent` are always `null` here |
 | `allTimeMetrics` | `totalSessionCount` and `totalSessionTimeSeconds` for `exec` sessions, plus `totalCiSessionCount` for machine sessions, since the organization started reporting |
-| `ciMetrics` | Machine sessions in the period: `totalCiSessions`, `maxConcurrentCiSessions`, `avgCiSessionDurationSeconds`. `currentRunningSessions` is the exception, it counts `ci` only |
+| `ciMetrics` | Machine sessions in the period: `totalCiSessions`, `maxConcurrentCiSessions`, `avgCiSessionDurationSeconds`. `currentRunningSessions` is different twice over: it counts `ci` only, and it is what is running right now, not something about the period |
 | `userMetrics` | One row per engineer: `identifier`, `displayName`, `firstActive`, `lastSeen`, `totalSessionCount`, `totalSessionTimeSeconds`, daily and per-session averages |
-| `targetMetrics` | Sessions and unique users per target (`namespace`, `target`) |
-| `userTargetMetrics` | The same broken down by engineer and target |
+| `targetMetrics` | Sessions and unique users per target (`namespace`, `target`), top 50 by session count |
+| `userTargetMetrics` | The same broken down by engineer and target, top 200 by session count |
 
 Despite the names, everything labelled "CI" above counts **machine sessions**, which is `ci` and `preview` rows together. Only `exec` sessions count towards `totalSessionCount` and `activeUsers`. If you want CI and preview environments apart, take them from the session rows and group by `kind`.
 
@@ -78,7 +78,9 @@ GET /api/v1/usage/trends?days=30
 
 Daily series for charts: `dailySessions` (count and total duration per day), `dailyActiveUsers`, `dailyCiSessions`, and `userAdoption` with `newUsers` and `cumulativeUsers` per day. `days` defaults to 30 and is capped at 3650.
 
-`dailySessions` and `dailyActiveUsers` are `exec` only; `dailyCiSessions` counts machine sessions, so `ci` and `preview` together. The window ends now and runs back `days`, so it ignores `from` and `to`.
+`dailySessions` and `dailyActiveUsers` are `exec` only; `dailyCiSessions` counts machine sessions, so `ci` and `preview` together. The window ends now and runs back `days`, so it ignores `from` and `to`. The three activity series start at the beginning of that UTC day, `userAdoption` starts at the exact instant, so the two can disagree by a few hours at the far edge.
+
+These are sparse, not dense. A day with no sessions has no entry at all, and `userAdoption` only carries days that gained a user. Fill the gaps yourself if you are drawing a continuous axis.
 
 ### Sessions
 
@@ -139,7 +141,9 @@ done
 
 `from` and `to` accept a date (`2026-08-01`), a timestamp with an offset (`2026-08-01T09:00:00+02:00`), or a timestamp without one, which is read as UTC. An offset's `+` has to be percent-encoded as `%2B` in the query string, otherwise it arrives as a space and you get a 400. `curl --get --data-urlencode` does it for you. A date given as `to` covers that whole day, so `to=2026-08-31` includes August 31. Otherwise the window is half-open: `from` is included, `to` is not. Leave `from` out and it starts at the beginning of time; leave `to` out and it ends now. `from` has to be before `to` or you get a 400.
 
-A session belongs to the period it started in. That is the same rule for the report, the trends and the session rows. A session that started at 23:50 on August 31 and ended at 00:20 on September 1 is an August session everywhere.
+A session belongs to the period it started in. That is the rule for the counts and totals in the report, for the trends and for the session rows. A session that started at 23:50 on August 31 and ended at 00:20 on September 1 is an August session in all of them.
+
+Two fields sit outside that rule. `maxConcurrentCiSessions` is a peak over the window, so it counts any machine session **overlapping** it, including one that started in July and was still running on August 1. `currentRunningSessions` ignores the window entirely and reports what is running as you ask.
 
 The rows do reconcile with the report, but only once you group by `kind`: rows where `kind` is `exec` match `totalSessionCount`, and `ci` plus `preview` together match `totalCiSessions`. Counting every row and comparing it against either one on its own will not add up.
 
@@ -151,7 +155,7 @@ The report and the session rows carry engineer identities only while identity sh
 
 | Status | Meaning |
 | --- | --- |
-| `400` | Bad range: `from` after `to`, or a date outside 1970 to 9999 |
+| `400` | A bad parameter: `from` at or after `to`, a date outside 1970 to 9999, an unparseable date, or a `cursor` you did not get from `nextCursor` (an empty one included) |
 | `401` | No token, a malformed one, or an expired one. Fetch a new token |
 | `403` | Right token, wrong door: an operator token on this API, or a usage token on an operator endpoint |
 | `429` | Over the limit. `Retry-After` says how many seconds to wait |
