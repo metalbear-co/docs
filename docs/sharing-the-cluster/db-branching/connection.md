@@ -8,7 +8,17 @@ tags:
 
 This page covers the `connection` field of a DB branch config - how mirrord locates the source database connection details. It applies to all database engines. For general concepts and the full list of config fields, see the [DB Branching overview](../db-branching.md).
 
-mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**.
+mirrord supports two ways of specifying how to connect to the source database: a full **connection URL** or **individual connection parameters**. Either way, each value can come from the target pod's environment or from one of several other sources.
+
+## Choose Your Connection Mode
+
+Pick the shape that matches how your application gets its connection details:
+
+* [Connection URL](#connection-url) - one variable holds the whole connection string.
+* [Individual Connection Parameters](#individual-connection-parameters-params) - host, port, user, password, and database are separate values.
+* [Value Sources](#value-sources) - where a value comes from when it is not a plain env var: a [Secret](#secret-source), a [ConfigMap](#configmap-source), [Google Secret Manager](#google-secret-manager-source), [AWS Secrets Manager](#aws-secrets-manager-source), or a [literal value](#literal-value).
+* [Composite Environment Variables](#composite-environment-variables) - several details packed into one variable, picked apart with a regex.
+* [Multiple Sources for the Same Parameter](#multiple-sources-for-the-same-parameter) - read/write splits and other duplicated variables.
 
 ## Connection URL
 
@@ -31,7 +41,7 @@ The optional `type` field controls where the environment variable is read from (
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 
-Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Non-existent envinroment variables are also filled with defaults. Specify the parameters that your application uses to connect to the database.
+Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Non-existent environment variables are also filled with defaults. Specify the parameters that your application uses to connect to the database.
 
 ```json
 {
@@ -61,11 +71,11 @@ Defaults
 
 Default for `connection.params.host` is `localhost` for all databases.
 
-#### Custom Parameters
+### Custom Parameters
 
 Besides the fixed slots, `params` accepts custom keys for engines that need them: [Google Spanner](spanner.md) declares its `project`/`instance`/`database_id` locators this way, PostgreSQL and [CockroachDB](cockroachdb.md#source-tls-and-mutual-tls) accept `sslmode` for the copy connection to the source, and [generic branches](generic.md) accept **any** key (for example `token`, `org`, `vhost`) - each is injected into the branch container as a `MIRRORD_PARAM_<NAME>` env var. Custom parameters support the same value sources as the fixed slots, and a literal `value` in one is extracted into the credential Secret exactly like the fixed slots. One difference from the fixed slots: a `value_pattern` on a custom parameter must name its capture group `value` (or use a plain first group) - per-name groups like `(?P<sslmode>...)` only work for the fixed slots.
 
-#### Branch Query Parameters (PostgreSQL)
+### Branch Query Parameters (PostgreSQL)
 
 The connection your application receives points at the branch pod, and its query parameters describe the branch rather than the source. `sslmode` is set automatically: `disable` for a regular branch pod, `require` when the operator's branch config enables TLS. So a source that mandates `?sslmode=require` (for example GCP Cloud SQL) works without changes - the branch connection drops the requirement the branch pod cannot serve.
 
@@ -98,6 +108,21 @@ pgBranchConfig:
 
 Branch query params require operator and Helm chart `3.197.0` or later, and mirrord CLI `3.250.0` or later. Against an older operator, a branch that sets `query_params` (or an `sslmode` connection param) fails with a clear error instead of silently ignoring it.
 
+## Value Sources
+
+By default each connection value is the name of an env var on the target pod. Any value can instead come from one of the sources below; they can be mixed freely within one `params` block.
+
+| Source | The value comes from | URL mode | Params mode |
+| --- | --- | --- | --- |
+| env var (default) | the target pod's `env` or `envFrom` | yes | yes |
+| [`secret`](#secret-source) | a Kubernetes Secret, referenced by the branch pod | no | yes |
+| [`configmap`](#configmap-source) | a ConfigMap entry, optionally a field inside a mounted JSON/YAML file | no | yes |
+| [`gcp_secret_manager`](#google-secret-manager-source) | Google Secret Manager, fetched by the branch init container | yes | yes |
+| [`aws_secrets_manager`](#aws-secrets-manager-source) | AWS Secrets Manager, fetched by the branch init container | yes | yes |
+| [literal `value`](#literal-value) | the mirrord config itself | no | yes |
+
+Every source accepts `env_var_name`: when set, mirrord hands the branch's value to your local process under that name.
+
 ### Secret Source
 
 Any individual connection parameter can be sourced directly from a Kubernetes Secret instead of an environment variable. This is useful when credentials are stored in Kubernetes Secrets, such as AWS Secrets Manager synced secrets or volume-mounted secret files.
@@ -124,6 +149,89 @@ In this example, `host` and `database` are read from environment variables, whil
 
 {% hint style="info" %}
 The `secret` source is only supported for individual connection parameters, not for the full connection URL.
+{% endhint %}
+
+### ConfigMap Source
+
+Any individual connection parameter can also be read from a Kubernetes ConfigMap. This is useful when your application takes its database settings from a config file mounted from a ConfigMap rather than from environment variables.
+
+Instead of a plain string, use an object with `configmap`, `key`, and optionally `value_selector` (or `value_pattern`) and `env_var_name`:
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": {
+        "configmap": { "volume": "app-config" },
+        "key": "config.yml",
+        "value_selector": ".database.host",
+        "env_var_name": "DB_HOST"
+      },
+      "port": {
+        "configmap": { "volume": "app-config" },
+        "key": "config.yml",
+        "value_selector": ".database.port",
+        "env_var_name": "DB_PORT"
+      },
+      "user": "DB_USER",
+      "password": "DB_PASSWORD"
+    }
+  }
+}
+```
+
+The fields:
+
+* `configmap` - which ConfigMap to read. Either its name (`"configmap": "app-config"`), or a `configMap` volume of the target pod (`"configmap": { "volume": "app-config" }`). Prefer the volume form when your deployment tool renames the ConfigMap on every release (for example a version suffix added by ArgoCD or Helm): the volume name in the pod spec stays the same while the ConfigMap it points at changes.
+* `key` - the entry in the ConfigMap's `data`. With the volume form, this is the file name inside the volume, so a volume that remaps keys via `items` is resolved through that mapping.
+* `value_selector` - a selector run over the entry parsed as JSON or YAML. It supports nested keys (`.database.host`) and `.[]` to iterate arrays or object values; pipes, functions, and other jq operators are not supported. The selector must land on exactly one string, number, or boolean.
+* `value_pattern` - a regex whose capture group marks the value inside the raw entry text, for entries that are not JSON or YAML. It follows the same capture group rules as [composite environment variables](#composite-environment-variables). Mutually exclusive with `value_selector`.
+* `env_var_name` - optional. When set, mirrord injects the branch connection under that name for your local process, just like the `secret` source, so your code can read it with `os.Getenv(...)` (or equivalent). Without it, the value is only used to build the branch.
+
+Without `value_selector` or `value_pattern`, the whole entry (trimmed) is the value.
+
+### Setting the ConfigMap Once in a Profile
+
+When every developer's config would repeat the same `configmap` and `key`, the cluster admin can set them once with `dbPod.sourceConfigMap` in the operator's branch config, either on the default `dbPod` or on a [branch config profile](../db-branching.md#branch-config-profiles):
+
+```yaml
+mysqlBranchConfig:
+  profiles:
+    app-config:
+      dbPod:
+        sourceConfigMap:
+          volume: app-config     # or `name: <ConfigMap name>`
+          key: config.yml        # optional; params can name their own key
+```
+
+A param then only carries its selector and the local variable name, and picks the profile:
+
+```json
+{
+  "type": "mysql",
+  "profile": "app-config",
+  "connection": {
+    "params": {
+      "host": { "value_selector": ".database.host", "env_var_name": "MYSQL_HOST" },
+      "port": { "value_selector": ".database.port", "env_var_name": "MYSQL_PORT" },
+      "database": { "value_selector": ".database.name", "env_var_name": "MYSQL_DB" },
+      "user": "MYSQL_USERNAME",
+      "password": "MYSQL_PASSWORD"
+    }
+  }
+}
+```
+
+The layering is per field: a param's own `configmap` or `key` wins over the profile's, and the profile fills in whatever the param leaves out. A param that omits `configmap` on a profile without `sourceConfigMap` (or omits `key` on both sides) fails the branch with an error naming both places to fix it.
+
+One rule to remember: a param with only `value_pattern` and `env_var_name` is an [environment variable pattern](#composite-environment-variables), not a ConfigMap source. To use `value_pattern` against the profile's ConfigMap, keep `key` (or `configmap`) on the param so it stays a ConfigMap source `value_selector` has no such overlap.
+
+The operator reads the ConfigMap itself when the branch is created, so it needs `get` on ConfigMaps in the target namespace; the operator Helm chart grants this together with the other DB branching permissions.
+
+ConfigMap sources require operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates; an older CLI rejects the config as unknown.
+
+{% hint style="info" %}
+Your local application still has to pick the branch up. With `env_var_name`, the branch host is delivered as an environment variable, which works when your app lets an environment variable override the value from its config file. If your app only ever reads the mounted file, the file itself is not rewritten.
 {% endhint %}
 
 ### Google Secret Manager Source
@@ -236,7 +344,7 @@ Use a field with `value`:
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
 
-### Composite Environment Variables
+## Composite Environment Variables
 
 Some applications pack multiple connection details into a single environment variable. For example, a target pod might expose:
 
@@ -269,14 +377,15 @@ Here `host` and `port` live inside the same `DB_SERVER` value. Use `value_patter
 
 During a session, only the matched part of the value is swapped out: just the host, or just the port. The rest of the string always stays intact, so your app still sees `DB_SERVER` in the `host:port` format it expects.
 
-### Choosing the capture group
+### Choosing the Capture Group
+
 The capture group name follows the parameter name - `(?P<host>...)` for the `host` variable, `(?P<port>...)` for the `port` variable.
 
 For single-parameter patterns you can also use `(?P<value>...)` as a generic name, or a plain unnamed group like ([^:]+). If the regex contains more than one unnamed group, the first one is used.
 
 > The regex must contain at least one capture group, otherwise the configuration is rejected.
 
-### Multiple Sources for the Same Parameter
+## Multiple Sources for the Same Parameter
 
 Both `url` and individual `params` fields accept either a single value or an array. This is useful when an application uses several env vars for the same logical connection. For example, separate read/write URLs.
 
@@ -293,7 +402,8 @@ Both `url` and individual `params` fields accept either a single value or an arr
 
 The **first entry** is used to locate the source database and clone it. During the session, **every entry** is rewritten to point at the branch pod. In the example above, `DATABASE_WRITE_URL` is read to find the source database, but both `DATABASE_WRITE_URL` and `DATABASE_READ_URL` are redirected to the branch, so the application reads and writes against the same branch instead of pointing reads at the original database.
 
-### Combining arrays with `value_pattern`
+### Combining Arrays with `value_pattern`
+
 If the same connection parameter appears in multiple env vars and each var encodes a composite value, use an array of `value_pattern` objects. 
 
 As with plain arrays, the first entry is used as the source. Even if `WRITE_SERVER` and `READ_SERVER` point to different databases, only `WRITE_SERVER` is cloned. During the session, all entries are rewritten to point at the branch.
