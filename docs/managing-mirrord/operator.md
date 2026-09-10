@@ -252,50 +252,18 @@ users:
 
 In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
 
-Apply the following [WorkloadAllowlist](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-privileged-allowlists):
+mirrord is an approved [GKE Autopilot partner](https://docs.cloud.google.com/kubernetes-engine/docs/resources/autopilot-partners). Because of this, you should **not** manually apply a [WorkloadAllowlist](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-privileged-allowlists) for the mirrord-agent workload: GKE Autopilot clusters reject direct manual installation of it with an admission error. Manual installation only worked previously in specially-configured test projects, not in standard customer clusters.
+
+Instead, apply the following [AllowlistSynchronizer](https://docs.cloud.google.com/kubernetes-engine/docs/reference/crds/allowlistsynchronizer), which automatically syncs the current and future approved versions of the mirrord-agent allowlist:
 
 ```yaml
 apiVersion: auto.gke.io/v1
-kind: WorkloadAllowlist
+kind: AllowlistSynchronizer
 metadata:
-  name: mirrord-agent
-  annotations:
-    autopilot.gke.io/no-connect: "true"
-exemptions:
-  - autogke-default-linux-capabilities
-  - autogke-disallow-hostnamespaces
-  - autogke-no-write-mode-hostpath
-  - autogke-node-affinity-selector-limitation
-matchingCriteria:
-  hostPID: true
-  containers:
-    - name: mirrord-agent
-      image: ghcr.io/metalbear-co/mirrord
-      command:
-        - ./mirrord-agent
-      args:
-        - "^.*$"
-      env:
-        - name: "^.*$"
-      securityContext:
-        capabilities:
-          add:
-            - SYS_ADMIN
-            - SYS_PTRACE
-            - NET_ADMIN
-        privileged: false
-      volumeMounts:
-        - name: hostrun
-          mountPath: /host/run
-        - name: hostvar
-          mountPath: /host/var
-  volumes:
-    - name: hostrun
-      hostPath:
-        path: /run
-    - name: hostvar
-      hostPath:
-        path: /var
+  name: mirrord-allowlist
+spec:
+  allowlistPaths:
+    - "mirrord/mirrord-agent/*"
 ```
 
 **Note:** some Operator configurations might produce mirrord-agent pods that don't match this specification. When that happens, you'll see agent spawn errors in the Operator logs. To get the correct WorkloadAllowlist embedded in those error messages, merge this snippet into your mirrord Operator `values.yaml`:
