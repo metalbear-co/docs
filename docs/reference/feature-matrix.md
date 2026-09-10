@@ -31,6 +31,7 @@ Support levels vary by platform. The table below shows the current status for ea
   |                 | **[Google Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)**    | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[Azure Service Bus](../sharing-the-cluster/queue-splitting/azure-service-bus.md)** | `Alpha`       | `Alpha`         | Planned    |
   |                 | **[NATS](../sharing-the-cluster/queue-splitting/nats.md)**              | `Alpha`     | `Alpha`       | Planned    |
+  |                 | **[NATS Pub/Sub](../sharing-the-cluster/queue-splitting/nats.md#core-nats-pubsub-no-jetstream)** | `Alpha`     | `Alpha`       | Planned    |
   |                 | **[Redis Pub/Sub](../sharing-the-cluster/queue-splitting/redis-pubsub.md)**     | `Alpha`     | `Alpha`       | Planned |
   |                 | **[BullMQ](../sharing-the-cluster/queue-splitting/bullmq.md)**     | `Alpha`     | `Alpha`       | Planned |
   | **[Preview Env](../use-cases/preview-environments.md)**     | —                 | —           | `Alpha`         | Planned    |
