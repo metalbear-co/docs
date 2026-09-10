@@ -199,7 +199,7 @@ A param then only carries its selector and the local variable name, and picks th
 
 The layering is per field: a param's own `configmap` or `key` wins over the profile's, and the profile fills in whatever the param leaves out. A param that omits `configmap` on a profile without `sourceConfigMap` (or omits `key` on both sides) fails the branch with an error naming both places to fix it.
 
-One rule to remember: a param with only `value_pattern` and `env_var_name` is an [environment variable pattern](#composite-environment-variables), not a ConfigMap source. To use `value_pattern` against the profile's ConfigMap, keep `key` (or `configmap`) on the param so it stays a ConfigMap source. `value_selector` has no such overlap.
+One rule to remember: a param with only `value_pattern` and `env_var_name` is an [environment variable pattern](#composite-environment-variables), not a ConfigMap source. To use `value_pattern` against the profile's ConfigMap, keep `key` (or `configmap`) on the param so it stays a ConfigMap source `value_selector` has no such overlap.
 
 The operator reads the ConfigMap itself when the branch is created, so it needs `get` on ConfigMaps in the target namespace; the operator Helm chart grants this together with the other DB branching permissions.
 
