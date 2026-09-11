@@ -38,6 +38,8 @@ The response is a **provisional organization** carrying an Enterprise trial lice
 
 The agent installs the Operator with that key as `cloud.apiKey.key` (see [Cloud API key](../managing-mirrord/operator.md#cloud-api-key)), then gives you the `claim_url`.
 
+Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values, which defaults to `false` and can't be turned on after the fact without a `helm upgrade`, so it's worth setting during the agent's install.
+
 ## Claiming the organization
 
 Open the claim URL. You can sign in with an existing account or create one on the spot; the link survives either, including the verification mail that account creation sends you. What happens next depends on the account you use.

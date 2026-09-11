@@ -27,6 +27,7 @@ This feature is available to users on the Enterprise pricing plan.
 
 #### Prerequisites
 
+* **An Enterprise license.** A [free trial](https://app.metalbear.com/account/sign-up) is minted as an Enterprise one, so preview environments work for its duration. An AI agent on a cluster with no license can provision that trial itself, without waiting for a person: see [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md).
 * **Operator 3.142.0 or later** — the feature was introduced in this version.
 * **CLI 3.189.0 or later** — the `mirrord preview` subcommand was introduced in this version.
 *   **Helm flag** — `operator.previewEnv` must be set to `true` in your Helm values (defaults to `false`):
