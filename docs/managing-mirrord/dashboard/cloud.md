@@ -49,11 +49,11 @@ The onboarding in the app does these steps for you and checks each one. To set i
    {% endhint %}
 
 
-4. Install the mirrord CLI and run a session (mirrord wizard generates a config to start from).
+4. Install the mirrord CLI and run a session (`mirrord wizard` generates a config to start from).
 
 Once the operator is connected and a session has been recorded, your Home page at `app.metalbear.com` is the usage dashboard - see [Dashboard](../admin-dashboard.md) for what you'll see there.
 
-Per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
+Dark mode, your organization, and navigation come from the app around it rather than a standalone app bar. Per-user and per-target detail only appears if identity sharing was on for the API key you installed with; with it off, the same activity shows anonymized.
 
 ## Enabling on an existing install
 
@@ -80,7 +80,7 @@ A self-hosted license server is different: an operator configured with `license.
 
 1. Generate a cloud API key at [app.metalbear.com](https://app.metalbear.com), as above.
 2. In your operator Helm values, add `cloud.apiKey` as shown in the previous section and remove `license.licenseServer`, then upgrade.
-3. Sign in and run a session. Your usage shows up on the dashboard. Usage recorded by the license server stays in its database; if you want that history on the cloud dashboard, [get in touch](https://metalbear.com/mirrord/contact/) and we'll import it. Once the operator is reporting to the cloud, the mirrord-license-server chart can be uninstalled if you only ran it for the dashboard.
+3. Sign in and run a session. Your usage shows up on the dashboard. Usage recorded by the license server stays in its database; if you want that history on the cloud dashboard, [get in touch](https://metalbear.com/mirrord/contact/) and we'll import it. Once the operator is reporting to the cloud, the `mirrord-license-server` chart can be uninstalled if you only ran it for the dashboard.
 
 {% hint style="warning" %}
 Don't migrate an air-gapped or network-restricted deployment. The cloud dashboard needs outbound connectivity to the mirrord cloud; keep those clusters on [License Server Setup](license-server.md).
