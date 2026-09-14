@@ -302,6 +302,7 @@ Filter definition contains the following fields:
   * For **BullMQ**, it runs a jq program on the parsed JSON value of the job's `data` field.
   * For **NATS**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
   * A message matches if the jq program outputs `true`.
+* `payload_protobuf` - optional, `Kafka` only. Decodes record values that carry plain protobuf instead of JSON with a schema you provide, and exposes the decoded message to `jq_filter` as a `payload_decoded` field. See [Filtering on protobuf payloads](queue-splitting/kafka.md#filtering-on-protobuf-payloads).
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
@@ -345,7 +346,7 @@ For multiple queues, use the **array** form, which moves the ID into each entry 
 }
 ```
 
-Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
+Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`, `payload_protobuf`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
