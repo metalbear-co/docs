@@ -324,7 +324,7 @@ Temporary group names follow the temporary topic name format (`mirrord-tmp-...`)
 
 ## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers and `jq_filter` on a JSON representation of the whole record.
+For the full filter reference (`queue_type`, `message_filter`, `jq_filter`, `payload_protobuf`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers, `jq_filter` on a JSON representation of the whole record, and `payload_protobuf` for decoding protobuf record values before the jq program runs.
 
 ### Filtering on headers
 
