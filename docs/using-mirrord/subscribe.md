@@ -12,14 +12,18 @@ going green.
 
 {% hint style="info" %}
 For centrally collected records that do not require a running subscriber, see [message processing functional logs](../managing-mirrord/monitoring.md#message-processing). Functional logs use the Operator's normal logging pipeline, while `mirrord subscribe` provides a live event stream filtered by session key.
+
+To read the same events for every session at once, without a terminal per key, use the Events tab in the [local UI](local-ui.md#events-tab).
 {% endhint %}
 
 **When do you receive events?**
 
 * HTTP - you receive an event for each request/response that was routed to or from a target workload by mirrord and matches your subscribed key.
-* Queue (Amazon SQS, Azure Service Bus, GCP Pub/Sub, RabbitMQ, BullMQ, Kafka, Redis Pub/Sub) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
+* Queue (Amazon SQS, Azure Service Bus, GCP Pub/Sub, RabbitMQ, BullMQ, Kafka, NATS, NATS Pub/Sub, Redis Pub/Sub) - while queue splitting is active, you receive an event for each message that matches your subscribed key. If no splitting session is active, no events are received.
 
 In both cases: no active mirrord session = no events.
+
+Pass `--unmatched` to also receive the queue messages your filter did *not* take, so you can see what your split is missing. See [Unmatched messages](#unmatched-messages).
 
 {% hint style="info" %}
 HTTP events come from redirected requests/responses. Queue events require [queue splitting](../sharing-the-cluster/queue-splitting.md) configured for the session, and every supported broker emits them, with these exceptions:
@@ -58,9 +62,37 @@ mirrord subscribe --key my-key | jq 'select(.data.http_request)'
 
 You may also pass `--pretty` to pretty-print each event.
 
+### Options
+
+Both are off by default, so a stream that asks for neither keeps the shape it had - apart from `mode` and the HTTP correlation ids, which every event now carries whether you ask for them or not.
+
+| Flag | Effect |
+| --- | --- |
+| `--session-key-field` | Adds a `session_key` field naming the session each event belongs to, for a consumer merging several streams. |
+| `--unmatched` | Also delivers queue messages that matched no session's filter. See below. |
+
+Both need operator `3.208.0` or newer. An older operator ignores them and streams as usual.
+
+### Unmatched messages
+
+By default you receive a queue message only when your filter claimed it. With `--unmatched` you also receive the ones nobody claimed, carrying `"mode": "filtered"` — which is what answers "why isn't my split catching this?".
+
+```sh
+mirrord subscribe --key my-key --unmatched | jq 'select(.data.queue_message.mode == "filtered")'
+```
+
+Two things to know before turning it on:
+
+* **You see other people's traffic.** An unmatched message is reported to every session splitting that queue, so it includes messages that went to the deployed workload or to a teammate's session, with their properties and correlation ids.
+* **It costs the operator work per message,** and the event buffer is shared by every subscriber on the operator, so a busy queue makes [lagging](#lagged) more likely for everyone. It is only active while somebody is subscribed with the flag.
+
+{% hint style="info" %}
+This covers queue messages only. An HTTP request that matches no filter never reaches the operator - the agent filters it and passes it to the workload directly - so there is nothing for `mirrord subscribe` to report.
+{% endhint %}
+
 ### Events
 
-Every event has the same envelope — `service_name`, `timestamp`, and a `data` payload:
+Every event has the same envelope — `service_name` (the intercepted workload), `timestamp`, and a `data` payload:
 
 ```json
 {
@@ -89,11 +121,16 @@ mirrord subscribe --key my-key | jq '.data'
 
 **`data` is one of the following (payloads shown on their own):**
 
+Every payload that describes an intercepted message carries `mode`: `steal` if only your session received it, `mirror` if the workload received a copy too, or `filtered` if it matched no filter (see [Unmatched messages](#unmatched-messages)). `http_response` has none - a response is routed with the request it answers - and neither does `lagged`, which is about the stream rather than a message.
+
 * **`http_request`** — an intercepted (stolen) request:
 
 ```json
 {
   "http_request": {
+    "mode": "steal",
+    "connection_id": 4,
+    "request_id": 1,
     "method": "GET",
     "uri": "/health",
     "headers": {
@@ -109,6 +146,8 @@ mirrord subscribe --key my-key | jq '.data'
 ```json
 {
   "http_response": {
+    "connection_id": 4,
+    "request_id": 1,
     "status": 200,
     "version": "HTTP/1.1",
     "headers": {
@@ -118,7 +157,9 @@ mirrord subscribe --key my-key | jq '.data'
 }
 ```
 
-* **`queue_message`** — a queue message routed to your session. `queue_type` is one of `sqs`, `azure_service_bus`, `gcppubsub`, `rmq`, or `bullmq`. `message_id` and `correlation_id` are included only when the broker provides them (SQS, GCP Pub/Sub and BullMQ have no `correlation_id`). `properties` is the message's attribute bag, with values stringified: text as-is, and **binary values base64-encoded**.
+A request and its response are separate events. Pair them on `connection_id` **and** `request_id` together: `request_id` is only unique within its connection.
+
+* **`queue_message`** — a queue message routed to your session. `queue_type` is one of `sqs`, `azure_service_bus`, `gcppubsub`, `rmq`, `bullmq`, `nats`, or `natspubsub`. `message_id` and `correlation_id` are included only when the broker provides them (SQS, GCP Pub/Sub and BullMQ have no `correlation_id`). `properties` is the message's attribute bag, with values stringified: text as-is, and **binary values base64-encoded**.
 
 An Azure Service Bus message (its application properties become `properties`):
 
@@ -235,7 +276,7 @@ For a pattern subscription (`PSUBSCRIBE`), `channel` is the concrete channel the
 }
 ```
 
-* **`lagged`** — your consumer fell behind and the operator dropped `count` events:
+* <a id="lagged"></a>**`lagged`** — your consumer fell behind and the operator dropped `count` events:
 
 ```json
 {
@@ -255,6 +296,10 @@ Lagging takes place whenever the consumer is not able to keep up with the messag
 kubectl get --raw \
   "/apis/operator.metalbear.co/v1/events?watch=true&session_key=my-key"
 ```
+
+`--session-key-field` and `--unmatched` are the query parameters `include_session_key=true` and `include_unmatched=true`.
+
+Omit `session_key` to receive every session's events on one stream. Such a stream always names the session each event belongs to, whether or not `include_session_key` asked it to, since that is the only thing telling its events apart. `mirrord subscribe` always names a key; this is for a cross-session consumer such as the [local UI](local-ui.md#events-tab).
 
 or with `kubectl proxy` + `curl`:
 
