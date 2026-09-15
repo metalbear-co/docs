@@ -9,7 +9,7 @@ menu:
 weight: 100
 toc: true
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 description: Steal a subset of incoming traffic using HTTP header, W3C baggage or tracestate, path or method filters

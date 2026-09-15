@@ -10,7 +10,6 @@ menu:
     teams: null
 weight: 545
 toc: true
-tags:
 description: Versioning and compatibility between mirrord components
 ---
 

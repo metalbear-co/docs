@@ -1,5 +1,9 @@
 ---
 title: Incoming Traffic
+tags:
+  - oss
+  - team
+  - enterprise
 description: How mirrord handles incoming network traffic from the cluster
 ---
 
@@ -24,6 +28,8 @@ Steal mode can be configured in your mirrord config:
   }
 }
 ```
+
+To steal filtered traffic for several services at once, [`mirrord up`](../multiple-concurrent-sessions.md) manages multiple sessions from a single config file.
 
 ## What's in this section
 

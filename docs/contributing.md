@@ -18,4 +18,11 @@ mirrord is open source and we welcome contributions!
 3. Make your changes
 4. Submit a pull request
 
+## Greptile Reviews
+
+Greptile may review pull requests automatically. Maintainers can apply the `no-greptile` label when an
+automated review is not needed, such as for a typo-only or other trivial change. Opting out of reviews that are not
+useful helps keep usage within the included monthly review quota. If Greptile's input becomes useful later, tag
+`@greptileai` in the pull request to request a review explicitly.
+
 For detailed build instructions and development setup, see the [CONTRIBUTING.md](https://github.com/metalbear-co/mirrord/blob/main/CONTRIBUTING.md) in the repository.

@@ -9,7 +9,7 @@ mirrord can be installed and used in several ways depending on your development 
 - **[VS Code](vscode.md)** - Install the mirrord extension for Visual Studio Code and compatible editors (Cursor, Windsurf, etc.)
 - **[JetBrains IDEs](intellij.md)** - Install the mirrord plugin for JetBrains IDEs (IntelliJ, PyCharm, GoLand, etc.)
 
-Using IDE extensions on Windows? See our **[WSL setup guide](wsl.md)**.
+mirrord runs natively on Windows — no WSL needed. If you still prefer to use WSL, see our **[WSL setup guide](wsl.md)**.
 
 ## Local Requirements
 

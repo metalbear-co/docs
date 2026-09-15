@@ -9,7 +9,7 @@ menu:
 weight: 100
 toc: true
 tags:
-  - open source
+  - oss
   - team
   - enterprise
 description: How to filter traffic by JSON body using mirrord

@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Welcome](welcome.md)
+* [Welcome](README.md)
 
 ## Getting Started
 
@@ -11,18 +11,21 @@
   * [CLI](installing-mirrord/cli.md)
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
-  * [WSL](installing-mirrord/wsl.md)
   * [mirrord Operator](managing-mirrord/operator.md)
+  * [WSL (deprecated)](installing-mirrord/wsl.md)
 
 ## Use Cases
 
 * [Remocal Development](use-cases/local-development.md)
+* [mirrord up (Multiple Concurrent Sessions)](using-mirrord/multiple-concurrent-sessions.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
+* [Chaos Testing](use-cases/chaos-testing.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
+  * [Agent-Started Trials](using-mirrord-with-ai/agent-started-trials.md)
 
 ## Using mirrord
 
@@ -45,8 +48,9 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
-* [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
+* [Targeting Pods by Label](using-mirrord/targeting-pods-by-label.md)
 * [Local UI](using-mirrord/local-ui.md)
+* [Subscribing to Events](using-mirrord/subscribe.md)
 
 ## Sharing the Cluster
 
@@ -56,17 +60,46 @@
   * [Outgoing Traffic Policies](sharing-the-cluster/outgoing-traffic-policies.md)
 * [Profiles](sharing-the-cluster/profiles.md)
 * [Queue Splitting](sharing-the-cluster/queue-splitting.md)
+  * [Amazon SQS](sharing-the-cluster/queue-splitting/sqs.md)
+  * [Kafka](sharing-the-cluster/queue-splitting/kafka.md)
+  * [RabbitMQ](sharing-the-cluster/queue-splitting/rabbitmq.md)
+  * [Google Cloud Pub/Sub](sharing-the-cluster/queue-splitting/gcp-pubsub.md)
+  * [Azure Service Bus](sharing-the-cluster/queue-splitting/azure-service-bus.md)
+  * [NATS JetStream](sharing-the-cluster/queue-splitting/nats.md)
+  * [Redis Pub/Sub](sharing-the-cluster/queue-splitting/redis-pubsub.md)
+  * [Temporal](sharing-the-cluster/queue-splitting/temporal.md)
+  * [BullMQ](sharing-the-cluster/queue-splitting/bullmq.md)
+  * [More](sharing-the-cluster/queue-splitting/more.md)
+    * [Migrating to MirrordSplitConfig](sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig.md)
+  * [Queue Splitting Status](sharing-the-cluster/queue-splitting/status.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
-  * [Branch Management](sharing-the-cluster/db-branch-management.md)
-  * [Advanced Configuration](sharing-the-cluster/db-branching-advanced-config.md)
+  * [MySQL](sharing-the-cluster/db-branching/mysql.md)
+  * [MariaDB](sharing-the-cluster/db-branching/mariadb.md)
+  * [PostgreSQL](sharing-the-cluster/db-branching/postgresql.md)
+  * [MSSQL](sharing-the-cluster/db-branching/mssql.md)
+  * [MongoDB](sharing-the-cluster/db-branching/mongodb.md)
+  * [Redis](sharing-the-cluster/db-branching/redis.md)
+  * [DynamoDB](sharing-the-cluster/db-branching/dynamodb.md)
+  * [ClickHouse](sharing-the-cluster/db-branching/clickhouse.md)
+  * [CockroachDB](sharing-the-cluster/db-branching/cockroachdb.md)
+  * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
+  * [Generic](sharing-the-cluster/db-branching/generic.md)
+  * [More](sharing-the-cluster/db-branching/more.md)
+    * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
+    * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)
+    * [Schema Migrations](sharing-the-cluster/db-branching/migrations.md)
+    * [Branch Management](sharing-the-cluster/db-branching/management.md)
 
 ## Managing mirrord
 
 * [Dashboard](managing-mirrord/admin-dashboard.md)
+  * [License Server Setup](managing-mirrord/dashboard/license-server.md)
+  * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
 * [Scalability](managing-mirrord/scalability.md)
+* [Licensing](managing-mirrord/licensing.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
 * [Jira Integration](managing-mirrord/jira-integration.md)

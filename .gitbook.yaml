@@ -32,9 +32,13 @@ redirects:
   using-mirrord/sharing-the-cluster: sharing-the-cluster
   using-mirrord/queue-splitting: sharing-the-cluster/queue-splitting
   using-mirrord/db-branching: sharing-the-cluster/db-branching
-  using-mirrord/db-branch-management: sharing-the-cluster/db-branch-management
-  using-mirrord/db-branching-advanced-config: sharing-the-cluster/db-branching-advanced-config
+  using-mirrord/db-branch-management: sharing-the-cluster/db-branching/management
+  using-mirrord/db-branching-advanced-config: sharing-the-cluster/db-branching
   using-mirrord/mirrord-for-ci: use-cases/mirrord-for-ci
+
+  # DB branching restructure → per-database pages
+  sharing-the-cluster/db-branch-management: sharing-the-cluster/db-branching/management
+  sharing-the-cluster/db-branching-advanced-config: sharing-the-cluster/db-branching
 
   # Managing mirrord → new locations
   managing-mirrord/policies: sharing-the-cluster/policies

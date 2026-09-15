@@ -32,7 +32,7 @@ Unless overridden at install time, the operator uses the following resource defa
 
 | Resource | Request | Limit  |
 | -------- | ------- | ------ |
-| CPU      | 100m    | 200m   |
+| CPU      | 100m    | 500m   |
 | Memory   | 100Mi   | 200Mi  |
 
 {% hint style="info" %}
