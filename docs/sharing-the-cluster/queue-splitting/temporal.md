@@ -124,6 +124,10 @@ Setting any `tls*` property implies `tls: "true"`, and setting only one of `tlsC
 {% hint style="info" %}
 TLS applies to the connection between the **operator** and the Temporal frontend. Deployed workers patched into a split connect to the operator's in-cluster Temporal proxy over plaintext gRPC.
 {% endhint %}
+
+{% hint style="warning" %}
+The operator's Temporal proxy does not support gRPC compression. Python's `temporalio` SDK enables gzip by default, which fails with `grpc compression not supported`. Disable compression on the worker client, for example `grpc_compression=GrpcCompression.NONE` on `Client.connect`.
+{% endhint %}
 {% endstep %}
 
 {% step %}
