@@ -322,50 +322,68 @@ This configuration tells the local mirrord client:
 
 The mirrord operator needs information about the Kafka setup. This is configured using Kubernetes custom resources.
 
-First, create a `MirrordKafkaClientConfig` resource:
+First, create a `MirrordPropertyList` resource holding the connection settings for the operator's own Kafka client. Each property is passed straight to the underlying Kafka client:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaClientConfig
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
 metadata:
   name: base-config
-  namespace: mirrord
+  namespace: default
 spec:
   properties:
     - name: bootstrap.servers
       value: kafka-0.kafka.default.svc.cluster.local:9092
-    - name: client.id
-      value: mirrord-operator
     - name: security.protocol
       value: PLAINTEXT
 ```
 
-Next, create a `MirrordKafkaTopicsConsumer` resource:
+Next, create a `MirrordSplitConfig` resource:
 
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
-kind: MirrordKafkaTopicsConsumer
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
 metadata:
-  name: kafka-consumer-topics
+  name: kafka-consumer-split
   namespace: default
 spec:
-  consumerApiVersion: apps/v1
-  consumerKind: Deployment
-  consumerName: kafka-consumer
-  topics:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kafka-consumer
+  queues:
     - id: test_topic
+      kind: kafka
       clientConfig: base-config
-      nameSources:
-        - directEnvVar:
-            container: consumer
-            variable: KAFKA_TOPIC
-      groupIdSources:
-        - directEnvVar:
-            container: consumer
-            variable: KAFKA_GROUP_ID
+      appConfig:
+        topic:
+          - env: KAFKA_TOPIC
+            containers:
+              - consumer
+        groupId:
+          - env: KAFKA_GROUP_ID
+            containers:
+              - consumer
 ```
 
-The above configurations have already been applied if `kubectl apply -f ./kube` ran successfully earlier.
+This `MirrordSplitConfig` says that:
+
+- It targets the `kafka-consumer` deployment (`spec.targetRef`).
+- The `consumer` container reads the topic name from the `KAFKA_TOPIC` environment variable and the consumer group ID from `KAFKA_GROUP_ID`.
+- The topic is referenced from the local mirrord configuration under the ID `test_topic` (the queue IDs in `split_queues` have to match the queue IDs in the `MirrordSplitConfig`).
+- The operator connects to Kafka using the settings from the `base-config` `MirrordPropertyList`.
+
+For the full resource reference, see the [Kafka queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/kafka).
+
+**Note**: `MirrordSplitConfig` requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later. It replaces the deprecated `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources; if you have existing resources of the old kinds, see [Migrating to MirrordSplitConfig](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig).
+
+Save both resources above to a file and apply them to your cluster:
+
+```bash
+kubectl apply -f kafka-split-config.yaml
+```
+
+**Note**: The sample repository's `kube/` manifests still contain the legacy `MirrordKafkaTopicsConsumer` and `MirrordKafkaClientConfig` resources. The resources above replace them, so apply them yourself as shown here.
 
 #### Running your local consumer with queue splitting
 
