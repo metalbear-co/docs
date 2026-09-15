@@ -342,6 +342,10 @@ marked with the `cronjob.kubernetes.io/instantiate: manual` annotation like a
 `kubectl create job --from=cronjob/...` run. After that, the CronJob keeps running on its
 schedule until the session ends, and every Job and pod it created is deleted with the session.
 
+Set `feature.preview.cronjob.trigger_on_start` to `false` to skip that immediate run, for jobs
+whose timing matters (a report that must only run in its window, a job that assumes the
+previous scheduled run finished). The preview then runs on its schedule alone.
+
 The schedule is inherited from the source CronJob. Override it with
 `feature.preview.cronjob.schedule`, in Kubernetes CronJob syntax:
 
@@ -352,7 +356,8 @@ The schedule is inherited from the source CronJob. Override it with
     "preview": {
       "image": "myrepo/scan:pr-4821",
       "cronjob": {
-        "schedule": "*/30 * * * *"
+        "schedule": "*/30 * * * *",
+        "trigger_on_start": true
       }
     }
   }
