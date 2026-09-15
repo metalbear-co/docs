@@ -194,10 +194,10 @@ appConfig:
 ```
 
 * `podFile.path` - absolute path of the file inside the container.
-* `podFile.container` - container the operator reads the file from. Defaults to the `vault-agent` sidecar when the pod has one, otherwise the pod's first application container. Set it when the file is only mounted in a specific container, or when the default container has no `cat` binary (a distroless image).
+* `podFile.container` - container whose filesystem the operator reads the file from. Defaults to the first container the entry's `containers` list names, otherwise the pod's first application container. Set it when the file is only mounted in a specific container.
 * `valueSelector` and `valuePattern` work exactly as for `volume` sources above.
 
-Because no API object holds the file, the operator reads it by running `cat` in a running pod of the target. The target must have at least one running pod when the split starts, and the operator needs `get` and `create` on `pods/exec` in the target namespace - the operator Helm chart grants this when queue splitting is enabled.
+Because no API object holds the file, the operator reads it through a mirrord agent for a running pod of the target, the same way a mirrord session reads remote files. The target must have at least one running pod whose container is ready when the split starts. Nothing else is needed: the container needs no shell or `cat` binary, and the operator needs no `pods/exec` permission.
 
 The operator never touches Vault or the injector. When a split starts, it:
 
