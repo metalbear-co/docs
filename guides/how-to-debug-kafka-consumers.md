@@ -201,7 +201,7 @@ Now that we know how to access the producer, let’s dive into two effective app
 
 ### Approach 1: Simple Debugging with copy_target + scaledown (easier to execute)
 
-The simplest way to debug Kafka consumers is to ensure your local consumer is the only one receiving messages from the topic. mirrord’s copy_target feature with scale_down enabled accomplishes this. For detailed documentation, see [mirrord’s copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-deployment-using-scale_down).
+The simplest way to debug Kafka consumers is to ensure your local consumer is the only one receiving messages from the topic. mirrord’s copy_target feature with scale_down enabled accomplishes this. For detailed documentation, see [mirrord’s copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-workload-using-scale_down).
 
 ```json
 {
@@ -419,7 +419,7 @@ In this guide, we’ve explored how to use mirrord to debug Kafka consumer appli
 
 1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
-2. **Copy target with scale down** gives your local application exclusive access to Kafka messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-deployment-using-scale_down).
+2. **Copy target with scale down** gives your local application exclusive access to Kafka messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-workload-using-scale_down).
 
 By leveraging mirrord, you can significantly improve your productivity when working with Kafka consumer applications and streamline your debugging workflow. For teams working together on Kafka applications, [mirrord for Teams](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord) provides additional collaborative features that enable multiple developers to debug simultaneously.
 

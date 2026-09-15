@@ -219,7 +219,7 @@ Now that we know how to access the producer, let’s dive into two effective app
 
 ### Approach 1: Simple Debugging with copy_target + scaledown (easier to execute)
 
-The simplest way to debug SQS consumers is to ensure your local consumer is the only one receiving messages from the queue. mirrord’s copy_target feature with scale_down enabled accomplishes this. For detailed documentation, see [mirrord’s copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-deployment-using-scale_down).
+The simplest way to debug SQS consumers is to ensure your local consumer is the only one receiving messages from the queue. mirrord’s copy_target feature with scale_down enabled accomplishes this. For detailed documentation, see [mirrord’s copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-workload-using-scale_down).
 
 ```json
 {
@@ -271,7 +271,7 @@ When you run this command, you can use the producer to send messages which will 
 
 ### Approach 2: Queue Splitting for non-disruptive debugging
 
-Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, visit https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting.
+Queue splitting is a powerful feature in mirrord that allows both your local application and the remote application to receive the same messages. This is particularly useful when you want to debug without disrupting the existing remote consumers. For detailed documentation on queue splitting, [head here](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
 #### How queue splitting works
 
@@ -418,7 +418,7 @@ In this guide, we’ve explored how to use mirrord to debug SQS consumer applica
 
 1. **Queue splitting** allows you to debug without disrupting existing consumers by duplicating messages. Learn more about this feature in the [queue splitting documentation](https://metalbear.com/mirrord/docs/sharing-the-cluster/queue-splitting).
 
-1. **Copy target with scale down** gives your local application exclusive access to SQS messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-deployment-using-scale_down).
+1. **Copy target with scale down** gives your local application exclusive access to SQS messages. Learn more in the [copy target documentation](https://metalbear.com/mirrord/docs/using-mirrord/copy-target#replacing-a-whole-workload-using-scale_down).
 
 By leveraging mirrord, you can significantly improve your productivity when working with SQS consumer applications and streamline your debugging workflow. For teams working together on SQS applications, [mirrord for Teams](https://metalbear.com/mirrord/docs/getting-started/what-is-mirrord) provides additional collaborative features that enable multiple developers to debug simultaneously.
 

@@ -89,7 +89,7 @@ This run is expected to fail in most setups because local execution does not hav
 
 ### 2) Install mirrord
 
-Install mirrord by following the [quick start installation steps](https://metalbear.com/mirrord/docs/getting-started/quick-start#installation).
+Install mirrord by following the [quick start installation steps](https://metalbear.com/mirrord/docs/getting-started/quick-start#install).
 
 ### 3) Run the application with mirrord
 
