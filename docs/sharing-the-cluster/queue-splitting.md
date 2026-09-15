@@ -19,7 +19,7 @@ The word "queue" in this doc is used to also refer to "topic" in the context of 
 Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
 {% endhint %}
 
-### Choose your queue service
+## Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
@@ -306,7 +306,7 @@ Filter definition contains the following fields:
 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
-#### One queue or many
+### One queue or many
 
 `feature.split_queues` accepts two shapes.
 
