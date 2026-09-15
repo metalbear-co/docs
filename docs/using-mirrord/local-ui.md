@@ -22,8 +22,23 @@ tags:
 
 - **Local sessions** - each `mirrord exec` you have running locally, with its target, port subscriptions, processes, mirrord version, and a live event stream (file ops, DNS, HTTP requests, outgoing connections).
 - **Operator sessions** - a roll-up of every active mirrord session in your cluster, grouped by session key, with target, owner, namespace, and HTTP filter. Useful for seeing what your teammates have running before you start your own session, and for picking a session to ride on from the [mirrord browser extension](incoming-traffic/debug-from-browser.md).
+- **Events** - the interception events the operator publishes for [`mirrord subscribe`](subscribe.md), for every session in the selected context at once.
 
 The dashboard updates live over a WebSocket as sessions start and end.
+
+## Events tab
+
+The **Events** tab lists the HTTP requests and responses, and the queue messages, the operator routed to a mirrord session - the same events [`mirrord subscribe`](subscribe.md) streams on the command line, but for every session at once instead of one session key.
+
+Each row carries the time, the session key, the intercepted service, the event type, its source (an HTTP method and path, or a queue, topic, or channel name), and a status. The status is how the message was routed - **stolen** if only the session received it, **mirrored** if the workload got a copy too, **filtered** if no filter took it - except on an HTTP call, which shows its response code. Filter with the text box, which matches the session key, the service and the source, narrow by event type, and click **Time** to flip between newest and oldest first. The count above the table reads the total held against how many the current filters leave.
+
+An HTTP call is one row. The operator emits the request and the response as separate events; the response completes the row its request opened, so the row reads as the method, the path and the code together. Until the response arrives the row shows how the request was routed instead of a code. A response whose request has already dropped out of the buffer keeps a row of its own.
+
+The routing dropdown chooses which messages the table shows: **Consumed** (the default) for the ones a session's filter took, **Filtered** for the ones none did, and **Consumed + filtered** for both. Asking for filtered messages makes the operator report traffic routed to other sessions and to the deployed workload, so it stays off until you pick it - see [unmatched messages](subscribe.md#unmatched-messages) for what it costs.
+
+Collection starts with the Session Monitor rather than when you open this tab, so there is already history the first time you look. Up to 10,000 rows are kept, oldest dropped; nothing is stored, so switching context or reloading starts a fresh list. For records that outlive a subscriber, see [message processing functional logs](../managing-mirrord/monitoring.md#message-processing).
+
+The tab needs operator `3.208.0` or newer, which is what can name and pair events. Against anything older, or a context with no operator, it says so rather than showing an empty table.
 
 ## Prerequisites
 
@@ -101,3 +116,4 @@ If you have the [mirrord browser extension](incoming-traffic/debug-from-browser.
 
 - Use the [browser extension](incoming-traffic/debug-from-browser.md) to inject a header that matches an operator session's HTTP filter and route browser traffic to the corresponding local layer.
 - Read [Managing Sessions](../sharing-the-cluster/sessions.md) for the operator-side view of the same sessions and how to forcibly stop one.
+- Stream one session's events into a test runner with [`mirrord subscribe`](subscribe.md).
