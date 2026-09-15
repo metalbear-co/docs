@@ -179,7 +179,7 @@ By default, opening a Preview Environment as a recipient requires the mirrord br
 
 `mirrord-share-ingress` moves that header injection off the client and onto a server-side component, so a plain HTTPS link works on its own with nothing to install on the recipient's side. Each shareable preview is reachable at its own host, `<slug>.<shareDomain>`, printed by `mirrord preview start` as the `preview URL`.
 
-The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
+The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
 
 {% hint style="info" %}
 The preview URL works with any HTTP filter. A preview with a custom filter (a path filter, a different header, composed filters) additionally routes requests carrying the share link's injected baggage header, so its own filter keeps working for regular traffic while the link always reaches the preview.
@@ -246,6 +246,24 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
     kubectl create secret tls share-ingress-tls \
       --cert=wildcard.crt --key=wildcard.key -n mirrord
     ```
+
+#### Stable share hosts
+
+By default the slug carries a random suffix, so the link only exists once `mirrord preview start` prints it. Set `operator.shareIngress.stableSlugs` when you need the link before that - for example when a PR bot posts the preview URL built from the PR number:
+
+```yaml
+operator:
+  previewEnv: true
+  shareIngress:
+    shareDomain: preview.example.com
+    stableSlugs: true
+```
+
+The host is then `<sanitized key>.<shareDomain>`: the key lowercased, every other character replaced with `-`, runs of `-` collapsed, and the whole label cut at 63 characters. A session with key `pr-myrepo-42` is reachable at `pr-myrepo-42.preview.example.com`.
+
+Since anyone who knows the key can build the link, it is guessable. Only enable this when the ingress in front of `mirrord-share-ingress` authenticates every request.
+
+A cluster allows one live session per host. Starting a second session whose key gives the same host fails right away with `share host <host> is already held by live preview session <namespace>/<name>`; stop that session or pick a different key. Failed sessions and sessions being deleted do not hold their host, so restarting a preview under the same key reuses the same link. Sessions that already have a host keep it when you turn the option on or off.
 
 ### Auto Scaling Idle Mode
 
