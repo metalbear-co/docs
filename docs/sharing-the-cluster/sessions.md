@@ -97,6 +97,30 @@ operator:
 Each value covers its own phase, so none of them overrides another. A session is closed by
 whichever one it reaches first.
 
+### Silence on a live connection
+
+{% hint style="info" %}
+`communicationTimeoutMillis` requires operator Helm chart `3.209.0` or later. The Operator applies
+the timeout either way; earlier charts give you no way to change it.
+{% endhint %}
+
+The three values above decide when a session nobody is connected to is closed. A separate timeout
+applies while a client is connected: the Operator times the client and the agent separately, and
+closes the session as soon as **either** of them goes `communicationTimeoutMillis` without sending
+anything. A busy client does not keep a silent agent's session alive.
+
+```yaml
+operator:
+  ## How long either side may go silent before the session is closed. Default: 60000.
+  communicationTimeoutMillis: 60000
+```
+
+The log says which side stopped: `Layer Communication Timeout` for the client, `Agent
+Communication Timeout` for the agent. A laptop that sleeps or changes network trips the first one,
+so raise this where developers work over links that stall for longer than a minute. The cost is
+the same as a longer unused TTL: agents and patched workloads are held for longer after a client
+really has gone away.
+
 ### Multi-cluster sessions
 
 A multi-cluster session is tracked twice: one session per cluster, and one session on the primary
@@ -127,6 +151,7 @@ it on every other cluster.
 | --- | --- |
 | Sessions fail while starting, with `Session not found` or `is being deleted` | `sessionSetupDeadlineSeconds` |
 | Sessions drop for clients on slow or unreliable networks | `sessionUnusedTtlSeconds` |
+| Sessions drop mid-use, with `Layer Communication Timeout` in the Operator log | `communicationTimeoutMillis` |
 
 A longer unused TTL also holds agents and patched workloads for longer after a client really does
 go away, so raise it only as far as you need.
