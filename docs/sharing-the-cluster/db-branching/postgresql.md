@@ -38,6 +38,8 @@ PostgreSQL branching requires operator `3.131.0`, mirrord CLI `3.175.0`, and ope
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
+The `version` field picks the PostgreSQL image the branch runs. When that image runs a different PostgreSQL release than the source, mirrord warns with both versions when the branch comes up.
+
 ## Copy Modes
 
 The `copy` field controls what data gets cloned when creating a PostgreSQL branch.

@@ -40,6 +40,8 @@ CockroachDB speaks the PostgreSQL wire protocol, so your application keeps its e
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). CockroachDB uses port `26257` and user `root` when these are not specified. Because the branch runs in insecure mode, its connection URL carries `sslmode=disable`. See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
+The `version` field picks the CockroachDB image the branch runs. When that image runs a different CockroachDB release than the source, mirrord warns with both versions when the branch comes up.
+
 ## Copy Modes
 
 The `copy` field controls what data gets cloned when creating a CockroachDB branch.

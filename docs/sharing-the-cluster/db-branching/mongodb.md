@@ -38,6 +38,8 @@ MongoDB branching requires operator `3.137.0`, mirrord CLI `3.183.0`, and operat
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
+The `version` field picks the MongoDB image the branch runs. When that image runs a different MongoDB release than the source, mirrord warns with both versions when the branch comes up.
+
 ## Copy Modes
 
 MongoDB supports two copy modes. The copy mode sets the **default behavior** for all collections.

@@ -38,6 +38,8 @@ ClickHouse branching requires operator `3.182.0`, mirrord CLI `3.230.0`, and ope
 
 The `connection` field describes how mirrord locates the source database connection details - a full connection URL or individual parameters (host, port, user, password, database). ClickHouse uses port `9000` and user `default` when these are not specified. See [Connection Modes](connection.md) for all supported sources, including Kubernetes Secrets, Google Secret Manager, literal values, and composite environment variables.
 
+The `version` field picks the ClickHouse image the branch runs. When that image runs a different ClickHouse release than the source, mirrord warns with both versions when the branch comes up.
+
 ## Copy Modes
 
 The `copy` field controls what data gets cloned when creating a ClickHouse branch.

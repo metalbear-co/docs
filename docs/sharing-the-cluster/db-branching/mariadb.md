@@ -64,7 +64,7 @@ In `schema` and `all` modes the branch gets the source database's views, trigger
 
 The copy runs `mariadb-dump` as the declared connection user. The server only shows a routine's body to its definer, to an account with `SHOW CREATE ROUTINE` (MariaDB 11.3 and later) or to one with the global `SELECT` privilege, so routines the connection user defined itself always come along, and routines defined by other accounts need one of those grants; without it `mariadb-dump` leaves them out with an `insufficient privileges` comment in place of the body. `EXECUTE` alone is not enough.
 
-Regardless of the copy mode, the branch server starts with the source server's `sql_mode`, `character_set_server`, `collation_server`, `time_zone`, `group_concat_max_len`, `explicit_defaults_for_timestamp` and transaction isolation, read from the source when the branch is created. Values from the cluster admin's `dbServerArgs` still take precedence. The branch server must accept the source's values, so keep the branch `version` on the same major version as the source: an `sql_mode` flag one version removed stops the other from starting.
+Regardless of the copy mode, the branch server starts with the source server's `sql_mode`, `character_set_server`, `collation_server`, `time_zone`, `group_concat_max_len`, `explicit_defaults_for_timestamp` and transaction isolation, read from the source when the branch is created. Values from the cluster admin's `dbServerArgs` still take precedence. The branch server must accept the source's values, so keep the branch `version` on the same major version as the source: an `sql_mode` flag one version removed stops the other from starting. When the two differ, mirrord warns with both versions when the branch comes up.
 
 ### Filtered Data Clone
 
