@@ -47,6 +47,7 @@ Copy modes, version requirements, and engine-specific behavior differ per databa
 | [ClickHouse](db-branching/clickhouse.md) | `"clickhouse"` | Remote |
 | [CockroachDB](db-branching/cockroachdb.md) | `"cockroachdb"` | Remote |
 | [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote |
+| [turbopuffer](db-branching/turbopuffer.md) | `"turbopuffer"` | Remote (in your turbopuffer account) |
 | [Generic](db-branching/generic.md) (any other service, using your own image) | `"generic"` | Remote |
 
 ## Prerequisites
