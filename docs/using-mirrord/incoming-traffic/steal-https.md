@@ -23,11 +23,15 @@ With mirrord for Teams, you can steal a subset of HTTP requests coming to your t
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
-**Important:** stealing HTTPS with a filter requires mirrord-operator version at least `3.106.0` and mirrord-agent version at least `1.134.0`.
+**Important:** stealing HTTPS with a filter requires mirrord-operator version at least `3.106.0` and mirrord-agent version at least `1.134.0`. `agentAsClient.verification.serverName` requires mirrord-operator version at least `3.210.0` and mirrord-agent version at least `3.262.0`.
 
 ## Configuring HTTPS stealing in the cluster
 
 To enable mirrord users to steal HTTPS requests with a filter, you must provide the mirrord Operator with some insight into your TLS configuration. This can be done with dedicated custom resources: `MirrordTlsStealConfig` and `MirrordClusterTlsStealConfig`. These two resources look and work almost the same. The only exception is that `MirrordTlsStealConfig` is scoped to the namespace in which you create it, while `MirrordClusterTlsStealConfig` scopes the whole Kubernetes cluster.
+
+{% hint style="warning" %}
+`targetPath` and `selector` are what limit a configuration to a workload. A resource that sets neither applies to every mirrord target in its namespace (or, for `MirrordClusterTlsStealConfig`, in the cluster) that listens on one of its ports, with that configuration's certificates and verification rules, whether or not they fit that workload.
+{% endhint %}
 
 An example `MirrordTlsStealConfig` resource that configures HTTPS stealing from an `example-deploy` deployment living in namespace `example-deploy-namespace`:
 
@@ -143,6 +147,16 @@ spec:
         #
         # Optional. Defaults to false.
         acceptAnyCert: false
+        # Name the server's certificate is verified against, and sent in the SNI extension, when
+        # the original client sent no SNI.
+        #
+        # Set it when the certificate is issued for a DNS name and the original clients do not
+        # send SNI (for example an nginx upstream): without it, mirrord-agent verifies the
+        # certificate against the pod's IP address, which such a certificate does not cover.
+        #
+        # Optional. mirrord-agent uses the SNI from the original client, then this name, then
+        # the request's host, then the pod's IP address.
+        serverName: example-deploy
         # Paths to PEM files and directories PEM files containing allowed root certificates.
         #
         # Directories are not traversed recursively.

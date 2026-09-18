@@ -58,6 +58,14 @@ It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
+### What the copy carries over
+
+In `schema` and `all` modes the branch gets the source database's views, triggers, stored functions and stored procedures along with its tables. Every copied object is owned by the branch's `root` user: the `DEFINER` the source recorded is dropped, since that account does not exist on the branch and an object that kept it would fail with `The user specified as a definer does not exist`.
+
+The copy runs `mariadb-dump` as the declared connection user. The server only shows a routine's body to its definer, to an account with `SHOW CREATE ROUTINE` (MariaDB 11.3 and later) or to one with the global `SELECT` privilege, so routines the connection user defined itself always come along, and routines defined by other accounts need one of those grants; without it `mariadb-dump` leaves them out with an `insufficient privileges` comment in place of the body. `EXECUTE` alone is not enough.
+
+Regardless of the copy mode, the branch server starts with the source server's `sql_mode`, `character_set_server`, `collation_server`, `time_zone`, `group_concat_max_len`, `explicit_defaults_for_timestamp` and transaction isolation, read from the source when the branch is created. Values from the cluster admin's `dbServerArgs` still take precedence. The branch server must accept the source's values, so keep the branch `version` on the same major version as the source: an `sql_mode` flag one version removed stops the other from starting.
+
 ### Filtered Data Clone
 
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
