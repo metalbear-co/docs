@@ -285,8 +285,11 @@ It pairs each queue ID with a queue filter definition, and accepts either an obj
 Filter definition contains the following fields:
 * `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, or `NATS`
 * `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
-  The local application will only see queue messages that have **all** of the specified entries matching.
+* `filter` - a composable message filter, shaped like the [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md): one `metadata` regex, or an `any_of` / `all_of` list of `metadata` regexes.
+  A `metadata` regex is matched against every message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata entry (Temporal) rendered as `<name>: <value>`, the same way the HTTP filter sees headers.
+  The message matches when any attribute line matches, so one regex can pin an attribute by name (`^tenant: acme$`) or find a marker wherever it is propagated (`.*mirrord-session={{ key }}.*`). Matching is case sensitive. See [Composing filters](#composing-filters).
+* `message_filter` - the older shape: a mapping from an attribute name to a regex for its value.
+  The local application will only see queue messages that have **all** of the specified entries matching. Still supported; use either `filter` or `message_filter` on an entry, not both.
 * `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, and `NATS` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
@@ -304,7 +307,63 @@ Filter definition contains the following fields:
   * A message matches if the jq program outputs `true`.
 * `payload_protobuf` - optional, `Kafka` only. Decodes record values that carry plain protobuf instead of JSON with a schema you provide, and exposes the decoded message to `jq_filter` as a `payload_decoded` field. See [Filtering on protobuf payloads](queue-splitting/kafka.md#filtering-on-protobuf-payloads).
 
-If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
+If a `filter` (or `message_filter`) and a `jq_filter` are specified for the same queue, both must match for a message to be matched.
+
+#### Composing filters
+
+`filter` takes one of three forms. A single `metadata` regex:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": {
+        "queue_type": "SQS",
+        "filter": { "metadata": "^tenant: acme-.*$" }
+      }
+    }
+  }
+}
+```
+
+`any_of` matches when at least one of the listed `metadata` regexes matches, `all_of` when every one does:
+
+```json
+{
+  "feature": {
+    "split_queues": [
+      {
+        "queue_id": "*",
+        "queue_type": "Temporal",
+        "filter": {
+          "any_of": [
+            { "metadata": "^header.baggage: .*mirrord-session={{ key }}.*$" },
+            { "metadata": "^header.test: .*mirrord-session={{ key }}.*$" }
+          ]
+        }
+      },
+      {
+        "queue_id": "orders",
+        "queue_type": "Kafka",
+        "filter": {
+          "all_of": [
+            { "metadata": "^tenant: acme$" },
+            { "metadata": "^region: eu-.*$" }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+A `message_filter` of `{ "tenant": "^acme$", "region": "eu" }` is the same as `filter: { "all_of": [ { "metadata": "^tenant: acme$" }, { "metadata": "^region: .*eu" } ] }`, except that `message_filter` requires the attribute name to match exactly while a `metadata` regex sees the whole `name: value` line.
+
+{% hint style="warning" %}
+`filter` needs a mirrord operator that advertises composable queue filters. Against an older operator the CLI refuses to start the session and names the missing feature; `message_filter` keeps working there.
+{% endhint %}
+
+Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
 
 #### One queue or many
 
@@ -346,14 +405,14 @@ For multiple queues, use the **array** form, which moves the ID into each entry 
 }
 ```
 
-Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`, `payload_protobuf`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
+Both forms take the same filter fields (`queue_type`, `filter`, `message_filter`, `jq_filter`, `payload_protobuf`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
 {% endhint %}
 
 {% hint style="info" %}
-An empty `message_filter` without a `jq_filter` is treated as a match-none directive.
+An entry with no `filter`, an empty `message_filter`, and no `jq_filter` is treated as a match-none directive.
 {% endhint %}
 
 For complete, copy-pasteable filter examples, see the "Setting a filter" section on each queue service page.
