@@ -83,6 +83,7 @@
   * [ClickHouse](sharing-the-cluster/db-branching/clickhouse.md)
   * [CockroachDB](sharing-the-cluster/db-branching/cockroachdb.md)
   * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
+  * [S3](sharing-the-cluster/db-branching/s3.md)
   * [Generic](sharing-the-cluster/db-branching/generic.md)
   * [More](sharing-the-cluster/db-branching/more.md)
     * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
