@@ -37,7 +37,7 @@ When sessions end, their temporary streams are deleted, and when the whole split
 {% step %}
 #### Enable NATS splitting in the Helm chart
 
-Enable the `operator.natsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml).
+Enable the `operator.natsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This setting covers JetStream splitting, which these steps set up; [core NATS pub/sub](#core-nats-pubsub-no-jetstream) is gated on `operator.natsPubsubSplitting` instead.
 {% endstep %}
 
 {% step %}
@@ -144,7 +144,7 @@ Without `ca_cert`, the server's certificate is verified against the standard pub
 {% step %}
 #### Create a MirrordSplitConfig
 
-On operator installation with `operator.natsSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
+On operator installation with `operator.natsSplitting` or `operator.natsPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
 Create a `MirrordSplitConfig` for the target workload. NATS uses `kind: nats` in queue entries.
 
@@ -310,7 +310,7 @@ Core NATS stores nothing, so delivery is **best-effort**: messages published whi
 
 Core NATS pub/sub splitting requires operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later.
 
-Enable it with `operator.natsPubsubSplitting: true` in the Helm chart. The `MirrordSplitConfig` entry uses `kind: natsPubSub` and a `subject` reference, and shares `clientConfigs.nats` (same server, same credentials as JetStream splitting):
+Enable it with `operator.natsPubsubSplitting: true` in the Helm chart. The operator still connects to your NATS server through a `MirrordPropertyList`, created exactly as in [Create a MirrordPropertyList](#create-a-mirrordpropertylist) above and referenced from the split config's `clientConfigs.nats` (same server, same credentials as JetStream splitting). The `MirrordSplitConfig` entry uses `kind: natsPubSub` and a `subject` reference:
 
 ```yaml
   queues:
