@@ -353,10 +353,17 @@ Instead of a Deployment, the operator creates an isolated CronJob named after th
 copies the source CronJob's job settings (concurrency policy, history limits, deadlines, time
 zone) and pod spec, swaps in your image, and applies the same environment overrides, database
 branches, and file mounts any other preview gets. The copy is never suspended, even when the
-source is, and the source CronJob is not modified.
+source is, and the source CronJob is not modified. Kubernetes caps CronJob names at 52
+characters, so when the session name is longer (a long source CronJob name pushes it there),
+the preview CronJob gets a shortened name: the start of the session name plus the first 8
+characters of the session's uid. Find it by its `preview.metalbear.co/session-uid` label:
+
+```bash
+kubectl get cronjobs -l preview.metalbear.co/session-uid=$(kubectl get previewsession <session> -o jsonpath='{.metadata.uid}')
+```
 
 Right after creating it, the operator triggers the CronJob once, so you see a run immediately
-instead of waiting for the next scheduled time. The run is a Job named `<session>-start`,
+instead of waiting for the next scheduled time. The run is a Job named `<cronjob>-start`,
 marked with the `cronjob.kubernetes.io/instantiate: manual` annotation like a
 `kubectl create job --from=cronjob/...` run. After that, the CronJob keeps running on its
 schedule until the session ends, and every Job and pod it created is deleted with the session.
