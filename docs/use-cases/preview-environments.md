@@ -356,10 +356,11 @@ branches, and file mounts any other preview gets. The copy is never suspended, e
 source is, and the source CronJob is not modified. Kubernetes caps CronJob names at 52
 characters, so when the session name is longer (a long source CronJob name pushes it there),
 the preview CronJob gets a shortened name: the start of the session name plus the first 8
-characters of the session's uid. Find it by its `preview.metalbear.co/session-uid` label:
+characters of the session's uid. Find it by its `preview.metalbear.co/session-uid` label; both
+the session and its CronJob live in the target's namespace:
 
 ```bash
-kubectl get cronjobs -l preview.metalbear.co/session-uid=$(kubectl get previewsession <session> -o jsonpath='{.metadata.uid}')
+kubectl get cronjobs -n <namespace> -l preview.metalbear.co/session-uid=$(kubectl get previewsession <session> -n <namespace> -o jsonpath='{.metadata.uid}')
 ```
 
 Right after creating it, the operator triggers the CronJob once, so you see a run immediately
