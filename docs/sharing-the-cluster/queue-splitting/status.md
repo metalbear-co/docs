@@ -131,7 +131,7 @@ status:
 * `owner` - who started the session (`username`, `k8sUsername`, `hostname`, `userId`).
 * `filters[]` - one entry per queue id in the user's mirrord config:
   * `id` - the queue id.
-  * `queueType` - the broker type: `SQS`, `Kafka`, `RMQ`, `GooglePubSub`, `AzureServiceBus`, `RedisPubSub`, or `Temporal`.
+  * `queueType` - the broker type: `SQS`, `Kafka`, `RMQ`, `GooglePubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, or `NATSPubSub`.
   * `messageFilter` - attribute/header name to regex map (present only if set).
   * `jqFilter` - jq program applied to the message (present only if set).
 
@@ -139,7 +139,7 @@ status:
 
 * `phase` - `Pending`, `Ready`, or `Failed` (see [Phases](status.md#phases)).
 * `message` - a human-friendly detail, such as a failure reason (present only when there is one).
-* `queues[]` - the queues the operator actually resolved from the target. There can be more than one per filter (for example when an `envLike` regex matches several environment variables). Each entry has an `id`, a `type`, and only the broker-specific names that apply: `queue` (SQS, Azure Service Bus), `topic` (Kafka, GCP Pub/Sub, Azure Service Bus), `consumerGroup` (Kafka), or `subscription` (GCP Pub/Sub, Azure Service Bus).
+* `queues[]` - the queues the operator actually resolved from the target. There can be more than one per filter (for example when an `envLike` regex matches several environment variables). Each entry has an `id`, a `type`, and only the broker-specific names that apply: `queue` (SQS, RabbitMQ, Azure Service Bus, Temporal task queue), `topic` (Kafka, Azure Service Bus, Redis Pub/Sub channel, NATS stream, core NATS subject), `consumerGroup` (Kafka), or `subscription` (GCP Pub/Sub, Azure Service Bus, NATS durable consumer).
 * `targetPods[]` - the target pods seen for the session, each with `patched` (carries the split's env-var patch) and `ready` (running with all containers ready).
 
 ### Phases
