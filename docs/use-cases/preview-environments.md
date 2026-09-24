@@ -420,7 +420,15 @@ grants when `operator.previewEnv` is enabled.
 
 #### Readiness
 
-Pods created by Preview Environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
+Pods created by Preview Environments will never reach a "Ready" state in Kubernetes. This is intentional: mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) that never evaluates to `"True"`, preventing the target's `Service` from routing traffic to the preview pod. This allows the pod to copy all labels and annotations from the target spec without taking live traffic.
+
+However, `mirrord preview start` still tracks individual container readiness probes to determine when your application is initialized:
+
+* **Probe Inheritance:** Preview pods retain and execute any `readinessProbe` defined in the target pod's spec.
+* **Start Verification:** `mirrord preview start` reports success once every container in all preview pods passes its probe.
+* **Missing Probes:** If a target container lacks a `readinessProbe`, Kubernetes marks it ready upon startup, meaning `preview start` can succeed before your app is fully booted.
+* **Timeouts:** Persistent probe failures cause `preview start` to fail after `creation_timeout_secs` elapses. Increase this timeout if your app requires extra boot time.
+* **Idle Mode:** Using [`start_idle`](#auto-scaling-idle-mode) bypasses this check entirely because no pods are launched.
 
 #### Service Meshes
 
