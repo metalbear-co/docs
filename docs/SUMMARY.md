@@ -114,6 +114,7 @@
 * [Troubleshooting](troubleshooting/README.md)
   * [Utilities](troubleshooting/utilities.md)
   * [Common Issues](troubleshooting/common-issues.md)
+  * [Collecting Logs](troubleshooting/collecting-logs.md)
 
 ## Reference
 
