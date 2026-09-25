@@ -41,7 +41,7 @@ The optional `type` field controls where the environment variable is read from (
 
 Instead of a single connection URL, you can specify each connection parameter separately. This is useful when your application stores host, port, user, password, and database as individual environment variables.
 
-Available parameters: `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Non-existent environment variables are also filled with defaults. Specify the parameters that your application uses to connect to the database.
+Available parameters: `url`, `host`, `port`, `user`, `password`, `database`. Each field is individually optional - mirrord fills in database-specific defaults for any parameters not specified. Non-existent environment variables are also filled with defaults. Specify the parameters that your application uses to connect to the database.
 
 ```json
 {
@@ -70,6 +70,40 @@ Defaults
 | CockroachDB | `26257` | `root` |
 
 Default for `connection.params.host` is `localhost` for all databases.
+
+### URL as a Base
+
+A `url` parameter holds a complete connection URL that every other parameter layers onto. Each component the URL carries - host, port, user, password, database - becomes that parameter's value, and a parameter declared alongside it overrides that component.
+
+This suits an application that keeps one connection string instead of separate settings, especially when that string lives in a mounted config file while the credentials come from environment variables:
+
+```json
+{
+  "connection": {
+    "params": {
+      "url": {
+        "configmap": { "volume": "app-config" },
+        "key": "application.yaml",
+        "value_selector": ".datasource.url",
+        "env_var_name": "APP_DATASOURCE_URL"
+      },
+      "user": "APP_DB_USER",
+      "password": "APP_DB_PASSWORD"
+    }
+  }
+}
+```
+
+The `url` parameter accepts every [value source](#value-sources) the other parameters do.
+
+`env_var_name` matters more here than on the other parameters: it names the environment variable your local process receives the branch URL in. An application that reads one connection string has no separate host or port setting to redirect, so without it mirrord creates the branch and your application carries on talking to the source database.
+
+The branch URL your application receives keeps the shape of the URL it was read from. The scheme, a `jdbc:` prefix, and any query parameters all survive - only the address and the database name are replaced. So an application whose URL reads `jdbc:mysql://prod-host:3306/app?useSSL=false&zeroDateTimeBehavior=convertToNull` gets `jdbc:mysql://<branch>:3306/<branch db>?useSSL=false&zeroDateTimeBehavior=convertToNull`, and driver options that change how results are read stay intact.
+
+Where the branch needs a query parameter of its own, it replaces the application's value for that one parameter and leaves the rest alone.
+
+The `url` parameter requires operator and Helm chart `3.212.0` or later, and mirrord CLI `3.264.0` or later. Against an older operator a branch that uses one fails up front with a clear error rather than waiting for a branch that is never created; an older CLI rejects the config as unknown.
+
 
 ### Custom Parameters
 
@@ -228,7 +262,7 @@ One rule to remember: a param with only `value_pattern` and `env_var_name` is an
 
 The operator reads the ConfigMap itself when the branch is created, so it needs `get` on ConfigMaps in the target namespace; the operator Helm chart grants this together with the other DB branching permissions.
 
-ConfigMap sources require operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates; an older CLI rejects the config as unknown.
+ConfigMap sources require operator and Helm chart `3.205.0` or later, and mirrord CLI `3.255.0` or later. Against an older operator, a branch that uses one fails up front with a clear error instead of waiting for a branch the operator never creates; an older CLI rejects the config as unknown.
 
 {% hint style="info" %}
 Your local application still has to pick the branch up. With `env_var_name`, the branch host is delivered as an environment variable, which works when your app lets an environment variable override the value from its config file. If your app only ever reads the mounted file, the file itself is not rewritten.
