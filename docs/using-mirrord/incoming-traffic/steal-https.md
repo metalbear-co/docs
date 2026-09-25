@@ -175,8 +175,34 @@ When the mirrord Operator finds multiple configuration resources matching the se
 
 **Important:** mirrord-agent will search for all files and directories referenced by the config resources in the target container filesystem.
 
+### Which certificate the application sees
+
+Requests that are not stolen are not forwarded byte for byte. mirrord-agent terminates the caller's TLS connection to read the request, then opens its own TLS connection to the application using `agentAsClient`. The application therefore sees the certificate from `agentAsClient.authentication`, never the original caller's: the agent does not hold the caller's private key, so it cannot present that certificate. If the application authorizes callers by certificate name, give `agentAsClient` a certificate the application accepts. Pointing it at the application's own certificate makes the application see itself as the caller, which such an allowlist typically rejects with a 403.
+
+mirrord-agent reads the configuration when it starts, and the Operator reuses a running agent for new sessions on the same target. After changing `agentAsClient`, stop the sessions on that target and wait for its `mirrord-agent` pod to exit before starting new ones, otherwise they keep the old certificate.
+
 ## Configuring delivery of stolen HTTPS to your local application
 
 By default, when delivering stolen HTTPS requests to your local application, mirrord uses the original protocol - TLS. The connection is made from your local machine by an anonymous TLS client that **does not** verify the server certificate.
 
 This behavior can be configured in your mirrord config with [`feature.network.incoming.tls_delivery`](https://metalbear.com/mirrord/docs/config#feature.network.incoming.tls_delivery). The older `feature.network.incoming.https_delivery` option is deprecated, use `tls_delivery` instead.
+
+If your local application requires a client certificate (mutual TLS), set `tls_delivery.client_cert` and `tls_delivery.client_key` to a certificate it accepts. Without them the handshake fails with a `BadCertificate` alert and every stolen request is answered with a 502.
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "tls_delivery": {
+          "protocol": "tls",
+          "client_cert": "/path/to/client/cert.pem",
+          "client_key": "/path/to/client/key.pem"
+        }
+      }
+    }
+  }
+}
+```
+
+The same two settings apply to [preview environments](../../use-cases/preview-environments.md). There the mirrord Operator makes the TLS connection to the preview pod, so `mirrord preview start` reads both files and stores them in the session's Secret, next to `secret_mounts`, and the Operator presents the certificate when it delivers stolen requests. `server_name` is honored too. The other `tls_delivery` settings do not apply to previews: delivery is always TLS, and the preview pod's certificate is not verified.
