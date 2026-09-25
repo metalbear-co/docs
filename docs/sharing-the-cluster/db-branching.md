@@ -49,6 +49,7 @@ Pick yours to see the full guide:
 | [CockroachDB](db-branching/cockroachdb.md) | `"cockroachdb"` | Remote (k8s) |
 | [Google Spanner](db-branching/spanner.md) | `"spanner"` | Remote (k8s) |
 | [S3](db-branching/s3.md) | `"s3"` | Remote (provider) |
+| [turbopuffer](db-branching/turbopuffer.md) | `"turbopuffer"` | Remote (provider) |
 | [Generic](db-branching/generic.md) (any other service, using your own image) | `"generic"` | Remote (k8s) |
 
 ### Branch Location
