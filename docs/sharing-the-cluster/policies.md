@@ -292,7 +292,7 @@ feature:
         company_id: "42"
 ```
 
-passes, because the filter has both required keys and the `user_id` pattern `\d+` matches the policy's `^\\d\+$` regex. A filter missing `company_id`, or one with a different `user_id` pattern, is rejected. A queue covered by rules but filtered only with `jq_filter` is rejected too: the operator cannot verify what a jq program matches, so use `message_filter` (alone or alongside jq) on such queues.
+passes, because the filter has both required keys and the `user_id` pattern `\d+` matches the policy's `^\\d\+$` regex. A filter missing `company_id`, or one with a different `user_id` pattern, is rejected. A queue covered by rules but filtered only with `jq_filter` is rejected too: the operator cannot verify what a jq program matches, so use `message_filter` (alone or alongside jq) on such queues. The composable `filter` shape is checked branch by branch: every `any_of` branch must satisfy the rule (any branch alone can let a message through), and one `all_of` branch is enough. A `metadata` regex cannot prove which attribute it filters on, so on a rule-covered queue it is rejected like a lone `jq_filter`; name the attribute with `message_filter` there.
 
 If a `queueId` regex matches none of the session's split queues, the entry simply does not apply to that session.
 
