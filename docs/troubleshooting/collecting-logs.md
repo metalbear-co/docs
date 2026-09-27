@@ -25,7 +25,7 @@ MIRRORD_LOG=mirrord=trace MIRRORD_LAYER_LOG_PATH=/tmp/mirrord-logs mirrord exec 
 ```
 
 {% hint style="info" %}
-`MIRRORD_LAYER_LOG_PATH` requires mirrord `3.188.0` or later. On Windows, `3.245.0` and later also write a crash record and memory dump to this directory. When it is not set, Windows sessions log to a per-session folder under `%TEMP%\mirrord`, which is removed after a clean exit and kept after a crash.
+`MIRRORD_LAYER_LOG_PATH` requires mirrord `3.188.0` or later. On Windows, `mirrord exec` from `3.245.0` on also writes a crash record and memory dump to this directory. When it is not set, a Windows `mirrord exec` run logs to a per-session folder under `%TEMP%\mirrord`, removed after a clean exit and kept after a crash. Sessions started from an IDE do not create that folder: set `MIRRORD_LAYER_LOG_PATH` in the run configuration to get layer log files.
 {% endhint %}
 
 ## Internal proxy
