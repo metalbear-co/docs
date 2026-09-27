@@ -12,16 +12,16 @@ A mirrord session runs several processes: the CLI, the layer loaded into your ap
 
 ## CLI and layer
 
-The CLI and the layer read their log level from the `MIRRORD_LOG` environment variable and write to stderr. The value follows the `RUST_LOG` convention:
+The CLI and the layer read their log level from the `MIRRORD_LOG` environment variable and write to stderr. The value follows the `RUST_LOG` convention. Set `MIRRORD_PROGRESS_MODE=off` as well, so the progress spinner does not interleave with the log lines:
 
 ```bash
-MIRRORD_LOG=mirrord=trace mirrord exec -- <your command>
+MIRRORD_LOG=mirrord=trace MIRRORD_PROGRESS_MODE=off mirrord exec -- <your command>
 ```
 
 To write layer logs to files instead of mixing them into your application's stderr, set `MIRRORD_LAYER_LOG_PATH` to a directory. mirrord creates one file per process, named `mirrord-layer_<timestamp>_<process>_pid<pid>`:
 
 ```bash
-MIRRORD_LOG=mirrord=trace MIRRORD_LAYER_LOG_PATH=/tmp/mirrord-logs mirrord exec -- <your command>
+MIRRORD_LOG=mirrord=trace MIRRORD_PROGRESS_MODE=off MIRRORD_LAYER_LOG_PATH=/tmp/mirrord-logs mirrord exec -- <your command>
 ```
 
 {% hint style="info" %}
