@@ -64,10 +64,11 @@ The agent runs in the cluster, in the target's namespace, as a pod labeled `app=
 kubectl logs -n <target namespace> -l app=mirrord -c mirrord-agent
 ```
 
-If you run the agent as an ephemeral container (`agent.ephemeral: true`), it lives on the target pod itself:
+If you run the agent as an ephemeral container (`agent.ephemeral: true`), it lives on the target pod itself, under a container named `mirrord-agent-<random suffix>`. Look the name up, then read its logs:
 
 ```bash
-kubectl logs -n <target namespace> <target pod> -c mirrord-agent
+kubectl get pod -n <target namespace> <target pod> -o jsonpath='{.spec.ephemeralContainers[*].name}'
+kubectl logs -n <target namespace> <target pod> -c mirrord-agent-<suffix>
 ```
 
 ## Operator
@@ -76,6 +77,13 @@ For mirrord for Teams, the operator logs cover session creation, licensing, and 
 
 ```bash
 kubectl logs --namespace mirrord deployment/mirrord-operator
+```
+
+The level is `info` by default. Raise it with `operator.logLevel` in the Helm chart values, or with the `RUST_LOG` environment variable on the operator container:
+
+```yaml
+operator:
+  logLevel: mirrord=debug,operator=debug
 ```
 
 See [Monitoring](../managing-mirrord/monitoring.md) for JSON logging and shipping operator logs to your logging stack.
@@ -103,6 +111,9 @@ When you [open an issue](https://github.com/metalbear-co/mirrord/issues/new?assi
 - The layer, internal proxy, and agent logs from a run that reproduces the problem, at `mirrord=trace`
 - Your mirrord config, with secrets removed
 - Output of `mirrord --version`, and of `mirrord operator status` if you use the operator
+- The agent version. It matches the CLI version unless you set `agent.image`, in which case take the tag from that image
 - The extension or plugin version if you run from an IDE
 - Your operating system and version, and the local process you ran (language, runtime, version)
 - The steps you took and what you expected to happen
+
+Trace logs record what your process did, including command line arguments and request contents. Read through them and redact anything sensitive before you share them in a public issue or channel.
