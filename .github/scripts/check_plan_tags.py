@@ -23,18 +23,31 @@ def frontmatter(text: str) -> str | None:
     return match.group(1) if match else None
 
 
+def strip_comment(value: str) -> str:
+    """Drop a trailing YAML comment. `#` opens one only at the start or after whitespace."""
+    match = re.search(r"(?:^|\s)#", value)
+    return (value[: match.start()] if match else value).strip()
+
+
 def tags(block: str) -> set[str]:
+    """Tag values from a frontmatter block.
+
+    Handles the three shapes YAML allows here: a block list, an inline list
+    (`tags: ["team", "enterprise"]`), and a bare scalar (`tags: team`), which
+    counts as a single tag. A trailing comment on any of them is ignored.
+    """
     lines = block.splitlines()
     for i, line in enumerate(lines):
         if not line.startswith("tags:"):
             continue
-        inline = line[len("tags:"):].strip()
+        inline = strip_comment(line[len("tags:"):])
         if inline:
-            # tags: ["team", "enterprise"]
-            return {t.strip().strip("\"'") for t in inline.strip("[]").split(",")}
+            if inline.startswith("[") and inline.endswith("]"):
+                inline = inline[1:-1]
+            return {t.strip().strip("\"'") for t in inline.split(",")}
         found = set()
         for item in lines[i + 1:]:
-            stripped = item.strip()
+            stripped = strip_comment(item)
             if not stripped.startswith("- "):
                 break
             found.add(stripped[2:].strip().strip("\"'"))
