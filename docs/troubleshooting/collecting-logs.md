@@ -111,7 +111,7 @@ When you [open an issue](https://github.com/metalbear-co/mirrord/issues/new?assi
 - The layer, internal proxy, and agent logs from a run that reproduces the problem, at `mirrord=trace`
 - Your mirrord config, with secrets removed
 - Output of `mirrord --version`, and of `mirrord operator status` if you use the operator
-- The agent version. Without the operator it matches the CLI version, and mirrord warns at startup when it does not. With the operator, the image comes from the operator's Helm values under `agent.image`. To read the exact tag, use `kubectl get pod -n <agent namespace> -l app=mirrord -o jsonpath='{.items[*].spec.containers[*].image}'`, or `kubectl get pod -n <target namespace> <target pod> -o jsonpath='{.spec.ephemeralContainers[*].image}'` for an ephemeral agent
+- The agent version. By default it matches the CLI version. If you override the agent image with `agent.image` or `MIRRORD_AGENT_IMAGE`, or run with the operator, which sets the image in its Helm values under `agent.image`, take the tag from the running agent instead. For a standalone agent: `kubectl get pod -n <agent namespace> -l app=mirrord -o jsonpath='{.items[*].spec.containers[*].image}'`. For an ephemeral agent, list the target pod's ephemeral containers and take the `mirrord-agent-` line: `kubectl get pod -n <target namespace> <target pod> -o jsonpath='{range .spec.ephemeralContainers[*]}{.name}{" "}{.image}{"\n"}{end}'`
 - The extension or plugin version if you run from an IDE
 - Your operating system and version, and the local process you ran (language, runtime, version)
 - The steps you took and what you expected to happen
