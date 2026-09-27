@@ -47,7 +47,7 @@ Raise the level and pick a fixed location in your mirrord config:
 
 ## Agent
 
-The agent runs in the cluster as a pod labeled `app=mirrord` with a container named `mirrord-agent`. Without the operator, the pod is created in your kubeconfig's current namespace, or in `agent.namespace` if you set it. With the operator, it is created in the operator's namespace (`mirrord` by default). Set the agent's log level in your mirrord config:
+The agent runs in the cluster as a pod labeled `app=mirrord` with a container named `mirrord-agent`. Without the operator, the pod is created in your kubeconfig's current namespace, or in `agent.namespace` if you set it. A targetless session ignores `agent.namespace` and uses `target.namespace` instead. With the operator, the pod is created in the operator's namespace (`mirrord` by default). Set the agent's log level in your mirrord config:
 
 ```json
 {
@@ -111,7 +111,7 @@ When you [open an issue](https://github.com/metalbear-co/mirrord/issues/new?assi
 - The layer, internal proxy, and agent logs from a run that reproduces the problem, at `mirrord=trace`
 - Your mirrord config, with secrets removed
 - Output of `mirrord --version`, and of `mirrord operator status` if you use the operator
-- The agent version. It is the tag of the agent image, which defaults to the CLI version. Read it from a running agent pod with `kubectl get pod -n <agent namespace> -l app=mirrord -o jsonpath='{.items[*].spec.containers[*].image}'`
+- The agent version. Without the operator it matches the CLI version, and mirrord warns at startup when it does not. With the operator, the image comes from the operator's Helm values under `agent.image`. To read the exact tag, use `kubectl get pod -n <agent namespace> -l app=mirrord -o jsonpath='{.items[*].spec.containers[*].image}'`, or `kubectl get pod -n <target namespace> <target pod> -o jsonpath='{.spec.ephemeralContainers[*].image}'` for an ephemeral agent
 - The extension or plugin version if you run from an IDE
 - Your operating system and version, and the local process you ran (language, runtime, version)
 - The steps you took and what you expected to happen
