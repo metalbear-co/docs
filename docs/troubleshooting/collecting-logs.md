@@ -25,7 +25,7 @@ MIRRORD_LOG=mirrord=trace MIRRORD_LAYER_LOG_PATH=/tmp/mirrord-logs mirrord exec 
 ```
 
 {% hint style="info" %}
-`MIRRORD_LAYER_LOG_PATH` requires mirrord `3.188.0` or later. On Windows, `3.245.0` and later also write crash reports and memory dumps to this directory (or to `%TEMP%\mirrord` when it is not set).
+`MIRRORD_LAYER_LOG_PATH` requires mirrord `3.188.0` or later. On Windows, `3.245.0` and later also write a crash record and memory dump to this directory. When it is not set, Windows sessions log to a per-session folder under `%TEMP%\mirrord`, which is removed after a clean exit and kept after a crash.
 {% endhint %}
 
 ## Internal proxy
@@ -47,7 +47,7 @@ Raise the level and pick a fixed location in your mirrord config:
 
 ## Agent
 
-The agent runs in the cluster, in the target's namespace, as a pod labeled `app=mirrord` with a container named `mirrord-agent`. Set its level in your mirrord config:
+The agent runs in the cluster as a pod labeled `app=mirrord` with a container named `mirrord-agent`. Without the operator, the pod is created in your kubeconfig's current namespace, or in `agent.namespace` if you set it. With the operator, it is created in the operator's namespace (`mirrord` by default). Set the agent's log level in your mirrord config:
 
 ```json
 {
@@ -61,7 +61,7 @@ The agent runs in the cluster, in the target's namespace, as a pod labeled `app=
 `ttl` keeps the agent pod around for that many seconds after the session ends (default `1`), so you have time to read its logs:
 
 ```bash
-kubectl logs -n <target namespace> -l app=mirrord -c mirrord-agent
+kubectl logs -n <agent namespace> -l app=mirrord -c mirrord-agent
 ```
 
 If you run the agent as an ephemeral container (`agent.ephemeral: true`), it lives on the target pod itself, under a container named `mirrord-agent-<random suffix>`. Look the name up, then read its logs:
@@ -111,9 +111,9 @@ When you [open an issue](https://github.com/metalbear-co/mirrord/issues/new?assi
 - The layer, internal proxy, and agent logs from a run that reproduces the problem, at `mirrord=trace`
 - Your mirrord config, with secrets removed
 - Output of `mirrord --version`, and of `mirrord operator status` if you use the operator
-- The agent version. It matches the CLI version unless you set `agent.image`, in which case take the tag from that image
+- The agent version. It is the tag of the agent image, which defaults to the CLI version. Read it from a running agent pod with `kubectl get pod -n <agent namespace> -l app=mirrord -o jsonpath='{.items[*].spec.containers[*].image}'`
 - The extension or plugin version if you run from an IDE
 - Your operating system and version, and the local process you ran (language, runtime, version)
 - The steps you took and what you expected to happen
 
-Trace logs record what your process did, including command line arguments and request contents. Read through them and redact anything sensitive before you share them in a public issue or channel.
+Trace logs record what your process did, including the command line arguments of processes it started. Read through them and redact anything sensitive before you share them in a public issue or channel.
