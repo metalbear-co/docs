@@ -179,7 +179,7 @@ By default, opening a Preview Environment as a recipient requires the mirrord br
 
 `mirrord-share-ingress` moves that header injection off the client and onto a server-side component, so a plain HTTPS link works on its own with nothing to install on the recipient's side. Each shareable preview is reachable at its own host, `<slug>.<shareDomain>`, printed by `mirrord preview start` as the `preview URL`.
 
-The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
+The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
 
 {% hint style="info" %}
 The preview URL works with any HTTP filter. A preview with a custom filter (a path filter, a different header, composed filters) additionally routes requests carrying the share link's injected baggage header, so its own filter keeps working for regular traffic while the link always reaches the preview.
@@ -247,6 +247,24 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
       --cert=wildcard.crt --key=wildcard.key -n mirrord
     ```
 
+#### Stable share hosts
+
+By default the slug carries a random suffix, so the link only exists once `mirrord preview start` prints it. Set `operator.shareIngress.stableSlugs` when you need the link before that - for example when a PR bot posts the preview URL built from the PR number:
+
+```yaml
+operator:
+  previewEnv: true
+  shareIngress:
+    shareDomain: preview.example.com
+    stableSlugs: true
+```
+
+The host is then `<sanitized key>.<shareDomain>`: the key lowercased, every other character replaced with `-`, runs of `-` collapsed, and the whole label cut at 63 characters. A session with key `pr-myrepo-42` is reachable at `pr-myrepo-42.preview.example.com`.
+
+Since anyone who knows the key can build the link, it is guessable. Only enable this when the ingress in front of `mirrord-share-ingress` authenticates every request.
+
+A cluster allows one live session per host. Starting a second session whose key gives the same host fails right away with `share host <host> is already held by live preview session <namespace>/<name>`; stop that session or pick a different key. Failed sessions and sessions being deleted do not hold their host, so restarting a preview under the same key reuses the same link. Sessions that already have a host keep it when you turn the option on or off.
+
 ### Auto Scaling Idle Mode
 
 Preview Environments can scale down to **zero pods while they receive no traffic**, then scale back up automatically when matching traffic arrives - without dropping that traffic. This makes long-lived
@@ -303,7 +321,8 @@ operator:
 ### Targeting Scaled-to-Zero Services
 
 A Preview Environment that only splits queues can target a workload (Deployment, Argo Rollout,
-or StatefulSet) with **no running pods**. This is useful when your consumers are auto-scaled on
+or StatefulSet) with **no running pods**. (A [CronJob target](#targeting-cronjobs) never needs
+running pods either.) This is useful when your consumers are auto-scaled on
 queue lag (for example with KEDA) and sit at zero replicas until messages arrive. The split needs nothing from a live pod: topic and
 consumer group are read from the workload's spec, and messages flow through the queue itself.
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
@@ -318,6 +337,74 @@ traffic is intercepted at the target's pods, and branch overrides are built from
 the running container sees. Such a session is rejected at creation with
 `no Pod is ready to be a session target` - nothing partial is created. Idle mode (above) scales
 the *preview's* pods to zero; this is about the *target's* pods, and the two combine freely.
+
+***
+
+### Targeting CronJobs
+
+A Preview Environment can target a CronJob, so a flow that depends on a scheduled job (a
+nightly scan, a report generator, a cleanup) can be previewed with your image too:
+
+```bash
+mirrord preview start -t cronjob/nightly-scan -i myrepo/scan:pr-4821 -k pr-4821 -f mirrord.json
+```
+
+Instead of a Deployment, the operator creates an isolated CronJob named after the session. It
+copies the source CronJob's job settings (concurrency policy, history limits, deadlines, time
+zone) and pod spec, swaps in your image, and applies the same environment overrides, database
+branches, and file mounts any other preview gets. The copy is never suspended, even when the
+source is, and the source CronJob is not modified. Kubernetes caps CronJob names at 52
+characters, so when the session name is longer (a long source CronJob name pushes it there),
+the preview CronJob gets a shortened name: the start of the session name plus the first 8
+characters of the session's uid. Find it by its `preview.metalbear.co/session-uid` label; both
+the session and its CronJob live in the target's namespace:
+
+```bash
+kubectl get cronjobs -n <namespace> -l preview.metalbear.co/session-uid=$(kubectl get previewsession <session> -n <namespace> -o jsonpath='{.metadata.uid}')
+```
+
+Right after creating it, the operator triggers the CronJob once, so you see a run immediately
+instead of waiting for the next scheduled time. The run is a Job named `<cronjob>-start`,
+marked with the `cronjob.kubernetes.io/instantiate: manual` annotation like a
+`kubectl create job --from=cronjob/...` run. After that, the CronJob keeps running on its
+schedule until the session ends, and every Job and pod it created is deleted with the session.
+
+Set `feature.preview.cronjob.trigger_on_start` to `false` to skip that immediate run, for jobs
+whose timing matters (a report that must only run in its window, a job that assumes the
+previous scheduled run finished). The preview then runs on its schedule alone.
+
+The schedule is inherited from the source CronJob. Override it with
+`feature.preview.cronjob.schedule`, in Kubernetes CronJob syntax:
+
+```json
+{
+  "target": "cronjob/nightly-scan",
+  "feature": {
+    "preview": {
+      "image": "myrepo/scan:pr-4821",
+      "cronjob": {
+        "schedule": "*/30 * * * *",
+        "trigger_on_start": true
+      }
+    }
+  }
+}
+```
+
+Omit `cronjob` (or set `schedule` to `null`) to keep the source schedule. A schedule that is
+not five fields or a `@hourly`-style macro is rejected before anything is created; the API
+server validates the field contents when the CronJob is created, and its message becomes the
+session's failure message.
+
+A CronJob preview has no long-running pod, so `feature.network.incoming` is ignored (with a
+warning), `feature.preview.idle` is rejected, and `feature.preview.replicas` does not apply.
+Database branch parameters with a `value_pattern` need a running target pod to read the
+runtime value from, which a CronJob does not have, so they are rejected as well; plain
+variable parameters work.
+
+Requires operator 3.205.0 or later and CLI 3.256.0 or later, plus `create`, `delete`, and
+`patch` on `batch/cronjobs` and `create` on `batch/jobs` for the operator, which the Helm chart
+grants when `operator.previewEnv` is enabled.
 
 ***
 
@@ -344,6 +431,8 @@ Only Istio and Linkerd are handled automatically. On another mesh (for example K
 #### Resources
 
 Preview Environments consist of a Deployment, to manage and maintain the underlying pods, and a [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services), to route traffic to the dynamic set of pods. Because the Service doesn't have a Cluster IP, exhaustion of IP addresses when deploying a large number of Preview Environments is not a concern.
+
+A preview of a [CronJob target](#targeting-cronjobs) consists of a CronJob and the Jobs it creates instead, with no Service.
 
 #### Interaction with `mirrord exec`
 
