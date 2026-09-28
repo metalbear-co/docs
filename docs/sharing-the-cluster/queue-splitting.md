@@ -361,7 +361,7 @@ If a `filter` (or `message_filter`) and a `jq_filter` are specified for the same
 A `message_filter` of `{ "tenant": "^blue$", "region": "eu" }` is the same as `filter: { "all_of": [ { "metadata": "^tenant: blue$" }, { "metadata": "^region: .*eu" } ] }`, except that `message_filter` requires the attribute name to match exactly while a `metadata` regex sees the whole `name: value` line.
 
 {% hint style="warning" %}
-`filter` needs mirrord operator 3.211.0 or newer. Against an older operator the CLI refuses to start the session and names the missing feature; `message_filter` keeps working there.
+`filter` requires mirrord `3.264.0` or later, and mirrord operator `3.212.0` or later. Against an older operator the CLI refuses to start the session and names the missing feature; `message_filter` keeps working there.
 {% endhint %}
 
 Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
