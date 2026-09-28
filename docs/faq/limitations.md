@@ -24,6 +24,10 @@ This includes: Rust, Node, Python, Java, Kotlin, Ruby, and others (most language
 
 mirrord also supports [Go](https://metalbear.com/blog/hooking-go-from-rust-hitchhikers-guide-to-the-go-laxy/), which doesn't use libc
 
+## Which Kubernetes versions does mirrord support?
+
+mirrord supports Kubernetes `1.22` or later. Some features need a newer version. See [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements).
+
 ## Does mirrord support clusters with a service mesh like Istio or Linkerd?
 
 Yes, mirrord works exactly the same way with and without a service mesh installed.
