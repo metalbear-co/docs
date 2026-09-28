@@ -250,7 +250,30 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`.
+For the full filter reference (`queue_type`, `filter`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`. SQS attribute names and values are matched case-insensitively.
+
+The same session filter with the composable `filter` shape, which can also combine several attributes with `any_of` / `all_of`:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "meme-queue": {
+        "queue_type": "SQS",
+        "filter": {
+          "any_of": [
+            { "metadata": "^baggage: .*mirrord-session=alice.*$" },
+            { "metadata": "^tracestate: .*mirrord-session=alice.*$" }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
 
 Filtering on SQS message attributes, an unmatched (match-none) queue, and a `jq_filter` on the message body:
 
