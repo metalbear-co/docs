@@ -173,7 +173,7 @@ kafka:
 logLevel: debug                        # kept as-is
 ```
 
-The rewrite is content-based, not path-based: a mount can sit anywhere (a file inside a ConfigMap volume directory cannot be overlaid, so mount at a sibling path and point the app there), and a mount whose content does not carry the split's names is left byte-identical.
+The rewrite is content-based, not path-based: a mount can sit anywhere, and a mount whose content does not carry the split's names is left byte-identical.
 
 ## Queue Names Injected by Vault or CSI Drivers
 
