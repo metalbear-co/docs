@@ -22,7 +22,7 @@ The mirrord Operator can produce logs in JSON format that can be digested by mos
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
-### Functional Logs
+## Functional Logs
 
 The following logs are written with log level `INFO`, and can be used for dashboards within monitoring solutions in order to monitor mirrord usage within your organization:
 
@@ -52,7 +52,7 @@ Session, port, and copy-target lifecycle logs use the following fields. `Message
 | http\_filter      | the client's configured [HTTP Filter](https://metalbear.com/mirrord/docs/config#feature.network) | `Port Steal`                                                                  |
 | scale\_down       | whether the session's target was scaled down                                                                                                                                 | `Copy Target`                                                                |
 
-#### Message Processing
+### Message Processing
 
 {% hint style="info" %}
 Message processing functional logs require mirrord Operator `3.188.0` or later.
@@ -72,7 +72,7 @@ All message processing records contain the following fields:
 | `mode` | Routing mode: `steal` or `mirror` |
 | `event_timestamp` | Time at which the Operator produced the event |
 
-##### HTTP
+#### HTTP
 
 HTTP requests and responses are logged as two separate lifecycle records. The request record contains the intercepted request context:
 
@@ -131,7 +131,7 @@ When a stolen request completes, the Operator emits a separate response record c
 
 The response record does not currently contain a request identifier. When several requests are handled concurrently by one session, consumers should not assume that request and response records can be paired using their timestamps alone.
 
-##### Queues and message buses
+#### Queues and message buses
 
 Queue and message bus records use the following fields when the broker provides the corresponding metadata:
 
@@ -179,7 +179,7 @@ For example, a queue message can produce:
 HTTP headers and message properties can contain credentials, personal information, or other sensitive values. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
 {% endhint %}
 
-##### Querying the logs
+#### Querying the logs
 
 You can inspect message processing records directly in the Operator's Kubernetes logs. The following commands assume that the Operator runs in the `mirrord` namespace.
 
@@ -210,11 +210,11 @@ kubectl logs --namespace mirrord deployment/mirrord-operator --follow --tail=5 \
 When `grep` writes to another command, it buffers its output by default. On a live stream, this can make the command appear to hang even when matching records are available. `--line-buffered` flushes each matching record immediately.
 {% endhint %}
 
-### Prometheus
+## Prometheus
 
 The mirrord Operator can expose Prometheus metrics if enabled (the default endpoint is `:9000/metrics`).
 
-#### Helm
+### Helm
 
 ```yaml
 # values.yaml for mirrord-operator helm chart
@@ -224,14 +224,14 @@ operator:
   ...
 ```
 
-#### Manual
+### Manual
 
 | env                        | description              | type              | default        |
 | -------------------------- | ------------------------ | ----------------- | -------------- |
 | OPERATOR\_METRICS\_ENABLED | enable metrics endpoint  | "true" \| "false" | "false"        |
 | OPERATOR\_METRICS\_ADDR    | metrics http server addr | SocketAddr        | "[::]:9000"    |
 
-#### Exposed metrics
+### Exposed metrics
 
 | metric                           | description                                          | labels                                                  | minimum version                  |
 | -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------- | 
@@ -249,7 +249,7 @@ operator:
 | mirrord_previews_create_total | Count of created preview sessions | `target_namespace` `target_kind` `target_name` | operator 3.163.0 |
 | mirrord_previews_duration  | Histogram for finished preview sessions duration | `target_namespace` `target_kind` `target_name` | operator 3.163.0 | 
 
-### OpenTelemetry
+## OpenTelemetry
 
 {% hint style="info" %}
 The features under the "OpenTelemetry" heading require at least operator chart version 1.46.0.
@@ -261,7 +261,7 @@ OTEL logs and traces can be sent from the operator to a configured OTLP collecto
 As of version `3.186.0`, both `operator.otelLogExportUrl` and `operator.otelTraceExportUrl` may reference environment variables set in operator.extraEnv using $(VAR_NAME) syntax.
 {% endhint %}
 
-#### Exporting Logs
+### Exporting Logs
 
 To export logs from the operator to an endpoint, set `operator.otelLogExportUrl` to the URL in the Operator Helm chart values. You _must_ set this value to export logs. This value does not affect the logs which are printed by the operator to `stdout` and are always enabled.
 
@@ -269,11 +269,11 @@ The log level is `INFO` by default, and can be changed by setting `operator.otel
 
 Note that this log level is separate to that defined for logs controlled by `operator.logLevel`, which are printed by the operator to `stdout`.
 
-#### Exporting Traces
+### Exporting Traces
 
 To export traces from the operator to an endpoint, set `operator.otelTraceExportUrl` to the URL in the Operator Helm chart values. You _must_ set this value to export traces.
 
-#### Using the downward API
+### Using the downward API
 
 As of version `3.186.0`, entries in `operator.extraEnv` can take a full environment variable spec (`valueFrom`) instead of a plain string value. Any valid environment variable source works, not just the downward API: `valueFrom` with `secretKeyRef` or `configMapKeyRef` renders the same way.
 This means you can reference [Kubernetes downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/) values in `operator.otel*ExportUrl` variables, for example:
@@ -290,7 +290,7 @@ operator:
   otelLogExportUrl: "http://$(HOST_IP):$(OTLP_PORT)/v1/logs"
 ```
 
-#### Context Propagation
+### Context Propagation
 
 {% hint style="info" %}
 This feature requires at least mirrord version 3.184.0.
@@ -311,21 +311,21 @@ The Operator will propagate these values into exported spans for some frequently
 
 For more info about using `traceparent` and `baggage`, see [the OpenTelemetry docs about context propagation](https://opentelemetry.io/docs/concepts/context-propagation/).
 
-### Pre-Built Dashboards
+## Pre-Built Dashboards
 
-#### DataDog Dashboard
+### DataDog Dashboard
 
 We offer a DataDog dashboard you can import to track statistics.
 
 Download it [here](https://github.com/metalbear-co/docs/tree/main/docs/managing-mirrord/assets/Mirrord_datadog_Operator_Dashboard.json).
 
-#### Grafana Dashboard
+### Grafana Dashboard
 
 Alternatively there is a Grafana dashboard you can import to track statistics.
 
 Download it [here](https://github.com/metalbear-co/docs/tree/main/docs/managing-mirrord/assets/Mirrord_grafana_Operator_Dashboard.json).
 
-### fluentd
+## fluentd
 
 If you are using fluentd you can add a filter to unpack some values from the "log" message:
 
@@ -343,7 +343,7 @@ If you are using fluentd you can add a filter to unpack some values from the "lo
 
 This will expand all the extra fields stored in the "log" field.
 
-#### fluentd + Elasticsearch
+### fluentd + Elasticsearch
 
 Assuming you are using `logstash_format true` and the connected mapping will store the extra fields in a `keyword` type, we have a ready made dashboard you can simply import.
 
