@@ -426,9 +426,9 @@ are read) and can be repeated. The same list can live in the config as
 ```json
 {
   "target": "deployment/app",
+  "key": "pr-123",
   "feature": {
     "preview": {
-      "key": "pr-123",
       "image": "myrepo/app:pr-123",
       "spec_resources": ["./k8s/app-deployment.yaml", "./k8s/configmap.yaml"]
     }
@@ -505,7 +505,7 @@ ingress/web from ./k8s/ingress.yaml: outside the target's scope, skipped
 Secret values are never printed, only whether each one changed.
 
 `--resource` is not supported with a management-only multi-cluster operator yet, because the
-target lives in another cluster than the one the CLI talks to. It requires CLI 3.264.0 or later
+target lives in another cluster than the one the CLI talks to. It requires CLI 3.266.0 or later
 and operator 3.213.0 or later; with an older operator the CLI refuses `--resource` instead of
 starting a preview from the live spec.
 
