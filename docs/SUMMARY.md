@@ -9,6 +9,7 @@
   * [Onboarding Wizard](getting-started/onboarding-wizard.md)
 * [Installing mirrord](installing-mirrord/README.md)
   * [CLI](installing-mirrord/cli.md)
+    * [Global Configuration](installing-mirrord/global-configuration.md)
   * [VS Code](installing-mirrord/vscode.md)
   * [JetBrains IDEs](installing-mirrord/intellij.md)
   * [mirrord Operator](managing-mirrord/operator.md)
