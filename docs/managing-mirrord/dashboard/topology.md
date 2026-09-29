@@ -40,6 +40,18 @@ With this on, the operator watches every Service and EndpointSlice in the cluste
 
 Then run a few sessions. A session reports its connections when it ends, so a new edge shows up on the map shortly after the session that made it stops.
 
+## Map the whole cluster at once
+
+The map fills in as your team uses mirrord, but you don't have to wait for that. A coding agent like Claude Code or Codex can run a session against every workload for you. For example:
+
+```
+List the deployments in the shop namespace. For each one, run the service locally
+with mirrord targeting that deployment, and exercise its main endpoints so the
+calls it makes go through mirrord.
+```
+
+Once the sessions end, refresh the **Topology** tab. Every connection those sessions made is on the map.
+
 ## What gets recorded
 
 - **Outgoing**: the local process connects through mirrord to an address in the cluster, the connection succeeds, and the address belongs to a Service (its cluster IP, or a pod behind it). The edge runs from the session's target to that Service.
