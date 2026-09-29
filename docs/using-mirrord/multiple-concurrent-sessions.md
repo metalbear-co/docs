@@ -112,7 +112,9 @@ Traffic is mirrored to your local process, and the deployed service runs uninter
 
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service, in `split`, `replace` and `mirror` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration.
+
+Services in `replace` mode don't use queue splitting: the deployed workload is scaled down, so your local process consumes every message from its queues.
 
 Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
 
