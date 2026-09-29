@@ -11,6 +11,8 @@ tags:
 
 The **Topology** tab in the dashboard draws the services in your cluster and the connections between them. The map is built from mirrord sessions: when a session opens a connection to a Kubernetes Service, or receives one, the operator records it. You don't declare dependencies anywhere; the map shows what sessions actually connected to.
 
+![Topology tab showing services in the shop, infra and mirrord namespaces, with preview environments and data stores](../../.gitbook/assets/topology-map.png)
+
 ## Requirements
 
 - Operator chart 3.211.0 or newer.
