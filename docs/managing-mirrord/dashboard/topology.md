@@ -55,7 +55,7 @@ Nodes are colored by category:
 | Category | How it's decided |
 | --- | --- |
 | **Entry point** | Discovered, and only ever seen calling other services |
-| **Service** | A workload in your cluster |
+| **Service** | Anything that fits none of the other categories |
 | **Data store** | Reached on a well-known database port (Postgres, MySQL, Redis, MongoDB, and so on) |
 | **Queue** | Reached on a well-known broker port (Kafka, RabbitMQ, NATS, and so on) |
 | **Infrastructure** | Reached on a well-known infrastructure port |
