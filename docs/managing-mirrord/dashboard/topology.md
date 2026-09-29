@@ -44,7 +44,7 @@ Then run a few sessions. A session reports its connections when it ends, so a ne
 - **Incoming**: a request reaches the session's target from a pod behind a Service. The edge runs from the caller to the target. The local process has to be listening on the target's port for mirrord to pass the request through.
 - **Preview environments**: connections a preview pod accepts from other Services. Preview pods don't run mirrord, so their own outgoing calls aren't recorded. The preview gets its own node, labelled with its key, and its connections are reported when the preview stops.
 
-Each edge keeps the number of sessions and users that produced it and when it was last reported. What's recorded is connection metadata: the Service's name and namespace, the direction, and the port for outgoing connections. Request and response contents are never recorded.
+Each edge keeps the number of sessions that produced it, a user count, and when it was last reported. When the same connection is reported from both ends, the sessions add up but the user count is the higher of the two, so it can undercount distinct users. What's recorded is connection metadata: the Service's name and namespace, the direction, and the port for outgoing connections. Request and response contents are never recorded.
 
 ## Reading the map
 
@@ -63,18 +63,18 @@ Nodes are colored by category:
 
 Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Click a chip in the legend to hide that category.
 
-A node marked **Discovered** was only ever seen as the other end of a connection. No session targeted it, so its session count is the sum over the edges pointing at it, and its user count is the highest count on any one of those edges.
+A node marked **Discovered** was only ever seen as the other end of a connection. No session targeted it, so its session count is the sum over the edges pointing at it, and its user count is the highest count on any single edge it's part of.
 
 Other controls:
 
 - **Find a service** searches by name. Press `/` to jump to it.
 - **Busiest paths** keeps the busiest quarter of the edges lit and dims the rest.
-- Click a node to open its details: its incoming and outgoing connections, with sessions, users and last seen for each. **Copy link** copies a URL that opens the map with that node selected.
+- Click a node to open its details: when it was last seen, and its incoming and outgoing connections with sessions and users for each. **Copy link** copies a URL that opens the map with that node selected.
 - **List** shows the same connections as a table of caller, callee, sessions, users and last seen.
 - **Export as PNG** saves the map as an image.
 - Press `f` to fit the map to the window and `Esc` to clear the focus.
 
-The time range selector applies here too. It filters by when the session was recorded, not by when each connection was made, so a session that crosses the edge of the range can land on either side. The map shows at most the 500 busiest connections in the range.
+The time range selector applies here too. It filters by session, not by individual connection: the cloud dashboard uses the time the session started, and the license server uses the time the session was reported. The map shows at most the 500 busiest connections in the range.
 
 ## Why a connection is missing
 
@@ -90,7 +90,10 @@ Some other cases that leave gaps:
 - The address belongs to more than one Service with different pods behind them, so it can't be attributed to one.
 - The connection used UDP. Only TCP is recorded.
 - The session targeted pods by label selector instead of a workload.
+- The service called itself. Connections to the session's own target aren't recorded.
+- The connection happened in the first moments after the operator started, before it finished loading the cluster's Services.
+- The session connected to a very large number of Services. Each session reports a limited list, keeping the most recent ones.
 - The session is still running. Edges are reported when the session ends.
 - On the cloud dashboard, the session ran with identity sharing off or `cloud.anonymizeData: true`.
 
-To see a service's connections, run a session against it and use the parts of it you want mapped while the session runs.
+To see a service's connections, run a session against the workload and exercise the connections you want to inspect.
