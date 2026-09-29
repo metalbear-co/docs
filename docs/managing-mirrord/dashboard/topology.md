@@ -9,13 +9,13 @@ tags:
 
 # Topology
 
-The **Topology** tab in the dashboard draws the services in your cluster and the connections between them. The map is built from mirrord sessions: when a session opens a connection to a Kubernetes Service, or receives one, the operator records it. There is nothing to declare up front, so the map covers what your developers actually touched, including dependencies nobody wrote down.
+The **Topology** tab in the dashboard draws the services in your cluster and the connections between them. The map is built from mirrord sessions: when a session opens a connection to a Kubernetes Service, or receives one, the operator records it. You don't declare dependencies anywhere; the map shows what sessions actually connected to.
 
 ## Requirements
 
 - Operator chart 3.211.0 or newer.
 - A dashboard, set up either way: [Cloud Setup](cloud.md) or [License Server Setup](license-server.md). With a license server, run the license server from the same release or newer.
-- On the cloud dashboard, identity sharing turned on for the operator's API key. Service names only leave the cluster with identity, so with sharing off the tab stays empty.
+- On the cloud dashboard, identity sharing turned on for the operator's API key, and `cloud.anonymizeData` left at `false`. Service names only leave the cluster with identity, so otherwise the tab stays empty.
 
 ## Turn it on
 
@@ -31,7 +31,10 @@ operator:
 helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
 ```
 
-With this on, the operator watches every Service and EndpointSlice in the cluster so it can tell which Service an address belongs to. The chart adds read access to EndpointSlices to the operator's ClusterRole for this.
+With this on, the operator watches every Service and EndpointSlice in the cluster so it can tell which Service an address belongs to. The chart makes two RBAC changes for this:
+
+- The operator's ClusterRole gets `get`, `list` and `watch` on `endpointslices`.
+- The user ClusterRole gets `get` and `list` on `mirrordclusterservicegraphs`, the operator's read-only view of the graph.
 
 Then run a few sessions. A session reports its connections when it ends, so a new edge shows up on the map shortly after the session that made it stops.
 
@@ -39,9 +42,9 @@ Then run a few sessions. A session reports its connections when it ends, so a ne
 
 - **Outgoing**: the local process connects through mirrord to an address in the cluster, the connection succeeds, and the address belongs to a Service (its cluster IP, or a pod behind it). The edge runs from the session's target to that Service.
 - **Incoming**: a request reaches the session's target from a pod behind a Service. The edge runs from the caller to the target. The local process has to be listening on the target's port for mirrord to pass the request through.
-- **Preview environments**: connections a preview pod opens or accepts. The preview gets its own node, labelled with its key.
+- **Preview environments**: connections a preview pod accepts from other Services. Preview pods don't run mirrord, so their own outgoing calls aren't recorded. The preview gets its own node, labelled with its key, and its connections are reported when the preview stops.
 
-Each edge keeps the number of sessions and users that produced it and when it was last seen. The operator records the address and port only, never the traffic itself.
+Each edge keeps the number of sessions and users that produced it and when it was last reported. What's recorded is connection metadata: the Service's name and namespace, the direction, and the port for outgoing connections. Request and response contents are never recorded.
 
 ## Reading the map
 
@@ -60,18 +63,18 @@ Nodes are colored by category:
 
 Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Click a chip in the legend to hide that category.
 
-A node marked **Discovered** was only ever seen as the other end of a connection. No session targeted it, so its counts are summed from the edges pointing at it.
+A node marked **Discovered** was only ever seen as the other end of a connection. No session targeted it, so its session count is the sum over the edges pointing at it, and its user count is the highest count on any one of those edges.
 
 Other controls:
 
 - **Find a service** searches by name. Press `/` to jump to it.
 - **Busiest paths** keeps the busiest quarter of the edges lit and dims the rest.
-- Click a node to open its details: sessions, users, last seen, and its incoming and outgoing connections. **Copy link** copies a URL that opens the map with that node selected.
+- Click a node to open its details: its incoming and outgoing connections, with sessions, users and last seen for each. **Copy link** copies a URL that opens the map with that node selected.
 - **List** shows the same connections as a table of caller, callee, sessions, users and last seen.
 - **Export as PNG** saves the map as an image.
 - Press `f` to fit the map to the window and `Esc` to clear the focus.
 
-The time range selector applies here too. A connection only appears if a session made it inside the selected range.
+The time range selector applies here too. It filters by when the session was recorded, not by when each connection was made, so a session that crosses the edge of the range can land on either side. The map shows at most the 500 busiest connections in the range.
 
 ## Why a connection is missing
 
@@ -84,8 +87,10 @@ Some other cases that leave gaps:
 
 - The address doesn't belong to a Service: an external host, or a pod no Service selects.
 - The connection failed. Only successful connections count.
+- The address belongs to more than one Service with different pods behind them, so it can't be attributed to one.
 - The connection used UDP. Only TCP is recorded.
+- The session targeted pods by label selector instead of a workload.
 - The session is still running. Edges are reported when the session ends.
-- On the cloud dashboard, the session ran with identity sharing off.
+- On the cloud dashboard, the session ran with identity sharing off or `cloud.anonymizeData: true`.
 
-To fill in the map, run sessions against more of your services and exercise the flows you care about while they run.
+To see a service's connections, run a session against it and use the parts of it you want mapped while the session runs.
