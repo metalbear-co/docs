@@ -250,7 +250,7 @@ A few rules apply:
 * Each `connection` needs its own URL or database variable, since such a variable can only name one database. Host, port, user and password variables may be shared: every database is on the same branch pod, so they get the same value anyway.
 * A literal `value` set on the same variable by two connections must be the same value.
 * With `dbPod.roles: full`, only the branch's own connection user gets a login on the branch (see [Roles, Permissions, and Credentials](#roles-permissions-and-credentials)). An additional connection that reads the same user and password variables keeps them; one with its own user and password variables is pointed at the branch superuser instead. Sharing only one of the two variables is rejected.
-* Branches are reused by `id`, and the additional databases are part of that match, `connection` included: a session that asks for a different set, or connects to one of them differently, gets its own branch instead of one that lacks a database or leaves a connection pointing at the source.
+* Branches are reused by `id`, and the additional databases' names and connections are part of that match: a session that asks for a different set, or connects to one of them differently, gets its own branch instead of one that lacks a database or leaves a connection pointing at the source. Their `copy` is not part of it: a reused branch keeps the data it was first copied with.
 
 {% hint style="info" %}
 An operator that does not support `additional_databases` refuses the config instead of creating a branch without the extra databases. Upgrade the operator if mirrord reports the feature is not supported.
