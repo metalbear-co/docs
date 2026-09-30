@@ -52,7 +52,7 @@ The response describes the provisional organization:
 
 The agent installs the Operator with that key as `cloud.apiKey.key` (see [Cloud API key](../managing-mirrord/operator.md#cloud-api-key)), then gives you the `claim_url`.
 
-Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values, which defaults to `false`. `mirrord operator install` only does the default installation, so turn it on by running the `helm install` it prints with `--set operator.previewEnv=true` added. When calling the signup endpoint directly, set it during the install instead.
+Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). The Helm chart enables them by default through `operator.previewEnv`, so an Operator installed by `mirrord operator install` supports them as is.
 
 ## Claiming the organization
 
