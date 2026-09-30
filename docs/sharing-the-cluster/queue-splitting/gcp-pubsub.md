@@ -137,7 +137,7 @@ Whichever method you choose, the IAM service account needs the following Pub/Sub
 
 A good starting point is to assign the `roles/pubsub.editor` role to the operator's service account, scoped to the relevant project.
 
-If you enable [`gcs_event`](gcp-pubsub.md#filtering-cloud-storage-notifications) for a subscription whose notifications use the `NONE` payload format, the operator also reads object metadata from Cloud Storage. In that case, grant it `storage.objects.get` on the relevant buckets, for example with the `roles/storage.objectViewer` role.
+If you enable [`gcs_event`](gcp-pubsub.md#filtering-cloud-storage-notifications) for a subscription whose notifications use the `NONE` payload format, the operator also reads object metadata from Cloud Storage with the credentials of that queue's client config property list. In that case, grant `storage.objects.get` on the relevant buckets, for example with the `roles/storage.objectViewer` role, to that identity: the service account in `credentials_json` when the list sets one (Option B), otherwise the operator's own identity (Option A).
 {% endstep %}
 
 {% step %}
@@ -347,9 +347,11 @@ queues:
 Where the metadata comes from depends on the notification's payload format:
 
 * `JSON_API_V1` - the notification already carries the object resource, so mirrord uses its `metadata` field. No Cloud Storage permission is needed.
-* `NONE` - the notification carries only attributes, so the operator reads the metadata of the object generation named in the notification from Cloud Storage, using the credentials from the queue's client config property list.
+* `NONE` - the notification carries only attributes, so the operator reads the metadata of the object generation named in the notification from Cloud Storage. It uses the credentials of the queue's client config property list: the service account in `credentials_json` when set, otherwise the operator's own identity.
 
-Messages that are not Cloud Storage notifications, and notifications for objects that no longer exist, get no `gcsMetadata`. If Cloud Storage cannot answer (for example the operator lacks `storage.objects.get`), the message stays in the subscription and is routed when Pub/Sub delivers it again, and the operator logs the bucket, object, and HTTP status.
+Only jq filters that name `gcsMetadata` make the operator read the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when Cloud Storage cannot be reached.
+
+Messages that are not Cloud Storage notifications, and notifications for objects that no longer exist, get no `gcsMetadata`. If Cloud Storage cannot answer (for example the client config's identity lacks `storage.objects.get`), the operator holds the message for a few seconds and then returns it to the subscription, so Pub/Sub delivers it again. Other messages keep flowing meanwhile, and the operator logs the bucket, object, and HTTP status.
 
 The operator reads Cloud Storage at `https://storage.googleapis.com`. To use a different endpoint, such as an emulator, set `storage_endpoint` in the client config property list. As with `endpoint`, a custom `storage_endpoint` without `credentials_json` is called without credentials.
 
