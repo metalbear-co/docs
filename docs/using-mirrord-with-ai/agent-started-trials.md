@@ -18,7 +18,7 @@ It runs a single command against the cluster of its current kubecontext. No auth
 mirrord operator install --no-browser
 ```
 
-The command starts the trial, installs the Operator with it, and prints the trial's end date and the claim URL for the agent to hand you. `--no-browser` keeps it from opening the claim page itself, which it also skips whenever it isn't running in a terminal.
+The command starts the trial, installs the Operator with it, and prints the trial's end date, the claim URL for the agent to hand you, and the trial's API key. `--no-browser` keeps it from opening the claim page itself, which it also skips whenever it isn't running in a terminal. If the installation fails after the trial has started, rerunning the command with `--api-key` and that key reuses the trial instead of starting another one.
 
 The trial is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup. To help you recognize the cluster on the claim page, the command sends the name of the current kubecontext along with the signup. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
 
