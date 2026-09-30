@@ -28,7 +28,7 @@ A chaos rule pairs a selector, which picks the traffic to disrupt, with an effec
 A selector matches outgoing connections by their destination:
 
 - `upstream`: the destination host, or `host:port` to match a specific port.
-- `percentage`: roughly how often a matched connection gets the effect (0 to 100).
+- `percentage`: roughly how often matching traffic gets the effect (0 to 100). It is decided separately for each read and each write, not once per connection, so a request that reads several times may be affected on some of those reads and not others.
 
 {% hint style="info" %}
 Currently selectors can only match outgoing TCP connections. Selectors for file operations and HTTP requests are planned.
@@ -39,6 +39,13 @@ Currently selectors can only match outgoing TCP connections. Selectors for file 
 An effect defines what happens to a matched connection. Two effects are supported:
 
 - `latency`: delays the connection's read and/or write operations.
+
+{% hint style="warning" %}
+`read_ms` and `write_ms` apply to each read and each write, not to each request. A request
+that reads three times is delayed by three times `read_ms`, so a request is usually delayed
+by more than the number you set. Pick a value by trying one and timing a real request,
+rather than by working back from the delay you want the request to see.
+{% endhint %}
 
 ```json
 {
@@ -58,7 +65,11 @@ An effect defines what happens to a matched connection. Two effects are supporte
 }
 ```
 
-- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`.
+- `connection_error`: fails the connection. `type` can be one of: `reset` (can be applied to ongoing connections), `timed_out`, `refused`. The error fires as soon as the connection is attempted.
+
+{% hint style="info" %}
+Rules still accept an `after_ms`, which was intended to hold the connection open before failing it. It currently has no effect and the error fires immediately.
+{% endhint %}
 
 ```json
 {
