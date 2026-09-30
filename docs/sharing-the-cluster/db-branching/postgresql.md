@@ -246,8 +246,10 @@ Every database is read over the branch's own source connection: the same host, p
 
 A few rules apply:
 
-* Each `name` must be unique and differ from the branch's own database.
-* Each `connection` needs its own environment variables. Two connections reading the same variable are rejected, since mirrord could only point it at one database.
+* Each `name` must be unique, differ from the branch's own database, and fit PostgreSQL's 63-byte limit on identifiers.
+* Each `connection` needs its own URL or database variable, since such a variable can only name one database. Host, port, user and password variables may be shared: every database is on the same branch pod, so they get the same value anyway.
+* A literal `value` set on the same variable by two connections must be the same value.
+* With `dbPod.roles: full`, only the branch's own connection user gets a login on the branch (see [Roles, Permissions, and Credentials](#roles-permissions-and-credentials)). An additional connection that reads the same user and password variables keeps them; one that connects as another role is pointed at the branch superuser instead.
 * Branches are reused by `id`, and the list of additional database names is part of that match: a session that asks for a different set gets its own branch instead of one that lacks a database.
 
 {% hint style="info" %}
