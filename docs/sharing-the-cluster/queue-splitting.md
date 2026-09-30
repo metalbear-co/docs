@@ -300,6 +300,8 @@ Filter definition contains the following fields:
   * For **Kafka**, it runs a jq program on a JSON representation of the record. See the [Kafka page](queue-splitting/kafka.md#setting-a-filter) for the document shape.
   * For **RabbitMQ**, it runs a jq program on a JSON representation of the message. See the [RabbitMQ page](queue-splitting/rabbitmq.md#setting-a-filter) for the document shape.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
+    For subscriptions configured with `gcs_event: "true"`, jq filters can also inspect `gcsMetadata`, the custom metadata of the Cloud Storage object a notification is about.
+    See [Filtering Cloud Storage notifications](queue-splitting/gcp-pubsub.md#filtering-cloud-storage-notifications).
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
