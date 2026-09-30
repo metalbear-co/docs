@@ -117,6 +117,7 @@ Developers define branches in their `mirrord.json`:
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 | `migrations` | (MySQL, MariaDB, CockroachDB, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+| `additional_databases` | (PostgreSQL only) More databases from the same source server, copied into the same branch pod, each with its own optional `connection` and `copy`. See [Several Databases in One Branch](db-branching/postgresql.md#several-databases-in-one-branch). |
 
 ### Custom Branch Image
 

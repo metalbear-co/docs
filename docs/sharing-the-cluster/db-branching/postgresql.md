@@ -202,6 +202,58 @@ Setting it through `connection_settings` makes the copy read past the policy:
 
 These settings only apply while mirrord reads from the source, they are never written into the branch itself.
 
+## Several Databases in One Branch
+
+`additional_databases` copies more databases from the same source server into the same branch. This is useful when your application talks to several databases on one PostgreSQL server: they all land on one branch pod, so the application keeps using a single host, just like it does against the source.
+
+```json
+{
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "name": "app",
+        "connection": { "url": { "type": "env", "variable": "DATABASE_URL" } },
+        "copy": { "mode": "all" },
+        "additional_databases": [
+          {
+            "name": "analytics",
+            "connection": { "url": { "type": "env", "variable": "ANALYTICS_DATABASE_URL" } },
+            "copy": {
+              "mode": "schema",
+              "tables": {
+                "events": { "filter": "created_at > now() - interval '1 day'" }
+              }
+            }
+          },
+          { "name": "audit" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Each entry takes these fields:
+
+| Field | Required | What it does |
+| --- | --- | --- |
+| `name` | yes | The database name on the source server. The branch creates a database with the same name. |
+| `connection` | no | How the application connects to this database, in the same shape as the branch's own `connection`. mirrord points it at the branch pod with this database's name. Without it, the database is only created and copied, and the application has to switch to it on the branch host by itself. |
+| `copy` | no | Copy mode and table filters for this database, in the same shape as the branch's own `copy`. Defaults to `empty`. |
+
+Every database is read over the branch's own source connection: the same host, port, user, password, TLS settings, `iam_auth`, and `connection_settings`. Only the database name changes, so all of them must live on the server the branch's `connection` points at.
+
+A few rules apply:
+
+* Each `name` must be unique and differ from the branch's own database.
+* Each `connection` needs its own environment variables. Two connections reading the same variable are rejected, since mirrord could only point it at one database.
+* Branches are reused by `id`, and the list of additional database names is part of that match: a session that asks for a different set gets its own branch instead of one that lacks a database.
+
+{% hint style="info" %}
+An operator that does not support `additional_databases` refuses the config instead of creating a branch without the extra databases. Upgrade the operator if mirrord reports the feature is not supported.
+{% endhint %}
+
 ## Server Arguments
 
 `dbServerArgs` is a list of extra command-line flags for the branch's `postgres` server, set per cluster via the `operator.pgBranchConfig` value in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This is useful when every branch needs a server setting the image's defaults don't provide - for example serving TLS with certificates baked into a custom image:
