@@ -349,7 +349,7 @@ Where the metadata comes from depends on the notification's payload format:
 * `JSON_API_V1` - the notification already carries the object resource, so mirrord uses its `metadata` field. No Cloud Storage permission is needed.
 * `NONE` - the notification carries only attributes, so the operator reads the metadata of the object generation named in the notification from Cloud Storage. It uses the credentials of the queue's client config property list: the service account in `credentials_json` when set, otherwise the operator's own identity.
 
-Only jq filters that name `gcsMetadata` make the operator read the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when Cloud Storage cannot be reached.
+Only jq filters that name `gcsMetadata` make the operator read the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when Cloud Storage cannot be reached. The check is a plain text match: the program must contain `gcsMetadata` literally, so a program that reaches the field another way (a computed key such as `.[$name]`, or `to_entries`) sees no `gcsMetadata`.
 
 Messages that are not Cloud Storage notifications, and notifications for objects that no longer exist, get no `gcsMetadata`. If Cloud Storage cannot answer (for example the client config's identity lacks `storage.objects.get`), the operator holds the message for a few seconds and then returns it to the subscription, so Pub/Sub delivers it again. Other messages keep flowing meanwhile, and the operator logs the bucket, object, and HTTP status.
 
