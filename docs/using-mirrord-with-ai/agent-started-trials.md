@@ -12,7 +12,21 @@ On a cluster with no license, an agent that follows [metalbear.com/agents.md](ht
 
 ## What the agent does
 
-It posts to the signup endpoint. No authentication, no credit card:
+It runs a single command against the cluster of its current kubecontext. No authentication, no credit card, and no API key for the agent to handle:
+
+```bash
+mirrord operator install --no-browser
+```
+
+The command starts the trial, installs the Operator with it, and prints the trial's end date and the claim URL for the agent to hand you. `--no-browser` keeps it from opening the claim page itself, which it also skips whenever it isn't running in a terminal.
+
+The trial is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup. To help you recognize the cluster on the claim page, the command sends the name of the current kubecontext along with the signup. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
+
+The Operator is installed from the default Helm chart, without needing Helm itself. If an Operator is already installed in the cluster, or an earlier installation left objects behind, the command stops and says so rather than touching anything. For anything beyond the default installation, it prints the equivalent `helm install`, which takes the installation over along with its API key.
+
+### Calling the signup endpoint directly
+
+Without the mirrord CLI, an agent can post to the signup endpoint itself:
 
 ```bash
 curl -fsS -X POST https://app.metalbear.com/api/v1/agent/signup \
@@ -22,7 +36,7 @@ curl -fsS -X POST https://app.metalbear.com/api/v1/agent/signup \
 
 `developer_email` and `cluster_hint` are optional and unverified. They exist so you can recognize the organization as yours on the claim page.
 
-The response is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup:
+The response describes the provisional organization:
 
 ```json
 {
@@ -38,7 +52,7 @@ The response is a **provisional organization** carrying an Enterprise trial lice
 
 The agent installs the Operator with that key as `cloud.apiKey.key` (see [Cloud API key](../managing-mirrord/operator.md#cloud-api-key)), then gives you the `claim_url`.
 
-Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values, which defaults to `false` and can't be turned on after the fact without a `helm upgrade`, so it's worth setting during the agent's install.
+Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values, which defaults to `false`. `mirrord operator install` only does the default installation, so turn it on by running the `helm install` it prints with `--set operator.previewEnv=true` added. When calling the signup endpoint directly, set it during the install instead.
 
 ## Claiming the organization
 
@@ -65,4 +79,4 @@ Claim codes are single-use. Once one has been claimed, opening the same link fro
 
 ## If you already have an organization
 
-You don't need any of this. Generate a cloud API key under **API Keys** and give it to the agent, or install the Operator yourself following the [dashboard setup guide](../managing-mirrord/dashboard/cloud.md). Signing up again creates a second organization you then have to clean up.
+You don't need any of this. Generate a cloud API key under **API Keys** and give it to the agent, which installs with `mirrord operator install --api-key <key>` and skips the trial, or install the Operator yourself following the [dashboard setup guide](../managing-mirrord/dashboard/cloud.md). Signing up again creates a second organization you then have to clean up.
