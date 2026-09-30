@@ -253,7 +253,7 @@ A few rules apply:
 * Branches are reused by `id`, and the additional databases' names and connections are part of that match: a session that asks for a different set, or connects to one of them differently, gets its own branch instead of one that lacks a database or leaves a connection pointing at the source. Their `copy` is not part of it: a reused branch keeps the data it was first copied with.
 
 {% hint style="info" %}
-An operator that does not support `additional_databases` refuses the config instead of creating a branch without the extra databases. Upgrade the operator if mirrord reports the feature is not supported.
+`additional_databases` requires operator and Helm chart `3.214.0` or later, and mirrord CLI `3.267.0` or later. An operator that does not support `additional_databases` refuses the config instead of creating a branch without the extra databases. Upgrade the operator if mirrord reports the feature is not supported.
 {% endhint %}
 
 ## Server Arguments
