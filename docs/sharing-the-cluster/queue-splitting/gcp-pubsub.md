@@ -318,7 +318,7 @@ All three values are forwarded to GCP, which enforces its own allowed ranges (se
 
 When a subscription receives [Pub/Sub notifications for Cloud Storage](https://cloud.google.com/storage/docs/pubsub-notifications), mirrord can expose the custom metadata of the object each notification is about to `jq_filter` as `gcsMetadata`. This is useful when your application processes uploaded files and you want your local application to get only the uploads meant for you, for example the ones whose object carries `env: dev`.
 
-Enable it with `gcs_event` in the queue's `queueConfig`:
+Filtering on Cloud Storage object metadata requires mirrord operator `3.214.0` or later. Enable it with `gcs_event` in the queue's `queueConfig`:
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
