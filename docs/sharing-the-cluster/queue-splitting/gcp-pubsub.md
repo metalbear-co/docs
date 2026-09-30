@@ -355,6 +355,25 @@ Messages that are not Cloud Storage notifications, and notifications for objects
 
 The operator reads Cloud Storage at `https://storage.googleapis.com`. To use a different endpoint, such as an emulator, set `storage_endpoint` in the client config property list. As with `endpoint`, a custom `storage_endpoint` without `credentials_json` is called without credentials.
 
+#### Setting the metadata
+
+Custom metadata is part of the object however it was uploaded, so any of these work:
+
+* **Client libraries and `gcloud`**: set it on upload, for example `gcloud storage cp report.csv gs://uploads/ --custom-metadata=env=dev`, or the `metadata` field of the object in your SDK.
+* **Signed URLs**: browser and mobile clients upload through a V4 signed URL. Each metadata entry is an `x-goog-meta-<key>` request header. When your server creates the URL, list those headers in the signed headers, and have the client send them exactly as signed, or Cloud Storage rejects the upload. With the Go client, for example:
+
+  ```go
+  url, err := client.Bucket("uploads").SignedURL("report.csv", &storage.SignedURLOptions{
+      Method:  "PUT",
+      Scheme:  storage.SigningSchemeV4,
+      Headers: []string{"x-goog-meta-env:dev"},
+      Expires: time.Now().Add(15 * time.Minute),
+  })
+  ```
+
+  The client then sends `PUT <url>` with the header `x-goog-meta-env: dev`.
+* **Later changes**: `objects.patch` (`gcloud storage objects update gs://uploads/report.csv --custom-metadata=env=dev`) changes the metadata of an existing object. This bumps the object's metageneration, not its generation, so a notification's read of the pinned `objectGeneration` still returns the updated metadata.
+
 ## Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
