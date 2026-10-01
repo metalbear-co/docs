@@ -353,6 +353,8 @@ Filtering on S3 object metadata (requires `s3_event: "true"` on the queue's `que
 
 In the example above, the local application will receive messages from SQS queue `uploads-queue` only when the S3 object referenced by the event has `S3Metadata.client == "a"`.
 
+From mirrord operator `3.215.0`, only jq filters that name `S3Metadata` make the operator fetch the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when S3 cannot be reached. The check is a plain text match: the program must contain `S3Metadata` literally, so a program that reaches the field another way (a computed key such as `.[$name]`, or `to_entries`) sees no `S3Metadata`.
+
 Combining an attribute filter with a `jq_filter` (both must match):
 
 ```json
