@@ -222,6 +222,9 @@ each agent pod on the node. Then find the sessions with these targets. The comma
    If the target pod is a copy pod, find this copy pod in step 2. The session on that line uses the agent. A copy pod
    that no agent uses also belongs to the session that shows it in step 2.
 
+   All the targetless sessions in a namespace share one targetless agent pod. So all of them use the agent, and the
+   agent pod stays until all of them end.
+
 For a multi-cluster session, do steps 1 and 2 in the cluster that has the node. The `spec.multiClusterParentName` field
 of the session resource gives the ID of its multi-cluster session.
 
