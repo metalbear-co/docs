@@ -80,7 +80,7 @@ HTTP requests and responses are logged as two separate lifecycle records. The re
 | --- | --- |
 | `method` | HTTP request method |
 | `path` | Request URI path |
-| `request_headers` | Complete request header map, serialized as a JSON string. Not present when `operator.logHeadersAndProperties` is `false` |
+| `request_headers` | Complete request header map, serialized as a JSON string. Not present when `operator.hideHeadersAndProperties` is `true` |
 | `correlation_id` | Value of a recognized correlation ID header, when present |
 | `traceparent` | W3C Trace Context `traceparent` header, when present |
 | `tracestate` | W3C Trace Context `tracestate` header, when present |
@@ -141,7 +141,7 @@ Queue and message bus records use the following fields when the broker provides 
 | `queue_name` | Queue, topic, subscription, or Redis channel name |
 | `message_id` | Broker-provided message or job identifier |
 | `correlation_id` | Broker-provided correlation ID or a recognized correlation ID property/header |
-| `message_properties` | Message attributes, properties, or Kafka headers, serialized as a JSON string. Not present when `operator.logHeadersAndProperties` is `false` |
+| `message_properties` | Message attributes, properties, or Kafka headers, serialized as a JSON string. Not present when `operator.hideHeadersAndProperties` is `true` |
 | `traceparent` | W3C Trace Context value extracted from message properties or headers |
 | `tracestate` | W3C Trace Context value extracted from message properties or headers |
 | `baggage` | W3C baggage value extracted from message properties or headers |
@@ -178,7 +178,7 @@ For example, a queue message can produce:
 {% hint style="warning" %}
 HTTP headers and message properties can contain credentials, personal information, or other sensitive values. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
 
-To hide the header and property maps from these records, set `operator.logHeadersAndProperties` to `false` in the Operator Helm chart values. The records then do not have the `request_headers` and `message_properties` fields, but they still have the `correlation_id`, `traceparent`, `tracestate` and `baggage` fields.
+To hide the header and property maps from these records, set `operator.hideHeadersAndProperties` to `true` in the Operator Helm chart values. The records then do not have the `request_headers` and `message_properties` fields, but they still have the `correlation_id`, `traceparent`, `tracestate` and `baggage` fields.
 {% endhint %}
 
 ##### Querying the logs
