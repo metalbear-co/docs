@@ -178,7 +178,7 @@ For example, a queue message can produce:
 {% hint style="warning" %}
 HTTP headers and message properties can contain credentials, personal information, or other sensitive values. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
 
-To keep the full header and property maps out of these records, set `operator.logHeadersAndProperties` to `false` in the Operator Helm chart values. The records then do not have the `request_headers` and `message_properties` fields, but they still have the `correlation_id`, `traceparent`, `tracestate` and `baggage` fields.
+To hide the header and property maps from these records, set `operator.logHeadersAndProperties` to `false` in the Operator Helm chart values. The records then do not have the `request_headers` and `message_properties` fields, but they still have the `correlation_id`, `traceparent`, `tracestate` and `baggage` fields.
 {% endhint %}
 
 ##### Querying the logs
