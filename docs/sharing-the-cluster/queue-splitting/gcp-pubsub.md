@@ -136,6 +136,8 @@ Whichever method you choose, the IAM service account needs the following Pub/Sub
 | `pubsub.subscriptions.delete`      |                               |                ✓               |
 
 A good starting point is to assign the `roles/pubsub.editor` role to the operator's service account, scoped to the relevant project.
+
+If you enable [`gcs_event`](gcp-pubsub.md#filtering-cloud-storage-notifications) for a subscription whose notifications use the `NONE` payload format, the operator also reads object metadata from Cloud Storage with the credentials of that queue's client config property list. In that case, grant `storage.objects.get` on the relevant buckets, for example with the `roles/storage.objectViewer` role, to that identity: the service account in `credentials_json` when the list sets one (Option B), otherwise the operator's own identity (Option A).
 {% endstep %}
 
 {% step %}
@@ -213,7 +215,7 @@ Each entry in the `spec.queues` list describes one or more Pub/Sub subscriptions
   * `containers` - limit to specific containers (optional, defaults to all).
 * `appConfig.projectId` - how the application discovers the GCP project ID. Uses the same structure as `subscription`.
 * `clientConfig` (optional) - name of a `MirrordPropertyList` containing GCP-specific connection properties. Can also be set at the top level in `spec.clientConfigs.googlePubSub`. If neither is set, the operator looks for a `MirrordPropertyList` named `default`.
-* `queueConfig` (optional) - name of a `MirrordPropertyList` with additional configuration for temporary resources.
+* `queueConfig` (optional) - name of a `MirrordPropertyList` with per-queue options: settings for temporary resources (see [Configuring temporary subscriptions](gcp-pubsub.md#configuring-temporary-subscriptions)) and `gcs_event` (see [Filtering Cloud Storage notifications](gcp-pubsub.md#filtering-cloud-storage-notifications)).
 
 #### Matching multiple subscriptions with `envLike`
 
@@ -312,6 +314,66 @@ All three values are forwarded to GCP, which enforces its own allowed ranges (se
 * `message_retention_seconds` (integer seconds) - how long unacknowledged messages are kept, so a backlog is not dropped while you debug.
 * `expiration_seconds` (integer seconds, or `never`) - how long the temporary subscription survives without activity before Pub/Sub deletes it. Use `never` to keep it for the whole session, which prevents the subscription from being garbage-collected while the deployed consumer is paused.
 
+## Filtering Cloud Storage notifications
+
+When a subscription receives [Pub/Sub notifications for Cloud Storage](https://cloud.google.com/storage/docs/pubsub-notifications), mirrord can expose the custom metadata of the object each notification is about to `jq_filter` as `gcsMetadata`. This is useful when your application processes uploaded files and you want your local application to get only the uploads meant for you, for example the ones whose object carries `env: dev`.
+
+Filtering on Cloud Storage object metadata requires mirrord operator `3.214.0` or later. Enable it with `gcs_event` in the queue's `queueConfig`:
+
+```yaml
+apiVersion: mirrord.metalbear.co/v1
+kind: MirrordPropertyList
+metadata:
+  name: uploads-queue-config
+  namespace: events
+spec:
+  properties:
+    - name: gcs_event
+      value: "true"
+```
+
+```yaml
+queues:
+  - id: uploads
+    kind: googlePubSub
+    queueConfig: uploads-queue-config
+    appConfig:
+      subscription:
+        - env: PUBSUB_SUBSCRIPTION
+```
+
+* `gcs_event` (`"true"`/`"false"`) - set to `"true"` to read each message as a Cloud Storage notification and expose the object's custom metadata to `jq_filter` as `gcsMetadata`, a flat map of metadata keys to string values. Defaults to `"false"`.
+
+Where the metadata comes from depends on the notification's payload format:
+
+* `JSON_API_V1` - the notification already carries the object resource, so mirrord uses its `metadata` field. No Cloud Storage permission is needed.
+* `NONE` - the notification carries only attributes, so the operator reads the metadata of the object generation named in the notification from Cloud Storage. It uses the credentials of the queue's client config property list: the service account in `credentials_json` when set, otherwise the operator's own identity.
+
+Only jq filters that name `gcsMetadata` make the operator read the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when Cloud Storage cannot be reached. The check is a plain text match: the program must contain `gcsMetadata` literally, so a program that reaches the field another way (a computed key such as `.[$name]`, or `to_entries`) sees no `gcsMetadata`.
+
+Messages that are not Cloud Storage notifications, and notifications for objects that no longer exist, get no `gcsMetadata`. If Cloud Storage cannot answer (for example the client config's identity lacks `storage.objects.get`), the operator holds the message for a few seconds and then returns it to the subscription, so Pub/Sub delivers it again. Other messages keep flowing meanwhile, and the operator logs the bucket, object, and HTTP status.
+
+The operator reads Cloud Storage at `https://storage.googleapis.com`. To use a different endpoint, such as an emulator, set `storage_endpoint` in the client config property list. As with `endpoint`, a custom `storage_endpoint` without `credentials_json` is called without credentials.
+
+#### Setting the metadata
+
+Custom metadata is part of the object however it was uploaded, so any of these work:
+
+* **Client libraries and `gcloud`**: set it on upload, for example `gcloud storage cp report.csv gs://uploads/ --custom-metadata=env=dev`, or the `metadata` field of the object in your SDK.
+* **Signed URLs**: browser and mobile clients upload through a V4 signed URL. Each metadata entry is an `x-goog-meta-<key>` request header. When your server creates the URL, list those headers in the signed headers, and have the client send them exactly as signed, or Cloud Storage rejects the upload. With the Go client, for example:
+
+  ```go
+  url, err := client.Bucket("uploads").SignedURL("report.csv", &storage.SignedURLOptions{
+      Method:  "PUT",
+      Scheme:  storage.SigningSchemeV4,
+      Headers: []string{"x-goog-meta-env:dev"},
+      Expires: time.Now().Add(15 * time.Minute),
+  })
+  ```
+
+  The client then sends `PUT <url>` with the header `x-goog-meta-env: dev`.
+* **Later changes**: `objects.patch` (`gcloud storage objects update gs://uploads/report.csv --custom-metadata=env=dev`) changes the metadata of an existing object. This bumps the object's metageneration, not its generation, so a notification's read of the pinned `objectGeneration` still returns the updated metadata.
+
 ## Preserving the value format
 
 By default the operator treats the whole environment variable value as the resource name and replaces it with a temporary one. When the application reads the name as part of a larger string - a URL, a resource path, or a connection string - replacing the whole value would break it. You can use `valuePattern` to solve this: it is a regex whose capture group marks the part of the value that is the resource name. The operator swaps only that captured part for the temporary name and keeps everything around it unchanged.
@@ -391,6 +453,25 @@ Filtering on the message body with `jq_filter`:
 ```
 
 In the example above, the local application will receive messages from the Pub/Sub subscription `user-events` only when the message body (base64-decoded) is valid JSON and contains `"user_id": "test-user"`.
+
+Filtering on Cloud Storage object metadata (requires `gcs_event: "true"` on the queue's `queueConfig`):
+
+```json
+{
+  "operator": true,
+  "target": "deployment/event-processor/container/consumer",
+  "feature": {
+    "split_queues": {
+      "uploads": {
+        "queue_type": "GCPPubSub",
+        "jq_filter": ".gcsMetadata.env == \"dev\""
+      }
+    }
+  }
+}
+```
+
+In the example above, the local application will receive notifications from the Pub/Sub subscription `uploads` only when the Cloud Storage object they are about has the custom metadata `env: dev`.
 
 Using the `*` wildcard to apply one filter to all subscriptions in the `MirrordSplitConfig`:
 
