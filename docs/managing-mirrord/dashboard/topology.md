@@ -86,14 +86,14 @@ Nodes are colored by category:
 
 | Category | How it's decided |
 | --- | --- |
-| **Entry point** | A **Discovered** node (see below) that only ever calls other services and is never called |
+| **Entry point** | A node marked **Discovered** (no session targeted it; it's only known as the other end of other sessions' connections) that only ever calls other services and is never called |
 | **Service** | Anything that fits none of the other categories |
 | **Data store** | Reached on a well-known database port: Postgres (5432, PgBouncer 6432), MySQL (3306, 33060), MongoDB (27017-27019), Redis (6379, Sentinel 26379), Memcached (11211), Cassandra (9042), Elasticsearch (9200, 9300), ClickHouse (8123, 9440), CockroachDB (26257), SQL Server (1433), Oracle (1521), CouchDB (5984), ArangoDB (8529), Neo4j (7687), InfluxDB (8086), Qdrant (6333), Milvus (19530) |
 | **Queue** | Reached on a well-known broker port: Kafka (9092), RabbitMQ (5671, 5672, 15672), NATS (4222), Temporal (7233), ActiveMQ (61616), MQTT (1883, 8883), NSQ (4150), Pulsar (6650) |
 | **Infrastructure** | Reached on a well-known infrastructure port: Vault (8200), Consul (8500), Prometheus (9090), Jaeger (14250, 14268, 16686), OpenTelemetry (4317, 4318), Zipkin (9411), StatsD (8125), Datadog APM (8126), etcd (2379), DNS (53) |
 | **Preview env** | A preview pod. Each pod is its own node, labelled with the preview's key, so a preview environment covering three services shows as three nodes |
 
-A node is **Discovered** when no session targeted it: it's only known as the other end of other sessions' connections. Its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of.
+Because no session targeted a **Discovered** node, its counts come from the connections around it: its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of.
 
 Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Click a chip in the legend to hide that category.
 
