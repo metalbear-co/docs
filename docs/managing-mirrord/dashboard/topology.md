@@ -46,10 +46,10 @@ Topology is off by default.
 3. Run a few mirrord sessions, then open the **Topology** tab. A session reports its connections when it ends, so each new connection shows up shortly after the session that made it stops.
 
 {% hint style="info" %}
-With topology on, the operator watches every Service and EndpointSlice in the cluster so it can tell which Service an address belongs to. The chart makes two RBAC changes for this:
+With topology on, the operator watches every Service and EndpointSlice in the cluster so it can tell which Service an address belongs to. The chart makes these RBAC changes for it:
 
 - The operator's ClusterRole gets `get`, `list` and `watch` on `endpointslices`.
-- The user ClusterRole gets `get` and `list` on `mirrordclusterservicegraphs`, the operator's read-only view of the map.
+- The `mirrord-operator-user`, `mirrord-operator-user-basic` and `mirrord-operator-ci` ClusterRoles get `get` and `list` on `mirrordclusterservicegraphs`, the operator's read-only view of the map.
 {% endhint %}
 
 ## Map the whole cluster at once
@@ -73,8 +73,8 @@ Exercising endpoints sends real requests from the agent's sessions into your clu
 A connection is recorded in three cases:
 
 - **Outgoing**: the local process connects through mirrord to an address in the cluster, the connection succeeds, and the address belongs to a Service (its cluster IP, or a pod behind it). The connection runs from the session's target to that Service. For example, a session targeting `order-service` that calls `inventory-service` adds `order-service` → `inventory-service`.
-- **Incoming**: a request reaches the session's target from a pod behind a Service. The connection runs from the caller to the target. The local process has to be listening on the target's port for mirrord to pass the request through.
-- **Preview environments**: connections a preview pod accepts from other Services. Preview pods don't run mirrord, so their own outgoing calls aren't recorded. Each preview pod gets its own node, labelled with the preview's key, and its connections are reported when the preview stops.
+- **Incoming**: a request reaches the session's target from a pod behind a Service. The connection runs from the caller to the target. The local process has to be listening on the target's port, or on a local port mapped to it, for mirrord to pass the request through.
+- **Preview environments**: connections a preview accepts from other Services. Preview pods don't run mirrord, so their own outgoing calls aren't recorded. Each previewed service gets its own node, labelled with the preview's key, and its connections are reported when the preview stops.
 
 Each connection keeps the number of sessions that produced it, a user count, and when it was last reported. The user count is per side: when the same connection is reported from both ends, the map shows the higher of the two counts rather than adding them, so it never counts someone twice but can show fewer users than there were. What's recorded is connection metadata: the Service's name and namespace, the direction, and the port for outgoing connections. Request and response contents are never recorded.
 
@@ -86,16 +86,16 @@ Nodes are colored by category:
 
 | Category | How it's decided |
 | --- | --- |
-| **Entry point** | A node marked **Discovered** (no session targeted it; it's only known as the other end of other sessions' connections) that only ever calls other services and is never called |
+| **Entry point** | A node marked **Discovered** (no session in the selected range targeted a workload with its name; it's only known as the other end of other sessions' connections) that only ever calls other services and is never called |
 | **Service** | Anything that fits none of the other categories |
 | **Data store** | Reached on a well-known database port: Postgres (5432, PgBouncer 6432), MySQL (3306, 33060), MongoDB (27017-27019), Redis (6379, Sentinel 26379), Memcached (11211), Cassandra (9042), Elasticsearch (9200, 9300), ClickHouse (8123, 9440), CockroachDB (26257), SQL Server (1433), Oracle (1521), CouchDB (5984), ArangoDB (8529), Neo4j (7687), InfluxDB (8086), Qdrant (6333), Milvus (19530) |
 | **Queue** | Reached on a well-known broker port: Kafka (9092), RabbitMQ (5671, 5672, 15672), NATS (4222), Temporal (7233), ActiveMQ (61616), MQTT (1883, 8883), NSQ (4150), Pulsar (6650) |
 | **Infrastructure** | Reached on a well-known infrastructure port: Vault (8200), Consul (8500), Prometheus (9090), Jaeger (14250, 14268, 16686), OpenTelemetry (4317, 4318), Zipkin (9411), StatsD (8125), Datadog APM (8126), etcd (2379), DNS (53) |
-| **Preview env** | A preview pod. Each pod is its own node, labelled with the preview's key, so a preview environment covering three services shows as three nodes |
+| **Preview env** | A service running in a preview environment. Each previewed service is its own node, labelled with the preview's key, so a preview environment covering three services shows as three nodes. Replicas of the same preview share one node |
 
-Because no session targeted a **Discovered** node, its counts come from the connections around it: its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of.
+No session targeted a **Discovered** node, so its counts come from the connections around it: its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of. A Service whose name differs from its workload's also shows as **Discovered**, next to the workload's own node.
 
-Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Click a chip in the legend to hide that category.
+Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Only the lowest port a workload reached on a Service is kept, so a database that is also reached on a lower port, such as 80, can show up as a plain **Service** too. Click a chip in the legend to hide that category.
 
 Other controls:
 
@@ -106,23 +106,23 @@ Other controls:
 - **Export as PNG** saves the map as an image.
 - Press `f` to fit the map to the window and `Esc` to clear the focus.
 
-The time range selector applies here too. It filters by session, not by individual connection: the cloud dashboard uses the time the session started, and the license server uses the time the session was reported. The map shows at most the 500 busiest connections in the range.
+The time range selector applies here too. It filters by session, not by individual connection: the cloud dashboard uses the time the session started, and the license server uses the time the session was reported. The report holds at most 500 connection records for the range, busiest first. A connection reported from both ends is two records, which the map merges into one.
 
 ## Why a connection is missing
 
 The map only knows about traffic that went through a mirrord session. If two services talk to each other but no session was part of that conversation, there's no connection on the map. For example, `order-service` calling `payment-service` shows up only when:
 
 - a session targeting `order-service` made that call from the local process, or
-- a session targeting `payment-service` received the call from `order-service`, with the local process listening on the port it arrived on.
+- a session targeting `payment-service` received the call from `order-service`, with the local process listening on the port it arrived on, or on a local port mapped to it.
 
 Some other cases that leave gaps:
 
 - The address doesn't belong to a Kubernetes Service: an external host, or a pod no Service selects.
-- The connection failed. Only successful connections count.
+- An outgoing connection failed. Only outgoing connections that succeed are recorded.
 - The address belongs to more than one Service with different pods behind them, so it can't be attributed to one.
 - The connection used UDP. Only TCP is recorded.
 - The session targeted pods by label selector instead of a workload.
-- The service called itself. Connections to the session's own target aren't recorded.
+- The service called itself. Connections to a Service with the same name and namespace as the session's target aren't recorded.
 - The connection happened in the first moments after the operator started, before it finished loading the cluster's Services.
 - The session connected to a very large number of Services. Each session reports a limited list, keeping the most recent ones.
 - The session is still running. Connections are reported when the session ends.
