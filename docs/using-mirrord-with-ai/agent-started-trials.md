@@ -8,7 +8,7 @@ tags: ["team", "enterprise"]
 
 Some things an agent needs on a shared cluster only work with mirrord for Teams: branching a database so its writes don't reach everyone else's data, splitting a queue so it doesn't eat messages other people need, or stealing traffic from a target another session already holds.
 
-On a cluster with no license, an agent that follows [metalbear.com/agents.md](https://metalbear.com/agents.md) can start a trial itself rather than stopping and waiting for you to sign up. It ends up with a working cluster and you end up with a link to claim.
+On a cluster with no license, an agent that follows [metalbear.com/agents.md](https://metalbear.com/agents.md) can offer to start a trial for you instead of stopping. The trial installs the mirrord Operator into your cluster, so the agent asks you first, and it checks that the cluster doesn't already run the Operator so a later session doesn't sign up a second time. Once you agree, it ends up with a working cluster and you end up with a link to claim.
 
 ## What the agent does
 
@@ -38,7 +38,7 @@ The response is a **provisional organization** carrying an Enterprise trial lice
 
 The agent installs the Operator with that key as `cloud.apiKey.key` (see [Cloud API key](../managing-mirrord/operator.md#cloud-api-key)), then gives you the `claim_url`.
 
-Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values, which defaults to `false` and can't be turned on after the fact without a `helm upgrade`, so it's worth setting during the agent's install.
+Because the trial is an Enterprise license, it also covers the features a Team license doesn't, including [Preview Environments](../use-cases/preview-environments.md). Those need `operator.previewEnv=true` in the Helm values. It defaults to `false` and lets the Operator create and delete Deployments, Services, and CronJobs across the cluster, so the agent only sets it when you want preview environments. Turning it on later is a `helm upgrade` with that value.
 
 ## Claiming the organization
 
