@@ -73,8 +73,8 @@ Exercising endpoints sends real requests from the agent's sessions into your clu
 A connection is recorded in three cases:
 
 - **Outgoing**: the local process connects through mirrord to an address in the cluster, the connection succeeds, and the address belongs to a Service (its cluster IP, or a pod behind it). The connection runs from the session's target to that Service. For example, a session targeting `order-service` that calls `inventory-service` adds `order-service` → `inventory-service`.
-- **Incoming**: a request reaches the session's target from a pod behind a Service. The connection runs from the caller to the target. The local process has to be listening on the target's port, or on a local port mapped to it, for mirrord to pass the request through.
-- **Preview environments**: connections a preview accepts from other Services. Preview pods don't run mirrord, so their own outgoing calls aren't recorded. Each previewed service gets its own node, labelled with the preview's key, and its connections are reported when the preview stops.
+- **Incoming**: a request reaches the session's target from a pod behind a Service. The connection runs from the caller to the target. mirrord only receives traffic on ports the local process listens on (the target's port, or a local port mapped to it), so a request on any other port isn't seen.
+- **Preview environments**: connections a preview accepts from other Services. They are reported when the preview stops and drawn on the workload the preview stands in for. Preview pods don't run mirrord, so their own outgoing calls aren't recorded by the preview; a preview shows up as its own node, labelled with its key, when it is the other end of a session's connection, for example when it calls a workload a session targets.
 
 Each connection keeps the number of sessions that produced it, a user count, and when it was last reported. The user count is per side: when the same connection is reported from both ends, the map shows the higher of the two counts rather than adding them, so it never counts someone twice but can show fewer users than there were. What's recorded is connection metadata: the Service's name and namespace, the direction, and the port for outgoing connections. Request and response contents are never recorded.
 
@@ -86,14 +86,14 @@ Nodes are colored by category:
 
 | Category | How it's decided |
 | --- | --- |
-| **Entry point** | A node marked **Discovered** (no session in the selected range targeted a workload with its name; it's only known as the other end of other sessions' connections) that only ever calls other services and is never called |
+| **Entry point** | A node marked **Discovered** (a Service the map can't match to one targeted workload; it's only known as the other end of sessions' connections) that only ever calls other services and is never called |
 | **Service** | Anything that fits none of the other categories |
 | **Data store** | Reached on a well-known database port: Postgres (5432, PgBouncer 6432), MySQL (3306, 33060), MongoDB (27017-27019), Redis (6379, Sentinel 26379), Memcached (11211), Cassandra (9042), Elasticsearch (9200, 9300), ClickHouse (8123, 9440), CockroachDB (26257), SQL Server (1433), Oracle (1521), CouchDB (5984), ArangoDB (8529), Neo4j (7687), InfluxDB (8086), Qdrant (6333), Milvus (19530) |
 | **Queue** | Reached on a well-known broker port: Kafka (9092), RabbitMQ (5671, 5672, 15672), NATS (4222), Temporal (7233), ActiveMQ (61616), MQTT (1883, 8883), NSQ (4150), Pulsar (6650) |
 | **Infrastructure** | Reached on a well-known infrastructure port: Vault (8200), Consul (8500), Prometheus (9090), Jaeger (14250, 14268, 16686), OpenTelemetry (4317, 4318), Zipkin (9411), StatsD (8125), Datadog APM (8126), etcd (2379), DNS (53) |
-| **Preview env** | A service running in a preview environment. Each previewed service is its own node, labelled with the preview's key, so a preview environment covering three services shows as three nodes. Replicas of the same preview share one node |
+| **Preview env** | A preview environment's Service, seen as the other end of a session's connection. Each one is its own node, labelled with the preview's key, and its replicas share that node. A preview environment covering three services shows as up to three nodes, one for each that appears in a connection |
 
-No session targeted a **Discovered** node, so its counts come from the connections around it: its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of. A Service whose name differs from its workload's also shows as **Discovered**, next to the workload's own node.
+A Service is matched to a workload by name and namespace: the Service `web` is drawn as the targeted workload `web`. A Service is **Discovered** when the report has no targeted workload with its name, or has more than one kind of workload with that name. That covers a Service nobody targeted, and also a Service whose name differs from its workload's, which is drawn next to the workload's own node. A **Discovered** node's counts come from the connections around it: its session count is the sum over the connections pointing at it, and its user count is the highest count on any single connection it's part of.
 
 Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Only the lowest port a workload reached on a Service is kept, so a database that is also reached on a lower port, such as 80, can show up as a plain **Service** too. Click a chip in the legend to hide that category.
 
@@ -113,7 +113,7 @@ The time range selector applies here too. It filters by session, not by individu
 The map only knows about traffic that went through a mirrord session. If two services talk to each other but no session was part of that conversation, there's no connection on the map. For example, `order-service` calling `payment-service` shows up only when:
 
 - a session targeting `order-service` made that call from the local process, or
-- a session targeting `payment-service` received the call from `order-service`, with the local process listening on the port it arrived on, or on a local port mapped to it.
+- a session targeting `payment-service` received the call from `order-service`, on a port the local process was listening on (or had a local port mapped to).
 
 Some other cases that leave gaps:
 
