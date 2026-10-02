@@ -1,7 +1,7 @@
 ---
 title: Security
 date: 2022-07-10T08:48:57.000Z
-lastmod: 2026-08-27T00:00:00.000Z
+lastmod: 2026-10-02T00:00:00.000Z
 draft: false
 images: []
 linktitle: Security
@@ -40,6 +40,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
+* Workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Released container images and CLI binaries carry signed SLSA Build Level 2 provenance, so you can verify what you pulled before installing it. See [How is the Operator built and distributed](#how-is-the-operator-built-and-distributed).
@@ -133,6 +134,8 @@ Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 mirrord for Teams works on top of Kubernetes' built-in RBAC with the following resources, `mirrordoperators`, `mirrordoperators/certificate`, `targets`, and `targets/port-locks` under the `operator.metalbear.co` apiGroup. The first two resources are required at a cluster level, and the last two can be allowed at a namespace level.
 
+With `operator.sessionsManager` enabled, which lets developers [target Amazon ECS tasks](../using-mirrord/serverless/README.md), the Operator also serves two cluster-scoped resources in the same apiGroup: `sessionassignments`, with the `proxy` verb, and `sessiondataplanes`, with the `get` verb. Both sides of an ECS session use them: the developer's local mirrord and the ECS task.
+
 You can limit a user's ability to use mirrord on specific targets by limiting their access to the `target` resource. The specific verbs for rules to our resources can be copied from the examples below.
 
 For your convenience, mirrord for Teams includes built-in ClusterRoles that control access to the Operator API:
@@ -160,6 +163,8 @@ roleRef:
 
 For CI runners, bind the runner's ServiceAccount, Kubernetes group, or other authenticated identity to `mirrord-operator-ci` instead of `mirrord-operator-user`.
 
+With `operator.sessionsManager` enabled, the built-in `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` roles also grant `proxy` on `sessionassignments` and `get` on `sessiondataplanes`, so developers bound to them can target ECS tasks with no further RBAC changes. The chart then also creates the `mirrord-operator-sessions-manager-agent` ClusterRole for workloads, such as ECS tasks, that register with the Operator: it grants only those two permissions and none of the user permissions. Bind it to the Kubernetes identity the workload authenticates as; see [Amazon ECS Setup](../using-mirrord/serverless/ecs-on-eks-setup.md#grant-the-ecs-workload-access).
+
 In addition, the Operator impersonates any user that calls its API, and thus only operates on pods or deployments for which the user has `get` permissions.
 
 To see the latest definition, we recommend checking our [Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/cluster-role.yaml).
@@ -184,6 +189,19 @@ If the user doesn't have `get` access to the targets, then they won't be able to
   verbs:
   - proxy
 ```
+
+## How do ECS workloads authenticate to the Operator?
+
+When developers [target Amazon ECS tasks](../using-mirrord/serverless/README.md), a mirrord component inside the ECS task connects to the Operator through your EKS API server, the same way developers do. It authenticates as a Kubernetes identity and is authorized by ordinary Kubernetes RBAC:
+
+* The ECS task's IAM task role is mapped to a Kubernetes username and group with an [EKS access entry](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html). The entry has no access policy.
+* The task signs the same token `aws eks get-token` produces, locally from its task role's credentials. Tokens are valid for 15 minutes and refreshed before they expire. The task role needs no IAM permissions.
+* A ClusterRoleBinding grants that group the chart's `mirrord-operator-sessions-manager-agent` ClusterRole, which allows only registering for sessions and connecting to them. The task can't read, list or modify any other resource in the cluster.
+* There are no shared secrets to create, distribute or rotate, and no AWS credentials are added to the task.
+* Each data-plane connection is bound to its session by a single-use credential delivered with the session assignment, so an identity allowed to connect to sessions can't attach to another caller's session.
+* The Operator isn't exposed outside the cluster: both sides only make outbound HTTPS connections to the EKS API server. Requests from the task appear in the cluster's audit log under the access entry's username.
+
+To revoke access, delete the access entry or the ClusterRoleBinding. For the full setup and a step-by-step description of the token flow, see [Amazon ECS Setup](../using-mirrord/serverless/ecs-on-eks-setup.md#how-authentication-works).
 
 ## How can I prevent users in my team from stealing or mirroring traffic from a target?
 
