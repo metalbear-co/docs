@@ -67,6 +67,10 @@ Download the accompanying `values.yaml`:
 curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
 ```
 
+{% hint style="info" %}
+To let developers target services running on Amazon ECS, set `operator.sessionsManager: true`. It also requires an EKS access entry, RBAC and a change to the ECS task definition. See [Amazon ECS Setup](../using-mirrord/serverless/ecs-on-eks-setup.md).
+{% endhint %}
+
 ### Cloud API key
 
 The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
