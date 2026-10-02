@@ -12,17 +12,19 @@ On a cluster with no license, an agent that follows [metalbear.com/agents.md](ht
 
 ## What the agent does
 
-It runs a single command against the cluster of its current kubecontext. No authentication, no credit card, and no API key for the agent to handle:
+It runs a single command against the cluster of its current kubecontext, or of the one it names with `--context`. No authentication, no credit card, and no API key for the agent to handle:
 
 ```bash
 mirrord operator install --no-browser
 ```
 
-The command starts the trial, installs the Operator with it, and prints the trial's end date, the claim URL for the agent to hand you, and the trial's API key. `--no-browser` keeps it from opening the claim page itself, which it also skips whenever it isn't running in a terminal. If the installation fails after the trial has started, rerunning the command with `--api-key` and that key reuses the trial instead of starting another one.
+In a terminal, the command first asks you to confirm the kubecontext and the namespace that it installs the Operator into, before it starts the trial or changes the cluster. `--yes` skips the question. An agent usually runs the command without a terminal, and then it doesn't ask.
 
-The trial is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup. To help you recognize the cluster on the claim page, the command sends the name of the current kubecontext along with the signup. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
+The command starts the trial, installs the Operator with it, and prints the trial's end date, the claim URL for the agent to hand you, and the trial's API key. `--no-browser` keeps it from opening the claim page itself, which it also skips whenever it isn't running in a terminal. If the installation fails or is stopped after the trial has started, the command prints how to retry without starting another trial: remove what was installed with `mirrord operator uninstall`, then run `mirrord operator install --api-key <key>` with the trial's key.
 
-The Operator is installed from the default Helm chart, without needing Helm itself. If an Operator is already installed in the cluster, or an earlier installation left objects behind, the command stops and says so rather than touching anything. For anything beyond the default installation, it prints the equivalent `helm install`, which takes the installation over along with its API key.
+The trial is a **provisional organization** carrying an Enterprise trial license, good for seven days from the signup. To help you recognize the cluster on the claim page, the command sends the cluster's ID (the UID of its `default` namespace) along with the signup. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
+
+The Operator is installed from the default Helm chart, without needing Helm itself. If an Operator is already installed in the cluster, or an earlier installation left objects behind, the command stops and says so rather than touching anything, and tells you how to remove them with `mirrord operator uninstall`. For anything beyond the default installation, it prints the equivalent `helm install`, which takes the installation over along with its API key.
 
 ### Calling the signup endpoint directly
 
@@ -76,6 +78,18 @@ A provisional organization is not a stuck state for the agent. The trial license
 - **It expires with the trial.** An unclaimed organization reaches `trial_ends_at` with nobody able to renew or convert it.
 
 Claim codes are single-use. Once one has been claimed, opening the same link from a different organization fails rather than silently joining it. Reopening it as the same admin who claimed it is harmless.
+
+## Removing the Operator
+
+`mirrord operator uninstall` removes an Operator that `mirrord operator install` installed, also after an installation that failed half-way. Like the installation, it doesn't need Helm:
+
+```bash
+mirrord operator uninstall
+```
+
+It first lets the Operator end its sessions, so that the workloads they changed are restored, and then deletes everything that the installation created. That includes the mirrord CRDs, so it also deletes the mirrord policies and profiles of the cluster. Like `mirrord operator install`, it takes `--context`, asks for confirmation in a terminal, and doesn't ask with `--yes` or without a terminal.
+
+If you moved the installation to Helm with the `helm install` that `mirrord operator install` printed, remove it with `helm uninstall` instead. `mirrord operator uninstall` stops and tells you so.
 
 ## If you already have an organization
 
