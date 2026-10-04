@@ -47,7 +47,7 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
-* [Remote Workloads](using-mirrord/serverless/README.md)
+* [Serverless Workloads](using-mirrord/serverless/README.md)
   * [Operator-Hosted Sessions-Manager](using-mirrord/serverless/operator-hosted.md)
   * [Amazon ECS](using-mirrord/serverless/ecs.md)
     * [Connecting ECS to the Operator](using-mirrord/serverless/ecs-operator-hosted.md)
