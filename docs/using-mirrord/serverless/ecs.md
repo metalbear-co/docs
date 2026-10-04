@@ -6,17 +6,17 @@ tags:
   - enterprise
 ---
 
-This guide makes an Amazon ECS service targetable as a [remote workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged. At a glance, the setup is:
+This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged. At a glance, the setup is:
 
 1. Add a setup container that copies the bootstrap into a shared task volume ([Add the remote bootstrap](#add-the-remote-bootstrap)).
 2. Load the bootstrap into the application container and name the workload ([Name the workload](#name-the-workload)).
-3. Make sure the application container has a [writable temporary directory](#writable-temporary-directory).
-4. Connect the task to your [deployment mode](README.md#deployment-modes), which adds its connection variables to the task and deploys it ([Connect to your deployment mode](#connect-to-your-deployment-mode)).
+3. Connect the task to your [deployment mode](README.md#deployment-modes), which adds its connection variables to the task and deploys it ([Connect to your deployment mode](#connect-to-your-deployment-mode)).
 
 ## Prerequisites
 
 1. A [deployment mode](README.md#deployment-modes) that's set up, such as the [Operator-hosted sessions-manager](operator-hosted.md).
 2. Permission to register ECS task definitions and update the ECS service.
+3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
 
 Throughout this guide, replace:
 
@@ -83,14 +83,6 @@ The application container's `environment` loads the bootstrap and names the work
 | `MIRRORD_REMOTE_SERVICE` | `<YOUR_SERVICE_NAME>`. Developers target it as `serverless/<YOUR_SERVICE_NAME>`. |
 | `MIRRORD_REMOTE_ENVIRONMENT` | `<YOUR_ENVIRONMENT>`. Developers set it as `target.namespace`. |
 
-## Writable temporary directory
-
-{% hint style="warning" %}
-**Container requirement.** The application container needs a writable temporary directory (`$TMPDIR`, `/tmp` by default) in which files can be executed. The bootstrap extracts the mirrord agent there, and keeps its local socket and its connection credentials there.
-
-If the task definition sets `readonlyRootFilesystem`, add a task volume and mount it at `/tmp` in the application container.
-{% endhint %}
-
 ## Connect to your deployment mode
 
 The bootstrap needs to know which sessions-manager to register with, and how to authenticate to it. Follow the guide for your deployment mode. It adds the connection variables to the same `environment` list, and finishes by deploying the new task definition revision:
@@ -132,4 +124,4 @@ These apply in every deployment mode. For connection and authentication problems
 | --- | --- |
 | The application starts without mirrord | The setup container failed or its `dependsOn` condition isn't wired up; check its logs and exit code. |
 | The task registers but the developer is never paired | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord.json`. |
-| `Read-only file system` or `Permission denied` under `/tmp` | The application container has no [writable temporary directory](#writable-temporary-directory). |
+| `Read-only file system` or `Permission denied` under `/tmp` | The application container has no writable `/tmp` ([Prerequisites](#prerequisites)). |
