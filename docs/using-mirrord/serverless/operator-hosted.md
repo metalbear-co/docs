@@ -1,6 +1,6 @@
 ---
 title: "Operator-Hosted Sessions-Manager"
-description: "Run sessions-manager inside the mirrord Operator, so developers can target remote workloads such as Amazon ECS tasks through your cluster's API server."
+description: "Run sessions-manager inside the mirrord Operator, so developers can target serverless workloads such as Amazon ECS tasks through your cluster's API server."
 tags:
   - alpha
   - enterprise
@@ -82,7 +82,7 @@ Enabling sessions-manager grants `proxy` on `sessionassignments` and `get` on `s
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
 ```
 
-If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord.json`, see [Using mirrord with a Remote Workload](README.md#using-mirrord-with-a-remote-workload).
+If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord.json`, see [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload).
 
 ## Connecting workloads
 
