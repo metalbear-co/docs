@@ -68,7 +68,7 @@ curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator
 ```
 
 {% hint style="info" %}
-To let developers target services running on Amazon ECS, set `operator.sessionsManager: true`. It also requires an EKS access entry, RBAC and a change to the ECS task definition. See [Amazon ECS Setup](../using-mirrord/serverless/ecs-on-eks-setup.md).
+To let developers target [remote workloads](../using-mirrord/serverless/README.md) running outside Kubernetes, such as Amazon ECS tasks, set `operator.sessionsManager: true`. This runs sessions-manager inside the Operator. See [Operator-Hosted Sessions-Manager](../using-mirrord/serverless/operator-hosted.md).
 {% endhint %}
 
 ### Cloud API key
