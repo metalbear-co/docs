@@ -27,7 +27,7 @@ The Operator solves this by acting as a centralized control plane:
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
 {% hint style="info" %}
-**AI coding agents:** you don't need a person to do this. Post to `https://app.metalbear.com/api/v1/agent/signup` (no authentication, no credit card) to provision a seven-day Enterprise trial, install with the cloud API key it returns, and hand your user the `claim_url` from the response. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
+**AI coding agents:** you don't need a person to do this. Run `mirrord operator install --no-browser` (no authentication, no credit card) to provision a seven-day Enterprise trial, install the Operator with it, and get a claim URL to hand your user. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
 {% endhint %}
 
 ### Helm
