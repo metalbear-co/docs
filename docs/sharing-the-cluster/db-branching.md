@@ -143,6 +143,8 @@ This is useful when your service depends on a database image that differs from t
 
 The same image is used for the branch's main container and for the init container that seeds it, so it must be able to run the engine and its client tools (for example `pg_dump`/`psql` for PostgreSQL).
 
+With mirrord operator `3.216.0` or later, the branch pod pulls the image with the target's `imagePullSecrets`, as well as any set in the operator's branch config.
+
 ## Restricting Branch Images
 
 Cluster admins can restrict which images are accepted, per database engine, with the `allowedImages` list in the operator's Helm values. Each entry is a glob pattern where `*` matches any substring:
