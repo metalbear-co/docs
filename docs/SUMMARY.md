@@ -103,6 +103,7 @@
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
 * [Scalability](managing-mirrord/scalability.md)
+* [Node Upgrades and Scale-Down](managing-mirrord/node-upgrades.md)
 * [Licensing](managing-mirrord/licensing.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
