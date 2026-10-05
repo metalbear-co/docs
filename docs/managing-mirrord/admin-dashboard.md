@@ -11,14 +11,11 @@ tags:
 
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends.
 
-
 {% hint style="success" %}
 Want to see the dashboard in action? Check out our [live playground](https://playground.metalbear.dev/dashboard/).
 {% endhint %}
 
-
 mirrord serves this dashboard two ways, depending on how your operator is licensed:
-
 
 | | [License Server Setup](dashboard/license-server.md) | [Cloud Setup](dashboard/cloud.md) |
 | --- | --- | --- |
@@ -31,15 +28,9 @@ mirrord serves this dashboard two ways, depending on how your operator is licens
 
 An operator does one or the other, never both. Pick your setup path, then come back here — the interface below is identical either way.
 
+## General tab
 
-| Dark mode                                                       | Light mode                                                        |
-| --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| ![Dashboard - Dark Mode](../.gitbook/assets/dashboard-dark.png) | ![Dashboard - Light Mode](../.gitbook/assets/dashboard-light.png) |
-
-
-## Usage Tab
-
-The Usage tab is the main view, showing metrics, session activity, and analytics charts.
+The **General** tab is the main view, showing metrics, session activity, and analytics charts. Further tabs cover [preview environments](../use-cases/preview-environments.md) and CI usage, cluster [topology](dashboard/topology.md), and the [ROI calculator](#roi-calculator).
 
 ### Metric Cards and Session Activity
 
@@ -69,11 +60,11 @@ Switch to the **Users** tab to see user-focused analytics:
 * **User Timeline**: Shows when each user was first seen and their most recent activity, giving a quick view of adoption over time.
 * **User Metrics** table: A detailed, searchable table with columns for identifier, first active date, last seen date, total sessions, cumulative time, and average duration. Click any column header to sort.
 
-### Targets View
+### Services View
 
 ![Target adoption and namespace breakdown](../.gitbook/assets/targets-view.png)
 
-Switch to the **Targets** tab to see target-focused analytics:
+Switch to the **Services** tab to see target-focused analytics:
 
 * **Target Adoption**: A scatter chart showing sessions vs. unique users per target. This helps identify which workloads are broadly adopted vs. heavily used by a few people.
 * **Sessions by Namespace**: A horizontal bar chart breaking down session distribution across Kubernetes namespaces.
@@ -103,9 +94,13 @@ The **ROI Calculator** tab estimates the time and cost savings from using mirror
 
 ## Features
 
-### Dark Mode
+### Display theme
 
 Toggle between light and dark themes using the moon/sun icon in the top-right corner of the app bar. Your preference is saved in the browser's local storage.
+
+| Dark mode                                                       | Light mode                                                        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------- |
+| ![Dashboard - Dark Mode](../.gitbook/assets/dashboard-dark.png) | ![Dashboard - Light Mode](../.gitbook/assets/dashboard-light.png) |
 
 ### Manual Sync
 

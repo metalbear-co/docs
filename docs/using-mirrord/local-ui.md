@@ -81,6 +81,10 @@ To open using a **different browser**:
 BROWSER="firefox" mirrord ui
 ```
 
+## Display theme
+
+The Web UI follows your system's light or dark setting by default. Use the sun/moon icon in the top-right corner to switch, or pick **System**, **Light** or **Dark** under **Appearance** in the settings dialog. The choice is saved in the browser's local storage.
+
 ## Authentication
 
 The token is high-entropy and is bound to the running `mirrord ui` process. The `?token=...` query parameter is only accepted on a dedicated `/auth` entry point - the URL the CLI prints and opens for you. Visiting `/auth?token=...` validates the token, sets a `mirrord_token` cookie scoped to that origin, and redirects to the dashboard, so the token never appears in ordinary navigation or API URLs afterwards. Every other route authenticates via that cookie. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
