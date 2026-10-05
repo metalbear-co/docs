@@ -211,7 +211,15 @@ TLS and the public-facing ingress are owned by your platform team. You put an In
       --set shareIngress.appDomain=example.com
     ```
 
-    `appDomain` is where visitors land when a share link no longer resolves.
+    `appDomain` is where visitors land when a share link no longer resolves. A host with no live preview, such as an expired link or a mistyped host, gets a 404 page that redirects there after five seconds.
+
+    To handle missing previews yourself instead, turn the redirect off (share-ingress chart 3.215.0 or later). The 404 page then only says "Preview not found", with no redirect, refresh, or JavaScript, and `appDomain` is not needed:
+
+    ```bash
+    helm install mirrord-share-ingress metalbear/mirrord-operator-share-ingress \
+      --set shareIngress.shareDomain=preview.example.com \
+      --set shareIngress.notFound.redirect=false
+    ```
 
 3.  Point a wildcard DNS record `*.preview.example.com` at your ingress, and create an Ingress with a wildcard certificate that routes to the share-ingress Service. A reference manifest (NGINX Ingress preserves the `Host` header by default):
 
