@@ -22,6 +22,10 @@ Skills are reusable instruction modules that teach AI agents how to work with mi
 - Help set up mirrord in CI pipelines
 - Configure the mirrord operator for team environments
 - Help set up [database branching](../sharing-the-cluster/db-branching.md) for your cluster
+- Configure [queue splitting](../sharing-the-cluster/queue-splitting.md) for Kafka topics
+- Make your services [propagate the baggage header](../use-cases/preview-environments-in-ci.md#header-propagation-for-backend-testing) across HTTP, gRPC, and queues, so filters, preview environments, and queue splitting follow a request end to end, and get a report of every hop where the header is still dropped
+- Create [preview environments](../use-cases/preview-environments.md), ad hoc or per-PR in CI
+- [Chaos test](../use-cases/chaos-testing.md) your app with per-session latency and connection-error rules
 
 
 ## Available Skills
@@ -33,3 +37,7 @@ For the full list of skills, what each one covers, and example prompts, see <a h
 The mirrord skills are distributed as a plugin that you install into your AI coding assistant. Installation steps depend on your tool.
 
 Check the <a href="https://github.com/metalbear-co/skills/" target="_blank" rel="noopener noreferrer">mirrord skills repository</a> for the latest installation instructions...
+
+## Agents That Don't Support Agent Skills
+
+GitHub Copilot and Cline read repository rules files instead of Agent Skills. The skills repository ships drop-in equivalents carrying the same core content in its <a href="https://github.com/metalbear-co/skills/tree/main/ports" target="_blank" rel="noopener noreferrer">ports directory</a>: copy `ports/github-copilot/copilot-instructions.md` into your repository's `.github/` folder, or `ports/cline/.clinerules` into the repository root.

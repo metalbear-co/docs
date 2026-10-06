@@ -22,6 +22,7 @@ tags:
 
 - **Local sessions** - each `mirrord exec` you have running locally, with its target, port subscriptions, processes, mirrord version, and a live event stream (file ops, DNS, HTTP requests, outgoing connections).
 - **Operator sessions** - a roll-up of every active mirrord session in your cluster, grouped by session key, with target, owner, namespace, and HTTP filter. Useful for seeing what your teammates have running before you start your own session, and for picking a session to ride on from the [mirrord browser extension](incoming-traffic/debug-from-browser.md).
+- **Events** - the interception events the operator publishes for [`mirrord subscribe`](subscribe.md), for every session in the selected context at once. Needs mirrord `3.262.0` and operator `3.210.0` or newer.
 
 The dashboard updates live over a WebSocket as sessions start and end.
 
@@ -44,7 +45,7 @@ The CLI starts an HTTP + WebSocket server bound to localhost, generates a one-sh
  -> ...
 
 * Web UI:
- -> http://127.0.0.1:59281?token=...
+ -> http://127.0.0.1:59281/auth?token=...
 * API token:
 -> x-auth-token: ...
 
@@ -82,7 +83,7 @@ BROWSER="firefox" mirrord ui
 
 ## Authentication
 
-The token is high-entropy and is bound to the running `mirrord ui` process. The first request you make with `?token=...` sets a `mirrord_token` cookie scoped to that origin so subsequent requests don't need to keep the query parameter. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
+The token is high-entropy and is bound to the running `mirrord ui` process. The `?token=...` query parameter is only accepted on a dedicated `/auth` entry point - the URL the CLI prints and opens for you. Visiting `/auth?token=...` validates the token, sets a `mirrord_token` cookie scoped to that origin, and redirects to the dashboard, so the token never appears in ordinary navigation or API URLs afterwards. Every other route authenticates via that cookie. When sending requests directly to the server, you can also set the token in the header `x-auth-token`.
 
 Stopping the server with `mirrord ui stop` invalidates the token; the next run mints a new one.
 

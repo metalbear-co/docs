@@ -154,6 +154,26 @@ Most services behave identically everywhere, with small differences in where tem
 
 ***
 
+## Preview Environments in Multi-Cluster
+
+`operator.multiCluster.preview.mode` decides where a [preview environment](../use-cases/preview-environments.md)'s pods run:
+
+| | `default-cluster` (the default) | `replicas` |
+| --- | --- | --- |
+| Preview pods run on | The Default cluster | Every workload cluster |
+| HTTP reaches the preview from | The Default cluster only | Every cluster |
+| Queue messages reach the preview from | Every cluster | Every cluster |
+
+Everything else behaves the same in both modes. With `replicas`, each cluster serves its own traffic and idles on it independently, and all replicas share one [branch database](../sharing-the-cluster/db-branching.md) - a write from any cluster is visible to all of them, and nothing reaches the source database.
+
+Replicas on other clusters reach the branch database through a tunnel between the operators, initiated by the Primary. Workload clusters need no route to the Default cluster, and no cluster credentials are ever placed in your namespaces.
+
+![Preview replicas: every workload cluster serves its own traffic, and replicas reach the shared branch database through the operator tunnel](../.gitbook/assets/preview-h2.svg)
+
+Use `replicas` when preview traffic enters through a load balancer spanning your clusters, or when previews should survive a cluster outage. Stay on `default-cluster` when traffic enters one cluster anyway (share links, steered requests) or when queue splitting is the main feature - its coverage is identical in both modes. Setup: [Preview Environment Replicas](multi-cluster-setup.md#preview-environment-replicas).
+
+***
+
 ## Limitations
 
 * [Targetless mode](targetless.md) is not supported in multi-cluster sessions — a target is required so the operator can resolve it on each Workload cluster.
