@@ -17,7 +17,6 @@
 ## Use Cases
 
 * [Remocal Development](use-cases/local-development.md)
-* [mirrord up (Multiple Concurrent Sessions)](using-mirrord/multiple-concurrent-sessions.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
@@ -25,6 +24,7 @@
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
+  * [Agent-Started Trials](using-mirrord-with-ai/agent-started-trials.md)
 
 ## Using mirrord
 
@@ -47,6 +47,7 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
+* [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 * [Targeting Pods by Label](using-mirrord/targeting-pods-by-label.md)
 * [Local UI](using-mirrord/local-ui.md)
 * [Subscribing to Events](using-mirrord/subscribe.md)
@@ -64,7 +65,7 @@
   * [RabbitMQ](sharing-the-cluster/queue-splitting/rabbitmq.md)
   * [Google Cloud Pub/Sub](sharing-the-cluster/queue-splitting/gcp-pubsub.md)
   * [Azure Service Bus](sharing-the-cluster/queue-splitting/azure-service-bus.md)
-  * [NATS JetStream](sharing-the-cluster/queue-splitting/nats.md)
+  * [NATS](sharing-the-cluster/queue-splitting/nats.md)
   * [Redis Pub/Sub](sharing-the-cluster/queue-splitting/redis-pubsub.md)
   * [Temporal](sharing-the-cluster/queue-splitting/temporal.md)
   * [BullMQ](sharing-the-cluster/queue-splitting/bullmq.md)
@@ -82,6 +83,8 @@
   * [ClickHouse](sharing-the-cluster/db-branching/clickhouse.md)
   * [CockroachDB](sharing-the-cluster/db-branching/cockroachdb.md)
   * [Google Spanner](sharing-the-cluster/db-branching/spanner.md)
+  * [S3](sharing-the-cluster/db-branching/s3.md)
+  * [turbopuffer](sharing-the-cluster/db-branching/turbopuffer.md)
   * [Generic](sharing-the-cluster/db-branching/generic.md)
   * [More](sharing-the-cluster/db-branching/more.md)
     * [Connection Modes](sharing-the-cluster/db-branching/connection.md)
@@ -94,10 +97,13 @@
 * [Dashboard](managing-mirrord/admin-dashboard.md)
   * [License Server Setup](managing-mirrord/dashboard/license-server.md)
   * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
+  * [Topology](managing-mirrord/dashboard/topology.md)
+  * [Usage API](managing-mirrord/dashboard/usage-api.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
 * [Scalability](managing-mirrord/scalability.md)
+* [Node Upgrades and Scale-Down](managing-mirrord/node-upgrades.md)
 * [Licensing](managing-mirrord/licensing.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)
@@ -111,6 +117,7 @@
 * [Troubleshooting](troubleshooting/README.md)
   * [Utilities](troubleshooting/utilities.md)
   * [Common Issues](troubleshooting/common-issues.md)
+  * [Collecting Logs](troubleshooting/collecting-logs.md)
 
 ## Reference
 

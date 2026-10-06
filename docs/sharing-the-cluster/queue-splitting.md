@@ -11,8 +11,8 @@ If your application consumes messages from a queue service, you should choose a 
 3. If you want to control which messages will be consumed by the deployed application, and which ones will reach your local application, set up queue splitting for the relevant target, and define a messages filter in the mirrord configuration. Messages that match the filter will reach your local application, and messages that do not, will reach either the deployed application, or another teammate's local application, if they match their filter.
 
 {% hint style="info" %}
-Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [NATS JetStream](https://docs.nats.io/nats-concepts/jetstream), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
-The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" in the context of NATS JetStream, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
+Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/sqs/), [Kafka](https://kafka.apache.org/), [RabbitMQ](https://www.rabbitmq.com), [Google Cloud Pub/Sub](https://cloud.google.com/pubsub), [Azure Service Bus](https://azure.microsoft.com/en-us/products/service-bus), [NATS](https://nats.io) (JetStream and core pub/sub), [Redis Pub/Sub](https://redis.io/docs/latest/develop/interact/pubsub/), [Temporal](https://temporal.io), and [BullMQ](https://bullmq.io/).
+The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" or "subject" in the context of NATS, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
 {% hint style="info" %}
@@ -28,7 +28,7 @@ Setup and configuration differ per queue service. Pick the one you use to see th
 * [RabbitMQ](queue-splitting/rabbitmq.md)
 * [Google Cloud Pub/Sub](queue-splitting/gcp-pubsub.md)
 * [Azure Service Bus](queue-splitting/azure-service-bus.md)
-* [NATS JetStream](queue-splitting/nats.md)
+* [NATS](queue-splitting/nats.md)
 * [Redis Pub/Sub](queue-splitting/redis-pubsub.md)
 * [Temporal](queue-splitting/temporal.md)
 * [BullMQ](queue-splitting/bullmq.md)
@@ -40,7 +40,7 @@ That temporary queue is *exclusive* to the target workload.
 Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue.
 
 {% hint style="warning" %}
-Queue splitting requires that the application read the queue name from an environment variable, or from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)).
+Queue splitting requires that the application read the queue name from an environment variable, from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)), or from a file injected into its pods, for example by Vault (see [Queue Names Injected by Vault or CSI Drivers](#queue-names-injected-by-vault-or-csi-drivers)).
 This lets the operator override the name to change the queue that the application reads from.
 {% endhint %}
 
@@ -173,18 +173,70 @@ kafka:
 logLevel: debug                        # kept as-is
 ```
 
-The rewrite is content-based, not path-based: a mount can sit anywhere (a file inside a ConfigMap volume directory cannot be overlaid, so mount at a sibling path and point the app there), and a mount whose content does not carry the split's names is left byte-identical.
+The rewrite is content-based, not path-based: a mount can sit anywhere, and a mount whose content does not carry the split's names is left byte-identical.
+
+## Queue Names Injected by Vault or CSI Drivers
 
 {% hint style="info" %}
-Holding an autoscaled target up requires mirrord operator `3.199.0` or later, and operator Helm chart `3.199.0` with the `operator.pauseKedaScaleIn` value set to `true`.
+Injected file sources require mirrord operator `3.201.0` or later.
 {% endhint %}
 
-A target scaled on queue load by KEDA goes idle from its autoscaler's point of view as soon as its queues are split. The autoscaler's triggers still watch the original queue, which the operator is now draining, so they see no load and scale the target to zero. Nothing is then left to consume the target's temporary queue, and its messages are lost when the split ends.
+A queue name can also be read from a file that exists only inside the running pods, with no ConfigMap or Secret behind it. This is useful when vault-agent-injector renders the names into `/vault/secrets/`, or a secrets-store CSI driver projects them at mount time, and moving them into the pod's environment is not an option.
 
-Set `operator.pauseKedaScaleIn` in the operator's Helm values to have the operator handle this. While a split is running, the operator:
+To use it, set a `podFile` source in the `appConfig` entry:
 
-1. keeps the target at a minimum of one replica; and
-2. annotates the `ScaledObject` scaling the target with `autoscaling.keda.sh/paused-scale-in`, so KEDA cannot scale it back in.
+```yaml
+appConfig:
+  topic:
+    - podFile:
+        path: /vault/secrets/kafka-config   # absolute path inside the container
+      valueSelector: ".kafka.consumer.topic.main.name"
+```
+
+* `podFile.path` - absolute path of the file inside the container.
+* `podFile.container` - container the operator reads the file from. Defaults to the `vault-agent` sidecar when the pod has one, otherwise the pod's first application container. Set it when the file is only mounted in a specific container, or when the default container has no `cat` binary (a distroless image).
+* `valueSelector` and `valuePattern` work exactly as for `volume` sources above.
+
+Because no API object holds the file, the operator reads it by running `cat` in a running pod of the target. The target must have at least one running pod when the split starts, and the operator needs `get` and `create` on `pods/exec` in the target namespace - the operator Helm chart grants this when queue splitting is enabled.
+
+The operator never touches Vault or the injector. When a split starts, it:
+
+1. Creates a Secret with the file's content and the temporary fallback names substituted. The Secret is labeled and managed by the operator, holds only the referenced file, and also caches the original content so later resolutions never depend on the pods again.
+2. Mounts that Secret over the file's exact path in the target's application containers. This restarts the workload, the same way environment variable injection does. The injector's own sidecar keeps its original view of the file, so it can keep rendering it underneath.
+3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session, exactly as for `volume` sources.
+
+When the last session ends, the pods are restored to the injected file and the Secret is deleted.
+
+Things to know:
+
+* The referenced file's content is pinned for the length of the split. If the same file also carries values that rotate, such as credentials, the deployed application keeps reading the values from when the split started. Other injected files are untouched.
+* If both a `podFile` source and an `env`/`envLike` or `volume` source are set on the same entry, the other source takes precedence and `podFile` is ignored. `fallback` does not apply to `podFile`.
+* A `containers` list on the entry limits which containers get the overriding mount. Without one, every application container gets it.
+* The remote file system and directory file descriptor notes for `volume` sources apply here as well.
+
+## Autoscaled Targets with KEDA
+
+{% hint style="info" %}
+Scaling an autoscaled target on its temporary queue requires mirrord operator `3.215.0` or later, and operator Helm chart `3.215.0` with the `operator.manageKedaScaledObjects` value set to `true`.
+{% endhint %}
+
+A split target reads a temporary queue, while the triggers of its KEDA `ScaledObject` still read the original queue, which the operator drains. KEDA then sees no load and scales the target to zero, leaving the temporary queue undrained.
+
+Set `operator.manageKedaScaledObjects` in the operator's Helm values to have the operator handle this. While a split is running, the operator points every trigger on the target's `ScaledObject` that reads a split queue at the temporary queue the target now consumes, and points them back at the original queue when the split ends. KEDA keeps scaling the target on the depth of the queue it is actually reading, so while that queue is empty, it scales the target in as far as its `minReplicaCount` and other triggers allow.
+
+Only the queue a trigger reads is changed. Its credentials and every other setting stay as they are, and triggers about anything else, such as CPU, are left alone.
+
+Triggers are redirected wherever a split moves the target onto a temporary queue: Amazon SQS, Apache Kafka, Google Cloud Pub/Sub, Azure Service Bus queues, BullMQ, NATS JetStream, and RabbitMQ. Everywhere else, including Azure Service Bus subscriptions, the target keeps reading its own queue, and its triggers need no change.
+
+A Temporal target polls a task queue the operator serves, which KEDA cannot measure, so KEDA is paused at one replica for the duration of the split instead.
+
+A `ScaledObject` none of whose triggers name a split queue directly is left alone. This includes triggers that read the queue name from an environment variable, such as `queueURLFromEnv`, and triggers that measure lag through a query. Unless they measure the temporary queue some other way, the target may be scaled to zero for the duration of the split. A Kafka target keeps its consumer group unless the split gives it a temporary one, so a query over that group's lag across all topics already follows the temporary topic.
+
+A GitOps tool deploying the `ScaledObject` would put the original triggers back. The operator therefore registers a mutating webhook that reapplies its rewrite to every update of a redirected `ScaledObject`, including the dry runs Flux compares against. Flux sees the `ScaledObject` as in sync and keeps reconciling it: changes from Git roll out during the split, and the triggers stay redirected. When the split ends, the operator undoes only its own rewrite, so those changes stay.
+
+Argo CD compares against Git by itself, so it would report the `ScaledObject` as out of sync and keep syncing it. Set `operator.applicationPauseAutoSync` to let the operator turn off automated sync on the application deploying the `ScaledObject`, and on every application deploying that one, for as long as the split runs. Changes to anything they deploy are not rolled out until the split ends. Without the value, a `ScaledObject` that Argo CD deploys is left alone.
+
+With `operator.applicationPauseAutoSync` set, the operator finds the applications deploying the `ScaledObject` from their own status, whichever way Argo CD tracks resources. Without it, the operator recognizes a `ScaledObject` that Argo CD deploys only by its `argocd.argoproj.io/tracking-id` annotation, so if Argo CD tracks resources by label, the triggers are redirected anyway, and Argo CD reports the application out of sync and keeps syncing it until the split ends.
 
 ## Sharing Property Lists Across Namespaces
 
@@ -220,6 +272,7 @@ Where the key is placed depends on the queue service. Services with a metadata c
 | Azure Service Bus | Metadata | Application property |
 | Temporal | Metadata | Activity task header |
 | NATS | Metadata | Message header |
+| NATS Pub/Sub | Metadata | Message header |
 | BullMQ | JSON payload | Job `data` object |
 | Redis Pub/Sub | JSON payload | Message payload |
 
@@ -242,11 +295,14 @@ Once cluster setup is done, mirrord users can start running sessions with queue 
 It pairs each queue ID with a queue filter definition, and accepts either an object keyed by queue ID or an array of entries (see [One queue or many](#one-queue-or-many)).
 
 Filter definition contains the following fields:
-* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, or `NATS`
+* `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, or `NATSPubSub`
 * `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
-* `message_filter` - mapping from message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata (Temporal) name to a regex for its value.
-  The local application will only see queue messages that have **all** of the specified entries matching.
-* `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, and `NATS` queue types.
+* `filter` - a composable message filter, shaped like the [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md): one `metadata` regex, or an `any_of` / `all_of` list of `metadata` regexes.
+  A `metadata` regex is matched against every message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS, NATS pub/sub), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata entry (Temporal) rendered as `<name>: <value>`, the same way the HTTP filter sees headers.
+  The message matches when any attribute line matches, so one regex can pin an attribute by name (`^tenant: blue$`) or find a marker wherever it is propagated (`.*mirrord-session={{ key }}.*`). Matching is case sensitive. See [Composing filters](#composing-filters).
+* `message_filter` - the older shape: a mapping from an attribute name to a regex for its value.
+  The local application will only see queue messages that have **all** of the specified entries matching. Still supported; use either `filter` or `message_filter` on an entry, not both.
+* `jq_filter` - supported for `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, and `NATSPubSub` queue types.
   * For **SQS**, it runs a jq program on the JSON representation of the SQS [`Message`](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_Message.html) object.
     For queues configured with `s3_event: "true"`, jq filters can also inspect `S3Metadata`.
     It is populated with user-defined S3 object metadata when the message is parsed as an S3 event
@@ -255,14 +311,73 @@ Filter definition contains the following fields:
   * For **Kafka**, it runs a jq program on a JSON representation of the record. See the [Kafka page](queue-splitting/kafka.md#setting-a-filter) for the document shape.
   * For **RabbitMQ**, it runs a jq program on a JSON representation of the message. See the [RabbitMQ page](queue-splitting/rabbitmq.md#setting-a-filter) for the document shape.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
+    For subscriptions configured with `gcs_event: "true"`, jq filters can also inspect `gcsMetadata`, the custom metadata of the Cloud Storage object a notification is about.
+    See [Filtering Cloud Storage notifications](queue-splitting/gcp-pubsub.md#filtering-cloud-storage-notifications).
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
   * For **BullMQ**, it runs a jq program on the parsed JSON value of the job's `data` field.
-  * For **NATS**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
+  * For **NATS** and **NATS pub/sub**, the JSON object has `subject`, `headers`, and `payload` fields. `payload` is the message body parsed as JSON when the body is JSON, and a string otherwise.
   * A message matches if the jq program outputs `true`.
+* `payload_protobuf` - optional, `Kafka` only. Decodes record values that carry plain protobuf instead of JSON with a schema you provide, and exposes the decoded message to `jq_filter` as a `payload_decoded` field. See [Filtering on protobuf payloads](queue-splitting/kafka.md#filtering-on-protobuf-payloads).
 
-If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to be matched.
+If a `filter` (or `message_filter`) and a `jq_filter` are specified for the same queue, both must match for a message to be matched.
+
+#### Composing filters
+
+`filter` takes one of three forms. A single `metadata` regex:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": {
+        "queue_type": "SQS",
+        "filter": { "metadata": "^tenant: blue-.*$" }
+      }
+    }
+  }
+}
+```
+
+`any_of` matches when at least one of the listed `metadata` regexes matches, `all_of` when every one does:
+
+```json
+{
+  "feature": {
+    "split_queues": [
+      {
+        "queue_id": "*",
+        "queue_type": "Temporal",
+        "filter": {
+          "any_of": [
+            { "metadata": "^header.baggage: .*mirrord-session={{ key }}.*$" },
+            { "metadata": "^header.test: .*mirrord-session={{ key }}.*$" }
+          ]
+        }
+      },
+      {
+        "queue_id": "orders",
+        "queue_type": "Kafka",
+        "filter": {
+          "all_of": [
+            { "metadata": "^tenant: blue$" },
+            { "metadata": "^region: eu-.*$" }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+A `message_filter` of `{ "tenant": "^blue$", "region": "eu" }` is the same as `filter: { "all_of": [ { "metadata": "^tenant: blue$" }, { "metadata": "^region: .*eu" } ] }`, except that `message_filter` requires the attribute name to match exactly while a `metadata` regex sees the whole `name: value` line.
+
+{% hint style="warning" %}
+`filter` requires mirrord `3.264.0` or later, and mirrord operator `3.212.0` or later. Against an older operator the CLI refuses to start the session and names the missing feature; `message_filter` keeps working there.
+{% endhint %}
+
+Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
 
 #### One queue or many
 
@@ -304,14 +419,16 @@ For multiple queues, use the **array** form, which moves the ID into each entry 
 }
 ```
 
-Both forms take the same filter fields (`queue_type`, `message_filter`, `jq_filter`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
+Both forms take the same filter fields (`queue_type`, `filter`, `message_filter`, `jq_filter`, `payload_protobuf`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
+
+To have your AI agent do this, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill. It adds `baggage` to every message your services publish, restores it in each consumer, and covers Kafka, SQS/SNS, RabbitMQ, GCP Pub/Sub, Azure Service Bus, NATS, Redis Pub/Sub, BullMQ, and Temporal.
 {% endhint %}
 
 {% hint style="info" %}
-An empty `message_filter` without a `jq_filter` is treated as a match-none directive.
+An entry with no `filter`, an empty `message_filter`, and no `jq_filter` is treated as a match-none directive.
 {% endhint %}
 
 For complete, copy-pasteable filter examples, see the "Setting a filter" section on each queue service page.

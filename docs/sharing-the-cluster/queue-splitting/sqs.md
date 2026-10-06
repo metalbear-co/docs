@@ -250,7 +250,30 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`.
+For the full filter reference (`queue_type`, `filter`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). SQS uses `queue_type: SQS`. SQS attribute names and values are matched case-insensitively.
+
+The same session filter with the composable `filter` shape, which can also combine several attributes with `any_of` / `all_of`:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/main",
+  "feature": {
+    "split_queues": {
+      "meme-queue": {
+        "queue_type": "SQS",
+        "filter": {
+          "any_of": [
+            { "metadata": "^baggage: .*mirrord-session=alice.*$" },
+            { "metadata": "^tracestate: .*mirrord-session=alice.*$" }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
 
 Filtering on SQS message attributes, an unmatched (match-none) queue, and a `jq_filter` on the message body:
 
@@ -329,6 +352,8 @@ Filtering on S3 object metadata (requires `s3_event: "true"` on the queue's `que
 ```
 
 In the example above, the local application will receive messages from SQS queue `uploads-queue` only when the S3 object referenced by the event has `S3Metadata.client == "a"`.
+
+From mirrord operator `3.215.0`, only jq filters that name `S3Metadata` make the operator fetch the metadata, and at most once per message. Sessions that filter on attributes or on other message fields keep working even when S3 cannot be reached. The check is a plain text match: the program must contain `S3Metadata` literally, so a program that reaches the field another way (a computed key such as `.[$name]`, or `to_entries`) sees no `S3Metadata`.
 
 Combining an attribute filter with a `jq_filter` (both must match):
 

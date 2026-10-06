@@ -26,6 +26,10 @@ The Operator solves this by acting as a centralized control plane:
 
 You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
 
+{% hint style="info" %}
+**AI coding agents:** you don't need a person to do this. Run `mirrord operator install --no-browser` (no authentication, no credit card) to provision a seven-day Enterprise trial, install the Operator with it, and get a claim URL to hand your user. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
+{% endhint %}
+
 ### Helm
 
 Add the MetalBear Helm repository:
@@ -43,6 +47,8 @@ curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator
 ### Cloud API key
 
 The Operator authenticates to the mirrord cloud with a **cloud API key** and uses it to obtain its license over the API. This is the default way to install the Operator. Generate a key in the dashboard under **Settings** at [app.metalbear.com](https://app.metalbear.com) — it's shown only once, so store it then.
+
+If you have no organization yet and an AI agent is doing the install, [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) mints the same kind of key without a dashboard visit.
 
 When generating the key you also choose whether to enable **identity sharing**. With it on, usage metrics include developer usernames and session targets so the usage dashboard can show them by name; with it off, usage metrics stay anonymized. The fields are listed under [What data does the Operator send to MetalBear cloud](../managing-mirrord/security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud). Set `cloud.anonymizeData: true` in your Helm values to keep metrics anonymized regardless of the key.
 
@@ -176,6 +182,7 @@ These images are only pulled when the corresponding feature is enabled:
 | Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image`                                    |
 | MSSQL tools             | `ghcr.io/metalbear-co/mssql-tools`          | `latest`         | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`).                      | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv`                           |
 | Flyway                  | `flyway/flyway`                             | `12`             | Flyway migration runner for DB branching.                                                     | Per-branch `migrations.image`, or `dbPod.migrationImages.flyway.registry` |
+| Liquibase               | `liquibase/liquibase`                       | `4.33`           | Liquibase migration runner for DB branching.                                                  | Per-branch `migrations.image`, or `dbPod.migrationImages.liquibase.registry` |
 
 ### DB branching default database images
 
@@ -252,50 +259,18 @@ users:
 
 In GKE Autopilot the mirrord Operator can be run as a [customer-owned privileged workload](https://docs.cloud.google.com/kubernetes-engine/docs/concepts/about-autopilot-privileged-workloads#customer-owned-privileged-workloads).
 
-Apply the following [WorkloadAllowlist](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-privileged-allowlists):
+mirrord is an approved [GKE Autopilot partner](https://docs.cloud.google.com/kubernetes-engine/docs/resources/autopilot-partners). Because of this, you should **not** manually apply a [WorkloadAllowlist](https://docs.cloud.google.com/kubernetes-engine/docs/how-to/autopilot-privileged-allowlists) for the mirrord-agent workload: GKE Autopilot clusters reject direct manual installation of it with an admission error. Manual installation only worked previously in specially-configured test projects, not in standard customer clusters.
+
+Instead, apply the following [AllowlistSynchronizer](https://docs.cloud.google.com/kubernetes-engine/docs/reference/crds/allowlistsynchronizer), which automatically syncs the current and future approved versions of the mirrord-agent allowlist:
 
 ```yaml
 apiVersion: auto.gke.io/v1
-kind: WorkloadAllowlist
+kind: AllowlistSynchronizer
 metadata:
-  name: mirrord-agent
-  annotations:
-    autopilot.gke.io/no-connect: "true"
-exemptions:
-  - autogke-default-linux-capabilities
-  - autogke-disallow-hostnamespaces
-  - autogke-no-write-mode-hostpath
-  - autogke-node-affinity-selector-limitation
-matchingCriteria:
-  hostPID: true
-  containers:
-    - name: mirrord-agent
-      image: ghcr.io/metalbear-co/mirrord
-      command:
-        - ./mirrord-agent
-      args:
-        - "^.*$"
-      env:
-        - name: "^.*$"
-      securityContext:
-        capabilities:
-          add:
-            - SYS_ADMIN
-            - SYS_PTRACE
-            - NET_ADMIN
-        privileged: false
-      volumeMounts:
-        - name: hostrun
-          mountPath: /host/run
-        - name: hostvar
-          mountPath: /host/var
-  volumes:
-    - name: hostrun
-      hostPath:
-        path: /run
-    - name: hostvar
-      hostPath:
-        path: /var
+  name: mirrord-allowlist
+spec:
+  allowlistPaths:
+    - "mirrord/mirrord-agent/*"
 ```
 
 **Note:** some Operator configurations might produce mirrord-agent pods that don't match this specification. When that happens, you'll see agent spawn errors in the Operator logs. To get the correct WorkloadAllowlist embedded in those error messages, merge this snippet into your mirrord Operator `values.yaml`:

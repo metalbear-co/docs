@@ -56,7 +56,7 @@ mirrord up
 
 This will start all defined services, and they will run in parallel. The `mirrord up` session will be stopped once it's interrupted (`ctrl-c`) or one of the running mirrord sessions shuts down.
 
-Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`.
+Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`. For requests to reach every service in the session, each service has to forward the `baggage` header to the next one. The [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill sets this up across your services.
 
 If you'd rather have your local process take over a service completely, use `replace` mode — see [Service modes](#service-modes).
 
@@ -102,9 +102,19 @@ The original workload is restored when the session ends.
 
 Any `http_filter` set on a service in `replace` mode is ignored.
 
+#### `mirror`
+
+{% hint style="info" %}
+This feature requires at least mirrord version 3.258.0.
+{% endhint %}
+
+Traffic is mirrored to your local process, and the deployed service runs uninterrupted. Only requests matching the service's `http_filter` are mirrored to your machine. When no filter is provided, mirrord generates one from the session key: `baggage: .*mirrord-session={key}.*`.
+
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service, in both `split` and `replace` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration.
+
+Services in `replace` mode don't use queue splitting: the deployed workload is scaled down, so your local process consumes every message from its queues.
 
 Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
 
@@ -219,7 +229,7 @@ Specifies the environment variable configuration for the given service. Maps dir
 
 ##### `services.*.default_mode`
 
-Either `split` (the default) or `replace`. See [Service modes](#service-modes) for what each one does and when to use it.
+Either `split` (the default), `replace` or `mirror`. See [Service modes](#service-modes) for what each one does and when to use it.
 
 The `--mode` flag overrides this for every service being launched.
 
@@ -227,7 +237,7 @@ The `--mode` flag overrides this for every service being launched.
 
 Specifies the HTTP filtering configuration for the given service. Maps directly to [`feature.network.incoming.http_filter`](https://metalbear.com/mirrord/docs/config/options#feature-network-incoming)
 
-Only applies in `split` mode. A service in `replace` mode receives all incoming traffic, so any filter set on it is ignored.
+Only applies in `split` and `mirror` modes. A service in `replace` mode receives all incoming traffic, so any filter set on it is ignored.
 
 ##### `services.*.ignore_ports`
 
@@ -342,7 +352,7 @@ Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom
 
 ### `-m`, `--mode`
 
-Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split` or `replace` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
+Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split`, `replace` or `mirror` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
 
 ### `--key`
 

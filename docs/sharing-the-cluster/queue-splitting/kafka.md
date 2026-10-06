@@ -316,15 +316,24 @@ spec:
 
 Splits then patch the workload's consumer-group environment variables (the ones under `appConfig.groupId`) to a generated temporary group, alongside the topic rewrite. The operator keeps the original group to itself, so it never negotiates a protocol with the application's client - any client library works. Offsets are preserved: the operator keeps committing into the original group, and the workload resumes exactly where it left off when the split ends.
 
+The operator can only join the original group once every pod of the previous generation has left it, so the split waits for the workload's rollout to finish. By default it waits 180 seconds and then fails the session. If your rollout takes longer (many replicas, a long termination grace period, a consumer that stays in the group until its session timeout expires), raise the wait with the `mirrord.group_join_timeout` property, in seconds:
+
+```yaml
+    - name: mirrord.temporary_group_id
+      value: "true"
+    - name: mirrord.group_join_timeout
+      value: "600"
+```
+
 Temporary group names follow the temporary topic name format (`mirrord-tmp-...`), so if you use group ACLs, the application's credentials must be allowed to join groups with that prefix, and the operator's credentials need `DeleteGroups` for cleanup.
 
 {% hint style="info" %}
-`mirrord.temporary_group_id` requires mirrord operator `3.195.0` or later.
+`mirrord.temporary_group_id` requires mirrord operator `3.195.0` or later, and `mirrord.group_join_timeout` requires operator `3.204.0` or later - earlier operators reject it as an unknown `mirrord.` key.
 {% endhint %}
 
 ## Setting a filter
 
-For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers and `jq_filter` on a JSON representation of the whole record.
+For the full filter reference (`queue_type`, `message_filter`, `jq_filter`, `payload_protobuf`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Kafka uses `queue_type: Kafka` and supports `message_filter` on Kafka headers, `jq_filter` on a JSON representation of the whole record, and `payload_protobuf` for decoding protobuf record values before the jq program runs.
 
 ### Filtering on headers
 
@@ -382,6 +391,38 @@ If both `message_filter` and `jq_filter` are specified for the same queue, both 
 
 {% hint style="warning" %}
 `jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later, and is only supported with the default `librdkafka` client. Sessions using the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) fail with a clear error when a `jq_filter` is set.
+{% endhint %}
+
+### Filtering on protobuf payloads
+
+Some topics carry raw protobuf bytes instead of JSON - for example CDC events serialized as plain protobuf, with no JSON envelope and no schema registry prefix. `payload_protobuf` decodes each record's value with your schema before the jq program runs, and exposes the decoded message as an extra `payload_decoded` field:
+
+```json
+{
+  "operator": true,
+  "target": "deployment/meme-app/container/consumer",
+  "feature": {
+    "split_queues": {
+      "cdc-topic": {
+        "queue_type": "Kafka",
+        "payload_protobuf": {
+          "schema_file": "schemas/cdc_record.proto",
+          "message_type": "com.example.cdc.Record"
+        },
+        "jq_filter": ".payload_decoded.merchant_id == 2137 and .payload_decoded.metadata.transactionType == \"PURCHASE\""
+      }
+    }
+  }
+}
+```
+
+* `schema_file` - path to the `.proto` file defining the value's message type. The mirrord CLI compiles it locally, resolving imports against the file's own directory (add `include_directories` for extra import roots), so the operator never needs access to your schema files. Users with pre-compiled schemas can set `descriptor_base64` (a base64-encoded `FileDescriptorSet`, as produced by `protoc --descriptor_set_out --include_imports`) instead.
+* `message_type` - the fully-qualified name of the value's message type.
+
+In `payload_decoded`, field names appear exactly as written in the schema, enum values as their names, and 64-bit integers as JSON numbers. Fields at their default value are included. Records whose value fails to decode with the given schema are treated as not matching and stay on the deployed application's path.
+
+{% hint style="warning" %}
+`payload_protobuf` only supports plain protobuf values - schema registry framing (magic byte and schema id prefix) is not supported. Like `jq_filter`, it requires the default `librdkafka` client.
 {% endhint %}
 
 ## FAQ
