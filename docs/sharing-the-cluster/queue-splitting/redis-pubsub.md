@@ -139,9 +139,11 @@ After the last session against a target ends, the operator keeps the split's tem
 
 | `drainTimeout` | Behavior                                                  |
 | -------------- | --------------------------------------------------------- |
-| unset (both)   | Tear down as soon as the last session ends (same as `0`). |
-| `0`            | Tear down immediately. Unread messages may be lost.       |
-| `N`            | Keep resources for up to `N` seconds, then tear down.     |
+| unset (both)   | Start the teardown as soon as the last session ends (same as `0`). |
+| `0`            | Start the teardown immediately.                                     |
+| `N`            | Keep resources for up to `N` seconds, then start the teardown.     |
+
+Teardown puts the workload's pods back on the original channel first and removes the temporary resources only once they are restored (operator `3.215.0` or later).
 
 ## Setting a filter
 

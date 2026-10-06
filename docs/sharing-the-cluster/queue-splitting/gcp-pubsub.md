@@ -406,9 +406,11 @@ Whichever value applies is then interpreted as:
 
 | Value        | Behavior                                                                                      |
 | ------------ | --------------------------------------------------------------------------------------------- |
-| unset (both) | Drain indefinitely - the temporary subscription is kept until fallback messages are drained.  |
-| `0`          | Skip draining; delete the temporary subscription immediately. Undrained messages may be lost. |
-| `N`          | Wait up to `N` to drain, then delete the temporary subscription.                              |
+| unset (both) | Drain indefinitely - the target's pods stay on the temporary subscription until it is empty. |
+| `0`          | Skip draining; put the target's pods back on the original subscription right away.           |
+| `N`          | Wait up to `N` seconds for the subscription to drain, then put the pods back.                |
+
+Whatever the value, the temporary subscription is deleted only after the target's pods are back on the original subscription (operator `3.215.0` or later), since a pod still reading it would fail on a missing subscription. If it still holds messages at that point, for example redeliveries from a pod that was replaced mid-message, it is kept rather than deleted with them: the `Drained` condition on the `MirrordSplitConfig` names it, and the operator deletes it once the messages are moved or dropped.
 
 ## Setting a filter
 

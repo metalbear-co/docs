@@ -238,7 +238,7 @@ Both fields are optional and in seconds:
 | Field | Behavior |
 | ----- | -------- |
 | `spec.ttl` | `N`: keep the split warm for up to `N` seconds so a reconnecting session resumes instantly. `0` or unset: do not linger - go straight to the drain window when the last session ends. |
-| `spec.drainTimeout` | `N`: let the workload finish the already-forwarded backlog for up to `N` seconds, ending early once it is drained. `0`: unpatch immediately - messages not yet read from the temporary topic are lost. Unset: no cap - wait until the workload has consumed the backlog. |
+| `spec.drainTimeout` | `N`: let the workload finish the already-forwarded backlog for up to `N` seconds, ending early once it is drained. `0`: unpatch immediately; the temporary topic is deleted once the workload's pods are back on the original topic, and messages not yet read from it are lost. Unset: no cap - wait until the workload has consumed the backlog. |
 
 {% hint style="info" %}
 `spec.ttl`, and draining the temporary topic before unpatch (capped by `spec.drainTimeout`), require mirrord operator `3.194.0` or later. On earlier operators `spec.drainTimeout` alone controls how long the workload stays patched after the last session.

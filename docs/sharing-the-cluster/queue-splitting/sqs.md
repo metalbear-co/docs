@@ -456,8 +456,10 @@ If you don't want to wait for the remote service to drain the temporary queue, a
 
 | `spec.drainTimeout` | Behavior                                                                              |
 | ------------------- | ------------------------------------------------------------------------------------- |
-| unset               | Drain indefinitely - the temporary queue is kept until the remote service empties it. |
-| `0`                 | Skip draining; delete the temporary queue immediately. Unread messages may be lost.   |
-| `N`                 | Wait up to `N` seconds for the queue to drain, then delete it.                        |
+| unset               | Drain indefinitely - the remote service stays on the temporary queue until it is empty. |
+| `0`                 | Skip draining; switch the remote service back to the original queue right away.          |
+| `N`                 | Wait up to `N` seconds for the queue to drain, then switch the remote service back.      |
+
+In every case the temporary queue is deleted only once the remote service's pods are back on the original queue (operator `3.215.0` or later). Messages still in it at that point are lost.
 
 If that service is trying to consume messages correctly, and the temporary queue is already empty, but the target application still doesn't get restored to its original state, please try restarting the application, deleting any lingering `MirrordClusterSplitSession` objects, and if possible, restart the mirrord operator.
