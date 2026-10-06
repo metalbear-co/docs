@@ -42,14 +42,17 @@ Every caller reaches sessions-manager the same way it reaches every other Operat
 * **Developers** authenticate with their kubeconfig, exactly like for any other Operator feature.
 * **Workloads** authenticate with their platform identity, mapped to a Kubernetes identity. For ECS, the task's IAM role is mapped with an EKS access entry; see [How ECS tasks authenticate](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
-The Operator serves two cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
+The Operator serves three cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
 
-| Resource | Verb | Used for |
-| --- | --- | --- |
-| `sessionassignments` | `proxy` | Each side registers and waits, on a long-lived Server-Sent Events stream, to be paired. |
-| `sessiondataplanes` | `get` | Each side opens a WebSocket to its assigned session; the Operator relays mirrord traffic between the two. |
+| Resource | Verb | Used by | Used for |
+| --- | --- | --- | --- |
+| `serverlessclientassignments` | `proxy` | Developers | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a workload. |
+| `serverlessagentassignments` | `proxy` | Workloads | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a developer. |
+| `serverlessdataplanes` | `get` | Both | Opening a WebSocket to the assigned session; the Operator relays mirrord traffic between the two sides. |
 
-The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `sessiondataplanes` can't attach to another caller's session.
+Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. A registration is named after the environment and service it pairs in, `<environment>.<service>`, so a workload's access can also be limited to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
+
+The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `serverlessdataplanes` can't attach to another caller's session.
 
 Both sides only make outbound HTTPS connections, and only to the API server. Neither needs a network path to the other.
 
@@ -66,17 +69,19 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
   --set operator.sessionsManager=true
 ```
 
-Confirm the Operator now serves both resources:
+Confirm the Operator now serves the three resources:
 
 ```bash
-kubectl get --raw /apis/operator.metalbear.co/v1alpha1 | grep -o '"name":"session[a-z]*"'
-# "name":"sessionassignments"
-# "name":"sessiondataplanes"
+kubectl api-resources --categories=mirrord-serverless
+# NAME                          SHORTNAMES   APIVERSION                       NAMESPACED   KIND
+# serverlessagentassignments                 operator.metalbear.co/v1alpha1   false        ServerlessAgentAssignment
+# serverlessclientassignments                operator.metalbear.co/v1alpha1   false        ServerlessClientAssignment
+# serverlessdataplanes                       operator.metalbear.co/v1alpha1   false        ServerlessDataPlane
 ```
 
 ## Developer access
 
-Enabling sessions-manager grants `proxy` on `sessionassignments` and `get` on `sessiondataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
+Enabling sessions-manager grants `proxy` on `serverlessclientassignments` and `get` on `serverlessdataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
 
 ```bash
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
@@ -86,15 +91,36 @@ If you grant Operator access with your own roles instead, add the two rules abov
 
 ## Connecting workloads
 
-Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `sessionassignments` and `get` on `sessiondataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster.
+Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
 
 Each workload authenticates as a Kubernetes identity bound to this role. How its identity is mapped, and how it reaches the API server, depends on the platform:
 
 * [Connecting ECS to the Operator](ecs-operator-hosted.md)
 
 {% hint style="info" %}
-Bind the chart's role rather than defining your own: it stays in sync with what the Operator requires when you upgrade the chart.
+Bind the chart's role rather than defining your own, unless you need to limit a workload to specific services: it stays in sync with what the Operator requires when you upgrade the chart.
 {% endhint %}
+
+### Limiting a workload to specific services
+
+The chart's role lets a workload register under any environment and service. To limit an identity to specific ones, bind it to your own ClusterRole instead, listing each `<environment>.<service>` it may register as in `resourceNames`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mirrord-sessions-manager-agent-staging-api
+rules:
+  - apiGroups: [operator.metalbear.co]
+    resources: [serverlessagentassignments]
+    resourceNames: [staging.api]
+    verbs: [proxy]
+  - apiGroups: [operator.metalbear.co]
+    resources: [serverlessdataplanes]
+    verbs: [get]
+```
+
+An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
 
 ---
 
@@ -113,7 +139,8 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 | Symptom | Likely cause |
 | --- | --- |
 | `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator version predates it. |
-| `403 Forbidden` on `sessionassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
+| `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
+| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
 
 For workload-side problems, see the troubleshooting section of your platform's connection guide, such as [Connecting ECS to the Operator](ecs-operator-hosted.md#troubleshooting).

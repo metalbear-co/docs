@@ -77,7 +77,7 @@ and apply it:
 kubectl apply -f mirrord-ecs-workload-rbac.yaml
 ```
 
-The role grants `proxy` on `sessionassignments` (registering and waiting for sessions, a long-lived request) and `get` on `sessiondataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. These resources are cluster-scoped, so the binding has to be a ClusterRoleBinding. You only need one binding for all your ECS services.
+The role grants `proxy` on `serverlessagentassignments` (registering and waiting for sessions, a long-lived request) and `get` on `serverlessdataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. These resources are cluster-scoped, so the binding has to be a ClusterRoleBinding. You only need one binding for all your ECS services. To limit task roles to specific services instead, see [Limiting a workload to specific services](operator-hosted.md#limiting-a-workload-to-specific-services).
 
 ## Map the ECS task role into the cluster
 
@@ -113,10 +113,12 @@ aws eks create-access-entry \
 Check the result by impersonating that identity:
 
 ```bash
-kubectl auth can-i proxy sessionassignments.operator.metalbear.co \
+kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co \
   --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # yes
-kubectl auth can-i get sessiondataplanes.operator.metalbear.co \
+kubectl auth can-i get serverlessdataplanes.operator.metalbear.co \
   --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # yes
+kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co \
+  --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # no
 kubectl auth can-i list pods -A \
   --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # no
 ```
@@ -229,7 +231,7 @@ Register the new task definition revision and update the service to use it.
    kubectl -n mirrord logs deployment/mirrord-operator -f | grep -i session
    ```
 
-   With [EKS control plane audit logging](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) enabled, requests from the task appear in the audit log with user `mirrord-ecs-<YOUR_SERVICE_NAME>` on resource `sessionassignments`.
+   With [EKS control plane audit logging](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) enabled, requests from the task appear in the audit log with user `mirrord-ecs-<YOUR_SERVICE_NAME>` on resource `serverlessagentassignments`.
 2. **Developer session**: with the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), `mirrord exec` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code
@@ -261,7 +263,7 @@ The bootstrap's messages appear in the application container's logs. For problem
 | The endpoint hostname resolves to public IPs from the ECS VPC | The DNS forwarding rule is missing or not associated with the ECS VPC ([DNS](#dns)). |
 | TLS or certificate verification error | `MIRRORD_OPERATOR_API_CA_DATA` is missing or belongs to another cluster. |
 | `401 Unauthorized` | No access entry for the role, the access entry uses the execution role instead of the task role, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` doesn't match the cluster, or the authentication mode is still `CONFIG_MAP`. |
-| `403 Forbidden` on `sessionassignments` | The access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
+| `403 Forbidden` on `serverlessagentassignments` | The access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
 | `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator version predates it ([Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager)). |
 | `MIRRORD_SESSIONS_MANAGER_URL and MIRRORD_OPERATOR_API_URL are mutually exclusive` | The task sets both; remove `MIRRORD_SESSIONS_MANAGER_URL`. |
 | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME is required when MIRRORD_OPERATOR_API_URL is set` (or `MIRRORD_OPERATOR_API_CA_DATA`) | A [connection variable](#add-the-connection-variables) is missing on the task. |
