@@ -141,6 +141,24 @@ spec:
         # This file must contain exactly one private key.
         # It can contain entries of other types, e.g certificates, which are ignored.
         keyPem: /path/to/client/key.pem
+      # Additional client certificates, for applications that authorize requests based on the
+      # identity of the client.
+      #
+      # When the original client presented a certificate, the client uses the first of these with
+      # the same identity, see "Which certificate the application sees" below. If none matches,
+      # or the original client presented no certificate, `authentication` is used.
+      #
+      # Requires `agentAsServer.verification` with `acceptAnyCert` disabled, because the identity
+      # of an unverified client cannot be trusted.
+      #
+      # Optional. Defaults to an empty list.
+      identities:
+        # Path to a PEM file containing a certificate chain to use.
+      - cert: /path/to/client-a/cert.pem
+        # Path to a PEM file containing a private key matching the certificate chain from `cert`.
+        key: /path/to/client-a/key.pem
+      - cert: /path/to/client-b/cert.pem
+        key: /path/to/client-b/key.pem
       # Configures how the client verifies the server.
       verification:
         # Whether to accept any certificate, regardless of its validity and who signed it.
@@ -177,7 +195,22 @@ When the mirrord Operator finds multiple configuration resources matching the se
 
 ### Which certificate the application sees
 
-Requests that are not stolen are not forwarded byte for byte. mirrord-agent terminates the caller's TLS connection to read the request, then opens its own TLS connection to the application using `agentAsClient`. When `agentAsClient.authentication` is configured, the application sees that certificate; otherwise, the agent connects without a client certificate. The application never sees the original caller's certificate: the agent does not hold the caller's private key, so it cannot present that certificate. If the application authorizes callers by certificate name, give `agentAsClient` a certificate the application accepts. Pointing it at the application's own certificate makes the application see itself as the caller, which such an allowlist typically rejects with a 403.
+Requests that are not stolen are not forwarded byte for byte. mirrord-agent terminates the caller's TLS connection to read the request, then opens its own TLS connection to the application using `agentAsClient`. The application never sees the original caller's certificate: the agent does not hold the caller's private key, so it cannot present that certificate. Instead, the agent presents:
+
+1. The first certificate from `agentAsClient.identities` with the same identity as the caller's certificate, if there is one;
+2. Otherwise, the `agentAsClient.authentication` certificate, if configured;
+3. Otherwise, no client certificate at all.
+
+If the application authorizes callers by certificate name, give `agentAsClient` certificates the application accepts. Pointing it at the application's own certificate makes the application see itself as the caller, which such an allowlist typically rejects with a 403.
+
+If the application's decisions depend on which caller sent the request, list a certificate for each such caller in `agentAsClient.identities`. A certificate has the same identity as the caller's certificate when:
+
+* Both have subject alternative names (SANs), and the sets of SANs are the same. The subjects are ignored, so a certificate re-issued with a different subject still matches. DNS names are compared case-insensitively and without a trailing dot, all other names byte by byte.
+* Neither has SANs, and the subjects are the same, byte by byte.
+
+The issuer and the validity period are ignored, so a copy of the caller's certificate, or one re-issued for the same caller, matches.
+
+`agentAsClient.identities` requires `agentAsServer.verification` without `acceptAnyCert`: the caller's certificate is used only after the agent has verified it against `agentAsServer.verification.trustRoots`. Since the issuer is not compared, set these trust roots to the certificate authorities the application itself trusts for its clients. Otherwise, a caller verified under one authority could be represented with a certificate issued by another.
 
 mirrord-agent reads the configuration when it starts, and the Operator reuses a running agent for new sessions on the same target. After changing `agentAsClient`, stop the sessions on that target and wait for its `mirrord-agent` pod to exit before starting new ones, otherwise they keep the old certificate.
 
@@ -205,4 +238,28 @@ If your local application requires a client certificate (mutual TLS), set `tls_d
 }
 ```
 
-The same two settings apply to [preview environments](../../use-cases/preview-environments.md). There the mirrord Operator makes the TLS connection to the preview pod, so `mirrord preview start` reads both files and stores them in the session's Secret, next to `secret_mounts`, and the Operator presents the certificate when it delivers stolen requests. `server_name` is honored too. The other `tls_delivery` settings do not apply to previews: delivery is always TLS, and the preview pod's certificate is not verified.
+If your local application's decisions depend on which caller sent the request, give mirrord more client certificates to choose from with `tls_delivery.client_identities`. For every stolen request, mirrord presents the first of these with the same identity as the original caller's certificate, by the same rules as `agentAsClient.identities` in the [cluster configuration](#which-certificate-the-application-sees). If none matches, or the original caller presented no certificate, `client_cert` and `client_key` are used.
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "tls_delivery": {
+          "protocol": "tls",
+          "client_cert": "/path/to/default/cert.pem",
+          "client_key": "/path/to/default/key.pem",
+          "client_identities": [
+            { "cert": "/path/to/client-a/cert.pem", "key": "/path/to/client-a/key.pem" },
+            { "cert": "/path/to/client-b/cert.pem", "key": "/path/to/client-b/key.pem" }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+The original caller's certificate is known only when the port's `MirrordTlsStealConfig`/`MirrordClusterTlsStealConfig` verifies callers: `agentAsServer.verification` is set, with `acceptAnyCert` disabled. Otherwise `client_cert` and `client_key` are always used.
+
+The same `client_cert` and `client_key` settings apply to [preview environments](../../use-cases/preview-environments.md). There the mirrord Operator makes the TLS connection to the preview pod, so `mirrord preview start` reads both files and stores them in the session's Secret, next to `secret_mounts`, and the Operator presents the certificate when it delivers stolen requests. `server_name` is honored too. The other `tls_delivery` settings, including `client_identities`, do not apply to previews: delivery is always TLS, the preview pod's certificate is not verified, and the Operator always presents `client_cert`.
