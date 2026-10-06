@@ -179,7 +179,7 @@ By default, opening a Preview Environment as a recipient requires the mirrord br
 
 `mirrord-share-ingress` moves that header injection off the client and onto a server-side component, so a plain HTTPS link works on its own with nothing to install on the recipient's side. Each shareable preview is reachable at its own host, `<slug>.<shareDomain>`, printed by `mirrord preview start` as the `preview URL`.
 
-The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page that redirects to your app domain.
+The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page. By default that page redirects to your app domain after a few seconds; with `shareIngress.notFound.redirect: false` it is a plain 404 (see [Setup](#setup)).
 
 {% hint style="info" %}
 The preview URL works with any HTTP filter. A preview with a custom filter (a path filter, a different header, composed filters) additionally routes requests carrying the share link's injected baggage header, so its own filter keeps working for regular traffic while the link always reaches the preview.
