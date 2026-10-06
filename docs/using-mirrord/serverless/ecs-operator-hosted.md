@@ -27,7 +27,7 @@ The ECS task does the same thing `aws eks get-token` does, without the AWS CLI:
 3. EKS validates the token with STS, resolves the IAM role, and looks up its [access entry](https://docs.aws.amazon.com/eks/latest/userguide/access-entries.html), which gives it a Kubernetes username and groups.
 4. Kubernetes RBAC decides whether that identity may use the sessions-manager resources, and the request is forwarded to the Operator.
 
-EKS tokens are valid for 15 minutes. The bootstrap signs a fresh one 5 minutes before the current one expires, which is local and cheap, and retries with backoff if the task role's credentials are briefly unavailable. The API server authenticates a request only when it starts, so the long-lived connections of an ongoing session aren't cut when a token expires; only new requests use the new token.
+EKS tokens are valid for 15 minutes, or until the task role credentials they were signed with expire, if that's sooner. The bootstrap signs a fresh one 5 minutes before the current one expires, which is local and cheap. If the task role's credentials are briefly unavailable, it retries with backoff until the current token expires, and then stops with an error. The API server authenticates a request only when it starts, so the long-lived connections of an ongoing session aren't cut when a token expires; only new requests use the new token.
 
 The task role needs **no IAM permissions** for this: `sts:GetCallerIdentity` is allowed for every AWS identity, and the ECS task never calls STS or EKS APIs itself. No AWS credentials, access keys or secrets are added to the task.
 
@@ -217,7 +217,7 @@ These three are the same for every ECS service connecting to the cluster, so the
 Don't also set `MIRRORD_SESSIONS_MANAGER_URL` on the task. It selects a different sessions-manager, and the bootstrap refuses to start when both it and `MIRRORD_OPERATOR_API_URL` are set.
 {% endhint %}
 
-The token is signed for the AWS region in `AWS_REGION`, which ECS sets on Fargate tasks. Otherwise the bootstrap falls back to `AWS_DEFAULT_REGION`, then to the region in the `MIRRORD_OPERATOR_API_URL` hostname, so an EKS endpoint needs no extra configuration.
+The token is signed for the cluster's region, read from the `MIRRORD_OPERATOR_API_URL` hostname, so an EKS endpoint needs no extra configuration. Only if the task reaches the API server under another name, such as through a proxy, does the bootstrap fall back to `AWS_REGION`, then `AWS_DEFAULT_REGION`; set one of them to the cluster's region.
 
 Register the new task definition revision and update the service to use it.
 
@@ -267,9 +267,10 @@ The bootstrap's messages appear in the application container's logs. For problem
 | `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator version predates it ([Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager)). |
 | `MIRRORD_SESSIONS_MANAGER_URL and MIRRORD_OPERATOR_API_URL are mutually exclusive` | The task sets both; remove `MIRRORD_SESSIONS_MANAGER_URL`. |
 | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME is required when MIRRORD_OPERATOR_API_URL is set` (or `MIRRORD_OPERATOR_API_CA_DATA`) | A [connection variable](#add-the-connection-variables) is missing on the task. |
-| `no AWS region to sign the EKS token for` | No `AWS_REGION` or `AWS_DEFAULT_REGION`, and `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname. Set `AWS_REGION`. |
+| `no AWS region to sign the EKS token for` | `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname, and neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set. Set `AWS_REGION` to the cluster's region. |
 | `No AWS credentials provider found in environment` | The task definition has no `taskRoleArn`. |
-| `Token refresh failed, will retry` | Fetching the task role's credentials failed; the current token stays in use while it retries. If it keeps failing for 15 minutes, new requests get `401 Unauthorized`. |
+| `Initial AWS credential resolution failed, will retry` | The task role's credentials weren't available at startup. The bootstrap retries a few times with backoff, then stops with an error. |
+| `Token refresh failed, will retry` | Fetching the task role's credentials failed; the current token stays in use while it retries. If it still fails when the current token expires, the bootstrap stops with an error. |
 
 To check name resolution and reachability from inside a running task, use [ECS Exec](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) if it's enabled for the service. The endpoint hostname must resolve to addresses within the EKS VPC CIDR, and TCP 443 on it must be reachable.
 
