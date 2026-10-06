@@ -32,6 +32,7 @@
   * [Filtering Incoming Traffic](using-mirrord/incoming-traffic/filter-incoming-traffic.md)
     * [Filtering by JSON Body](using-mirrord/incoming-traffic/filtering-by-json-body.md)
     * [Debugging from Browser](using-mirrord/incoming-traffic/debug-from-browser.md)
+    * [Propagating Headers Across Services](using-mirrord/incoming-traffic/header-propagation.md)
   * [Stealing HTTPS Requests](using-mirrord/incoming-traffic/steal-https.md)
   * [Inspecting Live Traffic](using-mirrord/incoming-traffic/inspect-live-traffic.md)
 * [Outgoing Traffic](using-mirrord/outgoing-traffic/README.md)
