@@ -56,7 +56,7 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
-4. When the last session ends, the operator puts the target's pods back one at a time, replacing the next pod only once the workload is stable again, so a restore takes roughly one readiness period per replica. A patched pod that is crash-looping or never became ready is replaced right away, since it adds nothing to the workload's availability.
+4. When the last session ends, the operator puts the target's pods back one at a time, replacing the next pod only once the workload is stable again, so a restore takes roughly one readiness period per replica. A patched pod that has failed or is crash-looping is replaced right away, since it adds nothing to the workload's availability.
 
 ## Queue Names in Mounted Config Files
 
