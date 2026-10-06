@@ -83,7 +83,7 @@ BROWSER="firefox" mirrord ui
 
 ## Display theme
 
-The Web UI follows your system's light or dark setting by default. Use the sun/moon icon in the top-right corner to switch, or pick **System**, **Light** or **Dark** under **Appearance** in the settings dialog. The choice is saved in the browser's local storage.
+The Web UI follows your system's light or dark setting by default. Use the sun/moon icon in the top-right corner to switch, or pick **System**, **Light** or **Dark** under **Appearance** in the settings dialog. The choice is saved in the browser's local storage. Needs mirrord `3.232.0` or newer.
 
 ## Authentication
 
