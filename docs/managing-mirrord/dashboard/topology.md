@@ -95,7 +95,7 @@ Nodes are colored by category:
 
 A service marked **Discovered** wasn't targeted by any session. The map only knows it as the other end of a connection. The map matches a Service to a workload by name and namespace. If a Service's name differs from its workload's, for example the Service `web-svc` in front of the Deployment `web`, they show up as two separate items: the workload, and the Service marked **Discovered**. Its session and user counts come from the connections around it.
 
-Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Only the lowest port a workload reached on a Service is kept, so a database that is also reached on a lower port, such as 80, can show up as a plain **Service** too. Click a chip in the legend to hide that category.
+Categories come from ports and from which end of a connection a service was on. Service names are never used to guess them, so a Postgres served on a custom port shows up as a plain **Service**. Only the lowest port a workload reached on a Service is kept, so a database that is also reached on a lower port, such as 80, can show up as a plain **Service** too. Click a chip in the legend to hide or show that category. **Entry point** and **Preview env** start hidden, so the map opens on service-to-service traffic; turn them on from the legend when you need them. The **Advanced filters** chip opens the namespace, preview env key, **Discovered only** and **Busiest paths** filters.
 
 Other controls:
 
