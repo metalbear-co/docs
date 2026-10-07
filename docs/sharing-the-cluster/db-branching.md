@@ -102,7 +102,7 @@ Developers define branches in their `mirrord.json`:
 
 | Field | Description |
 | --- | --- |
-| `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. This field is not used for `local` instances and has no effect on branch selection or reuse. |
+| `id` | When reused, mirrord reattaches to the same branch as long as the time-to-live (TTL) has not expired. This allows multiple sessions to share the same database branch. To prevent accidental reuse of another user's branch, it is recommended to assign a unique value (for example, a UUID) as the identifier. Give two entries of the same type their own `id`s: from mirrord CLI `3.267.0`, entries that would be the same branch make mirrord refuse to start the session. All `generic` entries count as one type. This field is not used for `local` instances and has no effect on branch selection or reuse. |
 | `location` | Supported values are `remote` and `local`. The default is `remote`. See the [Choose Your Database](#choose-your-database) table for per-engine support. |
 | `type` | The database engine to branch. See the [Choose Your Database](#choose-your-database) table for supported values. |
 | `version` | Database engine version, used as the tag on the operator's default image (or the registry an admin configured for this engine). Mutually exclusive with `image`. Does not apply to branches created in your account with the provider. |
@@ -117,6 +117,7 @@ Developers define branches in their `mirrord.json`:
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 | `migrations` | (MySQL, MariaDB, CockroachDB, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
+| `additional_databases` | (PostgreSQL only) More databases from the same source server, copied into the same branch pod, each with its own optional `connection` and `copy`. See [Several Databases in One Branch](db-branching/postgresql.md#several-databases-in-one-branch). |
 
 ### Custom Branch Image
 
@@ -141,6 +142,8 @@ By default, mirrord runs each branch on the operator's built-in image for that e
 This is useful when your service depends on a database image that differs from the stock one - e.g. a Postgres build with extra extensions. `image` and `version` are mutually exclusive: the tag is already part of the image reference.
 
 The same image is used for the branch's main container and for the init container that seeds it, so it must be able to run the engine and its client tools (for example `pg_dump`/`psql` for PostgreSQL).
+
+With mirrord operator `3.216.0` or later, the branch pod pulls the image with the target's `imagePullSecrets`, as well as any set in the operator's branch config.
 
 ## Restricting Branch Images
 

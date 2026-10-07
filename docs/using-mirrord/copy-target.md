@@ -34,6 +34,8 @@ When the [`scale_down`](https://metalbear.com/mirrord/docs/config#feature.copy_t
 
 The scale down feature can be useful e.g. when a workload reads from a queue. By scaling it down to zero, the application you run with mirrord does not have to compete with the workload's pods for queue items.
 
+If KEDA scales the workload, set `operator.manageKedaScaledObjects` in the operator's Helm values (operator `3.215.0` or later) to keep it at zero: the operator pauses KEDA over the workload for the length of the session.
+
 Only one mirrord session can scale down a workload at the same time. If you try to scale down a workload that is already being scaled down in another mirrord session (by you or by a teammate), mirrord will display an error and exit.
 
 You can see active copied targets by running `mirrord operator status`. When there are no active copy targets, the relevant part of the output will say "_No active copy targets_".

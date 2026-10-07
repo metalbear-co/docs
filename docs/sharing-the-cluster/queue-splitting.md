@@ -221,15 +221,26 @@ Things to know:
 ## Autoscaled Targets with KEDA
 
 {% hint style="info" %}
-Holding an autoscaled target up requires mirrord operator `3.199.0` or later, and operator Helm chart `3.199.0` with the `operator.pauseKedaScaleIn` value set to `true`.
+Scaling an autoscaled target on its temporary queue requires mirrord operator `3.215.0` or later, and operator Helm chart `3.215.0` with the `operator.manageKedaScaledObjects` value set to `true`.
 {% endhint %}
 
-A target scaled on queue load by KEDA goes idle from its autoscaler's point of view as soon as its queues are split. The autoscaler's triggers still watch the original queue, which the operator is now draining, so they see no load and scale the target to zero. Nothing is then left to consume the target's temporary queue, and its messages are lost when the split ends.
+A split target reads a temporary queue, while the triggers of its KEDA `ScaledObject` still read the original queue, which the operator drains. KEDA then sees no load and scales the target to zero, leaving the temporary queue undrained.
 
-Set `operator.pauseKedaScaleIn` in the operator's Helm values to have the operator handle this. While a split is running, the operator:
+Set `operator.manageKedaScaledObjects` in the operator's Helm values to have the operator handle this. While a split is running, the operator points every trigger on the target's `ScaledObject` that reads a split queue at the temporary queue the target now consumes, and points them back at the original queue when the split ends. KEDA keeps scaling the target on the depth of the queue it is actually reading, so while that queue is empty, it scales the target in as far as its `minReplicaCount` and other triggers allow.
 
-1. keeps the target at a minimum of one replica; and
-2. annotates the `ScaledObject` scaling the target with `autoscaling.keda.sh/paused-scale-in`, so KEDA cannot scale it back in.
+Only the queue a trigger reads is changed. Its credentials and every other setting stay as they are, and triggers about anything else, such as CPU, are left alone.
+
+Triggers are redirected wherever a split moves the target onto a temporary queue: Amazon SQS, Apache Kafka, Google Cloud Pub/Sub, Azure Service Bus queues, BullMQ, NATS JetStream, and RabbitMQ. Everywhere else, including Azure Service Bus subscriptions, the target keeps reading its own queue, and its triggers need no change.
+
+A Temporal target polls a task queue the operator serves, which KEDA cannot measure, so KEDA is paused at one replica for the duration of the split instead.
+
+A `ScaledObject` none of whose triggers name a split queue directly is left alone. This includes triggers that read the queue name from an environment variable, such as `queueURLFromEnv`, and triggers that measure lag through a query. Unless they measure the temporary queue some other way, the target may be scaled to zero for the duration of the split. A Kafka target keeps its consumer group unless the split gives it a temporary one, so a query over that group's lag across all topics already follows the temporary topic.
+
+A GitOps tool deploying the `ScaledObject` would put the original triggers back. The operator therefore registers a mutating webhook that reapplies its rewrite to every update of a redirected `ScaledObject`, including the dry runs Flux compares against. Flux sees the `ScaledObject` as in sync and keeps reconciling it: changes from Git roll out during the split, and the triggers stay redirected. When the split ends, the operator undoes only its own rewrite, so those changes stay.
+
+Argo CD compares against Git by itself, so it would report the `ScaledObject` as out of sync and keep syncing it. Set `operator.applicationPauseAutoSync` to let the operator turn off automated sync on the application deploying the `ScaledObject`, and on every application deploying that one, for as long as the split runs. Changes to anything they deploy are not rolled out until the split ends. Without the value, a `ScaledObject` that Argo CD deploys is left alone.
+
+With `operator.applicationPauseAutoSync` set, the operator finds the applications deploying the `ScaledObject` from their own status, whichever way Argo CD tracks resources. Without it, the operator recognizes a `ScaledObject` that Argo CD deploys only by its `argocd.argoproj.io/tracking-id` annotation, so if Argo CD tracks resources by label, the triggers are redirected anyway, and Argo CD reports the application out of sync and keeps syncing it until the split ends.
 
 ## Sharing Property Lists Across Namespaces
 
@@ -304,6 +315,8 @@ Filter definition contains the following fields:
   * For **Kafka**, it runs a jq program on a JSON representation of the record. See the [Kafka page](queue-splitting/kafka.md#setting-a-filter) for the document shape.
   * For **RabbitMQ**, it runs a jq program on a JSON representation of the message. See the [RabbitMQ page](queue-splitting/rabbitmq.md#setting-a-filter) for the document shape.
   * For **GCP Pub/Sub**, it runs a jq program on the JSON representation of the [`PubsubMessage`](https://cloud.google.com/pubsub/docs/reference/rest/v1/PubsubMessage) object.
+    For subscriptions configured with `gcs_event: "true"`, jq filters can also inspect `gcsMetadata`, the custom metadata of the Cloud Storage object a notification is about.
+    See [Filtering Cloud Storage notifications](queue-splitting/gcp-pubsub.md#filtering-cloud-storage-notifications).
   * For **Azure Service Bus**, the JSON object has `body`, `application_properties`, `message_id`, `content_type`, and `subject` fields.
   * For **Redis Pub/Sub**, it runs a jq program on the parsed JSON message payload.
   * For **Temporal**, it runs a jq program on a JSON document the operator builds for each task. See the [Temporal page](queue-splitting/temporal.md#setting-a-filter) for the document shape.
@@ -414,6 +427,8 @@ Both forms take the same filter fields (`queue_type`, `filter`, `message_filter`
 
 {% hint style="info" %}
 When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
+
+To have your AI agent do this, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill. It adds `baggage` to every message your services publish, restores it in each consumer, and covers Kafka, SQS/SNS, RabbitMQ, GCP Pub/Sub, Azure Service Bus, NATS, Redis Pub/Sub, BullMQ, and Temporal.
 {% endhint %}
 
 {% hint style="info" %}

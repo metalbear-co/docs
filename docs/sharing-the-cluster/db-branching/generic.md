@@ -522,4 +522,4 @@ operator:
 
 * Generic branch pods run under the namespace **default service account**, not the target's and not the operator's. The service account token is **not mounted** into the branch pod at all - the container has zero Kubernetes API access even in clusters where roles were bound to the default SA. Branch pods are plain unprivileged pods, so cluster admission policies (PSA, OPA/Kyverno) apply as usual.
 * Values written directly into `args` are visible in the pod spec to anyone with pod-read access. Reference secrets via `$(MIRRORD_PARAM_*)` instead of inlining them - the `secretKeyRef` mechanism exists precisely so secret values never appear in the pod spec.
-* For images in private registries, set `imagePullSecrets` in the generic branch config, as with the other engines.
+* With operator `3.216.0` or later, images in private registries are pulled with the target's `imagePullSecrets`. For registries the target has no pull secret for, or on older operators, set `imagePullSecrets` in the generic branch config, as with the other engines.

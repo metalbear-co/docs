@@ -80,7 +80,7 @@ HTTP requests and responses are logged as two separate lifecycle records. The re
 | --- | --- |
 | `method` | HTTP request method |
 | `path` | Request URI path |
-| `request_headers` | Complete request header map, serialized as a JSON string |
+| `request_headers` | Request header map, serialized as a JSON string. Values of headers that often hold secrets are redacted, see the note below. Not present when `operator.hideHeadersAndProperties` is `true` |
 | `correlation_id` | Value of a recognized correlation ID header, when present |
 | `traceparent` | W3C Trace Context `traceparent` header, when present |
 | `tracestate` | W3C Trace Context `tracestate` header, when present |
@@ -141,7 +141,7 @@ Queue and message bus records use the following fields when the broker provides 
 | `queue_name` | Queue, topic, subscription, or Redis channel name |
 | `message_id` | Broker-provided message or job identifier |
 | `correlation_id` | Broker-provided correlation ID or a recognized correlation ID property/header |
-| `message_properties` | Message attributes, properties, or Kafka headers, serialized as a JSON string |
+| `message_properties` | Message attributes, properties, or Kafka headers, serialized as a JSON string. Values of properties that often hold secrets are redacted, see the note below. Not present when `operator.hideHeadersAndProperties` is `true` |
 | `traceparent` | W3C Trace Context value extracted from message properties or headers |
 | `tracestate` | W3C Trace Context value extracted from message properties or headers |
 | `baggage` | W3C baggage value extracted from message properties or headers |
@@ -175,8 +175,12 @@ For example, a queue message can produce:
 }
 ```
 
+Starting with mirrord Operator `3.215.0`, the Operator writes `[REDACTED]` in place of the value of a header or message property when its name often holds a secret. The Operator uses only the ASCII letters and digits of the name, in lowercase, and the name matches when they contain one of these parts: `accesskey`, `apikey`, `appcheck`, `auth`, `cookie`, `credential`, `csrf`, `encryptioncustomerkey`, `encryptionkey`, `functionskey`, `hmac`, `jwt`, `oidcdata`, `passphrase`, `passw`, `privatekey`, `pwd`, `secret`, `session`, `signature`, `subscriptionkey`, `token`, or `xsrf`. For example, the values of `Authorization`, `Cookie`, `X-Api-Key`, `api.key`, `Client-Secret` and `db_password` are redacted. The name stays in the record, so you can still see which headers or properties a message had.
+
 {% hint style="warning" %}
-HTTP headers and message properties can contain credentials, personal information, or other sensitive values. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
+HTTP headers and message properties can contain credentials, personal information, or other sensitive values. The Operator only redacts the values of names that contain one of the parts above. It examines only the name, not the value. So it logs the values of all other names as they are, and it also logs a secret inside a value, such as a nested field of a BullMQ job property. HTTP bodies and raw broker payloads are not logged, but message properties can still contain application data, such as the top-level fields of a BullMQ job's `data` payload. Access controls, retention policies, and collector-side redaction should account for the metadata included in these records.
+
+To hide the header and property maps from these records, set `operator.hideHeadersAndProperties` to `true` in the Operator Helm chart values. The records then do not have the `request_headers` and `message_properties` fields, but they still have the `correlation_id`, `traceparent`, `tracestate` and `baggage` fields.
 {% endhint %}
 
 ##### Querying the logs

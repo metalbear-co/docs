@@ -56,7 +56,7 @@ mirrord up
 
 This will start all defined services, and they will run in parallel. The `mirrord up` session will be stopped once it's interrupted (`ctrl-c`) or one of the running mirrord sessions shuts down.
 
-Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`.
+Services default to `split` mode, which steals incoming traffic matching an `http_filter`. When no filter is provided, mirrord generates one based on the session key: `baggage: .*mirrord-session={key}.*`. For requests to reach every service in the session, each service has to forward the `baggage` header to the next one. The [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill sets this up across your services.
 
 If you'd rather have your local process take over a service completely, use `replace` mode — see [Service modes](#service-modes).
 
@@ -112,7 +112,9 @@ Traffic is mirrored to your local process, and the deployed service runs uninter
 
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service, in `split`, `replace` and `mirror` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration.
+
+Services in `replace` mode don't use queue splitting: the deployed workload is scaled down, so your local process consumes every message from its queues.
 
 Before starting the session, set up queue splitting for the target and enable the relevant queue-splitting feature in the mirrord operator. Follow the [Queue Splitting guide](../sharing-the-cluster/queue-splitting.md) for the target's `MirrordSplitConfig` and broker-specific prerequisites.
 
