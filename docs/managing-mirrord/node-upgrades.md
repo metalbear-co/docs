@@ -257,6 +257,12 @@ taint, for example a copy pod of a target that tolerates all taints. Karpenter d
 when the node stops. A copy pod of a target with the `karpenter.sh/do-not-disrupt: "true"` annotation stops Karpenter
 drift and consolidation, the same as the target pod.
 
+Database branch pods and preview pods do not come from a target, so they stop Karpenter only when you annotate them
+yourself: set `karpenter.sh/do-not-disrupt: "true"` in the operator's Helm values, under `dbPod.annotations` of each
+[`<engine>BranchConfig`](../sharing-the-cluster/db-branching.md#branch-pod-labels-and-annotations) and under
+[`operator.preview.annotations`](../use-cases/preview-environments.md#pod-labels-and-annotations). Without it, Karpenter
+evicts them when it consolidates the node, and the session loses its branch database or its preview pod.
+
 ### Check that agent pods have an owner
 
 If Karpenter still does not disrupt a node after you upgrade, check the owner of the agent pods:

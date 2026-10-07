@@ -160,6 +160,22 @@ operator:
 
 A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
 
+## Branch Pod Labels and Annotations
+
+Cluster admins can put labels and annotations on every branch pod of an engine with `dbPod.labels` and `dbPod.annotations` in the operator's Helm values. This is useful when a cluster-wide tool reads pod metadata - for example Karpenter, which otherwise deletes a branch pod while it consolidates an underutilized node, ending the session's database mid-run:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      annotations:
+        karpenter.sh/do-not-disrupt: "true"
+      labels:
+        team: platform
+```
+
+The operator puts them on the branch database pod and on the pods of the branch's [schema migration](db-branching/migrations.md) and copy Jobs, so the whole branch falls under the same rules. Each engine has its own `<engine>BranchConfig` block, and a [profile](#branch-config-profiles) is a complete `dbPod`, so set them again in each profile that needs them. Only branches created after the change pick them up.
+
 ## Branch Storage
 
 By default, each branch stores its database on its own PersistentVolumeClaims: one for the data directory and one for staging the dump during the copy, 20Gi each. The claims are provisioned with the cluster's default StorageClass when the branch is created and deleted together with it, so branching a large database does not depend on how much spare disk the node happens to have.
