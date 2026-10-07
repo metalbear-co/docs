@@ -29,6 +29,10 @@ The map below is from [MetalMart](https://github.com/metalbear-co/playground/tre
 
 Topology is off by default.
 
+{% hint style="warning" %}
+On the cloud dashboard the map also needs an API key with identity sharing on. With it off, the operator reports connections without service names and the tab stays empty with nothing to explain why. Tick identity sharing on the key, or regenerate one with it on, before expecting connections.
+{% endhint %}
+
 1. Set it in the operator's Helm values:
 
     ```yaml
