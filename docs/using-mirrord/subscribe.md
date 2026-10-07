@@ -34,11 +34,11 @@ HTTP events come from redirected requests/responses. Queue events require [queue
 Need support for more events? [Open a GitHub issue](https://github.com/metalbear-co/mirrord/issues) or reach out in the [mirrord Slack community](https://metalbearcommunity.slack.com/ssb/redirect)
 {% endhint %}
 
-### Prerequisites
+## Prerequisites
 
 * A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass `--key`, a random key is generated for the session (`mirrord up` is the exception, it defaults to your OS username).
 
-### Usage
+## Usage
 
 In one terminal, run the session you want to observe:
 
@@ -62,7 +62,7 @@ mirrord subscribe --key my-key | jq 'select(.data.http_request)'
 
 You may also pass `--pretty` to pretty-print each event.
 
-### Options
+## Options
 
 All flags are off by default.
 
@@ -73,7 +73,7 @@ All flags are off by default.
 
 These flags need operator `3.210.0` or newer to take effect.
 
-### Unmatched messages
+## Unmatched messages
 
 By default you receive a queue message only when your filter claimed it. With `--unmatched` you also receive the ones nobody claimed.
 
@@ -85,7 +85,7 @@ mirrord subscribe --key my-key --unmatched | jq 'select(.data.queue_message.mode
 This covers queue messages only. An HTTP request that matches no filter never reaches the operator.
 {% endhint %}
 
-### Events
+## Events
 
 Every event has the same envelope — `service_name` (the intercepted workload), `timestamp`, and a `data` payload:
 
@@ -285,7 +285,7 @@ For a pattern subscription (`PSUBSCRIBE`), `channel` is the concrete channel the
 
 Lagging takes place whenever the consumer is not able to keep up with the messages and receive them in a timely fashion (e.g. due to a slow network connection). By default, the operator buffers up to 2048 messages (configurable in `values.yaml` through `subscribeEventBufferSize`), and lagging will take place if more than this many messages accumulate in the internal buffer without the consumer receiving them. Note that lagging only affects slow consumers — functioning consumers will continue to receive all events even in the presence of slow peers.
 
-### Direct Kube API access (no mirrord CLI required)
+## Direct Kube API access (no mirrord CLI required)
 
 `mirrord subscribe` is a thin wrapper over an operator endpoint that emits [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (`text/event-stream`). You can access it directly through the Kubernetes API, without requiring the mirrord CLI:
 

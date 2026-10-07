@@ -35,13 +35,13 @@ When sessions end, their temporary streams are deleted, and when the whole split
 
 {% stepper %}
 {% step %}
-#### Enable NATS splitting in the Helm chart
+### Enable NATS splitting in the Helm chart
 
 Enable the `operator.natsSplitting` setting in the [mirrord-operator Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/values.yaml). This setting covers JetStream splitting, which these steps set up; [core NATS pub/sub](#core-nats-pubsub-no-jetstream) is gated on `operator.natsPubsubSplitting` instead.
 {% endstep %}
 
 {% step %}
-#### Create a MirrordPropertyList
+### Create a MirrordPropertyList
 
 The operator needs to connect to your NATS server to read and republish messages. Define the connection in a `MirrordPropertyList` ([`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)) in the same namespace as the target workload (and the `MirrordSplitConfig`), or in the operator's namespace to share it across namespaces - see [Sharing Property Lists Across Namespaces](../queue-splitting.md#sharing-property-lists-across-namespaces).
 
@@ -142,7 +142,7 @@ Without `ca_cert`, the server's certificate is verified against the standard pub
 {% endstep %}
 
 {% step %}
-#### Create a MirrordSplitConfig
+### Create a MirrordSplitConfig
 
 On operator installation with `operator.natsSplitting` or `operator.natsPubsubSplitting` enabled, a new [`CustomResource`](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) type is defined in your cluster - `MirrordSplitConfig`. Users with permissions to get CRDs can verify its existence with `kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co`.
 
@@ -178,7 +178,7 @@ The `MirrordSplitConfig` above says that:
 3. The deployment consumes one stream, whose name is in environment variable `NATS_STREAM`, through a durable consumer whose name is in environment variable `NATS_CONSUMER`.
 4. The stream can be referenced in a mirrord config under ID `orders`.
 
-#### Link the config to the deployed consumer
+### Link the config to the deployed consumer
 
 The `MirrordSplitConfig` is a namespaced resource. The target workload reference is specified with `spec.targetRef`:
 
@@ -186,7 +186,7 @@ The `MirrordSplitConfig` is a namespaced resource. The target workload reference
 * `kind` - type of the workload. Supported: `Deployment`, `StatefulSet`, `Rollout`.
 * `name` - name of the workload.
 
-#### Describe consumed streams
+### Describe consumed streams
 
 Each entry in the `spec.queues` list describes one stream and the durable pull consumer the workload reads it through:
 

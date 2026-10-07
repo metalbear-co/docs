@@ -20,7 +20,7 @@ This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
 
 
-### Example Policy 
+## Example Policy 
 ```yaml
 apiVersion: policies.mirrord.metalbear.co/v1alpha
 kind: MirrordPolicy
