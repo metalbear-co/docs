@@ -43,6 +43,10 @@ Missing propagation looks like mirrord isn't working, even though the session is
 
 To confirm, run [`mirrord dump`](inspect-live-traffic.md) against the service you're running locally and send a request through the normal entry point. If the request arrives without your header, a service earlier in the chain is dropping it.
 
+{% hint style="info" %}
+`mirrord dump` shows the raw bytes the service receives. If the service terminates TLS itself, those bytes are encrypted and the headers aren't readable. In that case, check by temporarily logging the incoming request headers in the service instead.
+{% endhint %}
+
 ## Use `baggage` and your tracing library
 
 The simplest setup is to filter on the W3C `baggage` header and let OpenTelemetry carry it between services:
@@ -54,13 +58,15 @@ The simplest setup is to filter on the W3C `baggage` header and let OpenTelemetr
       "incoming": {
         "mode": "steal",
         "http_filter": {
-          "header_filter": "^baggage: .*mirrord-session=alice.*"
+          "header_filter": "^baggage: .*mirrord-session=alice(?:[,; ]|$)"
         }
       }
     }
   }
 }
 ```
+
+The `(?:[,; ]|$)` at the end makes the filter match only the complete value `alice`. Without it, a filter for `alice` would also steal requests meant for another session whose key starts with `alice`, such as `alice2`.
 
 OpenTelemetry instrumentation extracts `baggage` from each incoming request and adds it to the outgoing requests made while handling it. If your services are already instrumented, they may propagate it with no further changes. The defaults in common setups:
 
@@ -89,8 +95,9 @@ session := c.GetHeader("x-dev-session")
 // Outgoing HTTP request:
 req.Header.Set("x-dev-session", session)
 
-// Outgoing gRPC call:
+// Outgoing gRPC call: pass the returned context to the RPC.
 ctx := metadata.AppendToOutgoingContext(c, "x-dev-session", session)
+resp, err := billingClient.GetInvoice(ctx, invoiceReq)
 ```
 
 Prefer `baggage` if you can. Tracing libraries forward it with little or no extra code, and other mirrord features, including [preview environments](../../use-cases/preview-environments.md) and the [browser extension](debug-from-browser.md), use it by default.
@@ -101,4 +108,4 @@ The same applies when a request triggers a message instead of a direct call. If 
 
 ## Check your ingress
 
-The header must also survive the edge of your cluster. Most ingress controllers and load balancers pass request headers through unchanged, but some API gateways, CDNs and WAFs remove headers they don't recognize. If `mirrord dump` on the first service shows the request arriving without your header, check the configuration of whatever sits in front of it.
+The header must also survive the edge of your cluster. Most ingress controllers and load balancers pass request headers through unchanged, but some API gateways, CDNs and WAFs remove headers they don't recognize. If the first service receives the request without your header (checked with `mirrord dump`, or with header logging if the service terminates TLS), check the configuration of whatever sits in front of it.
