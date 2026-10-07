@@ -43,7 +43,7 @@ As described in [High Availability](high-availability.md), the default replica c
 
 ## Footprint in your cluster
 
-mirrord adds a small, mostly idle footprint to your cluster. In a default installation, the Operator is the only component that runs all the time. Optional components that you install separately, such as a license server or `mirrord-share-ingress`, also run all the time. Agents run only while a session uses them.
+mirrord adds a small, mostly idle footprint to your cluster. In a default installation, the Operator is the only component that runs all the time. Optional components that you install separately, such as a license server, also run all the time. Agents run only while a session uses them.
 
 ### When no session is active
 
