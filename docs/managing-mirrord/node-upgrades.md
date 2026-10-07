@@ -257,11 +257,14 @@ taint, for example a copy pod of a target that tolerates all taints. Karpenter d
 when the node stops. A copy pod of a target with the `karpenter.sh/do-not-disrupt: "true"` annotation stops Karpenter
 drift and consolidation, the same as the target pod.
 
-Database branch pods and preview pods do not come from a target, so they stop Karpenter only when you annotate them
-yourself: set `karpenter.sh/do-not-disrupt: "true"` in the operator's Helm values, under `dbPod.annotations` of each
-[`<engine>BranchConfig`](../sharing-the-cluster/db-branching.md#branch-pod-labels-and-annotations) and under
-[`operator.preview.annotations`](../use-cases/preview-environments.md#pod-labels-and-annotations). Without it, Karpenter
-evicts them when it consolidates the node, and the session loses its branch database or its preview pod.
+Database branch pods do not come from a target, so they stop Karpenter only when you annotate them yourself: set
+`karpenter.sh/do-not-disrupt: "true"` under `dbPod.annotations` of each
+[`<engine>BranchConfig`](../sharing-the-cluster/db-branching.md#branch-pod-labels-and-annotations) in the operator's
+Helm values. Preview pods copy the target's pod template, so a target that already carries the annotation protects its
+previews too; for targets that do not, set it for every preview pod under
+[`operator.preview.annotations`](../use-cases/preview-environments.md#pod-labels-and-annotations). Without the
+annotation, Karpenter evicts these pods when it consolidates the node, and the session loses its branch database or its
+preview pod.
 
 ### Check that agent pods have an owner
 
