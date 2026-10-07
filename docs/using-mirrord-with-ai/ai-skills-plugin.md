@@ -36,7 +36,52 @@ For the full list of skills, what each one covers, and example prompts, see <a h
 
 The mirrord skills are distributed as a plugin that you install into your AI coding assistant. Installation steps depend on your tool.
 
-Check the <a href="https://github.com/metalbear-co/skills/" target="_blank" rel="noopener noreferrer">mirrord skills repository</a> for the latest installation instructions...
+### Claude Code
+
+Run these commands in Claude Code:
+
+```bash
+/plugin marketplace add metalbear-co/skills
+/plugin install mirrord@mirrord-skills
+```
+
+### Codex
+
+Add the marketplace:
+
+```bash
+codex plugin marketplace add metalbear-co/skills
+```
+
+Then install the `mirrord` plugin from `/plugins`. The plugin includes all the skills.
+
+### Cursor, Gemini CLI, and Other Agent Skills Agents
+
+For any agent that supports [Agent Skills](https://agentskills.io), run:
+
+```bash
+npx skills add metalbear-co/skills
+```
+
+### OpenCode and Other Agents That Read a Skills Directory
+
+The install script writes the skill folders to disk. By default, it writes them to `~/.config/opencode/skills/`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/metalbear-co/skills/main/install.sh | sh
+```
+
+To install for a different agent, download the script and pass a target:
+
+```bash
+sh install.sh --agent codex     # ~/.agents/skills
+sh install.sh --agent claude    # ~/.claude/skills
+sh install.sh --dest <dir>      # any other directory
+```
+
+Restart the agent after you install. Run the script again to update the skills. It replaces only the `mirrord-*` folders.
+
+For the latest instructions, see the <a href="https://github.com/metalbear-co/skills/#installation" target="_blank" rel="noopener noreferrer">mirrord skills repository</a>.
 
 ## Agents That Don't Support Agent Skills
 
