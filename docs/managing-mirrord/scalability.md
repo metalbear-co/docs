@@ -74,7 +74,7 @@ The lifecycle of an agent depends on the type of session:
 To change the agent resources, set `agent.resources` in the Operator Helm values (mirrord Operator `3.197.0` or later). A value that you set to `null` is left out of the agent pod spec. For example, set `agent.resources.limits.cpu: null` to run agents without a CPU limit.
 
 {% hint style="info" %}
-Some features make more resources for a session. [Copy target](../using-mirrord/copy-target.md) makes a copy of the target pod, [database branching](../sharing-the-cluster/db-branching.md) makes a branch database (for most engines, in a temporary pod), and [queue splitting](../sharing-the-cluster/queue-splitting.md) makes temporary queues. For more details, see the page for each feature.
+Some features allocate more resources for a session. [Copy target](../using-mirrord/copy-target.md) makes a copy of the target pod, [database branching](../sharing-the-cluster/db-branching.md) makes a branch database (for most engines, in a temporary pod), and [queue splitting](../sharing-the-cluster/queue-splitting.md) makes temporary queues. For more details, see the page for each feature.
 {% endhint %}
 
 ## Concurrent sessions
