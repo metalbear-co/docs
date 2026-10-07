@@ -43,7 +43,7 @@ As described in [High Availability](high-availability.md), the default replica c
 
 ## Footprint in your cluster
 
-mirrord adds a small, mostly idle footprint to your cluster. The Operator is the only component that runs all the time. Agents run only while a session uses them.
+mirrord adds a small, mostly idle footprint to your cluster. In a default installation, the Operator is the only component that runs all the time. Optional components that you install separately, such as a license server or `mirrord-share-ingress`, also run all the time. Agents run only while a session uses them.
 
 ### When no session is active
 
@@ -69,7 +69,7 @@ The lifecycle of an agent depends on the type of session:
 
 - **Session with a target:** The Operator makes one agent pod for each ready pod of the target. Sessions with the same target share these agent pods. When no session uses an agent pod, the Operator deletes it. For more details, see [Node Upgrades and Scale-Down](node-upgrades.md#agent-pods-and-nodes).
 - **Targetless session:** All the targetless sessions in a namespace share one agent pod in that namespace. When no session uses the agent pod, the Operator deletes it.
-- **Ephemeral agent** (the [`agent.ephemeral`](https://metalbear.com/mirrord/docs/config#agent.ephemeral) setting): The agent is a container in the target pod, not a separate pod. Kubernetes does not let you set resources on ephemeral containers, so the values above do not apply.
+- **Ephemeral agent:** The agent is a container in the target pod, not a separate pod. To use ephemeral agents, the cluster admin sets `ephemeral: true` under `agent.extraConfig` in the Operator Helm values. The Operator ignores the agent settings in the user's mirrord configuration. Kubernetes does not let you set resources on ephemeral containers, so the values above do not apply.
 
 To change the agent resources, set `agent.resources` in the Operator Helm values (mirrord Operator `3.197.0` or later). A value that you set to `null` is left out of the agent pod spec. For example, set `agent.resources.limits.cpu: null` to run agents without a CPU limit.
 
