@@ -22,7 +22,7 @@ kubectl needs to be configured on the local machine.
 
 ## Cluster Requirements
 
-mirrord supports Kubernetes `1.22` or later. This applies to the open-source version and to the [mirrord Operator](../managing-mirrord/operator.md). The cluster nodes need Linux kernel `4.20` or later, and the Docker, containerd or CRI-O runtime.
+mirrord supports Kubernetes `1.22` or later. This applies to the open-source version and to the [mirrord Operator](../managing-mirrord/operator.md). The nodes where agents run need Linux kernel `5.4` or later, and a containerd, CRI-O or Docker runtime.
 
 Some features need a newer version of Kubernetes:
 
