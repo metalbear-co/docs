@@ -41,11 +41,11 @@ The Helm chart makes cluster-scoped objects: CRDs, ClusterRoles, an APIService, 
 **Nodes**
 
 - The Operator and agent images are available for `linux/amd64` and `linux/arm64`.
-- The nodes where agents run need Linux kernel 4.20 or later and a containerd, CRI-O, or Docker container runtime. An agent for a target runs on the same node as the target pod. A targetless agent can run on any node.
+- The nodes where agents run need Linux kernel 5.4 or later and a containerd, CRI-O, or Docker container runtime. Most features work with older kernels, but traffic stealing can be unreliable before 5.4. An agent for a target runs on the same node as the target pod. A targetless agent can run on any node.
 
 **Network**
 
-- **API server to Operator:** The Kubernetes API server sends mirrord requests to the Operator through the APIService. The API server must be able to reach the Operator pods on TCP port 443 (the `operator.port` Helm value). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
+- **API server to Operator:** The Kubernetes API server sends mirrord requests to the Operator through the APIService. The API server must be able to reach the Operator pods over TCP, on the port in the `operator.port` Helm value (443 by default). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
 - **Operator to MetalBear:** A cloud-connected Operator sends HTTPS requests to `app.metalbear.com` (license) and `analytics.metalbear.com` (telemetry). Team and Free licenses require telemetry. If the Operator cannot reach the telemetry endpoint for more than one hour, new sessions are blocked. For Enterprise licenses, telemetry is optional. For more details, see [Licensing](licensing.md). If your cluster cannot send outbound traffic, you need an Enterprise license certificate (`license.pem`). Give it to the Operator directly (see [Air-gapped / offline clusters](#air-gapped-offline-clusters-enterprise)), or install it in an [Enterprise License Server](license-server.md) that your Operators connect to.
 - **Image pulls:** Your nodes pull the mirrord images from `ghcr.io/metalbear-co`. Some features use other public images, for example the database images for DB branching. If your nodes cannot reach these registries, see [Using an Internal Registry](#using-an-internal-registry-optional).
 
