@@ -46,12 +46,12 @@ The Helm chart makes cluster-scoped objects: CRDs, ClusterRoles, an APIService, 
 **Network**
 
 - **API server to Operator:** The Kubernetes API server sends mirrord requests to the Operator through the APIService. The API server must be able to reach the Operator pods on TCP port 443 (the `operator.port` Helm value). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
-- **Operator to MetalBear:** The Operator sends HTTPS requests to `app.metalbear.com` (license) and `analytics.metalbear.com` (telemetry). If the Operator cannot reach the telemetry endpoint for more than one hour, new sessions are blocked. For more details, see [Licensing](licensing.md). If your cluster cannot send outbound traffic, use the [Enterprise License Server](license-server.md).
+- **Operator to MetalBear:** A cloud-connected Operator sends HTTPS requests to `app.metalbear.com` (license) and `analytics.metalbear.com` (telemetry). Team licenses require telemetry. If the Operator cannot reach the telemetry endpoint for more than one hour, new sessions are blocked. For Enterprise licenses, telemetry is optional. For more details, see [Licensing](licensing.md). If your cluster cannot send outbound traffic, use an Enterprise [offline license certificate](#air-gapped-offline-clusters-enterprise) or the [Enterprise License Server](license-server.md).
 - **Image pulls:** Your nodes pull images from `ghcr.io/metalbear-co`. If your nodes cannot reach `ghcr.io`, see [Using an Internal Registry](#using-an-internal-registry-optional).
 
 **Resources**
 
-The Operator runs as one pod. Agents run only while sessions use them. For the default CPU and memory values, see [Scalability](scalability.md).
+The Operator runs as one pod by default. Agents run only while sessions use them. For the default CPU and memory values, see [Scalability](scalability.md).
 
 ### Helm
 
