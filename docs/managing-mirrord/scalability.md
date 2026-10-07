@@ -47,12 +47,9 @@ mirrord adds a small, mostly idle footprint to your cluster. In a default instal
 
 ### When no session is active
 
-When no one uses mirrord, the cluster runs:
+When no one uses mirrord, the only pod that runs is the Operator pod (one replica by default, with the sizing above). No agent pods run.
 
-- The Operator Deployment (one pod by default, with the sizing above).
-- Supporting Kubernetes objects, such as CRDs, RBAC objects, a Service, a ConfigMap, and a PriorityClass for agent pods.
-
-No agent pods run.
+The installation also stores Kubernetes objects in the cluster, such as CRDs, RBAC objects, a Service, a ConfigMap, and a PriorityClass for agent pods. These objects are stored in etcd and do not use CPU or memory on your nodes.
 
 ### Agents
 
