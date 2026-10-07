@@ -50,9 +50,9 @@ mirrord adds a small, mostly idle footprint to your cluster. The Operator is the
 When no one uses mirrord, the cluster runs:
 
 - The Operator Deployment (one pod by default, with the sizing above).
-- The Operator's CRDs, RBAC objects, and Service.
+- Supporting Kubernetes objects, such as CRDs, RBAC objects, a Service, a ConfigMap, and a PriorityClass for agent pods.
 
-No agent pods run. The Operator keeps no session state between sessions.
+No agent pods run.
 
 ### Agents
 
@@ -68,13 +68,13 @@ The requests are very small, so agent pods have almost no effect on scheduling. 
 The lifecycle of an agent depends on the type of session:
 
 - **Session with a target:** The Operator makes one agent pod for each ready pod of the target. Sessions with the same target share these agent pods. When no session uses an agent pod, the Operator deletes it. For more details, see [Node Upgrades and Scale-Down](node-upgrades.md#agent-pods-and-nodes).
-- **Targetless session:** The agent pod is in the namespace of the session, and it stops when the session ends.
+- **Targetless session:** All the targetless sessions in a namespace share one agent pod in that namespace. When no session uses the agent pod, the Operator deletes it.
 - **Ephemeral agent** (the [`agent.ephemeral`](https://metalbear.com/mirrord/docs/config#agent.ephemeral) setting): The agent is a container in the target pod, not a separate pod. Kubernetes does not let you set resources on ephemeral containers, so the values above do not apply.
 
-To change the agent resources, set `agent.resources` in the Operator Helm values. A value that you set to `null` is left out of the agent pod spec. For example, set `agent.resources.limits.cpu: null` to run agents without a CPU limit.
+To change the agent resources, set `agent.resources` in the Operator Helm values (mirrord Operator `3.197.0` or later). A value that you set to `null` is left out of the agent pod spec. For example, set `agent.resources.limits.cpu: null` to run agents without a CPU limit.
 
 {% hint style="info" %}
-Some features make more resources for a session. [Copy target](../using-mirrord/copy-target.md) makes a copy of the target pod, [database branching](../sharing-the-cluster/db-branching.md) makes a database pod, and [queue splitting](../sharing-the-cluster/queue-splitting.md) makes temporary queues. For more details, see the page for each feature.
+Some features make more resources for a session. [Copy target](../using-mirrord/copy-target.md) makes a copy of the target pod, [database branching](../sharing-the-cluster/db-branching.md) makes a branch database (for most engines, in a temporary pod), and [queue splitting](../sharing-the-cluster/queue-splitting.md) makes temporary queues. For more details, see the page for each feature.
 {% endhint %}
 
 ## Concurrent sessions
