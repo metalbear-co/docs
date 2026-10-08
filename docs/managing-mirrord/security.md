@@ -40,7 +40,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* With the [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
+* With the experimental [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Released container images and CLI binaries carry signed SLSA Build Level 2 provenance, so you can verify what you pulled before installing it. See [How is the Operator built and distributed](#how-is-the-operator-built-and-distributed).
@@ -134,7 +134,7 @@ Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 mirrord for Teams works on top of Kubernetes' built-in RBAC with the following resources, `mirrordoperators`, `mirrordoperators/certificate`, `targets`, and `targets/port-locks` under the `operator.metalbear.co` apiGroup. The first two resources are required at a cluster level, and the last two can be allowed at a namespace level.
 
-With `operator.sessionsManager` enabled, which lets developers target [serverless workloads](../using-mirrord/serverless/README.md) such as Amazon ECS tasks, the Operator also serves three cluster-scoped resources in the same apiGroup: `serverlessclientassignments` and `serverlessagentassignments`, with the `proxy` verb, and `serverlessdataplanes`, with the `get` verb. The developer's local mirrord registers on `serverlessclientassignments` and the workload on `serverlessagentassignments`, so RBAC decides which side of a session an identity may act as; both sides then connect to their session through `serverlessdataplanes`.
+With the experimental `operator.sessionsManager` enabled, which lets developers target [serverless workloads](../using-mirrord/serverless/README.md) such as Amazon ECS tasks, the Operator also serves three cluster-scoped resources in the same apiGroup: `serverlessclientassignments` and `serverlessagentassignments`, with the `proxy` verb, and `serverlessdataplanes`, with the `get` verb. The developer's local mirrord registers on `serverlessclientassignments` and the workload on `serverlessagentassignments`, so RBAC decides which side of a session an identity may act as; both sides then connect to their session through `serverlessdataplanes`.
 
 You can limit a user's ability to use mirrord on specific targets by limiting their access to the `target` resource. The specific verbs for rules to our resources can be copied from the examples below.
 
