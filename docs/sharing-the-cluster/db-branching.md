@@ -168,7 +168,11 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 ### Pod replacement
 
-A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. The operator starts a new pod on the branch's existing claims, so a PostgreSQL, MySQL, MariaDB, ClickHouse, MongoDB or DynamoDB branch keeps everything written to it and comes back `Ready` on a new pod. Sessions reach the branch through a per-branch Service rather than the pod's address, so a session that was attached before the replacement keeps working; only the copy from the source is redone during the restart. Engines whose setup copies the source again on every start (Redis, CockroachDB, MSSQL, Spanner) and generic branches cannot be rebuilt without losing what the branch holds, so such a branch is marked `Failed` with the reason instead, and a new session creates a fresh one.
+A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
+
+Sessions reach the branch through a per-branch Service rather than the pod's address, so a session attached before the replacement stays attached and finds the branch at the same address once it is `Ready`. Open database connections do not survive the pod: the application has to reconnect or retry, as it would after any database restart.
+
+Engines whose setup copies the source again on every start (Redis, DynamoDB, CockroachDB, MSSQL, Spanner) and generic branches cannot be rebuilt without losing what the branch holds, so such a branch is marked `Failed` with the reason, and a new session creates a fresh one.
 
 ### Upgrading from older versions
 
