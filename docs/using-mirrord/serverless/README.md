@@ -11,7 +11,7 @@ tags:
 # Serverless Workloads
 
 {% hint style="warning" %}
-Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us, and we'll provide the [versions and images](#values-provided-by-metalbear) they need.
+Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us, and we'll provide the [chart, images and CLI binary download link](#values-provided-by-metalbear) they need.
 {% endhint %}
 
 Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
@@ -72,7 +72,8 @@ Serverless workloads aren't part of a regular mirrord release yet. These placeho
 | `<CHART>` | The mirrord Operator Helm chart that supports the `operator.sessionsManager` value, as an OCI reference | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
 | `<CHART_VERSION>` | The version of that chart. Its default Operator image serves sessions-manager, so no image needs to be set. | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
 | `<REMOTE_BOOTSTRAP_IMAGE>` | The mirrord remote bootstrap image, including its tag, that the workload's setup container copies the bootstrap from | [Amazon ECS](ecs.md#add-the-remote-bootstrap) |
-| `<MIRRORD_CLI_VERSION>` | The mirrord CLI version developers need to target serverless workloads | [Using mirrord with a Serverless Workload](#using-mirrord-with-a-serverless-workload) |
+
+MetalBear also provides a download link for dedicated mirrord CLI binaries. Download the binary for your platform from that link instead of installing a regular mirrord release by version.
 
 These builds are matched to each other: use the Operator, remote bootstrap and mirrord CLI from the same set, and upgrade them together when we send you a new one.
 
@@ -80,7 +81,7 @@ These builds are matched to each other: use the Operator, remote bootstrap and m
 
 ## Using mirrord with a Serverless Workload
 
-Install mirrord CLI `<MIRRORD_CLI_VERSION>` ([provided by MetalBear](#values-provided-by-metalbear)). Then create a `mirrord.json` in your project:
+Download the dedicated mirrord CLI binary for your platform from the link [provided by MetalBear](#values-provided-by-metalbear), and install it on your `PATH`. Use this binary rather than a regular mirrord release. Then create a `mirrord.json` in your project:
 
 ```json
 {
