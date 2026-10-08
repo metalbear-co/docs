@@ -14,18 +14,13 @@ tags:
 
 # Working with API Gateways
 
-Many clusters send external traffic through an API gateway, such as Kong, Envoy Gateway, Emissary, NGINX, Traefik, or a gateway your team built. mirrord works with services behind a gateway. In most cases, the gateway needs no change.
+In many clusters, requests from outside the cluster do not go to a service directly. They go to an API gateway first, such as Kong, Envoy Gateway, Emissary, NGINX, Traefik, or a gateway your team built. The gateway authenticates each request and routes it to the right service. mirrord works with services behind a gateway, and in most cases the gateway needs no change.
 
 ## How Traffic Reaches Your Local Process
 
-A request passes through the gateway before it reaches a service:
+On this page, the *caller* is whatever sends the request to the gateway: a browser, a mobile app, a CI job, or a partner's service.
 
-```
-client  ->  API gateway  ->  service pod  ->  your local process
-            (auth, routing,   (mirrord
-             rate limits,      intercepts
-             transforms)       here)
-```
+![A caller sends a request to the API gateway, which routes it to the service pod. The mirrord agent on the pod sends requests that match your filter to your local process, and all other requests to the deployed container.](../../.gitbook/assets/api-gateway-traffic.svg)
 
 mirrord intercepts traffic at the [target](../../reference/targets.md) pod, after the gateway. A request that reaches your local process has already gone through the real gateway. Your local code receives the request as the deployed service would: authenticated, routed, and with every header that the gateway adds.
 
@@ -55,6 +50,8 @@ Then send the request through the gateway, with the header:
 curl -H "baggage: mirrord-session=local-dev-123" https://api.staging.example.com/orders
 ```
 
+To send the request from a browser instead, use the [mirrord browser extension](debug-from-browser.md). It adds the header to the browser's requests.
+
 Requests without the header go to the deployed service as usual. For all the filter options, see [Filtering Incoming Traffic](filter-incoming-traffic.md).
 
 ## Make Sure the Gateway Forwards the Header
@@ -68,9 +65,35 @@ The filter matches only if the header reaches the service. Most gateways forward
 
 A filter on `baggage` matches past the first service only if each service forwards the header to the next one. To have your AI agent set that up, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill.
 
-## When the Client Cannot Set a Header
+## When the Caller Cannot Set a Header
 
-Some clients cannot add a header, for example a mobile app or a third-party webhook. In that case, let the gateway add the header for a dedicated test host or route:
+Some callers cannot add a header, for example a mobile app or a third-party webhook. Give the testers their own host or route on the gateway, and then use one of these options.
+
+### Filter on the Test Route
+
+If the test route is only for testers, filter on the route itself. No gateway change is needed.
+
+- **A test path:** if the path reaches the service unchanged, use a [`path_filter`](filter-incoming-traffic.md).
+- **A test host:** gateways usually send the original host to the service in the `X-Forwarded-Host` header. Both ingress-nginx and Kong do. Filter on that header:
+
+```json
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "(?i)^x-forwarded-host: test\\.api\\.staging\\.example\\.com$"
+        }
+      }
+    }
+  }
+}
+```
+
+### Have the Gateway Add the Header
+
+A filter on the route works only at the first service. Have the gateway add the `baggage` header instead when the request must keep your filter as it goes on to other services, or when a [preview environment](../../use-cases/preview-environments.md) must receive it, because previews route on `baggage`:
 
 - **Kong:** the `request-transformer` plugin, with `add.headers`.
 - **NGINX:** `proxy_set_header` in the location block.
@@ -82,7 +105,7 @@ Some clients cannot add a header, for example a mobile app or a third-party webh
 Add the header only on a host or route that is used for testing. If you add it to a shared route, all traffic on that route matches your filter and goes to your local process.
 {% endhint %}
 
-For shared preview links, mirrord has a separate component, `mirrord-share-ingress`, that adds the header on the server side, so a plain link works with no extension on the client. See [Preview Environments](../../use-cases/preview-environments.md).
+Preview environments have the same problem when you share a preview with someone who does not have the browser extension, for example a product manager who reviews a change. For this case, mirrord can give each preview a plain HTTPS link: a separate component, `mirrord-share-ingress`, serves the link and adds the header on the server side. See [Sharing a Preview via a Link](../../use-cases/preview-environments.md#sharing-a-preview-via-a-link).
 
 ## Call Services Through the Gateway From Local Code
 
