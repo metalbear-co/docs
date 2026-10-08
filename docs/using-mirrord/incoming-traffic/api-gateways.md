@@ -62,9 +62,9 @@ Requests without the header go to the deployed service as usual. For all the fil
 The filter matches only if the header reaches the service. Most gateways forward request headers to the upstream service by default. Check these points if your filter does not match:
 
 - **Use `baggage`.** It is a W3C standard header, and many gateways, service meshes, and tracing libraries keep it.
-- **Do not use underscores in a custom header name.** NGINX drops headers that contain underscores by default (`underscores_in_headers off`). Use hyphens.
+- **Do not use underscores in a custom header name.** NGINX, including ingress-nginx, drops headers that contain underscores by default (`underscores_in_headers off`). Some gateways, such as Kong, forward them, but hyphens work with all of them.
 - **Check header allowlists and transforms.** If the gateway removes unknown headers, or a plugin rewrites them, add your header to the allowlist.
-- **See which headers arrive.** Run [`mirrord dump`](inspect-live-traffic.md) on the target to see the real headers that reach the service.
+- **See which headers arrive.** Run [`mirrord dump`](inspect-live-traffic.md) on the target to see the real headers that reach the service. Without the mirrord operator, stop your own session on that target first, because two sessions cannot attach to the same pod.
 
 A filter on `baggage` matches past the first service only if each service forwards the header to the next one. To have your AI agent set that up, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill.
 
