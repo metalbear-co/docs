@@ -166,6 +166,10 @@ By default, each branch stores its database on its own PersistentVolumeClaims: o
 
 On clusters without a default StorageClass, branches automatically fall back to node-local `emptyDir` volumes, capped at 1Gi for data and 100Mi for the dump.
 
+### Pod replacement
+
+A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. The operator starts a new pod on the branch's existing claims, so a PostgreSQL, MySQL, MariaDB, ClickHouse, MongoDB or DynamoDB branch keeps everything written to it and comes back `Ready` on a new pod. Sessions reach the branch through a per-branch Service rather than the pod's address, so a session that was attached before the replacement keeps working; only the copy from the source is redone during the restart. Engines whose setup copies the source again on every start (Redis, CockroachDB, MSSQL, Spanner) and generic branches cannot be rebuilt without losing what the branch holds, so such a branch is marked `Failed` with the reason instead, and a new session creates a fresh one.
+
 ### Upgrading from older versions
 
 {% hint style="warning" %}
