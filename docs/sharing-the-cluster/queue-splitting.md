@@ -57,6 +57,45 @@ Please note that:
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
 
+## One Config for Several Workloads
+
+A `MirrordSplitConfig` names one workload with `targetRef`. When many workloads consume the same queues in the same way, write one config with `targetSelector` instead, and it applies to every Deployment, StatefulSet or Argo Rollout in its namespace whose labels match. A workload that gets the labels later is covered from its next session on, with nothing else to apply:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: pubsub-consumers
+  namespace: staging
+spec:
+  targetSelector:
+    matchLabels:
+      queues: pubsub
+    matchExpressions:
+      - key: tier
+        operator: In
+        values: [worker, api]
+  queues:
+    - id: events
+      kind: googlePubSub
+      appConfig:
+        subscription:
+          - envLike: "^.*_SUBSCRIPTION$"
+```
+
+A config has either `targetRef` or `targetSelector`, not both; the `Accepted` condition reports a config that has neither or both.
+
+Every config that applies to a workload is merged for its sessions, so a shared selector config and a per-workload `targetRef` config can be used together:
+
+* A queue id or a `dbBranches` entry id defined identically by several configs is one queue or one entry.
+* A queue id, a `dbBranches` entry, or a workload-level setting (`restart`, `ttl`, `drainTimeout`, `tmpNameTemplate`, `clientConfigs`) that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
+
+Each config that applies to a workload shows the workload's split phase and session count in its status, and a split session names every config merged into it in its status. The operator log line that starts a split lists them too.
+
+{% hint style="info" %}
+`targetSelector` needs operator `3.219.0` or later on every cluster that reads the config, including remote clusters of a multi-cluster setup. An older operator cannot read a config without `targetRef`.
+{% endhint %}
+
 ## Queue Names in Mounted Config Files
 
 {% hint style="info" %}
