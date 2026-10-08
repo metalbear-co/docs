@@ -34,6 +34,7 @@
     * [Debugging from Browser](using-mirrord/incoming-traffic/debug-from-browser.md)
   * [Stealing HTTPS Requests](using-mirrord/incoming-traffic/steal-https.md)
   * [Inspecting Live Traffic](using-mirrord/incoming-traffic/inspect-live-traffic.md)
+  * [Working with API Gateways](using-mirrord/incoming-traffic/api-gateways.md)
 * [Outgoing Traffic](using-mirrord/outgoing-traffic/README.md)
   * [Filtering Outgoing Traffic](using-mirrord/outgoing-traffic/filter-outgoing-traffic.md)
 * [Environment Variables](using-mirrord/environment-variables.md)
