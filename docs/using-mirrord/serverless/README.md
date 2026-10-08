@@ -69,9 +69,8 @@ Serverless workloads aren't part of a regular mirrord release yet. These placeho
 
 | Placeholder | Value | Used in |
 | --- | --- | --- |
-| `<CHART_VERSION>` | The mirrord Operator Helm chart version that supports the `operator.sessionsManager` value | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
-| `<OPERATOR_IMAGE>` | The mirrord Operator image repository that serves sessions-manager | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
-| `<OPERATOR_IMAGE_TAG>` | The tag of that Operator image | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
+| `<CHART>` | The mirrord Operator Helm chart that supports the `operator.sessionsManager` value, as an OCI reference | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
+| `<CHART_VERSION>` | The version of that chart. Its default Operator image serves sessions-manager, so no image needs to be set. | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
 | `<REMOTE_BOOTSTRAP_IMAGE>` | The mirrord remote bootstrap image, including its tag, that the workload's setup container copies the bootstrap from | [Amazon ECS](ecs.md#add-the-remote-bootstrap) |
 | `<MIRRORD_CLI_VERSION>` | The mirrord CLI version developers need to target serverless workloads | [Using mirrord with a Serverless Workload](#using-mirrord-with-a-serverless-workload) |
 

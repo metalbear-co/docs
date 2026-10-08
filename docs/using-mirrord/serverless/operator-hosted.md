@@ -19,8 +19,8 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 ## Prerequisites
 
 1. An EKS cluster with the mirrord Operator installed through its Helm chart, and a mirrord Operator license.
-2. The chart version `<CHART_VERSION>` and Operator image `<OPERATOR_IMAGE>:<OPERATOR_IMAGE_TAG>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
-3. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
+2. The chart `<CHART>` and its version `<CHART_VERSION>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
+3. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC, and `jq`.
 
 ---
 
@@ -65,17 +65,56 @@ Both sides only make outbound HTTPS connections, and only to the API server. Nei
 
 ## Enable sessions-manager
 
-Upgrade your existing Operator Helm release to the chart and Operator image [provided by MetalBear](README.md#values-provided-by-metalbear), and set `operator.sessionsManager=true`:
+Upgrade your existing Operator Helm release to the chart [provided by MetalBear](README.md#values-provided-by-metalbear), and set `operator.sessionsManager=true`. The chart's default Operator image serves sessions-manager, so the upgrade doesn't set an image.
+
+### Check for image overrides
+
+The upgrade keeps the values your release already has (`--reuse-values`). If those values set the Operator image or its tag, for example to mirror it into your own registry, they take precedence over the chart's default, and the Operator keeps running an image without sessions-manager. Check for such overrides first:
 
 ```bash
-helm upgrade mirrord-operator metalbear/mirrord-operator \
+helm get values mirrord-operator --namespace mirrord -o json | jq -r '
+  [ ["operator","image"], ["operator","imageTag"], ["operator","kafkaSplittingSidecar","image"] ] as $paths
+  | [ $paths[] as $p | getpath($p) as $v | select($v != null) | "  \($p | join(".")) = \($v)" ]
+  | if length == 0 then "No issues, you may proceed."
+    else "Remove these image overrides before upgrading:\n" + join("\n") end'
+```
+
+If it prints `No issues, you may proceed.`, continue with [Upgrade](#upgrade). If it lists overrides, follow [Removing image overrides](#removing-image-overrides) instead.
+
+### Upgrade
+
+```bash
+helm upgrade mirrord-operator <CHART> \
   --namespace mirrord \
   --version <CHART_VERSION> \
   --reuse-values \
-  --set operator.image=<OPERATOR_IMAGE> \
-  --set operator.imageTag=<OPERATOR_IMAGE_TAG> \
   --set operator.sessionsManager=true
 ```
+
+### Removing image overrides
+
+If the check listed overrides, upgrade from an edited copy of your release's values instead of reusing them:
+
+1. Export the values your release sets:
+
+   ```bash
+   helm get values mirrord-operator --namespace mirrord -o yaml > mirrord-values.yaml
+   ```
+2. Delete the keys the check listed from `mirrord-values.yaml`.
+3. Upgrade with the edited file:
+
+   ```bash
+   helm upgrade mirrord-operator <CHART> \
+     --namespace mirrord \
+     --version <CHART_VERSION> \
+     -f mirrord-values.yaml \
+     --set operator.sessionsManager=true
+   ```
+4. Delete `mirrord-values.yaml`, which contains your license key.
+
+Don't clear the overrides with `--set operator.image=null` instead: setting a value to `null` also removes the chart's default, and the Operator would have no image to run.
+
+### Confirm sessions-manager is served
 
 Confirm the Operator now serves the three resources:
 

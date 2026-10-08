@@ -268,7 +268,7 @@ The bootstrap's messages appear in the application container's logs. For problem
 | TLS or certificate verification error | `MIRRORD_OPERATOR_API_CA_DATA` is missing or belongs to another cluster. |
 | `401 Unauthorized` | No access entry for the role, the access entry uses the execution role instead of the task role, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` doesn't match the cluster, or the authentication mode is still `CONFIG_MAP`. |
 | `403 Forbidden` on `serverlessagentassignments` | The access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
-| `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the image provided by MetalBear ([Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager)). |
+| `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the chart's default image because the release still overrides it ([Check for image overrides](operator-hosted.md#check-for-image-overrides)). |
 | `MIRRORD_SESSIONS_MANAGER_URL and MIRRORD_OPERATOR_API_URL are mutually exclusive` | The task sets both; remove `MIRRORD_SESSIONS_MANAGER_URL`. |
 | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME is required when MIRRORD_OPERATOR_API_URL is set` (or `MIRRORD_OPERATOR_API_CA_DATA`) | A [connection variable](#add-the-connection-variables) is missing on the task. |
 | `no AWS region to sign the EKS token for` | `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname, and neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set. Set `AWS_REGION` to the cluster's region. |
