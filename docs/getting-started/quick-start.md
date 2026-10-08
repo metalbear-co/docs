@@ -151,7 +151,7 @@ Install the [mirrord browser extension](https://chromewebstore.google.com/detail
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
 
-Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config).
+Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config). To keep an Operator preference across projects, see [Global Configuration](../installing-mirrord/global-configuration.md).
 
 {% hint style="info" %}
 The IDE extensions provide autocomplete for mirrord config files.
