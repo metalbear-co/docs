@@ -77,7 +77,7 @@ spec:
         values: [worker, api]
   queues:
     - id: events
-      kind: gcpPubSub
+      kind: googlePubSub
       appConfig:
         subscription:
           - envLike: "^.*_SUBSCRIPTION$"
