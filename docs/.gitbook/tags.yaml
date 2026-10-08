@@ -18,3 +18,7 @@
   label: Enterprise
   icon: buildings
   color: blue
+- tag: experimental
+  label: Experimental
+  icon: flask
+  color: red
