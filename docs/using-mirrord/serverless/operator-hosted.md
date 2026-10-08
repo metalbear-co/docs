@@ -2,9 +2,13 @@
 title: "Operator-Hosted Sessions-Manager"
 description: "Run sessions-manager inside the mirrord Operator, so developers can target serverless workloads such as Amazon ECS tasks through your cluster's API server."
 tags:
-  - alpha
+  - experimental
   - enterprise
 ---
+
+{% hint style="warning" %}
+The Operator-hosted sessions-manager is **experimental**, and may change without notice. It needs an Operator build that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+{% endhint %}
 
 In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-manager runs inside the mirrord Operator. Enabling it is a Helm value: there's no additional deployment, service or load balancer, and the Operator isn't exposed outside the cluster. At a glance, the setup is:
 
@@ -14,8 +18,9 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 
 ## Prerequisites
 
-1. An EKS cluster with the mirrord Operator `<OPERATOR_VERSION>+` installed through its Helm chart `<CHART_VERSION>+`, and a mirrord Operator license.
-2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
+1. An EKS cluster with the mirrord Operator installed through its Helm chart, and a mirrord Operator license.
+2. The chart version `<CHART_VERSION>` and Operator image `<OPERATOR_IMAGE>:<OPERATOR_IMAGE_TAG>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
+3. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
 
 ---
 
@@ -60,12 +65,15 @@ Both sides only make outbound HTTPS connections, and only to the API server. Nei
 
 ## Enable sessions-manager
 
-Add `operator.sessionsManager=true` to your existing Operator Helm release:
+Upgrade your existing Operator Helm release to the chart and Operator image [provided by MetalBear](README.md#values-provided-by-metalbear), and set `operator.sessionsManager=true`:
 
 ```bash
 helm upgrade mirrord-operator metalbear/mirrord-operator \
   --namespace mirrord \
+  --version <CHART_VERSION> \
   --reuse-values \
+  --set operator.image=<OPERATOR_IMAGE> \
+  --set operator.imageTag=<OPERATOR_IMAGE_TAG> \
   --set operator.sessionsManager=true
 ```
 
@@ -138,7 +146,7 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 
 | Symptom | Likely cause |
 | --- | --- |
-| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator version predates it. |
+| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the image [provided by MetalBear](README.md#values-provided-by-metalbear). |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
 | `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
