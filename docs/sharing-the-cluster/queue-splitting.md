@@ -15,7 +15,7 @@ Queue splitting is currently available for [Amazon SQS](https://aws.amazon.com/s
 The word "queue" in this doc is used to also refer to "topic" in the context of Kafka and Azure Service Bus, "subscription" in the context of Google Cloud Pub/Sub, "stream" or "subject" in the context of NATS, "channel" in the context of Redis Pub/Sub, and "task queue" in the context of Temporal.
 {% endhint %}
 
-{% hint style="warning" %}
+{% hint style="info" %}
 Queue splitting needs Kubernetes `1.30` or later.
 {% endhint %}
 
