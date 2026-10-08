@@ -136,6 +136,16 @@ aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
 
 If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord.json`, see [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload).
 
+A developer can check their access with their own kubeconfig:
+
+```bash
+kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co   # yes
+kubectl auth can-i get serverlessdataplanes.operator.metalbear.co            # yes
+kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co    # no
+```
+
+To check a developer's access as a cluster admin, add `--as <USERNAME>`, and `--as-group <GROUP>` for each group they're bound through. The last command must answer `no`, unless the identity is also a cluster admin: a developer who can register as a workload could be paired with other developers' sessions.
+
 ## Connecting workloads
 
 Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
