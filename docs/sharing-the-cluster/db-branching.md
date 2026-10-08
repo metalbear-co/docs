@@ -174,7 +174,7 @@ operator:
         team: platform
 ```
 
-The operator puts them on the branch database pod and on the pods of the branch's [schema migration](db-branching/migrations.md) and copy Jobs, so the whole branch falls under the same rules. Each engine has its own `<engine>BranchConfig` block, and a [profile](#branch-config-profiles) is a complete `dbPod`, so set them again in each profile that needs them. Only branches created after the change pick them up.
+The operator puts them on the branch database pod and, from operator 3.219.0 on, on the pods of the branch's [schema migration](db-branching/migrations.md) and copy Jobs, so the whole branch falls under the same rules; earlier versions set them on the database pod only. Each engine has its own `<engine>BranchConfig` block, and a [profile](#branch-config-profiles) is a complete `dbPod`, so set them again in each profile that needs them. Only branches created after the change pick them up.
 
 ## Branch Storage
 
