@@ -333,8 +333,14 @@ A cluster admin can define a workload's branches once, on its `MirrordSplitConfi
 
 The entries go under `dbBranches` on the workload's `MirrordSplitConfig` (the same resource that defines its queues for [queue splitting](queue-splitting.md); it needs no `queues`). Each entry is a `db_branches` entry with camelCase keys, an `id` sessions refer to, and a `copy` block that also lists the `allowedModes` a session may pick:
 
+An entry differs from an inline `db_branches` entry in three ways, because it lives on the cluster rather than on a developer's machine:
+
+* `location` is not accepted: a split config only branches databases that run in the cluster, never a local Redis.
+* `migrations` need `name` (the source database they run against) and cannot use `path`, a local directory the operator cannot read; bake the files into an image and use `image` with `locations` (flyway) or `searchPath` (liquibase), or the container flavor.
+* `generic` entries have no `copy.mode` or `copy.allowedModes`; a generic branch either runs a copy Job or starts empty.
+
 ```yaml
-apiVersion: queues.mirrord.metalbear.co/v1alpha
+apiVersion: queues.mirrord.metalbear.co/v1
 kind: MirrordSplitConfig
 metadata:
   name: cake-maker
