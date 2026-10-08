@@ -74,17 +74,19 @@ Some clients cannot add a header, for example a mobile app or a third-party webh
 
 - **Kong:** the `request-transformer` plugin, with `add.headers`.
 - **NGINX:** `proxy_set_header` in the location block.
-- **Envoy-based gateways:** `request_headers_to_add` on the route.
+- **Envoy Gateway:** a `RequestHeaderModifier` filter with `add` on the HTTPRoute.
+- **Emissary-ingress:** `add_request_headers` on the Mapping.
+- **Envoy configured directly:** `request_headers_to_add` on the route.
 
 {% hint style="warning" %}
 Add the header only on a host or route that is used for testing. If you add it to a shared route, all traffic on that route matches your filter and goes to your local process.
 {% endhint %}
 
-For preview environments, `mirrord-share-ingress` does this for you. See [Preview Environments](../../use-cases/preview-environments.md).
+For shared preview links, mirrord has a separate component, `mirrord-share-ingress`, that adds the header on the server side, so a plain link works with no extension on the client. See [Preview Environments](../../use-cases/preview-environments.md).
 
 ## Call Services Through the Gateway From Local Code
 
-By default, mirrord sends outgoing traffic and DNS queries through the remote pod. Your local process can call the gateway's in-cluster address, for example `kong-proxy.kong.svc.cluster.local`, or call the services behind it directly. See [Outgoing Traffic](../outgoing-traffic/README.md).
+By default, mirrord sends outgoing traffic and DNS queries through the remote pod. Your local process can call the gateway's in-cluster Service address, in the form `<gateway-service>.<namespace>.svc.cluster.local`, or call the services behind it directly. The Service name depends on how the gateway was installed. To find it, run `kubectl get svc -n <gateway-namespace>`. See [Outgoing Traffic](../outgoing-traffic/README.md).
 
 ## Gateways That Send Encrypted Traffic to the Service
 
@@ -92,7 +94,7 @@ An HTTP filter needs to read the request. If the gateway sends HTTPS to the serv
 
 ## Preview Environments Behind a Gateway
 
-[Preview environments](../../use-cases/preview-environments.md) route on the `baggage: mirrord-session=<key>` header. The same rule applies: the gateway must forward that header to the service.
+By default, [preview environments](../../use-cases/preview-environments.md) route on the `baggage: mirrord-session=<key>` header. A preview can also use a custom filter. The same rule applies to either: the gateway must forward the header that the filter matches.
 
 ## Developing the Gateway Itself
 
