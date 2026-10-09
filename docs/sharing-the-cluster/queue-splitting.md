@@ -16,6 +16,10 @@ The word "queue" in this doc is used to also refer to "topic" in the context of 
 {% endhint %}
 
 {% hint style="info" %}
+Queue splitting needs Kubernetes `1.30` or later.
+{% endhint %}
+
+{% hint style="info" %}
 Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
 {% endhint %}
 
