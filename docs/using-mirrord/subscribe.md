@@ -36,7 +36,7 @@ Need support for more events? [Open a GitHub issue](https://github.com/metalbear
 
 ### Prerequisites
 
-* A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass `--key`, a random key is generated for the session (`mirrord up` is the exception, it defaults to your OS username). With operator `3.210.0` or newer you can also subscribe without a key and get every session's events.
+* A running session started with a known key: `mirrord exec --key <KEY> ...`. If you don't pass `--key`, a random key is generated for the session (`mirrord up` is the exception, it defaults to your OS username). With CLI `3.272.0` and operator `3.210.0` or newer you can also subscribe without a key and get every session's events.
 
 ### Usage
 
@@ -54,7 +54,7 @@ mirrord subscribe --key my-key
 
 The key can also come from the `key` field in your mirrord config (e.g. `mirrord subscribe -f mirrord.json`)
 
-To watch every session on the cluster at once, leave the key out. Each event then carries a `session_key` field naming the session it belongs to:
+To watch every session on the cluster at once, leave the key out (CLI `3.272.0` and operator `3.210.0` or newer; an older CLI insists on a key). Each event then carries a `session_key` field naming the session it belongs to:
 
 ```sh
 mirrord subscribe
