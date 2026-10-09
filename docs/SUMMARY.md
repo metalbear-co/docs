@@ -101,6 +101,7 @@
   * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
   * [Topology](managing-mirrord/dashboard/topology.md)
   * [Usage API](managing-mirrord/dashboard/usage-api.md)
+  * [Single Sign-On](managing-mirrord/dashboard/sso.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
 * [High Availability](managing-mirrord/high-availability.md)
