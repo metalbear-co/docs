@@ -129,7 +129,7 @@ operator:
 
 `empty` (the default) recreates only the user declared in the branch's `connection` config. The copy drops definers, and your app connects through mirrord's env overrides as `root`.
 
-`full` recreates the source accounts with their grants, and copied objects keep a definer the branch recreates. The branch then enforces the same permissions as the source. In `full` mode, mirrord's env overrides only redirect the connection address, so the app keeps using its own user and password.
+`full` recreates the source accounts with their grants, and copied objects keep a definer the branch recreates. The branch then enforces the same permissions as the source. In `full` mode, mirrord's env overrides only redirect the connection address, so the app keeps using its own user and password (see the table below for how this interacts with `url`-style connections).
 
 `full` recreates every source account when the declared user has `SELECT` on the `mysql` schema, and only the declared user otherwise.
 
@@ -152,8 +152,9 @@ In `empty` mode this login has every privilege on the branch; in `full` mode it 
 
 ### Limits
 
-- The declared user's login needs `mysql_native_password` or `caching_sha2_password`. With another authentication plugin, `full` fails the branch and `empty` creates it without that login.
-- An account whose authentication plugin the branch server does not load, such as `mysql_native_password` on MySQL 8.4 and later, cannot log in. `full` fails the branch if that is the declared user.
+- Accounts other than the declared user are recreated without a password and cannot log in.
+- The declared user's login needs `mysql_native_password` or `caching_sha2_password`, loaded on the branch server (MySQL 8.4 and later do not load `mysql_native_password` by default). Otherwise `full` fails the branch and `empty` creates it without that login.
+- The declared user can log in from any host, without the TLS or X.509 requirement it has on the source.
 - Roles granted to a declared user without `SELECT` on the `mysql` schema are recreated empty, and the user gets their privileges directly.
 - Accounts are recreated when a branch is created. Changing the Helm value or rotating a source password affects new branches, not ones already running.
 - Accounts the server or a cloud provider owns (`root`, `mysql.sys`, `rdsadmin`, `cloudsqladmin`, and similar) are skipped.
