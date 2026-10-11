@@ -1,5 +1,5 @@
 ---
-title: Propagating Headers Across Services
+title: Header Propagation
 description: Keep your mirrord filter header on requests and messages as they pass between services, so filtered traffic reaches services deeper in the call chain
 date: 2026-10-06T00:00:00.000Z
 lastmod: 2026-10-11T00:00:00.000Z
@@ -20,6 +20,10 @@ To share a cluster, each developer marks their traffic with a header, and mirror
 * [Queue splitting](queue-splitting.md) filters match a header or attribute on the messages the target consumes.
 
 mirrord only sees the request or message that reaches the target. If another service created that request or message, the header is there only if that service copied it over. This is called header propagation, and it is up to your application, not mirrord.
+
+{% hint style="info" %}
+The [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill lets your AI agent set up header propagation for you. See [Use `baggage` and your tracing library](#use-baggage-and-your-tracing-library).
+{% endhint %}
 
 ## When you need header propagation
 
@@ -45,7 +49,7 @@ You don't need it when:
 Missing propagation looks like mirrord isn't working, even though the session is healthy:
 
 * `mirrord exec` reports that it's ready, and `mirrord operator status` shows your session with the expected filter.
-* Requests or messages you send with the header still go to the deployed target, and nothing reaches you.
+* Requests or messages you send with the header are handled by the deployed target instead of reaching you.
 * A request that you send with the header **directly** to the service you run with mirrord does reach you.
 
 To confirm for HTTP, run [`mirrord dump`](../using-mirrord/incoming-traffic/inspect-live-traffic.md) against the service you run with mirrord and send a request through the normal entry point. If the request arrives without your header, a service earlier in the chain is dropping it. For queues, look at the headers or attributes of a message in your broker's console or CLI.
