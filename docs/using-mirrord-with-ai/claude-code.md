@@ -54,7 +54,7 @@ Add a short section to the `CLAUDE.md` file at the root of the repository. Claud
 
 ALWAYS test changes to <service> against the staging cluster with mirrord before you report them as done.
 
-- Target: deployment/<service> in namespace <namespace>
+- Target: deployment/<service> in namespace <namespace>, kubecontext <staging-context>
 - Run the service: mirrord exec -f .mirrord/mirrord.json -- <command that starts the service>
 - Run the integration tests: mirrord exec -f .mirrord/mirrord.json -- <test command>
 - Send test requests with the header `x-dev-user: <your-name>`, so that only your requests reach your local process.
@@ -69,6 +69,7 @@ Create `.mirrord/mirrord.json`:
 
 ```json
 {
+  "kube_context": "<staging-context>",
   "target": {
     "path": "deployment/<service>",
     "namespace": "<namespace>"
@@ -77,7 +78,7 @@ Create `.mirrord/mirrord.json`:
     "network": {
       "incoming": {
         "mode": "steal",
-        "http_filter": { "header_filter": "x-dev-user: <your-name>" }
+        "http_filter": { "header_filter": "^x-dev-user: <your-name>$" }
       }
     },
     "env": true,
@@ -86,7 +87,9 @@ Create `.mirrord/mirrord.json`:
 }
 ```
 
-The `http_filter` matters on a shared cluster. Only requests that carry your header go to the process on your machine. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization. If you only want to read traffic and not answer it, use `"mode": "mirror"`.
+`kube_context` pins the session to the staging cluster. Without it, mirrord uses your current kubecontext, so the same command runs against another cluster after you switch contexts.
+
+The `http_filter` matters on a shared cluster. Only requests that carry your header go to the process on your machine. The filter is a regular expression, so keep the `^` and `$`: without them, a filter for `ann` also matches `anna`. If your value contains regex characters such as `.` or `+`, escape them. In JSON, a literal dot is `\\.`. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization. If you only want to read traffic and not answer it, use `"mode": "mirror"`.
 
 ## 5. Let Claude Code run mirrord without a prompt each time
 
@@ -124,7 +127,7 @@ If the cluster has no license, Claude Code can start a seven-day Enterprise tria
 
 ## If a session does not start
 
-- **Claude Code cannot connect to the mirrord agent.** Check that `kubectl get pods -n <namespace>` works from the same terminal, and that the cluster lets mirrord create its agent pod in that namespace. Tell Claude Code to stop and report the error after two failures, not to retry in a loop.
+- **Claude Code cannot connect to the mirrord agent.** Check that `kubectl get pods -n <namespace>` works from the same terminal. Then check that you can create pods in the namespace where mirrord starts its agent. Without the Operator, that is the current namespace of your kubecontext, not the target's namespace, unless you set `agent.namespace` in the config. Tell Claude Code to stop and report the error after two failures, not to retry in a loop.
 - **The requests do not reach the local process.** Check that the requests carry the exact header in `header_filter`. The filter is a regular expression, matched against the request headers.
 - **The service reads a file that is not on your machine.** mirrord reads files from the pod by default with `"fs": "read"`. Change the `fs` setting if the service must read local files.
 
