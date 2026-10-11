@@ -10,12 +10,14 @@ Claude Code can write a change to a microservice in a few minutes. To check that
 
 mirrord closes that gap. Claude Code runs the service on your machine, and mirrord connects the process to a pod in your staging cluster. The process gets the pod's environment variables, DNS, network access, and incoming traffic. Claude Code can then run the service and its tests against the real services in staging, read the real responses, and fix what breaks before you review the change. Nothing is built or deployed.
 
+This also works when many developers and Claude Code sessions test against the same staging cluster at the same time. With the mirrord Operator, each session gets only its own requests, its own queue messages, and its own database branch, so the sessions do not break each other or the deployed services.
+
 This guide sets this up in about five minutes.
 
 ## What you need
 
 - Claude Code.
-- A kubeconfig with access to a **staging or development** cluster. Do not point Claude Code at production.
+- A kubeconfig with access to a **staging or development** cluster.
 - A service that runs in that cluster, and its source code on your machine.
 
 ## 1. Install the mirrord CLI
