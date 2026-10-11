@@ -49,6 +49,10 @@ To confirm, run [`mirrord dump`](inspect-live-traffic.md) against the service yo
 
 ## Use `baggage` and your tracing library
 
+{% hint style="info" %}
+**Let your AI agent set this up.** The [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill finds the HTTP, gRPC and queue flows in your services and enables `baggage` propagation for you. [Install the mirrord skills](../../using-mirrord-with-ai/ai-skills-plugin.md), then ask your agent to *"propagate the mirrord session header across my services."* To set it up by hand, follow the steps below.
+{% endhint %}
+
 The simplest setup is to filter on the W3C `baggage` header and let OpenTelemetry carry it between services:
 
 ```json
