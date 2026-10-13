@@ -63,6 +63,6 @@ On the dashboard port, the license server adds the license key to every request 
 curl "http://localhost:8050/api/v1/reports/usage?format=json"
 ```
 
-Unless SAML is enabled, the dashboard port does not authenticate callers, so limit who can reach it. On the license server's own API port (port `80` of its Service by default), the same endpoints require the `x-license-key` header, which is the license key configured in the license server's Helm values (`license.key`).
+The dashboard port has no login of its own, so limit who can reach it. On the license server's own API port (port `80` of its Service by default), the same endpoints require the `x-license-key` header, which is the license key configured in the license server's Helm values (`license.key`).
 
 For spreadsheet reports (Excel format), see Getting a Utilisation Report (../license-server.md#getting-a-utilisation-report-from-the-license-server)
