@@ -26,7 +26,7 @@ mirrord also supports [Go](https://metalbear.com/blog/hooking-go-from-rust-hitch
 
 ## Which Kubernetes versions does mirrord support?
 
-mirrord supports Kubernetes `1.22` or later. Some features need a newer version. See [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements).
+Basic mirrord setups can support Kubernetes versions as old as `1.22`, but some features require newer versions. See [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements).
 
 ## Does mirrord support clusters with a service mesh like Istio or Linkerd?
 
