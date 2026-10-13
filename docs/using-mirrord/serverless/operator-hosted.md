@@ -47,7 +47,7 @@ Every caller reaches sessions-manager the same way it reaches every other Operat
 * **Developers** authenticate with their kubeconfig, exactly like for any other Operator feature.
 * **Workloads** authenticate with their platform identity, mapped to a Kubernetes identity. For ECS, the task's IAM role is mapped with an EKS access entry; see [How ECS tasks authenticate](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
-The Operator serves three cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
+The Operator serves three resources on its existing `operator.metalbear.co/v1alpha1` API:
 
 | Resource | Verb | Used by | Used for |
 | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ The Operator serves three cluster-scoped resources on its existing `operator.met
 | `serverlessagentassignments` | `proxy` | Workloads | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a developer. |
 | `serverlessdataplanes` | `get` | Both | Opening a WebSocket to the assigned session; the Operator relays mirrord traffic between the two sides. |
 
-Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. A registration is named after the environment and service it pairs in, `<environment>.<service>`, so a workload's access can also be limited to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
+Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. The two assignment resources are namespaced: a registration lives in the namespace named after the environment it pairs in, and is named after the service. A workload's access can therefore also be limited to an environment with a RoleBinding, and to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). `serverlessdataplanes` is cluster-scoped.
 
 The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `serverlessdataplanes` can't attach to another caller's session.
 
@@ -121,8 +121,8 @@ Confirm the Operator now serves the three resources:
 ```bash
 kubectl api-resources --categories=mirrord-serverless
 # NAME                          SHORTNAMES   APIVERSION                       NAMESPACED   KIND
-# serverlessagentassignments                 operator.metalbear.co/v1alpha1   false        ServerlessAgentAssignment
-# serverlessclientassignments                operator.metalbear.co/v1alpha1   false        ServerlessClientAssignment
+# serverlessagentassignments                 operator.metalbear.co/v1alpha1   true         ServerlessAgentAssignment
+# serverlessclientassignments                operator.metalbear.co/v1alpha1   true         ServerlessClientAssignment
 # serverlessdataplanes                       operator.metalbear.co/v1alpha1   false        ServerlessDataPlane
 ```
 
@@ -134,7 +134,7 @@ Enabling sessions-manager grants `proxy` on `serverlessclientassignments` and `g
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
 ```
 
-If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord.json`, see [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload).
+If you grant Operator access with your own roles instead, add the two rules above to them. To limit developers to some environments, grant the `serverlessclientassignments` rule through a RoleBinding in each environment's namespace, like for workloads ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)), and set the chart's `operator.sessionsManagerUserRbac` to `false` so the built-in roles don't grant it everywhere. For the developer's `mirrord.json`, see [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload).
 
 A developer can check their access with their own kubeconfig:
 
@@ -160,24 +160,35 @@ Bind the chart's role rather than defining your own, unless you need to limit a 
 
 ### Limiting a workload to specific services
 
-The chart's role lets a workload register under any environment and service. To limit an identity to specific ones, bind it to your own ClusterRole instead, listing each `<environment>.<service>` it may register as in `resourceNames`:
+The chart's role lets a workload register under any environment and service. To limit an identity to specific ones, bind it to your own roles instead: a Role in the environment's namespace that lists each service it may register as in `resourceNames`, and a ClusterRole for `serverlessdataplanes`, which is cluster-scoped:
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  name: mirrord-sessions-manager-agent-staging-api
+  name: mirrord-sessions-manager-agent-api
+  namespace: staging
 rules:
   - apiGroups: [operator.metalbear.co]
     resources: [serverlessagentassignments]
-    resourceNames: [staging.api]
+    resourceNames: [api]
     verbs: [proxy]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mirrord-sessions-manager-agent-dataplanes
+rules:
   - apiGroups: [operator.metalbear.co]
     resources: [serverlessdataplanes]
     verbs: [get]
 ```
 
-An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
+Bind the Role with a RoleBinding in the same namespace, and the ClusterRole with a ClusterRoleBinding. An identity bound this way can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. The namespace and service names are the environment and service in lowercase, with every run of other characters replaced by `-`: environment `Staging EU` is namespace `staging-eu`. The Operator doesn't need the namespace to exist, but the Role and RoleBinding do, so create it if there isn't one. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
+
+{% hint style="info" %}
+Older mirrord versions register on a cluster-scoped name, `<environment>.<service>`, which the Operator still serves. The chart's roles cover both forms, but a RoleBinding only covers the namespaced one. To limit a workload that runs an older version, grant `proxy` on `serverlessagentassignments` in a ClusterRole with `resourceNames: [staging.api]` instead.
+{% endhint %}
 
 ---
 
@@ -197,7 +208,7 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 | --- | --- |
 | `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the image [provided by MetalBear](README.md#values-provided-by-metalbear). |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
-| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
+| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role isn't bound in the namespace of the workload's environment, or its `resourceNames` doesn't list the workload's service ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
 
 For workload-side problems, see the troubleshooting section of your platform's connection guide, such as [Connecting ECS to the Operator](ecs-operator-hosted.md#troubleshooting).

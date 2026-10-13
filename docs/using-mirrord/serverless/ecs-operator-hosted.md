@@ -81,7 +81,7 @@ and apply it:
 kubectl apply -f mirrord-ecs-workload-rbac.yaml
 ```
 
-The role grants `proxy` on `serverlessagentassignments` (registering and waiting for sessions, a long-lived request) and `get` on `serverlessdataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. These resources are cluster-scoped, so the binding has to be a ClusterRoleBinding. You only need one binding for all your ECS services. To limit task roles to specific services instead, see [Limiting a workload to specific services](operator-hosted.md#limiting-a-workload-to-specific-services).
+The role grants `proxy` on `serverlessagentassignments` (registering and waiting for sessions, a long-lived request) and `get` on `serverlessdataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. The binding is a ClusterRoleBinding, so it covers every environment, and `serverlessdataplanes` is cluster-scoped. You only need one binding for all your ECS services. To limit task roles to specific services instead, see [Limiting a workload to specific services](operator-hosted.md#limiting-a-workload-to-specific-services).
 
 ## Map the ECS task role into the cluster
 
