@@ -40,12 +40,14 @@ curl -sSf "http://localhost:8050/api/v1/reports/topology?from=2026-09-01T00:00:0
 From a job inside the cluster, call the Service directly:
 
 ```bash
-curl -sSf "http://mirrord-operator-license-server.mirrord.svc:8050/api/v1/reports/topology"
+curl -sSf "https://mirrord-operator-license-server.mirrord.svc:8050/api/v1/reports/topology"
 ```
 
-If the license server has TLS configured (`tls.data` or `tls.certManager.enabled` in its Helm values), the dashboard port serves HTTPS, so use `https://` instead. With a self-signed certificate, pass its CA to `curl` with `--cacert`.
+The dashboard port serves HTTPS when the license server has TLS configured (`tls.data` or `tls.certManager.enabled` in its Helm values). With a self-signed certificate, pass its CA to `curl` with `--cacert`. Without TLS the port answers plain HTTP, as in the port-forward example above. The chart expects the dashboard to be exposed only behind TLS, so configure it before other workloads call the port across the cluster.
 
-The dashboard port adds the license key to every request itself, so there is no key to send. As with the dashboard, access is controlled by who can reach that port. If the dashboard sits behind SAML (`saml.enabled`), requests need to come through the SAML proxy too.
+The dashboard port adds the license key to every request itself, so there is no key to send. Unless the dashboard sits behind SAML, that also means the port does not authenticate callers: anything that can reach it can read this report and the rest of the dashboard's data. Limit who can reach it, for example with a NetworkPolicy, as you would for the dashboard itself.
+
+If the dashboard sits behind SAML (`saml.enabled`), the port expects a browser sign-in, and a request without a signed-in session is redirected to your identity provider instead of getting the report. From a script or a scheduled job, read the map from the [Kubernetes API](#kubernetes-api) instead, or call the same endpoint on the license server's own API port with the `x-license-key` header, see [API Endpoints](license-server.md#api-endpoints).
 
 ### Query parameters
 
@@ -190,7 +192,7 @@ Reading it needs `get` and `list` on `mirrordclusterservicegraphs`. With topolog
 | Status | Meaning |
 | --- | --- |
 | `400` | `from` at or after `to`, or a timestamp that doesn't parse |
-| `401` | The dashboard sits behind SAML and the request didn't come through the SAML proxy |
+| `3xx` | The dashboard sits behind SAML: the proxy redirects a request without a signed-in browser session to your identity provider |
 | `403` | From `kubectl`: your user or service account has no `get` on `mirrordclusterservicegraphs`. The chart only grants it while topology is on |
 | `404` | From `kubectl`: you asked for a name other than `default` |
 
