@@ -88,12 +88,15 @@ A config has either `targetRef` or `targetSelector`, not both; the `Accepted` co
 Every config that applies to a workload is merged for its sessions, so a shared selector config and a per-workload `targetRef` config can be used together:
 
 * A queue id or a `dbBranches` entry id defined identically by several configs is one queue or one entry.
-* A queue id, a `dbBranches` entry, or a workload-level setting (`restart`, `ttl`, `drainTimeout`, `tmpNameTemplate`, `clientConfigs`) that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
+* A queue id, a `dbBranches` entry, or one of `ttl`, `drainTimeout` and `tmpNameTemplate` that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
+* `restart` and `clientConfigs` merge field by field: one config can set `restart.timeout` and another `restart.strategy`, or each can name its own broker's client config. Only the same field set to two values (`restart.timeout`, `clientConfigs.sqs`) is a conflict.
+
+The older `MirrordWorkloadQueueRegistry` and `MirrordKafkaTopicsConsumer` objects of a workload stay in effect under selector configs: their queues are added to the merge, and their settings fill in what the configs leave unset. A config that names the workload with `targetRef` replaces them, as it always has.
 
 Each config that applies to a workload shows the workload's split phase and session count in its status, and a split session names every config merged into it in its status. The operator log line that starts a split lists them too.
 
 {% hint style="info" %}
-`targetSelector` needs operator `3.219.0` or later on every cluster that reads the config, including remote clusters of a multi-cluster setup. An older operator cannot read a config without `targetRef`.
+`targetSelector` needs operator `3.220.0` or later on every cluster that reads the config, including remote clusters of a multi-cluster setup. An older operator cannot read a config without `targetRef`.
 {% endhint %}
 
 ## Queue Names in Mounted Config Files
