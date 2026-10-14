@@ -278,6 +278,26 @@ A Temporal target polls a task queue the operator serves, which KEDA cannot meas
 
 A `ScaledObject` none of whose triggers name a split queue directly is left alone. This includes triggers that read the queue name from an environment variable, such as `queueURLFromEnv`, and triggers that measure lag through a query. Unless they measure the temporary queue some other way, the target may be scaled to zero for the duration of the split. A Kafka target keeps its consumer group unless the split gives it a temporary one, so a query over that group's lag across all topics already follows the temporary topic.
 
+{% hint style="info" %}
+Scale trigger overrides require mirrord operator `3.221.0` or later, and operator Helm chart `3.221.0`.
+{% endhint %}
+
+To redirect a trigger that measures the queue through a query, list it under `scaleTriggerOverrides` in the `MirrordSplitConfig`, by its `name`, with the metadata values it should have during the split. In a value, `{{<queue id>.queue}}` stands for the queue the target reads during the split, and, for Kafka and NATS JetStream, `{{<queue id>.group}}` for its consumer group or consumer. The operator sets these values when the split starts, and puts the trigger's own values back when it ends.
+
+```yaml
+spec:
+  queues:
+    - id: orders
+      kind: kafka
+      # ...
+  scaleTriggerOverrides:
+    - name: lag
+      metadata:
+        query: sum(kafka_consumergroup_lag{consumergroup="{{orders.group}}", topic="{{orders.queue}}"})
+```
+
+A value naming a queue id the `MirrordSplitConfig` does not declare, or a `group` its queue does not have, makes the operator refuse the `MirrordSplitConfig`, and splits of its workloads fail. An override naming a trigger or metadata key the `ScaledObject` does not have, or a queue the split does not include, is not applied.
+
 A GitOps tool deploying the `ScaledObject` would put the original triggers back. The operator therefore registers a mutating webhook that reapplies its rewrite to every update of a redirected `ScaledObject`, including the dry runs Flux compares against. Flux sees the `ScaledObject` as in sync and keeps reconciling it: changes from Git roll out during the split, and the triggers stay redirected. When the split ends, the operator undoes only its own rewrite, so those changes stay.
 
 Argo CD compares against Git by itself, so it would report the `ScaledObject` as out of sync and keep syncing it. Set `operator.applicationPauseAutoSync` to let the operator turn off automated sync on the application deploying the `ScaledObject`, and on every application deploying that one, for as long as the split runs. Changes to anything they deploy are not rolled out until the split ends. Without the value, a `ScaledObject` that Argo CD deploys is left alone.
