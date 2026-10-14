@@ -80,7 +80,7 @@ stops, when the drain evicts the agent pod, or when the node is deleted. The ses
    agent closed connection with error: no live mirrord-agent for 60000ms: the target had no ready pod to run an agent on for that long. If the target's pods need more time to come back, for example because a new node must start first, raise `operator.noPodTargetsSessionTimeoutMillis` in the operator Helm values
    ```
 
-   A preview session shows the same error in its `failure_message`, goes to the `Failed` phase, and the Operator
+   A preview session shows the same error in its `status.failureMessage`, goes to the `Failed` phase, and the Operator
    deletes it after `operator.preview.cleanupAfterMins` (15 minutes by default). It does not come back when the target
    pod comes back: start the preview again.
 
@@ -343,8 +343,9 @@ drain, with two differences:
   the target makes a new pod and that pod becomes ready.
 - The new pod often needs a new node. With node auto-provisioning and single-replica targets, the replacement pod
   waits for a node to boot, which usually takes more than 60 seconds. The session then ends with the
-  [no live agent error](#what-happens-to-an-active-session), while a target whose replacement pod lands on a node that
-  already exists survives.
+  [no live agent error](#what-happens-to-an-active-session). A replacement pod on a node that already exists is
+  usually ready in time, but the session still ends if the pod takes more than 60 seconds to become ready, for
+  example because of a slow pull of the application image.
 
 To keep sessions alive on spot nodes:
 
