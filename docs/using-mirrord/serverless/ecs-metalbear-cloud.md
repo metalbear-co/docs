@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice. It needs the sessions-manager URL, API key and remote bootstrap build that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [MetalBear Cloud sessions-manager](metalbear-cloud.md). The task authenticates with your MetalBear API key, which ECS injects from AWS Secrets Manager. No Kubernetes cluster, mirrord Operator or IAM permissions on the task role are needed. At a glance, the setup is:
@@ -20,7 +20,7 @@ This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md)
 ## Prerequisites
 
 1. The ECS task definition set up with the [remote bootstrap](ecs.md), up to [Connect to your deployment mode](ecs.md#connect-to-your-deployment-mode).
-2. `<SESSIONS_MANAGER_URL>` and `<API_KEY>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
+2. `<API_KEY>`, [provided by MetalBear](README.md#api-key-provided-by-metalbear).
 3. An IAM **execution role** on the ECS service (`executionRoleArn` in the task definition). This is not the task role.
 4. The AWS CLI, with permission to manage Secrets Manager secrets, IAM role policies and the ECS task definition.
 
@@ -71,11 +71,11 @@ The tasks only make outbound connections, to the hosts in [Network access](metal
 
 * The tasks' security group allows outbound TCP 443 to them.
 * The tasks' subnets route to the internet, through a NAT gateway for private subnets, or have a public IP for public ones.
-* Any firewall or egress proxy on the path allows `app.metalbear.com` and the host of `<SESSIONS_MANAGER_URL>`, doesn't buffer responses, and has an idle timeout of at least 300 seconds.
+* Any firewall or egress proxy on the path allows `app.metalbear.com` and MetalBear's sessions-manager, doesn't buffer responses, and has an idle timeout of at least 300 seconds.
 
 ## Add the connection variables
 
-Add the URL to the application container's `environment`, next to the variables from [Amazon ECS](ecs.md#name-the-workload), and the API key to its `secrets`:
+Add the API key to the application container's `secrets`, next to the `environment` variables from [Amazon ECS](ecs.md#name-the-workload):
 
 ```json
 {
@@ -83,9 +83,6 @@ Add the URL to the application container's `environment`, next to the variables 
   "containerDefinitions": [
     {
       "name": "app",
-      "environment": [
-        { "name": "MIRRORD_SESSIONS_MANAGER_URL", "value": "<SESSIONS_MANAGER_URL>" }
-      ],
       "secrets": [
         { "name": "MIRRORD_SESSIONS_MANAGER_API_KEY", "valueFrom": "<SECRET_ARN>" }
       ]
@@ -96,11 +93,10 @@ Add the URL to the application container's `environment`, next to the variables 
 
 | Variable | Value |
 | --- | --- |
-| `MIRRORD_SESSIONS_MANAGER_URL` | `<SESSIONS_MANAGER_URL>`. Setting it selects the MetalBear Cloud mode. It's the same for every service, so it can go in a [shared environment file](ecs.md#sharing-settings-across-services). |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY` | Injected by ECS from `<SECRET_ARN>`. Don't put the key in `environment` or in an environment file, where it's visible to anyone who can describe the task definition. |
 
 {% hint style="warning" %}
-Don't also set `MIRRORD_OPERATOR_API_URL` or `MIRRORD_OPERATOR_KUBE_CONTEXT` on the task. They select the Operator-hosted mode, and the bootstrap refuses to start when more than one is set.
+Don't set `MIRRORD_OPERATOR_API_URL` or `MIRRORD_OPERATOR_KUBE_CONTEXT` on the task. They select the Operator-hosted mode instead.
 {% endhint %}
 
 Register the new task definition revision and update the service to use it. Tasks read the secret when they start, so after [rotating the key](metalbear-cloud.md#api-keys), update the secret and redeploy the services.

@@ -46,17 +46,11 @@ Every caller reaches sessions-manager the same way it reaches every other Operat
 * **Developers** authenticate with their kubeconfig, exactly like for any other Operator feature.
 * **Workloads** authenticate with their platform identity, mapped to a Kubernetes identity. For ECS, the task's IAM role is mapped with an EKS access entry; see [How ECS tasks authenticate](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
-The Operator serves three cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
+The Operator serves sessions-manager as cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API. Each side registers on a long-lived Server-Sent Events stream and waits to be paired, then opens a WebSocket to its session, through which the Operator relays mirrord traffic.
 
-| Resource | Verb | Used by | Used for |
-| --- | --- | --- | --- |
-| `serverlessclientassignments` | `proxy` | Developers | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a workload. |
-| `serverlessagentassignments` | `proxy` | Workloads | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a developer. |
-| `serverlessdataplanes` | `get` | Both | Opening a WebSocket to the assigned session; the Operator relays mirrord traffic between the two sides. |
+Developers and workloads register on separate resources, and the chart grants them through separate ClusterRoles, so RBAC decides which side an identity may act as: a developer can't register as a workload and be paired with other developers' sessions. See [Developer access](#developer-access) and [Connecting workloads](#connecting-workloads) for the exact rules. A workload's registration is named `<environment>.<service>`, so its access can also be limited to specific services ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
 
-Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. A registration is named after the environment and service it pairs in, `<environment>.<service>`, so a workload's access can also be limited to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
-
-The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `serverlessdataplanes` can't attach to another caller's session.
+The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to connect to sessions can't attach to another caller's session.
 
 Both sides only make outbound HTTPS connections, and only to the API server. Neither needs a network path to the other.
 
@@ -131,7 +125,7 @@ Each workload authenticates as a Kubernetes identity bound to this role. How its
 
 ### Connection variables
 
-The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and never `MIRRORD_SESSIONS_MANAGER_URL`, which selects [MetalBear Cloud](metalbear-cloud.md) instead; the bootstrap refuses to start when more than one is set.
+The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and not `MIRRORD_SESSIONS_MANAGER_URL`, which points the bootstrap at a sessions-manager outside the Operator; the bootstrap refuses to start when more than one is set.
 
 | Variables | Authenticates as | Use it for |
 | --- | --- | --- |
