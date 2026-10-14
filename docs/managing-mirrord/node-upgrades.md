@@ -71,13 +71,13 @@ stops, when the drain evicts the agent pod, or when the node is deleted. The ses
 3. The Operator watches the target. When a new pod of the target becomes ready, for example on a different node, the
    Operator starts an agent for it, and the session uses it.
 4. If the session has no agent for 60 seconds, the Operator closes the session. The time counts from the moment the
-   session loses its last agent until a new agent connects. It does not count while an agent is starting on a ready
-   pod of the target: the Operator never closes a session in the middle of starting an agent, so a slow pull of the
-   agent image on a new node does not end the session. mirrord stops the local process of the user, and the log of the
-   mirrord internal proxy shows this error:
+   session loses its last agent until a new agent connects. An agent that is still starting on a ready pod of the
+   target when the 60 seconds run out gets to finish: the Operator waits for that start before it closes the session,
+   so a slow pull of the agent image on a new node does not end the session. When the session closes, mirrord stops
+   the local process of the user, and the log of the mirrord internal proxy shows this error:
 
    ```
-   agent closed connection with error: no live mirrord-agent for 60000ms: the target had no ready pod to run an agent on for that long. If the target's pods need more time to come back, for example because a new node must start first, raise `operator.noPodTargetsSessionTimeoutMillis` in the operator Helm values
+   agent closed connection with error: no live mirrord-agent for at least 60000ms: either the target had no ready pod to run an agent on, for example because a replacement pod was waiting for a new node, or agents kept failing to start on its pods (check the mirrord-agent pods in the operator namespace). If the target's pods only need more time to come back, raise `operator.noPodTargetsSessionTimeoutMillis` in the operator Helm values
    ```
 
    A preview session shows the same error in its `status.failureMessage`, goes to the `Failed` phase, and the Operator
@@ -92,7 +92,7 @@ The result depends on the target of the session:
 | Target | Result of a node drain |
 | --- | --- |
 | A workload (for example, a Deployment) that has ready pods on other nodes | The session continues. |
-| A workload that has all its ready pods on the drained node | The session continues if a new pod becomes ready in less than 60 seconds. The start of its agent does not count. If not, the session ends. |
+| A workload that has all its ready pods on the drained node | The session continues if a new pod becomes ready in less than 60 seconds; the Operator then waits for its agent to start. If not, the session ends. |
 | A pod (`pod/<name>`) | The session ends after 60 seconds. The evicted pod does not come back. |
 | A pod of a StatefulSet (`pod/<name>`) | The session continues if the pod becomes ready again in less than 60 seconds. Kubernetes makes a new pod with the same name. |
 | A copy of the target (`copy_target`), without `scale_down` and without queue splitting | The session uses the pods of the original target, the same as a session without a copy. The eviction of the copy pod does not affect the session. |
