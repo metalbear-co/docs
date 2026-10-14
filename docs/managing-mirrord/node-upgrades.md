@@ -72,9 +72,10 @@ stops, when the drain evicts the agent pod, or when the node is deleted. The ses
    Operator starts an agent for it, and the session uses it.
 4. If the session has no agent for 60 seconds, the Operator closes the session. The time counts from the moment the
    session loses its last agent until a new agent connects. An agent that is still starting on a ready pod of the
-   target when the 60 seconds run out gets to finish: the Operator waits for that start before it closes the session,
-   so a slow pull of the agent image on a new node does not end the session. When the session closes, mirrord stops
-   the local process of the user, and the log of the mirrord internal proxy shows this error:
+   target when the 60 seconds run out gets to finish: the Operator waits for that start before it closes the session.
+   This wait has its own limit, the agent's `startup_timeout` (60 seconds by default) plus 30 seconds to connect, so a
+   pull of the agent image that takes longer than that still ends the session. When the session closes, mirrord
+   stops the local process of the user, and the log of the mirrord internal proxy shows this error:
 
    ```
    agent closed connection with error: no live mirrord-agent for at least 60000ms: either the target had no ready pod to run an agent on, for example because a replacement pod was waiting for a new node, or agents kept failing to start on its pods (check the mirrord-agent pods in the operator namespace). If the target's pods only need more time to come back, raise `operator.noPodTargetsSessionTimeoutMillis` in the operator Helm values
