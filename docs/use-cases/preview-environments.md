@@ -181,7 +181,7 @@ By default, opening a Preview Environment as a recipient requires the mirrord br
 
 The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. Running `mirrord preview start` again with the same key and target (for example on every push to a PR) replaces the session but keeps its host, so a link already posted keeps working with the new image. Once the session is gone, after `mirrord preview stop` or an expired TTL, the next start gets a new suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page. By default that page redirects to your app domain after a few seconds; with `shareIngress.notFound.redirect: false` it is a plain 404 (see [Setup](#setup)).
 
-Keeping the host across a replacement requires mirrord `3.274.0` or later and mirrord operator `3.221.0` or later; with an older operator or CLI every start gets a new suffix.
+Keeping a random-suffix host across a replacement requires mirrord `3.274.0` or later and mirrord operator `3.221.0` or later; with an older operator or CLI every start gets a new suffix unless `operator.shareIngress.stableSlugs` is enabled.
 
 {% hint style="info" %}
 The preview URL works with any HTTP filter. A preview with a custom filter (a path filter, a different header, composed filters) additionally routes requests carrying the share link's injected baggage header, so its own filter keeps working for regular traffic while the link always reaches the preview.
