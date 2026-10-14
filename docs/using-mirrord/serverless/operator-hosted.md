@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-The Operator-hosted sessions-manager is **experimental**, and may change without notice. It needs an Operator build that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+The Operator-hosted sessions-manager is **experimental**, and may change without notice.
 {% endhint %}
 
 In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-manager runs inside the mirrord Operator. Enabling it is a Helm value: there's no additional deployment, service or load balancer, and the Operator isn't exposed outside the cluster. At a glance, the setup is:
@@ -19,8 +19,7 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 ## Prerequisites
 
 1. A Kubernetes cluster with the mirrord Operator installed through its Helm chart, and a mirrord Operator license. The step-by-step workload guides cover EKS; other clusters work through a [kubeconfig context](#connection-variables).
-2. The chart `<CHART>` and its version `<CHART_VERSION>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
-3. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC, and `jq`.
+2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC, and `jq`.
 
 ---
 
@@ -47,17 +46,11 @@ Every caller reaches sessions-manager the same way it reaches every other Operat
 * **Developers** authenticate with their kubeconfig, exactly like for any other Operator feature.
 * **Workloads** authenticate with their platform identity, mapped to a Kubernetes identity. For ECS, the task's IAM role is mapped with an EKS access entry; see [How ECS tasks authenticate](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
-The Operator serves three cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
+The Operator serves sessions-manager as cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API. Each side registers on a long-lived Server-Sent Events stream and waits to be paired, then opens a WebSocket to its session, through which the Operator relays mirrord traffic.
 
-| Resource | Verb | Used by | Used for |
-| --- | --- | --- | --- |
-| `serverlessclientassignments` | `proxy` | Developers | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a workload. |
-| `serverlessagentassignments` | `proxy` | Workloads | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a developer. |
-| `serverlessdataplanes` | `get` | Both | Opening a WebSocket to the assigned session; the Operator relays mirrord traffic between the two sides. |
+Developers and workloads register on separate resources, and the chart grants them through separate ClusterRoles, so RBAC decides which side an identity may act as: a developer can't register as a workload and be paired with other developers' sessions. See [Developer access](#developer-access) and [Connecting workloads](#connecting-workloads) for the exact rules. A workload's registration is named `<environment>.<service>`, so its access can also be limited to specific services ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
 
-Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. A registration is named after the environment and service it pairs in, `<environment>.<service>`, so a workload's access can also be limited to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
-
-The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `serverlessdataplanes` can't attach to another caller's session.
+The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to connect to sessions can't attach to another caller's session.
 
 Both sides only make outbound HTTPS connections, and only to the API server. Neither needs a network path to the other.
 
@@ -65,7 +58,7 @@ Both sides only make outbound HTTPS connections, and only to the API server. Nei
 
 ## Enable sessions-manager
 
-Upgrade your existing Operator Helm release to the chart [provided by MetalBear](README.md#values-provided-by-metalbear), and set `operator.sessionsManager=true`. The chart's default Operator image serves sessions-manager, so the upgrade doesn't set an image.
+Upgrade your existing Operator Helm release to the latest chart, and set `operator.sessionsManager=true`. The chart's default Operator image serves sessions-manager, so the upgrade doesn't set an image.
 
 ### Check for image overrides
 
@@ -84,9 +77,9 @@ If it prints `No issues, you may proceed.`, continue with [Upgrade](#upgrade). I
 ### Upgrade
 
 ```bash
-helm upgrade mirrord-operator <CHART> \
+helm repo update metalbear
+helm upgrade mirrord-operator metalbear/mirrord-operator \
   --namespace mirrord \
-  --version <CHART_VERSION> \
   --reuse-values \
   --set operator.sessionsManager=true
 ```
@@ -104,9 +97,8 @@ If the check listed overrides, upgrade from an edited copy of your release's val
 3. Upgrade with the edited file:
 
    ```bash
-   helm upgrade mirrord-operator <CHART> \
+   helm upgrade mirrord-operator metalbear/mirrord-operator \
      --namespace mirrord \
-     --version <CHART_VERSION> \
      -f mirrord-values.yaml \
      --set operator.sessionsManager=true
    ```
@@ -156,7 +148,7 @@ Each workload authenticates as a Kubernetes identity bound to this role. How its
 
 ### Connection variables
 
-The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and never `MIRRORD_SESSIONS_MANAGER_URL`, which selects [MetalBear Cloud](metalbear-cloud.md) instead; the bootstrap refuses to start when more than one is set.
+The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and not `MIRRORD_SESSIONS_MANAGER_URL`, which points the bootstrap at a sessions-manager outside the Operator; the bootstrap refuses to start when more than one is set.
 
 | Variables | Authenticates as | Use it for |
 | --- | --- | --- |
@@ -218,7 +210,7 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 
 | Symptom | Likely cause |
 | --- | --- |
-| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the image [provided by MetalBear](README.md#values-provided-by-metalbear). |
+| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the chart's default image because the release still overrides it ([Check for image overrides](#check-for-image-overrides)). |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
 | `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>`, in its lowercased form ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets more than one of them ([Connection variables](#connection-variables)). |

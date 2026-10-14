@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Connecting ECS to the Operator is **experimental**, and may change without notice. It needs the Operator and remote bootstrap builds that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+Connecting ECS to the Operator is **experimental**, and may change without notice.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [Operator-hosted sessions-manager](operator-hosted.md) on your EKS cluster. The task authenticates as its IAM task role, mapped to a Kubernetes identity. At a glance, the setup is:
