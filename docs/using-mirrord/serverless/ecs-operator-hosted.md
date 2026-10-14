@@ -83,7 +83,7 @@ and apply it:
 kubectl apply -f mirrord-ecs-workload-rbac.yaml
 ```
 
-The role grants `proxy` on `serverlessagentassignments` (registering and waiting for sessions, a long-lived request) and `get` on `serverlessdataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. These resources are cluster-scoped, so the binding has to be a ClusterRoleBinding. You only need one binding for all your ECS services. To limit task roles to specific services instead, see [Limiting a workload to specific services](operator-hosted.md#limiting-a-workload-to-specific-services).
+The role grants `proxy` on `serverlessagentassignments` (the **agent** side: registering and waiting for sessions, a long-lived request) and `get` on `serverlessdataplanes` (connecting to an assigned session, a WebSocket), and nothing else in the cluster: the ECS task can't read, list or modify any other resource. These resources are cluster-scoped, so the binding has to be a ClusterRoleBinding. You only need one binding for all your ECS services. To limit task roles to specific services instead, see [Limiting a workload to specific services](operator-hosted.md#limiting-a-workload-to-specific-services).
 
 ## Map the ECS task role into the cluster
 
@@ -120,11 +120,11 @@ Check the result by impersonating that identity:
 
 ```bash
 kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co \
-  --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # yes
+  --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # yes (agent: workloads)
 kubectl auth can-i get serverlessdataplanes.operator.metalbear.co \
   --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # yes
 kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co \
-  --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # no
+  --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # no  (client: developers)
 kubectl auth can-i list pods -A \
   --as mirrord-ecs-<YOUR_SERVICE_NAME> --as-group mirrord-ecs-workloads      # no
 ```

@@ -97,7 +97,7 @@ kubectl api-resources --categories=mirrord-serverless
 
 ## Developer access
 
-Enabling sessions-manager grants `proxy` on `serverlessclientassignments` and `get` on `serverlessdataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
+Enabling sessions-manager grants `proxy` on `serverlessclientassignments` (the **client** side: developers) and `get` on `serverlessdataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
 
 ```bash
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
@@ -108,16 +108,16 @@ If you grant Operator access with your own roles instead, add the two rules abov
 A developer can check their access with their own kubeconfig:
 
 ```bash
-kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co   # yes
+kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co   # yes (client: developers)
 kubectl auth can-i get serverlessdataplanes.operator.metalbear.co            # yes
-kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co    # no
+kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co    # no  (agent: workloads)
 ```
 
 To check a developer's access as a cluster admin, add `--as <USERNAME>`, and `--as-group <GROUP>` for each group they're bound through. The last command must answer `no`, unless the identity is also a cluster admin: a developer who can register as a workload could be paired with other developers' sessions.
 
 ## Connecting workloads
 
-Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
+Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` (the **agent** side: workloads) and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
 
 Each workload authenticates as a Kubernetes identity bound to this role. How its identity is mapped, and how it reaches the API server, depends on the platform:
 
