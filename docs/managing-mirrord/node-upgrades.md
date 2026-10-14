@@ -33,6 +33,7 @@ On this page, mirrord pods are the agent pods and the copy pods that the mirrord
 | [Node pool upgrade of your cloud provider](#node-pool-upgrades-of-your-cloud-provider) (GKE, EKS, AKS) | No. If Karpenter manages the nodes (for example, AKS node auto-provisioning), the upgrade is a Karpenter drift. | Nothing. If Karpenter manages the nodes, see [Karpenter](#karpenter). |
 | [Cluster Autoscaler](#cluster-autoscaler) scale-down | Yes, in every Operator version, until the sessions end. | Wait for the sessions to end, or [end them](#find-the-sessions-that-use-agents-on-a-node). |
 | [`kubectl drain`](#kubectl-drain) | Targeted agent pods: no, from mirrord Operator `3.214.0`. Targetless agent pods and copy pods: yes, unless you use `--force`. | Upgrade the Operator. For targetless agent pods and copy pods, see [`kubectl drain`](#kubectl-drain). |
+| [Spot and preemptible node preemption](#spot-and-preemptible-nodes) | No. The cloud provider stops the node after a short notice, and nothing can stop it. | Increase `noPodTargetsSessionTimeoutMillis`, because the replacement pod often waits for a new node. See [Spot and preemptible nodes](#spot-and-preemptible-nodes). |
 
 A PodDisruptionBudget can also stop a drain. See
 [PodDisruptionBudgets that stop a drain](#poddisruptionbudgets-that-stop-a-drain). For the effect on active sessions,
@@ -69,12 +70,19 @@ stops, when the drain evicts the agent pod, or when the node is deleted. The ses
 2. If other ready pods of the target have agents, the session continues with them immediately.
 3. The Operator watches the target. When a new pod of the target becomes ready, for example on a different node, the
    Operator starts an agent for it, and the session uses it.
-4. If the session has no agent for 60 seconds, the Operator closes the session. mirrord stops the local process of the
-   user, and the log of the mirrord internal proxy shows this error:
+4. If the session has no agent for 60 seconds, the Operator closes the session. The time counts from the moment the
+   session loses its last agent until a new agent connects. It does not count while an agent is starting on a ready
+   pod of the target: the Operator never closes a session in the middle of starting an agent, so a slow pull of the
+   agent image on a new node does not end the session. mirrord stops the local process of the user, and the log of the
+   mirrord internal proxy shows this error:
 
    ```
-   agent closed connection with error: the session exceeded the configured 60000ms timeout on no live mirrord-agents
+   agent closed connection with error: no live mirrord-agent for 60000ms: the target had no ready pod to run an agent on for that long. If the target's pods need more time to come back, for example because a new node must start first, raise `operator.noPodTargetsSessionTimeoutMillis` in the operator Helm values
    ```
+
+   A preview session shows the same error in its `failure_message`, goes to the `Failed` phase, and the Operator
+   deletes it after `operator.preview.cleanupAfterMins` (15 minutes by default). It does not come back when the target
+   pod comes back: start the preview again.
 
    60 seconds is the default. To change it, see
    [Keep sessions alive during a drain](#keep-sessions-alive-during-a-drain).
@@ -84,7 +92,7 @@ The result depends on the target of the session:
 | Target | Result of a node drain |
 | --- | --- |
 | A workload (for example, a Deployment) that has ready pods on other nodes | The session continues. |
-| A workload that has all its ready pods on the drained node | The session continues if a new pod becomes ready and its agent starts in less than 60 seconds. If not, the session ends. |
+| A workload that has all its ready pods on the drained node | The session continues if a new pod becomes ready in less than 60 seconds. The start of its agent does not count. If not, the session ends. |
 | A pod (`pod/<name>`) | The session ends after 60 seconds. The evicted pod does not come back. |
 | A pod of a StatefulSet (`pod/<name>`) | The session continues if the pod becomes ready again in less than 60 seconds. Kubernetes makes a new pod with the same name. |
 | A copy of the target (`copy_target`), without `scale_down` and without queue splitting | The session uses the pods of the original target, the same as a session without a copy. The eviction of the copy pod does not affect the session. |
@@ -112,14 +120,19 @@ for 60 seconds, the full multi-cluster session ends.
 - Give the targets more than one replica and a
   [PodDisruptionBudget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/), so that a ready pod stays
   during the drain.
-- If new target pods and their agents need more than 60 seconds to become ready, for example because Karpenter must
-  start a new node first, increase `noPodTargetsSessionTimeoutMillis` in the Helm values of the Operator:
+- If new target pods need more than 60 seconds to become ready, for example because Karpenter or node
+  auto-provisioning must start a new node first, increase `noPodTargetsSessionTimeoutMillis` in the Helm values of the
+  Operator:
 
   ```yaml
   operator:
     ## How long a session can live with no agent. Default: 60000.
     noPodTargetsSessionTimeoutMillis: 300000
   ```
+
+  The value also applies to preview sessions. A preview session with a long TTL on a single-replica target is the
+  session most likely to see a 60 second gap in its lifetime, so set this value when you use previews on spot nodes
+  (see [Spot and preemptible nodes](#spot-and-preemptible-nodes)).
 
 ## PodDisruptionBudgets that stop a drain
 
@@ -318,6 +331,29 @@ see [What happens to an active session](#what-happens-to-an-active-session).
 
 If Karpenter manages the nodes, for example with AKS node auto-provisioning, Karpenter replaces the nodes as drift. See
 [Karpenter](#karpenter).
+
+## Spot and preemptible nodes
+
+When the cloud provider takes back a spot or preemptible node, there is no drain. The node gets a short notice (30
+seconds on GCE), the kubelet stops the pods on the node, and the node goes away. For a session this is the same as a
+drain, with two differences:
+
+- No new pod exists before the old one stops. In a rolling update, the new pod is ready before the old one stops, so
+  the session moves to the new agent with no gap. After a preemption, the session has no agent until the controller of
+  the target makes a new pod and that pod becomes ready.
+- The new pod often needs a new node. With node auto-provisioning and single-replica targets, the replacement pod
+  waits for a node to boot, which usually takes more than 60 seconds. The session then ends with the
+  [no live agent error](#what-happens-to-an-active-session), while a target whose replacement pod lands on a node that
+  already exists survives.
+
+To keep sessions alive on spot nodes:
+
+- Increase `noPodTargetsSessionTimeoutMillis` to cover a node boot, for example `300000` (5 minutes). See
+  [Keep sessions alive during a drain](#keep-sessions-alive-during-a-drain).
+- Give the targets more than one replica, spread across nodes with a
+  [topology spread constraint](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/),
+  so that a ready pod with an agent remains when one node goes away.
+- Keep the targets of long-lived preview sessions on nodes that are not spot nodes.
 
 ## Cluster Autoscaler
 
