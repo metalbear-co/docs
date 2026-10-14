@@ -40,6 +40,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
+* With the experimental [MetalBear Cloud sessions-manager](../using-mirrord/serverless/metalbear-cloud.md), serverless workloads and developers authenticate with a MetalBear API key exchanged for short-lived tokens, and every session is scoped to your organization. See [How do serverless workloads authenticate to MetalBear Cloud?](#how-do-serverless-workloads-authenticate-to-metalbear-cloud).
 * With the experimental [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
@@ -202,6 +203,19 @@ When developers target an Amazon ECS task as a [serverless workload](../using-mi
 * The Operator isn't exposed outside the cluster: both sides only make outbound HTTPS connections to the EKS API server. Requests from the task appear in the cluster's audit log under the access entry's username.
 
 To revoke access, delete the access entry or the ClusterRoleBinding. For the full setup and a step-by-step description of the token flow, see [Connecting ECS to the Operator](../using-mirrord/serverless/ecs-operator-hosted.md#how-ecs-tasks-authenticate). For how the Operator-hosted mode works overall, see [Operator-Hosted Sessions-Manager](../using-mirrord/serverless/operator-hosted.md#how-it-works).
+
+## How do serverless workloads authenticate to MetalBear Cloud?
+
+When developers target a [serverless workload](../using-mirrord/serverless/README.md) without the Operator, in the experimental MetalBear Cloud deployment mode, both the workload and the developer's local mirrord connect to a sessions-manager hosted by MetalBear:
+
+* Both sides hold a MetalBear API key issued for serverless workloads. Other MetalBear credentials, such as the Operator's license key, are refused.
+* Before registering, each side exchanges the key at `app.metalbear.com` for a short-lived token over HTTPS, and presents only the token to sessions-manager. Neither the key nor the tokens are logged.
+* Sessions-manager verifies the token, and scopes every registration to the organization that owns the key, so workloads and developers are only paired within your organization.
+* Each data-plane connection is bound to its session by a single-use credential delivered with the session assignment, so a caller can't attach to another caller's session.
+* Both sides only make outbound HTTPS connections; nothing in your infrastructure accepts inbound connections.
+* The key authenticates your organization, not a role: anyone holding it can register as either side of a session. Store it in a secret store, such as AWS Secrets Manager, and rotate it if it leaks.
+
+For the full setup, see [MetalBear Cloud Sessions-Manager](../using-mirrord/serverless/metalbear-cloud.md).
 
 ## How can I prevent users in my team from stealing or mirroring traffic from a target?
 

@@ -18,7 +18,7 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 
 ## Prerequisites
 
-1. An EKS cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../managing-mirrord/operator.md#installation).
+1. A Kubernetes cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../managing-mirrord/operator.md#installation). The step-by-step workload guides cover EKS; other clusters work through a [kubeconfig context](#connection-variables).
 2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
 
 ---
@@ -129,6 +129,29 @@ Each workload authenticates as a Kubernetes identity bound to this role. How its
 
 * [Connecting ECS to the Operator](ecs-operator-hosted.md)
 
+### Connection variables
+
+The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and never `MIRRORD_SESSIONS_MANAGER_URL`, which selects [MetalBear Cloud](metalbear-cloud.md) instead; the bootstrap refuses to start when more than one is set.
+
+| Variables | Authenticates as | Use it for |
+| --- | --- | --- |
+| `MIRRORD_OPERATOR_API_URL`, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` and `MIRRORD_OPERATOR_API_CA_DATA` | The workload's AWS identity, such as the ECS task role, mapped into an EKS cluster with an access entry. | Workloads on AWS connecting to EKS. No secrets are added to the workload. See [Connecting ECS to the Operator](ecs-operator-hosted.md). |
+| `MIRRORD_OPERATOR_KUBE_CONTEXT` | Whatever that context's user is in the workload's kubeconfig, such as a ServiceAccount token or an `exec` credential plugin. | Any other cluster, or credentials your platform already provides as a kubeconfig. |
+| `MIRRORD_OPERATOR_API_URL` alone | Nothing: requests are sent without credentials. | Only behind something that authenticates on the workload's behalf, such as a `kubectl proxy` sidecar. |
+
+With `MIRRORD_OPERATOR_KUBE_CONTEXT`, the bootstrap reads the kubeconfig the usual way, from `KUBECONFIG` or `~/.kube/config`, and takes the server, certificate authority and credentials from the named context. Mount the kubeconfig into the application container and set `KUBECONFIG` to its path. If the context uses an `exec` plugin, such as `aws eks get-token` or `gke-gcloud-auth-plugin`, the plugin must be installed in the application container. For example, to authenticate as a ServiceAccount bound to the chart's role:
+
+```bash
+kubectl create namespace mirrord-workloads
+kubectl -n mirrord-workloads create serviceaccount payments
+kubectl create clusterrolebinding mirrord-workload-payments \
+  --clusterrole mirrord-operator-sessions-manager-agent \
+  --serviceaccount mirrord-workloads:payments
+kubectl -n mirrord-workloads create token payments --duration 24h
+```
+
+and reference the token from the context's user in the workload's kubeconfig. A ServiceAccount token is a secret: store the kubeconfig in your platform's secret store rather than in plain configuration, and rotate it before it expires.
+
 {% hint style="info" %}
 Bind the chart's role rather than defining your own, unless you need to limit a workload to specific services: it stays in sync with what the Operator requires when you upgrade the chart.
 {% endhint %}
@@ -152,7 +175,7 @@ rules:
     verbs: [get]
 ```
 
-An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
+An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. In resource names, the environment and service are lowercased, with every run of other characters replaced by `-`: service `Payments API` in environment `Staging EU` registers as `staging-eu.payments-api`. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
 
 ---
 
@@ -172,7 +195,9 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 | --- | --- |
 | `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values. |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
-| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
+| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>`, in its lowercased form ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
+| `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets more than one of them ([Connection variables](#connection-variables)). |
+| `Failed to load kubeconfig context` | `KUBECONFIG` doesn't point at the mounted kubeconfig, or it has no context named `MIRRORD_OPERATOR_KUBE_CONTEXT`. |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
 
 For workload-side problems, see the troubleshooting section of your platform's connection guide, such as [Connecting ECS to the Operator](ecs-operator-hosted.md#troubleshooting).

@@ -221,13 +221,13 @@ Set the task role on the task definition, and add the connection variables to th
 | Variable | Value |
 | --- | --- |
 | `MIRRORD_OPERATOR_API_URL` | The `endpoint` printed above, e.g. `https://ABC123.gr7.<REGION>.eks.amazonaws.com`. Setting it selects the Operator-hosted mode. |
-| `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` | `<CLUSTER_NAME>`. It's signed into the token, and EKS rejects tokens for another cluster. |
+| `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` | `<CLUSTER_NAME>`. Setting it switches on authentication as the task role. It's signed into the token, and EKS rejects tokens for another cluster. |
 | `MIRRORD_OPERATOR_API_CA_DATA` | The `ca` printed above (base64-encoded PEM). The API server's certificate is issued by the cluster's own CA, not a public one. |
 
 These three are the same for every ECS service connecting to the cluster, so they're good candidates for a [shared environment file](ecs.md#sharing-settings-across-services).
 
 {% hint style="warning" %}
-Don't also set `MIRRORD_SESSIONS_MANAGER_URL` on the task. It selects a different sessions-manager, and the bootstrap refuses to start when both it and `MIRRORD_OPERATOR_API_URL` are set.
+Don't also set `MIRRORD_SESSIONS_MANAGER_URL` or `MIRRORD_OPERATOR_KUBE_CONTEXT` on the task. They select a different way of connecting, and the bootstrap refuses to start when more than one is set. Without `MIRRORD_OPERATOR_EKS_CLUSTER_NAME`, the bootstrap sends its requests without credentials, and the API server refuses them with `401 Unauthorized`, or with `403 Forbidden` for user `system:anonymous`.
 {% endhint %}
 
 The token is signed for the cluster's region, read from the `MIRRORD_OPERATOR_API_URL` hostname, so an EKS endpoint needs no extra configuration. Only if the task reaches the API server under another name, such as through a proxy, does the bootstrap fall back to `AWS_REGION`, then `AWS_DEFAULT_REGION`; set one of them to the cluster's region.
@@ -275,11 +275,11 @@ The bootstrap's messages appear in the application container's logs. For problem
 | The ECS task logs a connection timeout to the API server | Transit Gateway routes, security groups or NACLs ([Make the EKS API server reachable from ECS](#make-the-eks-api-server-reachable-from-ecs)). |
 | The endpoint hostname resolves to public IPs from the ECS VPC | The DNS forwarding rule is missing or not associated with the ECS VPC ([DNS](#dns)). |
 | TLS or certificate verification error | `MIRRORD_OPERATOR_API_CA_DATA` is missing or belongs to another cluster. |
-| `401 Unauthorized` | No access entry for the role, the access entry uses the execution role instead of the task role, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` doesn't match the cluster, or the authentication mode is still `CONFIG_MAP`. |
-| `403 Forbidden` on `serverlessagentassignments` | The access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
+| `401 Unauthorized` | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` isn't set, no access entry for the role, the access entry uses the execution role instead of the task role, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` doesn't match the cluster, or the authentication mode is still `CONFIG_MAP`. |
+| `403 Forbidden` on `serverlessagentassignments` | The user is `system:anonymous` because `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` isn't set, or the access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
 | `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values ([Enable sessions-manager](operator-hosted.md#enable-sessions-manager)). |
-| `MIRRORD_SESSIONS_MANAGER_URL and MIRRORD_OPERATOR_API_URL are mutually exclusive` | The task sets both; remove `MIRRORD_SESSIONS_MANAGER_URL`. |
-| `MIRRORD_OPERATOR_EKS_CLUSTER_NAME is required when MIRRORD_OPERATOR_API_URL is set` (or `MIRRORD_OPERATOR_API_CA_DATA`) | A [connection variable](#add-the-connection-variables) is missing on the task. |
+| `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The task sets more than one; keep only `MIRRORD_OPERATOR_API_URL`. |
+| `MIRRORD_OPERATOR_API_CA_DATA is required when MIRRORD_OPERATOR_EKS_CLUSTER_NAME is set` | A [connection variable](#add-the-connection-variables) is missing on the task. |
 | `no AWS region to sign the EKS token for` | `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname, and neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set. Set `AWS_REGION` to the cluster's region. |
 | `No AWS credentials provider found in environment` | The task definition has no `taskRoleArn`. |
 | `Initial AWS credential resolution failed, will retry` | The task role's credentials weren't available at startup. The bootstrap retries a few times with backoff, then stops with an error. |
