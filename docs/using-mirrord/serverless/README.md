@@ -11,7 +11,7 @@ tags:
 # Serverless Workloads
 
 {% hint style="warning" %}
-Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us, and we'll provide the [chart, images and CLI binary download link](#values-provided-by-metalbear) they need.
+Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us for a [dedicated CLI binary download link](#required-versions).
 {% endhint %}
 
 Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
@@ -63,25 +63,19 @@ Setup is split by what it touches, so you only redo the parts that change:
 2. **Add the remote bootstrap to each workload.** For ECS, see [Amazon ECS](ecs.md).
 3. **Connect each workload to your deployment mode.** For ECS with the Operator-hosted mode, see [Connecting ECS to the Operator](ecs-operator-hosted.md).
 
-### Values provided by MetalBear
+### Required versions
 
-Serverless workloads aren't part of a regular mirrord release yet. These placeholders in the setup guides stand for builds that MetalBear provides you when you request access:
+* **Operator:** version **3.223.0 or later**, installed from the `metalbear/mirrord-operator` Helm chart. Follow the [Operator installation guide](../../managing-mirrord/operator.md), then [enable sessions-manager](operator-hosted.md#enable-sessions-manager).
+* **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0`, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
+* **CLI:** a dedicated mirrord CLI binary from a download link provided by MetalBear. Download the binary for your platform from that link instead of installing a regular mirrord release by version.
 
-| Placeholder | Value | Used in |
-| --- | --- | --- |
-| `<CHART>` | The mirrord Operator Helm chart that supports the `operator.sessionsManager` value, as an OCI reference | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
-| `<CHART_VERSION>` | The version of that chart. Its default Operator image serves sessions-manager, so no image needs to be set. | [Operator-Hosted Sessions-Manager](operator-hosted.md#enable-sessions-manager) |
-| `<REMOTE_BOOTSTRAP_IMAGE>` | The mirrord remote bootstrap image, including its tag, that the workload's setup container copies the bootstrap from | [Amazon ECS](ecs.md#add-the-remote-bootstrap) |
-
-MetalBear also provides a download link for dedicated mirrord CLI binaries. Download the binary for your platform from that link instead of installing a regular mirrord release by version.
-
-These builds are matched to each other: use the Operator, remote bootstrap and mirrord CLI from the same set, and upgrade them together when we send you a new one.
+Use the CLI MetalBear supplies for these released components. When upgrading, confirm that the CLI supports the Operator and bootstrap versions you plan to use.
 
 ***
 
 ## Using mirrord with a Serverless Workload
 
-Download the dedicated mirrord CLI binary for your platform from the link [provided by MetalBear](#values-provided-by-metalbear), and install it on your `PATH`. Use this binary rather than a regular mirrord release. Then create a `mirrord.json` in your project:
+Download the dedicated mirrord CLI binary for your platform from the link [provided by MetalBear](#required-versions), and install it on your `PATH`. Use this binary rather than a regular mirrord release. Then create a `mirrord.json` in your project:
 
 ```json
 {

@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Targeting Amazon ECS tasks is **experimental**, and may change without notice. It needs a remote bootstrap image that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the released bootstrap image and dedicated CLI.
 {% endhint %}
 
 This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged. At a glance, the setup is:
@@ -29,7 +29,6 @@ Throughout this guide, replace:
 | `<YOUR_SERVICE_NAME>` | A name for the ECS service you target, e.g. `payments` |
 | `<YOUR_ENVIRONMENT>` | A name for the environment the ECS service runs in, e.g. `staging` |
 | `<YOUR_APPLICATION_IMAGE>` | Your application container's existing image |
-| `<REMOTE_BOOTSTRAP_IMAGE>` | The remote bootstrap image, including its tag, [provided by MetalBear](README.md#values-provided-by-metalbear) |
 
 `<YOUR_SERVICE_NAME>` and `<YOUR_ENVIRONMENT>` are free-form: they're how a developer names the ECS task they want. They must be identical on the ECS task and in developers' `mirrord.json`.
 
@@ -47,7 +46,7 @@ A non-essential setup container copies the bootstrap library into a shared task 
   "containerDefinitions": [
     {
       "name": "install-mirrord-remote-bootstrap",
-      "image": "<REMOTE_BOOTSTRAP_IMAGE>",
+      "image": "ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0",
       "essential": false,
       "entryPoint": ["/bin/sh", "-c"],
       "command": [
@@ -76,7 +75,7 @@ A non-essential setup container copies the bootstrap library into a shared task 
 }
 ```
 
-Use the remote bootstrap image from the same set as your Operator image and your developers' mirrord CLI ([Values provided by MetalBear](README.md#values-provided-by-metalbear)). If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
+The example uses the public `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0` image. Bootstrap tags follow Operator release versions, not CLI versions; pin a release tag rather than `latest`. See [Required versions](README.md#required-versions) for the Operator and dedicated CLI requirements. If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
 
 ## Name the workload
 
