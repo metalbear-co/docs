@@ -71,6 +71,18 @@ Setup is split by what it touches, so you only redo the parts that change:
 
 Use the CLI MetalBear supplies for these released components. When upgrading, confirm that the CLI supports the Operator and bootstrap versions you plan to use.
 
+### Application container requirements
+
+The remote bootstrap and the mirrord agent it starts run inside your application container, against the C library that container's image ships. The image must be:
+
+* **Linux on x86-64 or ARM64.**
+* **Based on glibc 2.30 or later**, such as Debian 11, Ubuntu 20.04, Amazon Linux 2023 or Red Hat Enterprise Linux 9 and later, or distroless images built on them. Amazon Linux 2, Red Hat Enterprise Linux 8 and Debian 10 ship older versions and aren't supported.
+* **Not musl-based**, such as Alpine. The bootstrap is linked against glibc and can't be loaded there.
+
+On an older glibc, the application container stops at startup, with an error that version `GLIBC_2.30` isn't found, required by `libmirrord_remote_bootstrap.so`. Remove the bootstrap from the task, or move the image to a supported base.
+
+To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_APPLICATION_IMAGE> --version`. The first line shows the glibc version, or `musl` for a musl-based image.
+
 ***
 
 ## Using mirrord with a Serverless Workload

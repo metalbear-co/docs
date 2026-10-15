@@ -23,6 +23,7 @@ The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazo
 1. A [deployment mode](README.md#deployment-modes) that's set up, such as the [Operator-hosted sessions-manager](operator-hosted.md).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
+4. An application image based on glibc 2.30 or later, and not on musl, such as Alpine. See [Application container requirements](README.md#application-container-requirements).
 
 The setup uses a `SUCCESS` [container dependency](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDependency.html), which requires:
 
@@ -144,3 +145,4 @@ These apply in every deployment mode. For connection and authentication problems
 | The application starts without mirrord | The setup container failed or its `dependsOn` condition isn't wired up; check its logs and exit code. |
 | The task registers but the developer is never paired | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord.json`. |
 | `Read-only file system` or `Permission denied` under `/tmp` | The application container has no writable `/tmp` ([Prerequisites](#prerequisites)). |
+| The application container stops at startup: version `GLIBC_2.30` not found, required by `libmirrord_remote_bootstrap.so` | The application image's glibc is older than 2.30 ([Prerequisites](#prerequisites)). |
