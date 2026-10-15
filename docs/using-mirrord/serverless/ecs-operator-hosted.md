@@ -35,13 +35,15 @@ EKS tokens are valid for 15 minutes, or until the task role credentials they wer
 
 The task role needs **no IAM permissions** for this: `sts:GetCallerIdentity` is allowed for every AWS identity, and the ECS task never calls STS or EKS APIs itself. No AWS credentials, access keys or secrets are added to the task.
 
+This authentication flow is the same on **Fargate and EC2**. On EC2, use the task IAM role, not the container instance's IAM role. ECS-optimized AMIs provide task-role credential delivery; with a custom AMI, ensure the ECS agent and container networking allow the application container to reach the ECS credentials endpoint. The `bridge` and `host` network modes may need additional agent configuration and host networking rules; follow AWS's [EC2 task-role configuration requirements](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html#ecs-task-iam-roles-additional-configuration-for-ec2).
+
 ## Prerequisites
 
 1. The [Operator-hosted sessions-manager](operator-hosted.md) enabled on the EKS cluster.
 2. The ECS task definition set up with the [remote bootstrap](ecs.md), up to [Connect to your deployment mode](ecs.md#connect-to-your-deployment-mode).
 3. The cluster's authentication mode set to `API` or `API_AND_CONFIG_MAP`, so access entries can be used. [Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster) shows how to check and change it.
 4. The ECS VPC and the EKS VPC attached to the same Transit Gateway.
-5. An IAM **task role** on the ECS service (`taskRoleArn` in the task definition). This is not the execution role.
+5. An IAM **task role** on the ECS service (`taskRoleArn` in the task definition), with credentials available inside the application container. This is not the execution role or, for EC2-backed tasks, the container instance role.
 6. `kubectl` and the AWS CLI, with permission to manage cluster RBAC, EKS access entries, VPC networking and the ECS task definition.
 
 Throughout this guide, replace:
@@ -131,6 +133,13 @@ kubectl auth can-i list pods -A \
 
 The ECS task connects to the cluster's **private** API server endpoint over the Transit Gateway. The private endpoint is a set of network interfaces EKS places in the cluster VPC's subnets; they carry the cluster security group. You only need to do this once per ECS VPC.
 
+The source of the connection depends on the task's network mode, not just its launch type:
+
+* **`awsvpc`** (required on Fargate, also available on EC2): use the task ENI's subnet routes and security group.
+* **`bridge` or `host`** (EC2): use the container instance's subnet routes and security group. In `bridge` mode, outbound traffic is normally translated to the instance's IP address; the task doesn't have its own VPC security group.
+
+In either case, the application container must resolve the EKS endpoint and reach it on TCP 443. Apply the routing and firewall checks below to the task ENI or container instance as appropriate.
+
 ### Enable the private endpoint
 
 ```bash
@@ -147,7 +156,7 @@ Enabling private access doesn't change public access, so developers who use the 
 ### Routing
 
 * The Transit Gateway route table associated with the ECS VPC attachment routes the EKS VPC CIDR to the EKS VPC attachment, and the one associated with the EKS VPC attachment routes `<ECS_VPC_CIDR>` back (static routes or propagation).
-* The route tables of the ECS tasks' subnets send the EKS VPC CIDR to the Transit Gateway.
+* The route tables of the ECS source subnets send the EKS VPC CIDR to the Transit Gateway: task ENI subnets for `awsvpc`, or container instance subnets for `bridge`/`host`.
 * The route tables of the EKS subnets holding the endpoint interfaces send `<ECS_VPC_CIDR>` to the Transit Gateway.
 
 ### Firewalling
@@ -162,7 +171,7 @@ Enabling private access doesn't change public access, so developers who use the 
   ```
 
   Use a CIDR rule: a security group in the ECS VPC can only be referenced across a Transit Gateway if security group referencing is turned on for it.
-* The ECS tasks' security group allows outbound TCP 443 to the EKS VPC CIDR.
+* The source security group allows outbound TCP 443 to the EKS VPC CIDR: the task ENI's security group for `awsvpc`, or the container instance's security group for `bridge`/`host`.
 * Network ACLs on both sides, and any firewall or inspection appliance on the Transit Gateway path, allow this traffic and its return traffic.
 
 ### DNS
