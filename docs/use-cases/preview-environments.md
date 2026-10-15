@@ -561,9 +561,11 @@ The same settings can live in the config as `feature.preview.helm`:
 }
 ```
 
-Rendering needs the `helm` binary on your `PATH`. Without it, or with a chart `helm template`
-rejects, the command stops before anything is created and quotes Helm's error. Running
-`helm template` yourself and passing the output with `--resource` gives the same result.
+Rendering needs the `helm` binary on your `PATH`, and `--chart` takes a local chart directory or
+packaged `.tgz`; charts from a repository or `oci://` registry are not fetched, so `helm pull`
+them first. Without `helm`, or with a chart `helm template` rejects, the command stops before
+anything is created and quotes Helm's error. Running `helm template` yourself and passing the
+output with `--resource` gives the same result.
 
 `--resource` and `--chart` are not supported with a management-only multi-cluster operator yet,
 because the target lives in another cluster than the one the CLI talks to. `--resource` requires
