@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Targeting Amazon ECS tasks is **experimental**, and may change without notice. It needs a remote bootstrap image that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+Targeting Amazon ECS tasks is **experimental**, and may change without notice.
 {% endhint %}
 
 This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged. At a glance, the setup is:
@@ -18,7 +18,7 @@ This guide makes an Amazon ECS service targetable as a [serverless workload](REA
 
 ## Prerequisites
 
-1. A [deployment mode](README.md#deployment-modes) that's set up, such as the [Operator-hosted sessions-manager](operator-hosted.md).
+1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
 
@@ -29,7 +29,6 @@ Throughout this guide, replace:
 | `<YOUR_SERVICE_NAME>` | A name for the ECS service you target, e.g. `payments` |
 | `<YOUR_ENVIRONMENT>` | A name for the environment the ECS service runs in, e.g. `staging` |
 | `<YOUR_APPLICATION_IMAGE>` | Your application container's existing image |
-| `<REMOTE_BOOTSTRAP_IMAGE>` | The remote bootstrap image, including its tag, [provided by MetalBear](README.md#values-provided-by-metalbear) |
 
 `<YOUR_SERVICE_NAME>` and `<YOUR_ENVIRONMENT>` are free-form: they're how a developer names the ECS task they want. They must be identical on the ECS task and in developers' `mirrord.json`.
 
@@ -47,7 +46,7 @@ A non-essential setup container copies the bootstrap library into a shared task 
   "containerDefinitions": [
     {
       "name": "install-mirrord-remote-bootstrap",
-      "image": "<REMOTE_BOOTSTRAP_IMAGE>",
+      "image": "ghcr.io/metalbear-co/mirrord-remote-bootstrap:latest",
       "essential": false,
       "entryPoint": ["/bin/sh", "-c"],
       "command": [
@@ -76,7 +75,7 @@ A non-essential setup container copies the bootstrap library into a shared task 
 }
 ```
 
-Use the remote bootstrap image from the same set as your Operator image and your developers' mirrord CLI ([Values provided by MetalBear](README.md#values-provided-by-metalbear)). If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
+To control when the bootstrap is upgraded, replace `latest` with a release tag, and upgrade it together with your Operator (if you use one) and your developers' mirrord CLI. If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
 
 ## Name the workload
 
@@ -95,13 +94,13 @@ The bootstrap needs to know which sessions-manager to register with, and how to 
 | Deployment mode | Guide |
 | --- | --- |
 | Operator-hosted | [Connecting ECS to the Operator](ecs-operator-hosted.md) |
-| MetalBear Cloud | Coming soon |
+| MetalBear Cloud | [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md) |
 
 ---
 
 ## Sharing settings across services
 
-ECS has no cluster-wide environment variables, so every task definition you target needs its variables. To keep the values that are the same for every service in one place, such as `MIRRORD_REMOTE_ENVIRONMENT` and your deployment mode's connection variables, put them in an [environment file](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/use-environment-file.html) in S3:
+ECS has no cluster-wide environment variables, so every task definition you target needs its variables. To keep the values that are the same for every service in one place, such as `MIRRORD_REMOTE_ENVIRONMENT` and your deployment mode's non-secret connection variables, put them in an [environment file](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/use-environment-file.html) in S3:
 
 ```bash
 cat > mirrord.env <<EOF
@@ -119,7 +118,7 @@ and reference it from each application container instead of listing those variab
 ]
 ```
 
-`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. On Fargate, environment files need platform version `1.4.0` or later.
+`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Keep secrets, such as the MetalBear Cloud API key, out of the file, and inject them with `secrets` instead ([Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md#add-the-connection-variables)). Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. On Fargate, environment files need platform version `1.4.0` or later.
 
 ## Troubleshooting
 
