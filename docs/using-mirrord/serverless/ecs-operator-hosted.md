@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Connecting ECS to the Operator is **experimental**, and may change without notice. It needs the Operator and remote bootstrap builds that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+Connecting ECS to the Operator is **experimental**, and may change without notice. Set up the [Operator-hosted sessions-manager](operator-hosted.md) and [remote bootstrap](ecs.md) before following this guide.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [Operator-hosted sessions-manager](operator-hosted.md) on your EKS cluster. The task authenticates as its IAM task role, mapped to a Kubernetes identity. At a glance, the setup is:
@@ -268,7 +268,7 @@ The bootstrap's messages appear in the application container's logs. For problem
 | TLS or certificate verification error | `MIRRORD_OPERATOR_API_CA_DATA` is missing or belongs to another cluster. |
 | `401 Unauthorized` | No access entry for the role, the access entry uses the execution role instead of the task role, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` doesn't match the cluster, or the authentication mode is still `CONFIG_MAP`. |
 | `403 Forbidden` on `serverlessagentassignments` | The access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
-| `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the chart's default image because the release still overrides it ([Check for image overrides](operator-hosted.md#check-for-image-overrides)). |
+| `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values ([Enable sessions-manager](operator-hosted.md#enable-sessions-manager)). |
 | `MIRRORD_SESSIONS_MANAGER_URL and MIRRORD_OPERATOR_API_URL are mutually exclusive` | The task sets both; remove `MIRRORD_SESSIONS_MANAGER_URL`. |
 | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME is required when MIRRORD_OPERATOR_API_URL is set` (or `MIRRORD_OPERATOR_API_CA_DATA`) | A [connection variable](#add-the-connection-variables) is missing on the task. |
 | `no AWS region to sign the EKS token for` | `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname, and neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set. Set `AWS_REGION` to the cluster's region. |

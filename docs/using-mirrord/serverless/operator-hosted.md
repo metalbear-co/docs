@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-The Operator-hosted sessions-manager is **experimental**, and may change without notice. It needs an Operator build that MetalBear provides on request; see [Values provided by MetalBear](README.md#values-provided-by-metalbear).
+The Operator-hosted sessions-manager is **experimental**, and may change without notice. It requires Operator **3.223.0 or later**; see [Required versions](README.md#required-versions).
 {% endhint %}
 
 In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-manager runs inside the mirrord Operator. Enabling it is a Helm value: there's no additional deployment, service or load balancer, and the Operator isn't exposed outside the cluster. At a glance, the setup is:
@@ -18,9 +18,8 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 
 ## Prerequisites
 
-1. An EKS cluster with the mirrord Operator installed through its Helm chart, and a mirrord Operator license.
-2. The chart `<CHART>` and its version `<CHART_VERSION>`, [provided by MetalBear](README.md#values-provided-by-metalbear).
-3. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC, and `jq`.
+1. An EKS cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../managing-mirrord/operator.md#installation).
+2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
 
 ---
 
@@ -65,54 +64,30 @@ Both sides only make outbound HTTPS connections, and only to the API server. Nei
 
 ## Enable sessions-manager
 
-Upgrade your existing Operator Helm release to the chart [provided by MetalBear](README.md#values-provided-by-metalbear), and set `operator.sessionsManager=true`. The chart's default Operator image serves sessions-manager, so the upgrade doesn't set an image.
+Set `operator.sessionsManager: true` in your Operator Helm values:
 
-### Check for image overrides
-
-The upgrade keeps the values your release already has (`--reuse-values`). If those values set the Operator image or its tag, for example to mirror it into your own registry, they take precedence over the chart's default, and the Operator keeps running an image without sessions-manager. Check for such overrides first:
-
-```bash
-helm get values mirrord-operator --namespace mirrord -o json | jq -r '
-  [ ["operator","image"], ["operator","imageTag"], ["operator","kafkaSplittingSidecar","image"] ] as $paths
-  | [ $paths[] as $p | getpath($p) as $v | select($v != null) | "  \($p | join(".")) = \($v)" ]
-  | if length == 0 then "No issues, you may proceed."
-    else "Remove these image overrides before upgrading:\n" + join("\n") end'
+```yaml
+operator:
+  sessionsManager: true
 ```
 
-If it prints `No issues, you may proceed.`, continue with [Upgrade](#upgrade). If it lists overrides, follow [Removing image overrides](#removing-image-overrides) instead.
-
-### Upgrade
+Upgrade your existing release using the standard MetalBear Helm repository:
 
 ```bash
-helm upgrade mirrord-operator <CHART> \
+helm repo add metalbear https://metalbear-co.github.io/charts
+helm repo update metalbear
+
+helm upgrade mirrord-operator metalbear/mirrord-operator \
   --namespace mirrord \
-  --version <CHART_VERSION> \
-  --reuse-values \
-  --set operator.sessionsManager=true
+  --version 3.223.0 \
+  -f values.yaml
 ```
 
-### Removing image overrides
+Use your maintained `values.yaml`, including your license or cloud authentication settings and any other configuration your release needs, with `operator.sessionsManager: true` added. Don't replace it with a fresh defaults file. The example pins version `3.223.0`; you can use a later supported release instead.
 
-If the check listed overrides, upgrade from an edited copy of your release's values instead of reusing them:
-
-1. Export the values your release sets:
-
-   ```bash
-   helm get values mirrord-operator --namespace mirrord -o yaml > mirrord-values.yaml
-   ```
-2. Delete the keys the check listed from `mirrord-values.yaml`.
-3. Upgrade with the edited file:
-
-   ```bash
-   helm upgrade mirrord-operator <CHART> \
-     --namespace mirrord \
-     --version <CHART_VERSION> \
-     -f mirrord-values.yaml \
-     --set operator.sessionsManager=true
-   ```
-4. Delete `mirrord-values.yaml`, which contains your license key.
-
-Don't clear the overrides with `--set operator.image=null` instead: setting a value to `null` also removes the chart's default, and the Operator would have no image to run.
+{% hint style="info" %}
+If your values override the Operator image or tag, update the override to version **3.223.0 or later** too. For mirrored images, follow [Using an Internal Registry](../../managing-mirrord/operator.md#using-an-internal-registry-optional). The chart's default image needs no override.
+{% endhint %}
 
 ### Confirm sessions-manager is served
 
@@ -195,7 +170,7 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 
 | Symptom | Likely cause |
 | --- | --- |
-| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator doesn't run the image [provided by MetalBear](README.md#values-provided-by-metalbear). |
+| `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values. |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
 | `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
