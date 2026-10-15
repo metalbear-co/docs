@@ -514,10 +514,61 @@ ingress/web from ./k8s/ingress.yaml: outside the target's scope, skipped
 
 Secret values are never printed, only whether each one changed.
 
-`--resource` is not supported with a management-only multi-cluster operator yet, because the
-target lives in another cluster than the one the CLI talks to. It requires CLI 3.266.0 or later
-and operator 3.213.0 or later; with an older operator the CLI refuses `--resource` instead of
-starting a preview from the live spec.
+#### Building a Preview From a Helm Chart
+
+If the service is deployed with Helm, pass the chart instead of plain manifests. mirrord renders
+it with `helm template` on your machine and then handles the rendered objects exactly like
+`--resource`: only the target and the ConfigMaps and Secrets its pod uses, only where they differ
+from what is live. This is useful when a pull request changes the chart or its values along with
+the code:
+
+```bash
+mirrord preview start -t deployment/app -i myrepo/app:pr-123 -k pr-123 \
+  --chart ./chart --values ./values-qa.yaml
+```
+
+`--values` can be repeated and is applied in order, like `helm template -f`. Without it the chart
+is rendered with its own `values.yaml`, and mirrord says so, because that may not match what is
+deployed:
+
+```
+Rendering ./chart with its default values.yaml only (no --values given).
+This may not match what is deployed in your environment.
+```
+
+The chart is rendered under the target's namespace and, by default, the target's name as the
+release name. Charts usually build object names from the release name, so when your release is
+not named after the target, pass `--release-name <name>`. Otherwise the rendered Deployment comes
+out under another name, falls outside the target's scope, and the preview runs the live spec;
+mirrord points this out when a chart defines no object matching the target.
+
+`--chart` can be combined with `--resource`, and works with `mirrord preview diff` the same way.
+The same settings can live in the config as `feature.preview.helm`:
+
+```json
+{
+  "target": "deployment/app",
+  "key": "pr-123",
+  "feature": {
+    "preview": {
+      "image": "myrepo/app:pr-123",
+      "helm": {
+        "chart": "./chart",
+        "values": ["./values-qa.yaml"]
+      }
+    }
+  }
+}
+```
+
+Rendering needs the `helm` binary on your `PATH`. Without it, or with a chart `helm template`
+rejects, the command stops before anything is created and quotes Helm's error. Running
+`helm template` yourself and passing the output with `--resource` gives the same result.
+
+`--resource` and `--chart` are not supported with a management-only multi-cluster operator yet,
+because the target lives in another cluster than the one the CLI talks to. `--resource` requires
+CLI 3.266.0 or later and `--chart` CLI 3.275.0 or later, both with operator 3.213.0 or later;
+with an older operator the CLI refuses them instead of starting a preview from the live spec.
 
 ***
 
