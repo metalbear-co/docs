@@ -10,7 +10,9 @@ tags:
 Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the released bootstrap image and dedicated CLI.
 {% endhint %}
 
-This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged. At a glance, the setup is:
+This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
+
+The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazon EC2**. Windows containers aren't covered by this setup. At a glance, the setup is:
 
 1. Add a setup container that copies the bootstrap into a shared task volume ([Add the remote bootstrap](#add-the-remote-bootstrap)).
 2. Load the bootstrap into the application container and name the workload ([Name the workload](#name-the-workload)).
@@ -21,6 +23,15 @@ This guide makes an Amazon ECS service targetable as a [serverless workload](REA
 1. A [deployment mode](README.md#deployment-modes) that's set up, such as the [Operator-hosted sessions-manager](operator-hosted.md).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
+
+The setup uses a `SUCCESS` [container dependency](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_ContainerDependency.html), which requires:
+
+| Launch type | Requirement |
+| --- | --- |
+| Fargate | Linux platform version **1.3.0 or later** |
+| EC2 | ECS container agent **1.26.0 or later**; on ECS-optimized AMIs, `ecs-init` **1.26.0-1 or later** |
+
+For EC2-backed tasks, use an up-to-date ECS-optimized AMI or ensure your custom AMI meets these requirements. Task-role credential requirements for the Operator-hosted mode are covered in [Connecting ECS to the Operator](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
 Throughout this guide, replace:
 
@@ -36,7 +47,11 @@ Throughout this guide, replace:
 
 ## Add the remote bootstrap
 
-A non-essential setup container copies the bootstrap library into a shared task volume before the application container starts, the ECS equivalent of a Kubernetes init container. Add the volume and the setup container to the task definition, and make the application container depend on it and mount the volume:
+A non-essential setup container copies the bootstrap library into a shared task volume before the application container starts, the ECS equivalent of a Kubernetes init container.
+
+For EC2-backed tasks without task-level `memory`, also set a non-zero `memory` or `memoryReservation` on the setup container, as ECS requires a memory setting for each container in that case.
+
+Merge the example into your existing task definition, preserving its launch type, network mode, resource settings and other containers. Add the volume and the setup container, and make the application container depend on it and mount the volume:
 
 ```json
 {
@@ -118,7 +133,7 @@ and reference it from each application container instead of listing those variab
 ]
 ```
 
-`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. On Fargate, environment files need platform version `1.4.0` or later.
+`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. Environment files need Linux platform version **1.4.0 or later** on Fargate, or ECS container agent **1.39.0 or later** on EC2. If you don't use environment files, keep the variables in the task definition's `environment` list instead.
 
 ## Troubleshooting
 
