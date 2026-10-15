@@ -322,7 +322,7 @@ spec:
         databaseName: "billing*"
       # Branches of a database named `orders`, on any engine with database names.
       - databaseName: orders
-      # All Redis branches.
+      # All Redis branches that run in the cluster.
       - type: redis
     # Copy modes branches may use. `generic` branches are not affected.
     #
@@ -344,7 +344,7 @@ Rules match the name of the source a branch copies from, using `*` and `?` wildc
 | `bucket`       | `s3`                                                                                               |
 | `namespace`    | `turbopuffer`                                                                                      |
 
-`dynamodb`, `redis`, and `generic` branches have no source name and can only be matched by `type`. A PostgreSQL branch is blocked when any of its databases, including `additional_databases`, matches.
+`dynamodb`, `redis`, and `generic` branches have no source name and can only be matched by `type`. Redis branches with `location: local` run on the user's machine, so policies do not apply to them. A PostgreSQL branch is blocked when any of its databases, including `additional_databases`, matches.
 
 When a name rule applies to a branch, the branch is also blocked if its source name cannot be read, or if it sets `copy.dump_args`, which can copy more databases than the source.
 
