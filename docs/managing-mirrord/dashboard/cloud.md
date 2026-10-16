@@ -85,3 +85,7 @@ A self-hosted license server is different: an operator configured with `license.
 {% hint style="warning" %}
 Don't migrate an air-gapped or network-restricted deployment. The cloud dashboard needs outbound connectivity to the mirrord cloud; keep those clusters on [License Server Setup](license-server.md).
 {% endhint %}
+
+## Signing in with your identity provider
+
+Access to the cloud dashboard is by login. If your organization uses Okta, Microsoft Entra ID, or another SAML provider, you can require it for sign-in; see [Single Sign-On](sso.md).
