@@ -310,11 +310,13 @@ queue splits stay active even though the preview's pods are gone. When a request
 environment's filter arrives, it is **held** while the pods start and answered by the preview
 once ready - the caller just sees a slower first response. Queue messages don't need holding at
 all: they wait in the environment's split queue/topic until the preview consumes them, so
-nothing is lost either way.
+nothing is lost either way. With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
+a message waiting on a branch topic the preview consumes starts the preview pods.
 
 While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
 and the session's TTL keeps counting. Idle mode requires a wake source - incoming traffic
-enabled or queues split - since otherwise nothing could ever wake the environment.
+enabled, queues split, or Kafka branching enabled for a target that consumes Kafka queues - since
+otherwise nothing could ever wake the environment.
 
 Cluster administrators can cap how much traffic a waking environment may hold with these Helm
 chart values (defaults: 512 protocol messages, 8 MiB of payload):
