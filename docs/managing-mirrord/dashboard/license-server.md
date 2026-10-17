@@ -51,16 +51,18 @@ The chart automatically configures the container port, service port, and require
 
 ## API Endpoints
 
-The dashboard consumes two API endpoints from the license server. These are also available for programmatic access:
+The dashboard reads its data from the license server's report endpoints. These are also available for programmatic access:
 
 * `GET /api/v1/reports/usage?format=json` returns the full usage report (users, targets, sessions, CI metrics, machines).
 * `GET /api/v1/reports/usage/trends?days=30` returns time-series data (daily sessions, active users, CI sessions, user adoption).
+* `GET /api/v1/reports/topology` returns the service map, see [Topology API](topology-api.md).
 
-Both endpoints require the `x-license-key` header. This is the license key configured in the license server's Helm values (`license.key`). When the dashboard is served by the license server, this header is injected automatically. For direct API access (e.g., via `curl`), pass it manually:
+On the dashboard port, the license server adds the license key to every request itself, so there is no header to send:
 
 ```bash
-curl -H "x-license-key: <your-license-key>" \
-  http://localhost:8050/api/v1/reports/usage?format=json
+curl "http://localhost:8050/api/v1/reports/usage?format=json"
 ```
+
+The dashboard port has no login of its own, so limit who can reach it. On the license server's own API port (port `80` of its Service by default), the same endpoints require the `x-license-key` header, which is the license key configured in the license server's Helm values (`license.key`).
 
 For spreadsheet reports (Excel format), see Getting a Utilisation Report (../license-server.md#getting-a-utilisation-report-from-the-license-server)

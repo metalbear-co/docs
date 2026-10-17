@@ -101,6 +101,7 @@
   * [License Server Setup](managing-mirrord/dashboard/license-server.md)
   * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
   * [Topology](managing-mirrord/dashboard/topology.md)
+    * [Topology API](managing-mirrord/dashboard/topology-api.md)
   * [Usage API](managing-mirrord/dashboard/usage-api.md)
 * [Monitoring](managing-mirrord/monitoring.md)
 * [Security](managing-mirrord/security.md)
