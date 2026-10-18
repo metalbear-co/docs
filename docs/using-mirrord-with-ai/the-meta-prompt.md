@@ -88,6 +88,8 @@ Question 5:
 If I choose steal, also ask for the header name and value that mark my
 requests, and suggest x-dev-user: <my name>. Without a header filter, steal
 takes all the traffic of the target from everyone on the cluster.
+If the service does not serve HTTP, tell me that a header filter cannot
+match its traffic, so a filtered steal sends nothing to my local process.
 WAIT FOR MY ANSWER.
 
 Question 6:
