@@ -24,6 +24,7 @@
 * [Chaos Testing](use-cases/chaos-testing.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [Agent Skills for mirrord](using-mirrord-with-ai/ai-skills-plugin.md)
+  * [Test Claude Code Changes Against Staging](using-mirrord-with-ai/claude-code.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
   * [Agent-Started Trials](using-mirrord-with-ai/agent-started-trials.md)
 
