@@ -12,7 +12,7 @@ mirrord closes that gap. Claude Code runs the service on your machine, and mirro
 
 This also works when many developers and Claude Code sessions test against the same staging cluster at the same time. With the mirrord Operator, each session gets only its own requests, its own queue messages, and its own database branch, so the sessions do not break each other or the deployed services.
 
-This guide sets this up in about five minutes.
+This guide sets this up for one service in about five minutes. To set up many services at once, or to use an agent other than Claude Code, use the [meta-prompt](./the-meta-prompt.md).
 
 ## What you need
 
@@ -59,8 +59,6 @@ ALWAYS test changes to <service> against the staging cluster with mirrord before
 - NEVER target a production cluster.
 ```
 
-To generate this section and the config files for many services at once, use the [meta-prompt](./the-meta-prompt.md).
-
 ## 4. Let Claude Code write the mirrord config
 
 The `mirrord-config` skill from step 2 writes `mirrord.json` and validates it against the schema. Ask Claude Code to use it:
@@ -90,8 +88,6 @@ Claude Code asks for approval before it runs a shell command. To let it run mirr
   }
 }
 ```
-
-Keep other commands on approval while you get used to the workflow.
 
 ## 6. Ask Claude Code to make and test a change
 
