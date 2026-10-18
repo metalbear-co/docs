@@ -22,17 +22,13 @@ This guide sets this up in about five minutes.
 
 ## 1. Install the mirrord CLI
 
-macOS and Linux:
+On macOS and Linux, install it with Homebrew:
 
 ```sh
 brew install metalbear-co/mirrord/mirrord
 ```
 
-Or with the install script:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
-```
+For Windows and other install methods, see [Installing the mirrord CLI](../installing-mirrord/cli.md).
 
 Check the install with `mirrord --version`, and check cluster access with `kubectl get pods -n <namespace>`.
 
@@ -58,7 +54,7 @@ ALWAYS test changes to <service> against the staging cluster with mirrord before
 
 - Target: deployment/<service> in namespace <namespace>, kubecontext <staging-context>
 - Run the service: mirrord exec -f .mirrord/mirrord.json -- <command that starts the service>
-- Run the integration tests: mirrord exec -f .mirrord/mirrord.json -- <test command>
+- Run the integration tests (if the service has them): mirrord exec -f .mirrord/mirrord.json -- <test command>
 - Send test requests with the header `x-dev-user: <your-name>`, so that only your requests reach your local process.
 - NEVER target a production cluster.
 ```
@@ -76,25 +72,12 @@ Target deployment/<service> in namespace <namespace>, and pin the kubecontext to
 x-dev-user: <your-name>, as an exact match. Read env vars and files from the pod.
 ```
 
-Check that the result has these two settings:
+Two settings in the prompt keep the session safe on a shared cluster:
 
-```json
-{
-  "kube_context": "<staging-context>",
-  "feature": {
-    "network": {
-      "incoming": {
-        "mode": "steal",
-        "http_filter": { "header_filter": "^x-dev-user: <your-name>$" }
-      }
-    }
-  }
-}
-```
+- **The kubecontext.** The config pins the session to the staging cluster. Without it, mirrord uses your current kubecontext, so the same command runs against another cluster after you switch contexts.
+- **The header filter.** Only requests that carry your header go to the process on your machine. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization.
 
-`kube_context` pins the session to the staging cluster. Without it, mirrord uses your current kubecontext, so the same command runs against another cluster after you switch contexts.
-
-The `http_filter` matters on a shared cluster. Only requests that carry your header go to the process on your machine, and all other requests keep going to the deployed service, so your session does not break staging for the rest of the organization. The filter is a regular expression, so the `^` and `$` must stay: without them, a filter for `ann` also matches `anna`. If you only want to read traffic and not answer it, ask for `mirror` mode.
+If you only want to read traffic and not answer it, ask for `mirror` mode instead of steal.
 
 ## 5. Let Claude Code run mirrord without a prompt each time
 
