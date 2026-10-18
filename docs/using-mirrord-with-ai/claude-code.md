@@ -6,9 +6,9 @@ toc: true
 tags: ["oss", "team", "enterprise"]
 ---
 
-Claude Code can write a change to a microservice in a few minutes. To check that the change works, it needs the things that the service talks to: the other services, the queues, the database, and the configuration of the real environment. On a laptop, those are missing or mocked, so Claude Code can only check that the code compiles and that the unit tests pass.
+Claude Code can write a change to a microservice in seconds or minutes. To check that the change works, it needs the things that the service talks to: the other services, the queues, the database, and the configuration of the real environment. On a laptop, those are missing or mocked, so Claude Code can only check that the code compiles and that the unit tests pass.
 
-mirrord closes that gap. Claude Code runs the service on your machine, and mirrord connects the process to a pod in your staging cluster. The process gets the pod's environment variables, DNS, network access, and incoming traffic. Claude Code can then run the service and its tests against the real services in staging, read the real responses, and fix what breaks before you review the change. Nothing is built or deployed.
+mirrord closes that gap. Claude Code runs the service on your machine, and mirrord connects the process to a pod in your staging cluster. The process gets the pod's environment variables, DNS, network access, and incoming traffic. Claude Code can then run the service and its tests against the real services in staging, read the real responses, and fix what breaks before you review the change. Nothing is built or deployed. Claude Code can also run the service for you to test end to end, or, with mirrord for Teams, create a [preview environment](../use-cases/preview-environments.md) for a pull request that you and your colleagues can open.
 
 This also works when many developers and Claude Code sessions test against the same staging cluster at the same time. With the mirrord Operator, each session gets only its own requests, its own queue messages, and its own database branch, so the sessions do not break each other or the deployed services.
 
@@ -22,13 +22,24 @@ This guide sets this up for one service in about five minutes. To set up many se
 
 ## 1. Install the mirrord CLI
 
-On macOS and Linux, install it with Homebrew:
+{% tabs %}
+{% tab title="macOS/Linux" %}
 
 ```sh
 brew install metalbear-co/mirrord/mirrord
 ```
 
-For Windows and other install methods, see [Installing the mirrord CLI](../installing-mirrord/cli.md).
+{% endtab %}
+{% tab title="Windows" %}
+
+```powershell
+choco install --pre mirrord
+```
+
+{% endtab %}
+{% endtabs %}
+
+For other install methods, see [Installing the mirrord CLI](../installing-mirrord/cli.md).
 
 Check the install with `mirrord --version`, and check cluster access with `kubectl get pods -n <namespace>`.
 
@@ -45,6 +56,10 @@ The plugin gives Claude Code skills for mirrord: how to find a target, write a v
 
 ## 3. Tell Claude Code how to test in this repository
 
+{% hint style="warning" %}
+If the integration tests write to or delete data in a database that other people use, do not run them against the shared database. Use [DB branching](../sharing-the-cluster/db-branching.md) to give the session its own copy, or leave the test line out.
+{% endhint %}
+
 Add a short section to the `CLAUDE.md` file at the root of the repository. Claude Code reads this file at the start of each session.
 
 ```markdown
@@ -55,29 +70,40 @@ ALWAYS test changes to <service> against the staging cluster with mirrord before
 - Target: deployment/<service> in namespace <namespace>, kubecontext <staging-context>
 - Run the service: mirrord exec -f .mirrord/mirrord.json -- <command that starts the service>
 - Run the integration tests (if the service has them): mirrord exec -f .mirrord/mirrord.json -- <test command>
-- Send test requests with the header `x-dev-user: <your-name>`, so that only your requests reach your local process.
+- Send test requests with the header `baggage: mirrord-session=<your-name>`, so that only your requests reach your local process.
 - NEVER target a production cluster.
 ```
 
-## 4. Let Claude Code write the mirrord config
+## 4. Propagate the header (if requests reach the service through other services)
+
+The header filter in step 5 matches only the requests that reach the target with the header. If those requests come from other services, such as a frontend or an API gateway, those services must copy the `baggage` header onto the calls they make. This is [header propagation](../sharing-the-cluster/header-propagation.md). Skip this step if you send requests to the service directly.
+
+The `mirrord-header-propagation` skill from step 2 sets it up. Ask Claude Code:
+
+```
+Use the mirrord-header-propagation skill to propagate the baggage header across my services.
+```
+
+## 5. Let Claude Code write the mirrord config
 
 The `mirrord-config` skill from step 2 writes `mirrord.json` and validates it against the schema. Ask Claude Code to use it:
 
 ```
 Use the mirrord-config skill to create .mirrord/mirrord.json for <service>.
 Target deployment/<service> in namespace <namespace>, and pin the kubecontext to
-<staging-context>. Steal only the requests that carry the header
-x-dev-user: <your-name>, as an exact match. Read env vars and files from the pod.
+<staging-context>. Steal only the requests whose baggage header has the entry
+mirrord-session=<your-name>, and not mirrord-session=<your-name>2. Read env vars
+and files from the pod.
 ```
 
 Two settings in the prompt keep the session safe on a shared cluster:
 
 - **The kubecontext.** The config pins the session to the staging cluster. Without it, mirrord uses your current kubecontext, so the same command runs against another cluster after you switch contexts.
-- **The header filter.** Only requests that carry your header go to the process on your machine. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization.
+- **The header filter.** Only requests that carry your `baggage` entry go to the process on your machine. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization.
 
 If you only want to read traffic and not answer it, ask for `mirror` mode instead of steal.
 
-## 5. Let Claude Code run mirrord without a prompt each time
+## 6. Let Claude Code run mirrord without a prompt each time
 
 Claude Code asks for approval before it runs a shell command. To let it run mirrord sessions without a prompt each time, add this to `.claude/settings.json` in the repository:
 
@@ -89,7 +115,7 @@ Claude Code asks for approval before it runs a shell command. To let it run mirr
 }
 ```
 
-## 6. Ask Claude Code to make and test a change
+## 7. Ask Claude Code to make and test a change
 
 Some prompts to start with:
 
@@ -112,7 +138,7 @@ If the cluster has no license, Claude Code can start a seven-day Enterprise tria
 ## If a session does not start
 
 - **Claude Code cannot connect to the mirrord agent.** Check that `kubectl get pods -n <namespace>` works from the same terminal. Then check that you can create pods in the namespace where mirrord starts its agent. Without the Operator, that is the current namespace of your kubecontext, not the target's namespace, unless you set `agent.namespace` in the config. Tell Claude Code to stop and report the error after two failures, not to retry in a loop.
-- **The requests do not reach the local process.** Check that the requests carry the exact header in `header_filter`. The filter is a regular expression, matched against the request headers.
+- **The requests do not reach the local process.** Check that the requests carry the `baggage` entry that `header_filter` matches. The filter is a regular expression, matched against the request headers. If the requests come through other services, check that those services [propagate the header](../sharing-the-cluster/header-propagation.md).
 - **The service reads a file that is not on your machine.** mirrord reads files from the pod by default with `"fs": "read"`. Change the `fs` setting if the service must read local files.
 
 For other errors, see [Common Issues](../troubleshooting/common-issues.md).
