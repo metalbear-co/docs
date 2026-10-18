@@ -8,7 +8,7 @@ tags: ["oss", "team", "enterprise"]
 
 Claude Code can write a change to a microservice in seconds or minutes. To check that the change works, it needs the things that the service talks to: the other services, the queues, the database, and the configuration of the real environment. On a laptop, those are missing or mocked, so Claude Code can only check that the code compiles and that the unit tests pass.
 
-mirrord closes that gap. Claude Code runs the service on your machine, and mirrord connects the process to a pod in your staging cluster. The process gets the pod's environment variables, DNS, network access, and incoming traffic. Claude Code can then run the service and its tests against the real services in staging, read the real responses, and fix what breaks before you review the change. Nothing is built or deployed. Claude Code can also run the service for you to test end to end, or, with mirrord for Teams, create a [preview environment](../use-cases/preview-environments.md) for a pull request that you and your colleagues can open.
+mirrord closes that gap. Claude Code runs the service on your machine, and mirrord connects the process to a pod in your staging cluster. The process gets the pod's environment variables, DNS, network access, and incoming traffic. Claude Code can then run the service and its tests against the real services in staging, read the real responses, and fix what breaks before you review the change. Nothing is built or deployed. Claude Code can also start the service with mirrord and leave it running, so that you can test the change yourself through staging, for example from the staging frontend with your header. With mirrord for Teams, it can also create a [preview environment](../use-cases/preview-environments.md) for a pull request that you and your colleagues can open.
 
 This also works when many developers and Claude Code sessions test against the same staging cluster at the same time. With the mirrord Operator, each session gets only its own requests, its own queue messages, and its own database branch, so the sessions do not break each other or the deployed services.
 
@@ -76,7 +76,7 @@ ALWAYS test changes to <service> against the staging cluster with mirrord before
 
 ## 4. Propagate the header (if requests reach the service through other services)
 
-The header filter in step 5 matches only the requests that reach the target with the header. If those requests come from other services, such as a frontend or an API gateway, those services must copy the `baggage` header onto the calls they make. This is [header propagation](../sharing-the-cluster/header-propagation.md). Skip this step if you send requests to the service directly.
+The header filter in step 5 matches only the requests that reach the target with the header. If those requests come from other services, such as a frontend or an API gateway, those services must copy the `baggage` header onto the calls they make. This is [header propagation](../sharing-the-cluster/header-propagation.md). Many services already propagate `baggage`, because OpenTelemetry and other tracing libraries forward it by default. Skip this step if your services already propagate it, or if you send requests to the service directly.
 
 The `mirrord-header-propagation` skill from step 2 sets it up. Ask Claude Code:
 
