@@ -112,7 +112,7 @@ For each configured service, generate:
      "<name>: <value>", with regex special characters escaped, anchored as an
      exact match (for example ^x-dev-user: alice$). Do not set
      http_filter.ports, so that the filter applies to every stolen port. Leave
-     the filter out only if I explicitly say that nobody else uses the cluster
+     the filter out only if I ask for that
    - Use only fields supported by the installed mirrord version
    - Avoid embedding secrets or sensitive values
 
