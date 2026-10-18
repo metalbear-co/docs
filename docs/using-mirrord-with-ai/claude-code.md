@@ -65,33 +65,36 @@ ALWAYS test changes to <service> against the staging cluster with mirrord before
 
 To generate this section and the config files for many services at once, use the [meta-prompt](./the-meta-prompt.md).
 
-## 4. Add a mirrord config for the service
+## 4. Let Claude Code write the mirrord config
 
-Create `.mirrord/mirrord.json`:
+The `mirrord-config` skill from step 2 writes `mirrord.json` and validates it against the schema. Ask Claude Code to use it:
+
+```
+Use the mirrord-config skill to create .mirrord/mirrord.json for <service>.
+Target deployment/<service> in namespace <namespace>, and pin the kubecontext to
+<staging-context>. Steal only the requests that carry the header
+x-dev-user: <your-name>, as an exact match. Read env vars and files from the pod.
+```
+
+Check that the result has these two settings:
 
 ```json
 {
   "kube_context": "<staging-context>",
-  "target": {
-    "path": "deployment/<service>",
-    "namespace": "<namespace>"
-  },
   "feature": {
     "network": {
       "incoming": {
         "mode": "steal",
         "http_filter": { "header_filter": "^x-dev-user: <your-name>$" }
       }
-    },
-    "env": true,
-    "fs": "read"
+    }
   }
 }
 ```
 
 `kube_context` pins the session to the staging cluster. Without it, mirrord uses your current kubecontext, so the same command runs against another cluster after you switch contexts.
 
-The `http_filter` matters on a shared cluster. Only requests that carry your header go to the process on your machine. The filter is a regular expression, so keep the `^` and `$`: without them, a filter for `ann` also matches `anna`. If your value contains regex characters such as `.` or `+`, escape them. In JSON, a literal dot is `\\.`. All other requests keep going to the deployed service, so your session does not break staging for the rest of the organization. If you only want to read traffic and not answer it, use `"mode": "mirror"`.
+The `http_filter` matters on a shared cluster. Only requests that carry your header go to the process on your machine, and all other requests keep going to the deployed service, so your session does not break staging for the rest of the organization. The filter is a regular expression, so the `^` and `$` must stay: without them, a filter for `ann` also matches `anna`. If you only want to read traffic and not answer it, ask for `mirror` mode.
 
 ## 5. Let Claude Code run mirrord without a prompt each time
 
