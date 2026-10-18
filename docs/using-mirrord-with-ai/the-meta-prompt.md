@@ -85,13 +85,15 @@ Question 5:
 "For service <name>: Which mirrord network mode should be used?"
 - steal (intercept traffic)
 - mirror (observe traffic)
+If I choose steal, also ask which HTTP header marks my requests, and suggest
+x-dev-user: <my name>. Without a header filter, steal takes all the traffic
+of the target from everyone on the cluster.
 WAIT FOR MY ANSWER.
 
 Question 6:
 "For service <name>: Any special requirements?"
 - Filesystem access
 - Environment variables
-- Traffic filtering
 WAIT FOR MY ANSWER.
 
 IMPORTANT:
@@ -106,7 +108,9 @@ For each configured service, generate:
 1. `.mirrord/mirrord-<service>.json`
    - Use the confirmed target type, target name, and namespace
    - Configure the selected network mode
-   - Apply traffic filtering ONLY if I explicitly provided it
+   - In steal mode, add an HTTP header filter for the header from Question 5,
+     anchored as an exact match (for example ^x-dev-user: alice$). Leave it out
+     only if I explicitly say that nobody else uses the cluster
    - Use only fields supported by the installed mirrord version
    - Avoid embedding secrets or sensitive values
 
