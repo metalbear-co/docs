@@ -210,8 +210,9 @@ When developers target a [serverless workload](../using-mirrord/serverless/READM
 
 * The workload holds a MetalBear API key issued for serverless workloads. Other MetalBear credentials, such as the Operator's license key, are refused.
 * Before registering, the workload exchanges the key at `app.metalbear.com` for a short-lived token over HTTPS, and presents only the token to sessions-manager. Neither the key nor the tokens are logged.
-* Developers authenticate with the credentials `mirrord login` stores when they sign in to their MetalBear account, and never handle the API key.
-* Sessions-manager verifies the tokens, and scopes every registration to the organization that owns the key, so workloads and developers are only paired within your organization.
+* Developers authenticate with the token `mirrord login` stores when they sign in to their MetalBear account, which names them and their organization. They never handle the API key.
+* Sessions-manager verifies both tokens against MetalBear's signing keys, and accepts each only for its own side: the workload's token can't start a developer session, and a developer's token can't register a workload.
+* Every registration is scoped to the organization its token names, so workloads and developers are only paired within your organization.
 * Each data-plane connection is bound to its session by a single-use credential delivered with the session assignment, so a caller can't attach to another caller's session.
 * Both sides only make outbound HTTPS connections; nothing in your infrastructure accepts inbound connections.
 * The key authenticates your organization, not a specific workload: anyone holding it can register a workload under any of your services and environments. Store it in a secret store, such as AWS Secrets Manager, and rotate it if it leaks.

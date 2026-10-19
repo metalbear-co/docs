@@ -44,8 +44,15 @@ Workloads authenticate with the API key:
 
 1. The API key is set on the workload, in `MIRRORD_SESSIONS_MANAGER_API_KEY`.
 2. Before each request that registers with sessions-manager, the workload exchanges the key at `https://app.metalbear.com` for a short-lived token, and presents the token to sessions-manager as `Authorization: Bearer <token>`. The key itself is only ever sent to that exchange, in the request body, over HTTPS, and never to sessions-manager. Neither the key nor the tokens are logged.
-3. Sessions-manager verifies the token against MetalBear's signing keys. The token identifies your organization, and every registration is scoped to it: workloads and developers are only ever paired within the same organization.
-Developers authenticate with the credentials `mirrord login` stores on their machine when they sign in to their MetalBear account. They never handle the API key.
+3. Sessions-manager verifies the token against MetalBear's signing keys. The token identifies the organization that owns the key.
+
+Developers authenticate with their MetalBear account:
+
+1. `mirrord login` signs the developer in, and stores a token on their machine that names them and the organization they signed in to.
+2. When the developer starts a session, mirrord presents that token to sessions-manager as `Authorization: Bearer <token>`. The developer never handles the API key.
+3. Sessions-manager verifies the token against the same signing keys, and only accepts tokens issued by `https://app.metalbear.com`.
+
+Each credential is accepted only for its own side of a session: the token exchanged for the API key can only register a workload, and a `mirrord login` token can only register a developer. Every registration is scoped to the organization its token names, so workloads and developers are only ever paired within the same organization.
 
 Each data-plane connection is bound to its session by a single-use credential delivered with the session assignment, so a caller can't attach to another caller's session.
 
@@ -54,7 +61,7 @@ Only API keys issued for serverless workloads are accepted. Other MetalBear cred
 Both sides only make outbound HTTPS connections. Neither needs a network path to the other, and nothing in your infrastructure accepts inbound connections.
 
 {% hint style="warning" %}
-The API key authenticates your organization, not a specific workload: anyone who holds it can register a workload under any service and environment of your organization, and be paired with your developers' sessions. Treat it as a secret, and give it only to the workloads that need it.
+The API key authenticates your organization, not a specific workload: anyone who holds it can register a workload under any service and environment of your organization, and be paired with your developers' sessions. It can't be used to start a developer session. Treat it as a secret, and give it only to the workloads that need it.
 {% endhint %}
 
 ---
@@ -100,7 +107,11 @@ Developers need no Kubernetes access and no API key. They sign in to their Metal
 mirrord login
 ```
 
-mirrord stores the credentials on their machine, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead.
+mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead.
+
+* **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
+* **Expiry:** the sign-in isn't renewed automatically. When it expires, sessions are refused until the developer runs `mirrord login` again.
+* **No API key:** mirrord doesn't use `MIRRORD_SESSIONS_MANAGER_API_KEY` on a developer's machine. Remove it from shells and IDE run configurations that set it.
 
 ---
 
@@ -114,6 +125,8 @@ The workload's messages appear in the application container's logs, and the deve
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
 | `HTTP control plane returned 401 Unauthorized` | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
-| The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer is signed in to a different organization than the workload's API key belongs to. |
+| The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |
+| `You are not logged in to https://app.metalbear.com, so the sessions-manager will refuse this session` | The developer hasn't run `mirrord login`, or their sign-in expired. Run `mirrord login`. |
 | mirrord on a developer's machine is refused with `401 Unauthorized` | The developer isn't signed in, or their sign-in expired. Run `mirrord login`. |
+| `failed to read the mirrord login token store` | mirrord can't read `~/.mirrord/auth.json`. Check its permissions, or run `mirrord login` again. |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets variables of both modes; keep only those of [Connecting workloads](#connecting-workloads). |
