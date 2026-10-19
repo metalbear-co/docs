@@ -62,8 +62,6 @@ This command shows active sessions and seat information for your cluster.
 
 With a cloud API key, the Operator obtains its license from MetalBear's servers over the API. The Operator must have outbound internet access to reach the license endpoint (`app.metalbear.com`).
 
-Operators installed before cloud API keys were introduced use a license key, which the Operator validates against MetalBear's servers on startup and periodically during operation. These installations keep working, but new installations should use a cloud API key. See [License key](operator.md#license-key).
-
 File-based licenses (`.pem` certificates) are not supported for Team subscriptions — those are only valid for Enterprise licenses.
 
 ## Telemetry
