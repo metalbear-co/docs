@@ -103,7 +103,7 @@ Other controls:
 - **Busiest paths** keeps the busiest quarter of the connections lit and dims the rest.
 - Click a node to open its details: when it was last seen, and its incoming and outgoing connections with sessions and users for each. **Copy link** copies a URL that opens the map with that node selected.
 - **List** shows the same connections as a table of caller, callee, sessions, users and last seen.
-- **Export as PNG** saves the map as an image.
+- **Export as PNG** saves the map as an image. To pull the connections as data, for example into a developer portal, see [Topology API](topology-api.md).
 - Press `f` to fit the map to the window and `Esc` to clear the focus.
 
 The time range selector applies here too. It filters by session, not by individual connection: the cloud dashboard uses the time the session started, and the license server uses the time the session was reported. The report holds at most 500 connection records for the range, busiest first. A connection reported from both ends is two records, which the map merges into one.
