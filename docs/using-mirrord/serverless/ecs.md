@@ -20,7 +20,7 @@ The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazo
 
 ## Prerequisites
 
-1. A [deployment mode](README.md#deployment-modes) that's set up, such as the [Operator-hosted sessions-manager](operator-hosted.md).
+1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
 4. An application image based on glibc 2.30 or later, and not on musl, such as Alpine. See [Application container requirements](README.md#application-container-requirements).
@@ -110,13 +110,13 @@ The bootstrap needs to know which sessions-manager to register with, and how to 
 | Deployment mode | Guide |
 | --- | --- |
 | Operator-hosted | [Connecting ECS to the Operator](ecs-operator-hosted.md) |
-| MetalBear Cloud | Coming soon |
+| MetalBear Cloud | [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md) |
 
 ---
 
 ## Sharing settings across services
 
-ECS has no cluster-wide environment variables, so every task definition you target needs its variables. To keep the values that are the same for every service in one place, such as `MIRRORD_REMOTE_ENVIRONMENT` and your deployment mode's connection variables, put them in an [environment file](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/use-environment-file.html) in S3:
+ECS has no cluster-wide environment variables, so every task definition you target needs its variables. To keep the values that are the same for every service in one place, such as `MIRRORD_REMOTE_ENVIRONMENT` and your deployment mode's non-secret connection variables, put them in an [environment file](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/use-environment-file.html) in S3:
 
 ```bash
 cat > mirrord.env <<EOF
@@ -134,7 +134,7 @@ and reference it from each application container instead of listing those variab
 ]
 ```
 
-`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. Environment files need Linux platform version **1.4.0 or later** on Fargate, or ECS container agent **1.39.0 or later** on EC2. If you don't use environment files, keep the variables in the task definition's `environment` list instead.
+`LD_PRELOAD` and `MIRRORD_REMOTE_SERVICE` stay in each container's `environment`, since they differ per service. Keep secrets, such as the MetalBear Cloud API key, out of the file, and inject them with `secrets` instead ([Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md#add-the-connection-variables)). Tasks read the file when they start, so redeploy the services after changing it. The task's **execution role** (not the task role) needs `s3:GetObject` on the file and `s3:GetBucketLocation` on the bucket. Environment files need Linux platform version **1.4.0 or later** on Fargate, or ECS container agent **1.39.0 or later** on EC2. If you don't use environment files, keep the variables in the task definition's `environment` list instead.
 
 ## Troubleshooting
 

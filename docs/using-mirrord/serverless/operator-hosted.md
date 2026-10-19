@@ -18,7 +18,7 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 
 ## Prerequisites
 
-1. An EKS cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../managing-mirrord/operator.md#installation).
+1. A Kubernetes cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../managing-mirrord/operator.md#installation). The step-by-step workload guides cover EKS; other clusters work through a [kubeconfig context](#connection-variables).
 2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
 
 ---
@@ -46,17 +46,11 @@ Every caller reaches sessions-manager the same way it reaches every other Operat
 * **Developers** authenticate with their kubeconfig, exactly like for any other Operator feature.
 * **Workloads** authenticate with their platform identity, mapped to a Kubernetes identity. For ECS, the task's IAM role is mapped with an EKS access entry; see [How ECS tasks authenticate](ecs-operator-hosted.md#how-ecs-tasks-authenticate).
 
-The Operator serves three cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API:
+The Operator serves sessions-manager as cluster-scoped resources on its existing `operator.metalbear.co/v1alpha1` API. Each side registers on a long-lived Server-Sent Events stream and waits to be paired, then opens a WebSocket to its session, through which the Operator relays mirrord traffic.
 
-| Resource | Verb | Used by | Used for |
-| --- | --- | --- | --- |
-| `serverlessclientassignments` | `proxy` | Developers | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a workload. |
-| `serverlessagentassignments` | `proxy` | Workloads | Registering and waiting, on a long-lived Server-Sent Events stream, to be paired with a developer. |
-| `serverlessdataplanes` | `get` | Both | Opening a WebSocket to the assigned session; the Operator relays mirrord traffic between the two sides. |
+Developers and workloads register on separate resources, and the chart grants them through separate ClusterRoles, so RBAC decides which side an identity may act as: a developer can't register as a workload and be paired with other developers' sessions. See [Developer access](#developer-access) and [Connecting workloads](#connecting-workloads) for the exact rules. A workload's registration is named `<environment>.<service>`, so its access can also be limited to specific services ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
 
-Each side of a session registers on its own resource, so RBAC decides which side an identity may act as: a developer bound to the user roles can't register as a workload and be paired with other developers. A registration is named after the environment and service it pairs in, `<environment>.<service>`, so a workload's access can also be limited to specific services with `resourceNames` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)).
-
-The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to use `serverlessdataplanes` can't attach to another caller's session.
+The Operator receives the caller's identity from the API server, like it does for every other Operator request, and implements no authentication of its own. Each data-plane connection is also bound to its session by a single-use credential delivered with the assignment, so an identity allowed to connect to sessions can't attach to another caller's session.
 
 Both sides only make outbound HTTPS connections, and only to the API server. Neither needs a network path to the other.
 
@@ -103,7 +97,7 @@ kubectl api-resources --categories=mirrord-serverless
 
 ## Developer access
 
-Enabling sessions-manager grants `proxy` on `serverlessclientassignments` and `get` on `serverlessdataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
+Enabling sessions-manager grants `proxy` on `serverlessclientassignments` (the **client** side: developers) and `get` on `serverlessdataplanes` in the chart's `mirrord-operator-user`, `mirrord-operator-ci` and `mirrord-operator-user-basic` ClusterRoles. Developers already bound to one of those roles need no further RBAC changes, and nothing beyond their existing kubeconfig for the cluster:
 
 ```bash
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
@@ -114,20 +108,43 @@ If you grant Operator access with your own roles instead, add the two rules abov
 A developer can check their access with their own kubeconfig:
 
 ```bash
-kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co   # yes
+kubectl auth can-i proxy serverlessclientassignments.operator.metalbear.co   # yes (client: developers)
 kubectl auth can-i get serverlessdataplanes.operator.metalbear.co            # yes
-kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co    # no
+kubectl auth can-i proxy serverlessagentassignments.operator.metalbear.co    # no  (agent: workloads)
 ```
 
 To check a developer's access as a cluster admin, add `--as <USERNAME>`, and `--as-group <GROUP>` for each group they're bound through. The last command must answer `no`, unless the identity is also a cluster admin: a developer who can register as a workload could be paired with other developers' sessions.
 
 ## Connecting workloads
 
-Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
+Enabling sessions-manager also creates the `mirrord-operator-sessions-manager-agent` ClusterRole. It grants only `proxy` on `serverlessagentassignments` (the **agent** side: workloads) and `get` on `serverlessdataplanes`, and none of the user permissions: a workload bound to it can't read, list or modify any other resource in the cluster, and can't register as a developer.
 
 Each workload authenticates as a Kubernetes identity bound to this role. How its identity is mapped, and how it reaches the API server, depends on the platform:
 
 * [Connecting ECS to the Operator](ecs-operator-hosted.md)
+
+### Connection variables
+
+The remote bootstrap picks how it reaches the Operator from the variables set on the workload. Set exactly one of `MIRRORD_OPERATOR_API_URL` and `MIRRORD_OPERATOR_KUBE_CONTEXT`, and not `MIRRORD_SESSIONS_MANAGER_URL`, which points the bootstrap at a sessions-manager outside the Operator; the bootstrap refuses to start when more than one is set.
+
+| Variables | Authenticates as | Use it for |
+| --- | --- | --- |
+| `MIRRORD_OPERATOR_API_URL`, `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` and `MIRRORD_OPERATOR_API_CA_DATA` | The workload's AWS identity, such as the ECS task role, mapped into an EKS cluster with an access entry. | Workloads on AWS connecting to EKS. No secrets are added to the workload. See [Connecting ECS to the Operator](ecs-operator-hosted.md). |
+| `MIRRORD_OPERATOR_KUBE_CONTEXT` | Whatever that context's user is in the workload's kubeconfig, such as a ServiceAccount token or an `exec` credential plugin. | Any other cluster, or credentials your platform already provides as a kubeconfig. |
+| `MIRRORD_OPERATOR_API_URL` alone | Nothing: requests are sent without credentials. | Only behind something that authenticates on the workload's behalf, such as a `kubectl proxy` sidecar. |
+
+With `MIRRORD_OPERATOR_KUBE_CONTEXT`, the bootstrap reads the kubeconfig the usual way, from `KUBECONFIG` or `~/.kube/config`, and takes the server, certificate authority and credentials from the named context. Mount the kubeconfig into the application container and set `KUBECONFIG` to its path. If the context uses an `exec` plugin, such as `aws eks get-token` or `gke-gcloud-auth-plugin`, the plugin must be installed in the application container. For example, to authenticate as a ServiceAccount bound to the chart's role:
+
+```bash
+kubectl create namespace mirrord-workloads
+kubectl -n mirrord-workloads create serviceaccount payments
+kubectl create clusterrolebinding mirrord-workload-payments \
+  --clusterrole mirrord-operator-sessions-manager-agent \
+  --serviceaccount mirrord-workloads:payments
+kubectl -n mirrord-workloads create token payments --duration 24h
+```
+
+and reference the token from the context's user in the workload's kubeconfig. A ServiceAccount token is a secret: store the kubeconfig in your platform's secret store rather than in plain configuration, and rotate it before it expires.
 
 {% hint style="info" %}
 Bind the chart's role rather than defining your own, unless you need to limit a workload to specific services: it stays in sync with what the Operator requires when you upgrade the chart.
@@ -152,7 +169,7 @@ rules:
     verbs: [get]
 ```
 
-An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
+An identity bound to this role can register as service `api` in environment `staging`, and gets `403 Forbidden` for any other. In resource names, the environment and service are lowercased, with every run of other characters replaced by `-`: service `Payments API` in environment `Staging EU` registers as `staging-eu.payments-api`. Data planes are named by per-session IDs, so the `serverlessdataplanes` rule can't be narrowed; each connection is already bound to its session by its single-use credential.
 
 ---
 
@@ -172,7 +189,9 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 | --- | --- |
 | `404 Not Found`, or mirrord says the Operator doesn't serve sessions-manager | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values. |
 | `403 Forbidden` on `serverlessclientassignments` for a developer | The developer isn't bound to one of the built-in user roles, or a custom role lacks the two rules ([Developer access](#developer-access)). |
-| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>` ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
+| `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>`, in its lowercased form ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
+| `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets more than one of them ([Connection variables](#connection-variables)). |
+| `Failed to load kubeconfig context` | `KUBECONFIG` doesn't point at the mounted kubeconfig, or it has no context named `MIRRORD_OPERATOR_KUBE_CONTEXT`. |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`. |
 
 For workload-side problems, see the troubleshooting section of your platform's connection guide, such as [Connecting ECS to the Operator](ecs-operator-hosted.md#troubleshooting).
