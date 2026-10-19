@@ -31,7 +31,7 @@ To point mirrord at one cluster without changing your kubeconfig's current conte
 mirrord config set kube_context staging
 ```
 
-Every mirrord command then uses that context, including `mirrord ui` and the `mirrord operator` commands. A `--context` flag, a `kube_context` in the project config, or the `MIRRORD_KUBE_CONTEXT` environment variable takes precedence over the global default, and without any of them mirrord uses the kubeconfig's current context. If `mirrord ui` is already running, run `mirrord ui stop` and start it again so it picks up the change.
+Every mirrord command then uses that context, including `mirrord up`, `mirrord ui` and the `mirrord operator` commands. A `--context` flag, a `kube_context` in the project config, or the `MIRRORD_KUBE_CONTEXT` environment variable takes precedence over the global default. Without any of those, mirrord uses the global default if set, otherwise the kubeconfig's current context. If `mirrord ui` is already running, run `mirrord ui stop` and start it again so it picks up the change.
 
 `PATH` is a dot-separated config field name, such as `operator` or `agent.image`. `VALUE` is parsed as JSON when possible (for example, `true`, `42`, or a JSON object); otherwise it is stored as a string. To force a string that looks like JSON, include JSON double quotes in the value, for example `mirrord config set agent.image '"true"'`. Fields and values must match the [mirrord configuration schema](https://metalbear.com/mirrord/docs/config). Setting a field within an array by index is not supported.
 
