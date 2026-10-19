@@ -205,6 +205,7 @@ With this config, the branch runs in the namespace `mirrord-alice-checkout`. The
 A few things to know:
 
 - Set `key` explicitly. Without one, mirrord generates a new key for every run, and with it a new namespace.
+- **Reusing an existing branch does not change its namespace.** If you reuse an explicit `id` created under another key, the branch stays in the original key’s namespace, and mirrord displays a warning. For example, a branch created under `alice` remains in `mirrord-alice` when reused under `bob`. Switching `namespace` on or off for an existing branch fails. To change its placement, use a new `id`, or destroy the existing branch and recreate it; destroying it deletes its branch data.
 - A key with characters a namespace name cannot hold (uppercase letters, `_`, a long key) gets a cleaned-up name with a short hash at the end.
 - The branch's `BranchDatabase` resource stays in the target's namespace, so `mirrord db-branches -n <target namespace>` still lists it. Only the branch pod, its Service, storage and Jobs move.
 - The branch pod reads the Secrets, ConfigMaps and service account of the target's namespace. The operator copies the ones it uses into the key's namespace, and resolves the source's short Service names (for example `postgres:5432`) in the target's namespace.
