@@ -357,6 +357,41 @@ For an individual parameter, use an `aws_secrets_manager` field:
 **Setup**: the branch pod inherits the target pod's service account, so that account's AWS identity must be allowed `secretsmanager:GetSecretValue` on the secret. The region comes from the ARN when a full ARN is given; for a plain secret name, `AWS_REGION` or `AWS_DEFAULT_REGION` must be set in the target pod spec.
 {% endhint %}
 
+### Picking One Field from a Secret
+
+A Google or AWS secret often holds several values at once, such as a JSON blob with every credential of a database:
+
+```json
+{ "username": "app", "password": "s3cr3t" }
+```
+
+Add `value_selector` to a `gcp_secret_manager`, `aws_secrets_manager`, or `aws_ssm_parameter` source to use one field of it instead of the whole secret. The selector is a `.a.b` path into the secret parsed as JSON or YAML, the same as on the [ConfigMap source](#configmap-source):
+
+```json
+{
+  "connection": {
+    "params": {
+      "host": "DB_HOST",
+      "user": { "aws_secrets_manager": "db-creds", "value_selector": ".username" },
+      "password": {
+        "aws_secrets_manager": "db-creds",
+        "value_selector": ".password",
+        "env_var_name": "DB_PASSWORD"
+      },
+      "database": "DB_NAME"
+    }
+  }
+}
+```
+
+For a secret that is plain text rather than JSON, use `value_pattern` instead: a regex over the secret, with the same capture group rules as [composite environment variables](#composite-environment-variables). The two are mutually exclusive, and both work on the `url` source too.
+
+The branch init container applies the selector or pattern right after it fetches the secret, so mirrord and the operator still never read the value. An error names the secret and the selector, never the secret's content.
+
+{% hint style="info" %}
+`value_selector` and `value_pattern` on secret manager sources need an operator and a mirrord CLI that support them. An older operator would use the whole secret as the value, so the CLI refuses to start the session against one.
+{% endhint %}
+
 ### AWS SSM Parameter Store Source
 
 This is useful when your application reads its connection details from [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) at startup, so they never appear in the pod spec. It works like the AWS Secrets Manager source: the branch init container reads the parameter when it copies the data, using the target pod's service account. `SecureString` parameters are decrypted. mirrord and the operator never read the value themselves.
@@ -386,7 +421,7 @@ The reference is a parameter name or a full ARN. For the full URL, use `type: aw
 
 Set `name` to the database the URL names. The operator never sees the URL, so without `name` your local process gets a branch URL for the `postgres` database instead of yours.
 
-For an individual parameter, use an `aws_ssm_parameter` field. `value_selector` and `value_pattern` pick one field out of a JSON parameter, as for the secret managers:
+For an individual parameter, use an `aws_ssm_parameter` field. [`value_selector` and `value_pattern`](#picking-one-field-from-a-secret) pick one field out of a JSON parameter, as for the secret managers:
 
 ```json
 {
@@ -409,6 +444,8 @@ For an individual parameter, use an `aws_ssm_parameter` field. `value_selector` 
 
 {% hint style="info" %}
 **Setup**: the branch pod inherits the target pod's service account, so that account's AWS identity must be allowed `ssm:GetParameter` on the parameter, plus `kms:Decrypt` on its key for a `SecureString`. The region comes from the ARN when a full ARN is given; for a plain parameter name, `AWS_REGION` or `AWS_DEFAULT_REGION` must be set in the target pod spec.
+
+The SSM Parameter Store source needs operator `3.223.0` and mirrord `3.276.0` or later. An older operator cannot read it, so the CLI refuses to start the session against one.
 {% endhint %}
 
 ### Literal Value
@@ -432,8 +469,6 @@ Use a field with `value`:
 ```
 
 Works for any connection parameter (`host`, `port`, `user`, `password`, `database`). The CLI stores the literal value in a Kubernetes Secret. The operator uses it to connect the branch DB to the source and also injects it under the name you set in `env_var_name` for your local process, so your code can read it with `os.Getenv(...)` (or equivalent) even when the target pod doesn't expose it.
-
-For an application that builds its URL at runtime from AWS SSM and an IAM token, see [Apps that build the connection URL at runtime](iam-authentication.md#apps-that-build-the-connection-url-at-runtime).
 
 ## Composite Environment Variables
 
