@@ -469,7 +469,7 @@ spec:
           - env: ORDERS_QUEUE_NAME
 ```
 
-`filter` takes the same shape as the session's `filter` (`metadata`, `anyOf`, `allOf`, with camelCase keys), and `jqFilter` the same program as the session's `jq_filter`. A session that lists the queue with no `filter`, `message_filter` or `jq_filter` uses them:
+`filter` is written exactly like the session's `filter` in a mirrord config (`metadata`, `all_of`, `any_of`), so you can paste one from there, and `jqFilter` takes the same program as the session's `jq_filter`. A session that lists the queue with no `filter`, `message_filter` or `jq_filter` uses them:
 
 ```json
 {
@@ -481,7 +481,7 @@ spec:
 }
 ```
 
-Any filter the session sets on that queue replaces the split config's as a whole, and a queue the session does not list delivers nothing to the local application, whether or not the split config has a filter for it.
+Any filter the session sets on that queue replaces the split config's as a whole, an empty `message_filter: {}` included (it keeps meaning "split the queue, deliver nothing"), and a queue the session does not list delivers nothing to the local application, whether or not the split config has a filter for it.
 
 {% hint style="warning" %}
 Filters in the split config require mirrord `3.277.0` or later, and mirrord operator `3.224.0` or later. Against an older operator the CLI refuses to start a session whose entry has no filter and names the missing feature.
@@ -536,7 +536,7 @@ To have your AI agent do this, use the [`mirrord-header-propagation`](https://gi
 {% endhint %}
 
 {% hint style="info" %}
-An entry with no `filter`, an empty `message_filter`, and no `jq_filter` uses the filter of its split config queue entry (see [Filters in the split config](#filters-in-the-split-config)). When the split config has none either, the entry matches nothing.
+An entry with no `filter`, no `message_filter` and no `jq_filter` uses the filter of its split config queue entry (see [Filters in the split config](#filters-in-the-split-config)). When the split config has none either, the entry matches nothing. An empty `message_filter: {}` is a filter of the entry's own and matches nothing.
 {% endhint %}
 
 For complete, copy-pasteable filter examples, see the "Setting a filter" section on each queue service page.
