@@ -19,7 +19,7 @@ mirrord operator signup
 mirrord operator install --from-signup
 ```
 
-`mirrord operator signup` starts the trial and prints its end date and the claim URL for the agent to hand you. It saves the trial's API key on this machine instead of printing it, then prints the install command to run next. To help you recognize the cluster on the claim page, it sends the cluster's ID (the UID of its `default` namespace) along with the signup, if it can read it. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
+`mirrord operator signup` starts the trial and prints its end date and the claim URL for the agent to hand you. It saves the trial's API key on this machine instead of printing it, then prints the install command to run next. It also sends the cluster's ID (the UID of its `default` namespace) along with the signup, if it can read it, and MetalBear stores it with the trial. `--cluster-hint <name>` sends a different name, and `--no-hint` sends none.
 
 `mirrord operator install --from-signup` installs the Operator with the saved key. In a terminal, it first asks you to confirm the kubecontext and the namespace that it installs the Operator into, before it changes the cluster. `--yes` skips the question. An agent usually runs the command without a terminal, and then it doesn't ask. If the installation fails or is stopped, retry without starting another trial: remove what was installed with `mirrord operator uninstall`, then run `mirrord operator install --from-signup` again. If the signup used `--context`, pass the same `--context` to the uninstall and the install.
 
@@ -39,7 +39,7 @@ curl -fsS -X POST https://app.metalbear.com/api/v1/agent/signup \
   -d '{"agent": "claude-code", "developer_email": "you@example.com", "cluster_hint": "staging"}'
 ```
 
-`developer_email` and `cluster_hint` are optional and unverified. They exist so you can recognize the organization as yours on the claim page.
+`developer_email` and `cluster_hint` are optional and unverified, and MetalBear stores them with the trial.
 
 The response describes the provisional organization:
 
