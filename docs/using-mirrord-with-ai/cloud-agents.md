@@ -12,7 +12,7 @@ Many coding agents run in the cloud, not on a developer's machine. Examples are 
 
 A cloud agent needs a different identity from a developer. By default, mirrord authenticates to the Operator with a user certificate that it creates for each machine. A cloud agent usually starts in a new, short-lived environment for each task. Each environment then registers as a new user and takes up a seat.
 
-To prevent this, give your cloud agents a **CI API key**. Sessions that start with a CI API key don't count towards your seats.
+To prevent this, give your cloud agents a **CI API key**. Sessions that start with a CI API key don't take up seats. They are machine sessions, and they count towards the concurrent machine sessions of your [plan](https://metalbear.com/mirrord/pricing/). Many agents that run at the same time use many concurrent machine sessions.
 
 ## What you need
 
