@@ -71,7 +71,7 @@ Open the claim URL. You can sign in with an existing account or create one on th
 
 Claiming also deletes the provisional organization, so the cluster keeps working against your real one without reinstalling anything. A new organization inherits the agent's history along with the license, so the getting-started checklist already counts the Operator as installed and your usage shows the sessions the agent ran before you claimed. An organization that already existed keeps its own license, and so its own history.
 
-An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. Revoke the existing key first, under **API Keys**, then open the claim link again. Rotating doesn't help, because it replaces the key with another active one. Read-only keys are a different scope and don't collide, so they can stay.
+An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. **Revoke** under **API Keys** replaces the key with a new active one, so it doesn't clear the conflict. Instead, move the cluster onto your organization: run `mirrord operator uninstall`, then `mirrord operator install --api-key <key>` with your organization's key. Read-only keys are a different scope and don't collide, so they can stay.
 
 ## Until it is claimed
 
@@ -100,6 +100,6 @@ You don't need a trial. Run `mirrord operator install`, or let the agent run it:
 
 - Only an admin of the organization can create the key, and only while the organization has no operator API key yet. If it already has one, install with `mirrord operator install --api-key <key>`, using the key from a cluster that already runs the Operator, or ask an admin for it.
 - If the login page says the account has no organization yet, finish setting it up at [app.metalbear.com](https://app.metalbear.com), then run the command again.
-- If the installation fails after the key was created, remove what was installed with `mirrord operator uninstall`, revoke the key in your organization's settings, then run the command again. The command prints these steps when it fails.
+- If the installation fails after the key was created, remove what was installed with `mirrord operator uninstall`. The created key stays active, so running the command again fails: under **API Keys**, use **Revoke** to replace the key and copy the new one, then install with `mirrord operator install --api-key <key>`.
 
 You can also generate a cloud API key under **API Keys** and install with `mirrord operator install --api-key <key>`, or install the Operator yourself following the [dashboard setup guide](../managing-mirrord/dashboard/cloud.md). Signing up again creates a second organization you then have to clean up.
