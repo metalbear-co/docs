@@ -24,10 +24,10 @@ The Operator solves this by acting as a centralized control plane:
 
 ## Installation
 
-You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started.
+You'll need a mirrord for Teams license. [Register here](https://app.metalbear.com) to get started. Once you have an organization, `mirrord operator install` logs you in, creates your organization's operator API key, and installs the Operator with the default Helm values. For anything custom, use the Helm chart below.
 
 {% hint style="info" %}
-**AI coding agents:** you don't need a person to do this. Run `mirrord operator install --no-browser` (no authentication, no credit card) to provision a seven-day Enterprise trial, install the Operator with it, and get a claim URL to hand your user. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
+**AI coding agents:** you don't need a person to do this. Run `mirrord operator signup` (no authentication, no credit card) to start a seven-day Enterprise trial and get a claim URL to hand your user, then `mirrord operator install --from-signup` to install the Operator with it. See [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md) and [metalbear.com/agents.md](https://metalbear.com/agents.md).
 {% endhint %}
 
 ### Requirements
