@@ -27,6 +27,7 @@
   * [Test Claude Code Changes Against Staging](using-mirrord-with-ai/claude-code.md)
   * [Configure AI Agents to Use mirrord](using-mirrord-with-ai/the-meta-prompt.md)
   * [Agent-Started Trials](using-mirrord-with-ai/agent-started-trials.md)
+  * [Cloud Agents](using-mirrord-with-ai/cloud-agents.md)
 
 ## Using mirrord
 
