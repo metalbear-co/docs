@@ -71,7 +71,7 @@ Open the claim URL. You can sign in with an existing account or create one on th
 
 Claiming also deletes the provisional organization, so the cluster keeps working against your real one without reinstalling anything. A new organization inherits the agent's history along with the license, so the getting-started checklist already counts the Operator as installed and your usage shows the sessions the agent ran before you claimed. An organization that already existed keeps its own license, and so its own history.
 
-An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. Revoke or rotate the existing key first, under **API Keys**. Read-only keys are a different scope and don't collide, so they can stay.
+An existing organization that already holds an active Operator cloud API key will reject the claim rather than replace the key it has. Revoke the existing key first, under **API Keys**, then open the claim link again. Rotating doesn't help, because it replaces the key with another active one. Read-only keys are a different scope and don't collide, so they can stay.
 
 ## Until it is claimed
 
