@@ -8,7 +8,7 @@ tags: ["team", "enterprise"]
 
 Some things an agent needs on a shared cluster only work with mirrord for Teams: branching a database so its writes don't reach everyone else's data, splitting a queue so it doesn't eat messages other people need, or stealing traffic from a target another session already holds.
 
-On a cluster with no license, an agent that follows [metalbear.com/agents.md](https://metalbear.com/agents.md) can start a trial itself rather than stopping and waiting for you to sign up. It ends up with a working cluster and you end up with a link to claim.
+On a cluster with no license, an agent that follows [metalbear.com/agents.md](https://metalbear.com/agents.md) can start a trial itself rather than stopping and waiting for you to sign up. It ends up with a working cluster and you end up with a link to claim. If you already have an organization, the agent installs with it instead (see [If you already have an organization](#if-you-already-have-an-organization)), so no second organization gets created.
 
 ## What the agent does
 
@@ -96,4 +96,10 @@ If you moved the installation to Helm, remove it with `helm uninstall` instead. 
 
 ## If you already have an organization
 
-You don't need a trial. Run `mirrord operator install`, or let the agent run it: it logs you in to [app.metalbear.com](https://app.metalbear.com) in the browser (or reuses a `mirrord login` from the same machine), creates your organization's operator API key, and installs the Operator with it, without showing the key. You can also generate a cloud API key under **API Keys** and install with `mirrord operator install --api-key <key>`, or install the Operator yourself following the [dashboard setup guide](../managing-mirrord/dashboard/cloud.md). Signing up again creates a second organization you then have to clean up.
+You don't need a trial. Run `mirrord operator install`, or let the agent run it: it asks you to approve the login to [app.metalbear.com](https://app.metalbear.com) in the browser (or reuses a `mirrord login` from the same machine), creates your organization's operator API key, and installs the Operator with it, without showing the key. If no browser opens, it prints the URL to visit, and it waits up to five minutes for the approval.
+
+- Only an admin of the organization can create the key, and only while the organization has no operator API key yet. If it already has one, install with `mirrord operator install --api-key <key>`, using the key from a cluster that already runs the Operator, or ask an admin for it.
+- If the login page says the account has no organization yet, finish setting it up at [app.metalbear.com](https://app.metalbear.com), then run the command again.
+- If the installation fails after the key was created, remove what was installed with `mirrord operator uninstall`, revoke the key in your organization's settings, then run the command again. The command prints these steps when it fails.
+
+You can also generate a cloud API key under **API Keys** and install with `mirrord operator install --api-key <key>`, or install the Operator yourself following the [dashboard setup guide](../managing-mirrord/dashboard/cloud.md). Signing up again creates a second organization you then have to clean up.
