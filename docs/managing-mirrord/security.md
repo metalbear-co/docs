@@ -63,7 +63,7 @@ Together with the session start and end times, these fields let you attribute mi
 
 ## Can mirrord run air-gapped?
 
-Yes, on the Enterprise plan. Run the [License Server](license-server.md) on-prem to manage seats locally. In this configuration the Operator sends no telemetry or license verification traffic to MetalBear.
+Yes, on the Enterprise plan. In an air-gapped deployment the Operator sends no telemetry or license verification traffic to MetalBear. Running the [License Server](license-server.md) on-prem is optional, but it is the recommended way to manage seats and collect usage without MetalBear's cloud.
 
 ## How is the Operator built and distributed?
 
@@ -91,7 +91,7 @@ mirrord for Teams is completely on-prem. The Operator communicates with MetalBea
 
 ### Always sent (anonymized), except on Enterprise air-gapped
 
-These fields are always sent on every plan. The only exception is an Enterprise [air-gapped](#can-mirrord-run-air-gapped) deployment using the on-prem [License Server](license-server.md), where nothing is sent to MetalBear.
+These fields are always sent on every plan. The only exception is an Enterprise [air-gapped](#can-mirrord-run-air-gapped) deployment, where nothing is sent to MetalBear. Running the on-prem [License Server](license-server.md) there is optional, but it is the recommended way to collect usage without MetalBear's cloud.
 
 1. User ID (randomly generated hash, stored on user machine)
 2. Duration of session
@@ -125,7 +125,7 @@ Identity is not sent when:
 
 Changing the setting takes effect at the Operator's next cloud token refresh, without regenerating the key or restarting the Operator.
 
-Only the Enterprise plan can disable this communication entirely, by running the on-prem License Server (see [air-gapped operation](#can-mirrord-run-air-gapped)). On other plans the anonymized fields above are always sent.
+Only the Enterprise plan can disable this communication entirely, through an [air-gapped](#can-mirrord-run-air-gapped) deployment (the on-prem License Server is the recommended way to collect usage there). On other plans the anonymized fields above are always sent.
 
 ## Are you SOC2/ISO27001 compliant?
 
