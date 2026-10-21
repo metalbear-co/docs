@@ -89,7 +89,9 @@ For our vulnerability disclosure and customer notification process, see the [Tru
 
 mirrord for Teams is completely on-prem. The Operator communicates with MetalBear servers over an encrypted TLS connection only for license verification and usage metrics. What the usage metrics contain depends on your organization's identity sharing setting.
 
-### Always sent (anonymized)
+### Always sent (anonymized), except on Enterprise air-gapped
+
+These fields are always sent on every plan. The only exception is an Enterprise [air-gapped](#can-mirrord-run-air-gapped) deployment using the on-prem [License Server](license-server.md), where nothing is sent to MetalBear.
 
 1. User ID (randomly generated hash, stored on user machine)
 2. Duration of session
@@ -123,7 +125,7 @@ Identity is not sent when:
 
 Changing the setting takes effect at the Operator's next cloud token refresh, without regenerating the key or restarting the Operator.
 
-In the Enterprise offering, this communication can be disabled entirely.
+Only the Enterprise plan can disable this communication entirely, by running the on-prem License Server (see [air-gapped operation](#can-mirrord-run-air-gapped)). On other plans the anonymized fields above are always sent.
 
 ## Are you SOC2/ISO27001 compliant?
 
