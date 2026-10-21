@@ -49,15 +49,15 @@ The agent then runs mirrord commands as it needs them. When `MIRRORD_CI_API_KEY`
 
 ## 4. Keep agent sessions apart
 
-All the agents that use the same CI API key share one identity. Many agent sessions can also target the same service at the same time. Configure mirrord so that each session gets only its own traffic and data:
+Many agent sessions can target the same service at the same time, as long as each session has a different session key. The session key is not the CI API key. It is a name for one mirrord session, for example the ID of the agent task. Set it in the `MIRRORD_KEY` environment variable of the agent environment, or pass it with `--key`.
 
-- **Incoming traffic:** Use steal mode with an [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) on a header that is unique to each agent task. Without a filter, one agent session takes all the traffic of the target.
-- **Queues:** Use [queue splitting](../sharing-the-cluster/queue-splitting.md), so that each session gets only the messages that match its filter.
+Then use the session key so that each session gets only its own traffic and data:
+
+- **Incoming traffic:** Use steal mode with an [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) on a header that carries the session key. Without a filter, one agent session takes all the traffic of the target.
+- **Queues:** Use [queue splitting](../sharing-the-cluster/queue-splitting.md) with a filter on the session key, so that each session gets only its own messages.
 - **Databases:** If you don't want all the agents to write to the same database, use [DB branching](../sharing-the-cluster/db-branching.md). Each session then writes to its own branch.
 
-Give each agent task its own mirrord session key, for example the ID of the task. Set the key in the `MIRRORD_KEY` environment variable of the agent environment, or pass it with `--key`. Then put the filters in a `mirrord.json` file in the repository and refer to the key with `{{ key }}`. The same key works in the [queue splitting](../sharing-the-cluster/queue-splitting.md) filters.
-
-The header filter is a regular expression, so anchor it at both ends. Without the anchors, the filter for the key `task-1` also matches `task-10`. Use keys that contain only letters, numbers, and dashes. For example:
+Put the filters in a `mirrord.json` file in the repository, and refer to the session key with `{{ key }}`. The header filter is a regular expression, so anchor it at both ends. Without the anchors, the filter for the key `task-1` also matches `task-10`. Use keys that contain only letters, numbers, and dashes. For example:
 
 ```json
 {
