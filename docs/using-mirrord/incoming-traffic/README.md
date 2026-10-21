@@ -7,7 +7,7 @@ tags:
 description: "How mirrord sends incoming traffic from a cluster pod to your local process, in mirror mode (a copy of each request) or steal mode (the request itself)."
 ---
 
-# Handling Incoming Traffic
+# Incoming Traffic
 
 mirrord lets your local process receive network traffic that would normally go to a pod in the cluster. There are two modes:
 

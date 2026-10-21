@@ -3,7 +3,7 @@ title: Installing mirrord
 description: "Install mirrord on your machine and in your cluster: local and cluster requirements for the CLI and IDE extensions, and when you need the mirrord Operator."
 ---
 
-# Installation Options for mirrord
+# Installing mirrord
 
 mirrord can be installed and used in several ways depending on your development workflow:
 

@@ -4,7 +4,7 @@ tags:
   - team
   - enterprise
 ---
-# Queue Splitting Overview
+# Queue Splitting
 
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 

@@ -12,7 +12,7 @@ weight: 170
 toc: true
 tags: ["team", "enterprise"]
 ---
-# Managing Operator Sessions
+# Managing Sessions
 
 Whenever a user starts mirrord on a cluster where mirrord for Teams is installed, the Operator assigns a
 session to this user, until they stop running mirrord, at which point the session is closed

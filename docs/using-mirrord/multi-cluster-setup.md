@@ -6,7 +6,7 @@ tags:
   - enterprise
 ---
 
-# Multi-Cluster Setup Guide
+# Multi-Cluster Setup
 
 This guide covers how to set up multi-cluster mirrord. At a glance, the setup is:
 

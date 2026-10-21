@@ -16,7 +16,7 @@ tags:
   - enterprise
 ---
 
-# mirrord Architecture Overview
+# Architecture
 
 mirrord is composed of the following components:
 

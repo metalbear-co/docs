@@ -17,7 +17,7 @@ tags:
   - enterprise
 ---
 
-# Jira Integration for Usage Tracking
+# Jira Integration
 
 With the mirrord Jira integration you can track how much mirrord has been used for each task on a per-issue basis, both as total time of use and the number of times it was used.
 

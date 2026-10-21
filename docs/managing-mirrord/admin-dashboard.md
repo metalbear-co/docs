@@ -7,7 +7,7 @@ tags:
   - enterprise
 ---
 
-# mirrord Admin Dashboard
+# Dashboard
 
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends.
 

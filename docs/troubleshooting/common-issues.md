@@ -16,7 +16,7 @@ tags:
 description: "Fixes for common mirrord issues: a run that has no effect, Go DNS and outgoing filters on Linux, Turbo tasks, and incoming traffic that does not reach you."
 ---
 
-# Common Issues and Fixes
+# Common Issues
 
 ## I've run my program with mirrord, but it seems to have no effect
 

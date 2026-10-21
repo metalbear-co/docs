@@ -7,7 +7,7 @@ tags:
 - enterprise
 ---
 
-# Database Branch Management
+# Branch Management
 
 mirrord provides CLI commands to inspect and manage database branches:
 

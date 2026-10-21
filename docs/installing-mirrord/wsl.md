@@ -3,7 +3,7 @@ title: WSL (deprecated)
 description: "Install and use mirrord on Windows through WSL. mirrord now runs natively on Windows, so this page is for users who still prefer to run it inside WSL."
 ---
 
-# Installing on WSL (Deprecated)
+# WSL (deprecated)
 
 {% hint style="info" %}
 mirrord now runs natively on Windows — no WSL needed. See the [CLI](cli.md), [VS Code](vscode.md), and [JetBrains IDEs](intellij.md) installation guides. This page is kept for users who still prefer to run mirrord through WSL, or for the few JetBrains run configurations that don't support native Windows yet.

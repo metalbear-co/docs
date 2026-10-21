@@ -16,7 +16,7 @@ tags:
 description: "Use MirrordProfile and MirrordClusterProfile resources to define reusable mirrord config templates, select a profile for a session, and enforce profiles."
 ---
 
-# mirrord Configuration Profiles
+# Profiles
 
 The installation of the mirrord operator defines two types of [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster: `MirrordClusterProfile` and `MirrordProfile`.
 

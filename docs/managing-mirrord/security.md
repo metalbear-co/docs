@@ -16,7 +16,7 @@ tags:
 description: "What security teams need to know about mirrord for Teams: audits, air-gapped installs, build provenance, and the data the Operator sends to MetalBear."
 ---
 
-# mirrord Operator Security
+# Security
 
 {% hint style="info" %}
 This discussion is only relevant for users on the Team and Enterprise pricing plans.

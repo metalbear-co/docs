@@ -15,7 +15,7 @@ tags:
 description: "Run the mirrord license server to manage your organization's seats without sending data to MetalBear, and collect license metrics from many clusters."
 ---
 
-# Self-Hosted License Server
+# License Server
 
 The license server enables you to manage your organization’s seats without sending any data to mirrord’s servers. It can aggregate license metrics from multiple operators (useful if you’re running mirrord across multiple clusters) and provides visibility into seat usage across your organization.
 

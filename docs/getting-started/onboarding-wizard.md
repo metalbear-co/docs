@@ -11,7 +11,7 @@ tags:
   - enterprise
 ---
 
-# mirrord Onboarding Wizard
+# Onboarding Wizard
 
 The mirrord onboarding wizard is designed to make getting started with mirrord easier and faster. It does this by taking you through the basics of mirrord and some commonly used features, and then lets you create and download your first mirrord configuration file via the UI.
 

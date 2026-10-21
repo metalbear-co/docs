@@ -11,7 +11,7 @@ weight: 140
 toc: true
 tags: ["oss", "team", "enterprise"]
 ---
-# Port Forwarding with mirrord
+# Port Forwarding
 
 ## Regular port-forwarding
 

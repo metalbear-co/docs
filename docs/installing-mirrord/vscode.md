@@ -3,7 +3,7 @@ title: VS Code
 description: "Install the mirrord extension for Visual Studio Code, then run or debug your app in the context of your cluster, with target selection and config files."
 ---
 
-# Installing the VS Code Extension
+# VS Code
 
 If you develop your application in Visual Studio Code, you can debug it with mirrord using our Visual Studio Marketplace [extension](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord). Simply:
 

@@ -6,7 +6,7 @@ tags:
   - enterprise
 ---
 
-# Installing the mirrord Operator
+# mirrord Operator
 
 The mirrord Operator is a Kubernetes operator that runs persistently in your cluster and manages mirrord sessions. It's the central component that enables all **\[Teams]** features.
 

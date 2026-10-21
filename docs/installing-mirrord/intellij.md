@@ -3,7 +3,7 @@ title: JetBrains IDEs
 description: "Install the mirrord plugin for JetBrains IDEs like IntelliJ IDEA, PyCharm, and GoLand, then run or debug your app in the context of your cluster."
 ---
 
-# Installing the JetBrains Plugin
+# JetBrains IDEs
 
 If you develop your application in one of the JetBrains' IDEs (e.g PyCharm, IntelliJ or GoLand), you can debug it with mirrord using our JetBrains Marketplace [plugin](https://plugins.jetbrains.com/plugin/19772-mirrord). Simply:
 

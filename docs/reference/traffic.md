@@ -16,7 +16,7 @@ tags:
 description: "Network traffic in mirrord: mirroring and stealing incoming traffic, HTTP filters, and how outgoing traffic and DNS go through the remote pod."
 ---
 
-# Network Traffic Reference
+# Network Traffic
 
 ## Incoming
 

@@ -16,7 +16,7 @@ tags:
 description: "Reference for mirrord targets: pods, deployments, rollouts, jobs, cron jobs, and stateful sets, and how to set a target in a config file, IDE, or CLI."
 ---
 
-# Target Types Reference
+# Targets
 
 ## Overview
 

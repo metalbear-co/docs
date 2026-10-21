@@ -16,7 +16,7 @@ tags:
 description: Limiting available features for selected targets with mirrord for Teams
 ---
 
-# Policies for Shared Clusters
+# Policies
 
 The installation of the mirrord operator defines two [custom resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) in your cluster: the namespaced `MirrordPolicy` and the cluster-wide `MirrordClusterPolicy`. With these policies you can limit the use of some features of mirrord for selected targets.
 

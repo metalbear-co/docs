@@ -16,7 +16,7 @@ tags:
 description: "Use copy_target to make mirrord create a copy of the target pod and run against the copy, with optional scale_down to replace the original workload."
 ---
 
-# Copying a Target Workload
+# Copying a Target
 
 When you set the [`copy_target`](https://metalbear.com/mirrord/docs/config#feature.copy_target) configuration field, instead of using the [target](../reference/targets.md) of the run directly, mirrord will create a new pod using the pod spec of the original target, and use that new pod as a target.
 

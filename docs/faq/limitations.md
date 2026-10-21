@@ -16,7 +16,7 @@ tags:
 description: "mirrord limitations: supported languages, Kubernetes versions, service meshes like Istio, OpenShift, secure access tools, and statically linked binaries."
 ---
 
-# Known Limitations of mirrord
+# Limitations
 
 ## What frameworks/languages does mirrord support?
 

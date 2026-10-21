@@ -13,7 +13,7 @@ toc: true
 tags: ["oss", "team", "enterprise"]
 ---
 
-# mirrord Compared to Alternatives
+# Comparisons
 
 ## Why not just use a remote debugger?
 
