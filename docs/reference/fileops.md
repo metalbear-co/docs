@@ -9,7 +9,7 @@ menu:
     parent: reference
 weight: 160
 toc: true
-description: "mirrord file operations reference: the fs modes, how mirrord relays file access to the remote pod, and the syscalls it hooks, like open, read, and write."
+description: "How mirrord handles file access from your local process, and which files it reads remotely."
 tags:
   - oss
   - team

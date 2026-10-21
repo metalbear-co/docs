@@ -9,7 +9,7 @@ menu:
     parent: overview
 weight: 120
 toc: true
-description: "How mirrord works: the mirrord-layer in your local process, the mirrord-agent in the cluster, the CLI, and the Operator, and how they proxy your traffic."
+description: "How mirrord works under the hood, from your local process to the cluster and back."
 tags:
   - oss
   - team

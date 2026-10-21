@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Reference for mirrord targets: pods, deployments, rollouts, jobs, cron jobs, and stateful sets, and how to set a target in a config file, IDE, or CLI."
+description: "The Kubernetes resources that mirrord can target, and how to choose one for a session."
 ---
 
 # Targets

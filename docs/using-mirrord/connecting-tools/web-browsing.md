@@ -12,7 +12,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Browse the web from inside your cluster's network with mirrord, to reach internal tools like Grafana, Kibana, or ArgoCD that are not exposed publicly."
+description: "Browse internal web tools in your cluster from your own browser through mirrord."
 ---
 
 # Web Browsing

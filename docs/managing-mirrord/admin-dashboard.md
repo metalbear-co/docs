@@ -1,6 +1,6 @@
 ---
 title: Dashboard
-description: "The mirrord Dashboard shows sessions, users, targets, CI pipelines, and adoption trends across your organization, so admins can track usage in real time."
+description: "Use the mirrord Dashboard to see how teams across your organization use mirrord."
 tags:
   - alpha
   - team

@@ -1,6 +1,6 @@
 ---
 title: JetBrains IDEs
-description: "Install the mirrord plugin for JetBrains IDEs like IntelliJ IDEA, PyCharm, and GoLand, then run or debug your app in the context of your cluster."
+description: "How to install and use the mirrord plugin in IntelliJ IDEA and other JetBrains IDEs."
 ---
 
 # JetBrains IDEs

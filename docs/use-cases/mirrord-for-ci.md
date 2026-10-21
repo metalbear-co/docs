@@ -7,7 +7,7 @@ menu:
   docs:
     parent: using-mirrord
 toc: true
-description: "Use the mirrord ci commands to run CI jobs against a shared staging cluster without deploying to it, so pipelines finish faster and staging stays stable."
+description: "How to use the mirrord ci commands to run CI jobs against a shared staging cluster."
 tags:
   - beta
   - oss

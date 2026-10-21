@@ -1,6 +1,6 @@
 ---
 title: File Operations
-description: "Control which files your local process reads and writes on the remote pod: choose an fs mode, read or write specific files remotely, and keep paths local."
+description: "Choose which files your local process reads and writes on the remote pod, and which stay local."
 draft: false
 toc: true
 tags: ["oss", "team", "enterprise"]

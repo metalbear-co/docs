@@ -12,7 +12,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Run mirrord without a remote target to use the cluster's network from a new service that is not deployed yet, or from tools like Postman or pgAdmin."
+description: "Run mirrord without a target to use the cluster's network from code that is not deployed yet."
 ---
 
 # Running Without a Target

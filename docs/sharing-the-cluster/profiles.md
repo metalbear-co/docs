@@ -13,7 +13,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: "Use MirrordProfile and MirrordClusterProfile resources to define reusable mirrord config templates, select a profile for a session, and enforce profiles."
+description: "Define reusable mirrord config templates for your organization, and choose one for each session."
 ---
 
 # Profiles

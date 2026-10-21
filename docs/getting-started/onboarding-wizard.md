@@ -4,7 +4,7 @@ date: 2026-01-05T12:00:00.000Z
 lastmod: 2026-01-05T12:00:00.000Z
 draft: false
 toc: true
-description: "The mirrord onboarding wizard takes you through mirrord basics and common features, then helps you create a mirrord.json config file for your service."
+description: "Use the mirrord onboarding wizard to learn the basics and create your first config file."
 tags:
   - oss
   - team

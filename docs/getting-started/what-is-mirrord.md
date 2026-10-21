@@ -1,6 +1,6 @@
 ---
 title: What is mirrord?
-description: "mirrord lets developers and AI agents run local code in the context of a Kubernetes cluster. See how it works and what the Team and Enterprise plans add."
+description: "How mirrord runs your local code in the context of your cluster, and what the paid plans add."
 ---
 
 # What is mirrord?

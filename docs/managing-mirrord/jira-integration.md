@@ -10,7 +10,7 @@ docs: null
 teams: null
 weight: 550
 toc: true
-description: "The mirrord Jira integration records how much time developers spent with mirrord on each issue, and how many times they used it, inside the Jira issue."
+description: "Show how much developers use mirrord on each Jira issue, inside the issue itself."
 tags:
   - alpha
   - team

@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Fixes for common mirrord issues: a run that has no effect, Go DNS and outgoing filters on Linux, Turbo tasks, and incoming traffic that does not reach you."
+description: "Fixes for the most common problems with mirrord, and what to check first when a session fails."
 ---
 
 # Common Issues

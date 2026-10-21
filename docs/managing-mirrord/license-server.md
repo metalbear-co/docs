@@ -12,7 +12,7 @@ weight: 540
 toc: true
 tags:
   - enterprise
-description: "Run the mirrord license server to manage your organization's seats without sending data to MetalBear, and collect license metrics from many clusters."
+description: "Run your own mirrord license server to manage seats without sending usage data to MetalBear."
 ---
 
 # License Server

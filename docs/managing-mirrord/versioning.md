@@ -10,7 +10,7 @@ menu:
     teams: null
 weight: 545
 toc: true
-description: "How versioning works across mirrord components (CLI, Operator, agent, and license server), which versions are compatible, and how to upgrade them safely."
+description: "Which versions of the mirrord components work together, and how to upgrade them safely."
 ---
 
 # Versioning

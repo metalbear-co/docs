@@ -1,6 +1,6 @@
 ---
 title: CLI
-description: "Install the mirrord CLI with Homebrew, the install script, or Chocolatey on Windows, then list targets, set up a config, and verify the installation."
+description: "How to install the mirrord CLI on your machine and run your first session from the terminal."
 ---
 
 # CLI

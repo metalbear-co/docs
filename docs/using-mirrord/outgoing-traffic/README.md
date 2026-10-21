@@ -1,6 +1,6 @@
 ---
 title: Outgoing Traffic
-description: "How mirrord routes outgoing requests from your local process through the remote pod, so local code reaches databases, APIs, and brokers in the cluster."
+description: "How mirrord sends outgoing requests from your local process through the cluster."
 tags:
   - oss
   - team

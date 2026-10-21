@@ -8,7 +8,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Route Postman requests through a local SOCKS5 proxy with mirrord, so you can call internal Kubernetes services like http://my-service:8080 directly."
+description: "Send requests from Postman to services inside your cluster through mirrord."
 ---
 
 # Postman

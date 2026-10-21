@@ -1,6 +1,6 @@
 ---
 title: WSL (deprecated)
-description: "Install and use mirrord on Windows through WSL. mirrord now runs natively on Windows, so this page is for users who still prefer to run it inside WSL."
+description: "How to install and use mirrord inside WSL on Windows. mirrord now also runs natively on Windows."
 ---
 
 # WSL (deprecated)

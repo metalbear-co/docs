@@ -12,7 +12,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Steal incoming HTTP requests based on values in the JSON request body, with RFC 9535 JSONPath queries on nested fields and regex matches on the results."
+description: "Steal only the HTTP requests whose JSON body matches the values you choose."
 ---
 
 # Filtering by JSON Body

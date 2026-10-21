@@ -13,7 +13,7 @@ toc: true
 tags:
   - beta
   - enterprise
-description: "High availability for the mirrord Operator on the Enterprise plan: session persistence across Operator restarts, leader election, and standby replicas."
+description: "How to run the mirrord Operator with high availability on the Enterprise plan."
 ---
 
 # High Availability

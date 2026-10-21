@@ -14,7 +14,7 @@ tags:
   - team
   - enterprise
 shallowToc: true
-description: "Get mirrord running in under 5 minutes: install the CLI, point kubectl at your cluster, pick a target workload, and run your local code in its context."
+description: "Get mirrord running against your cluster in a few minutes, from the install to your first session."
 ---
 
 # Quick Start

@@ -1,6 +1,6 @@
 ---
 title: Branch Management
-description: "Use the mirrord db-branches CLI commands to see the status of the database branches in your cluster and to destroy the branches that you no longer need."
+description: "See the status of the mirrord DB branches in your cluster, and remove the ones you no longer need."
 tags:
 - beta
 - team

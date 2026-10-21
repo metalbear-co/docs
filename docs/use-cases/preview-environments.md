@@ -4,7 +4,7 @@ tags:
   - beta
   - enterprise
 lastmod: 2026-04-15T00:00:00.000Z
-description: "Preview Environments run new or changed services in separate pods with live traffic, while databases, queues, and other dependencies can remain shared."
+description: "Run new or changed services in short-lived preview environments inside your existing cluster."
 ---
 
 # Preview Environments

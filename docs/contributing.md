@@ -1,6 +1,6 @@
 ---
 title: Contributing
-description: "Contribute to mirrord, the open source project: where to find the source code, how to report issues, and how to start development and send pull requests."
+description: "How to contribute to mirrord, the open source project, from your first issue to your first pull request."
 ---
 
 # Contributing

@@ -12,7 +12,7 @@ tags:
   - beta
   - team
   - enterprise
-description: "Steal HTTPS traffic with mirrord when the app terminates TLS itself: set up certificates so stolen requests are decrypted and sent to your local app."
+description: "How to steal HTTPS traffic with mirrord when your app terminates TLS itself."
 ---
 
 # Stealing HTTPS Requests

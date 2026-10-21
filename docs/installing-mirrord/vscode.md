@@ -1,6 +1,6 @@
 ---
 title: VS Code
-description: "Install the mirrord extension for Visual Studio Code, then run or debug your app in the context of your cluster, with target selection and config files."
+description: "How to install the mirrord extension in Visual Studio Code and run your app with it."
 ---
 
 # VS Code

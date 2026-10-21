@@ -1,6 +1,6 @@
 ---
 title: "Inspecting Live Traffic"
-description: "Use the mirrord dump command to inspect incoming traffic to a Deployment, Service, Pod, or StatefulSet in your terminal, with automatic port detection."
+description: "Use mirrord dump to watch the incoming traffic to a workload in your cluster, live in your terminal."
 date: 2025-08-11T00:00:00+03:00
 lastmod: 2025-08-11T00:00:00+03:00
 draft: false

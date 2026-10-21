@@ -13,7 +13,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: "Monitor the mirrord Operator with JSON logs for DataDog or Dynatrace, Prometheus metrics, and OpenTelemetry traces, and see how to query and export them."
+description: "How to monitor the mirrord Operator with your existing logging, metrics, and tracing tools."
 ---
 
 # Monitoring

@@ -1,6 +1,6 @@
 ---
 title: Welcome
-description: "mirrord connects local code, run by developers or AI coding agents, to your Kubernetes cluster, so it runs against shared staging with no image or deploy."
+description: Connect local code, run by developers or AI coding agents, to your live Kubernetes cluster
 layout:
   title:
     visible: true

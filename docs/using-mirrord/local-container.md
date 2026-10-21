@@ -1,6 +1,6 @@
 ---
 title: Working with Local Containers
-description: "Run mirrord with local containers in Docker, Podman, or nerdctl, so a containerized app gets the cluster's network, files, and environment variables."
+description: "Run mirrord with a local container, so your containerized app gets the cluster's context."
 tags:
   - oss
   - team

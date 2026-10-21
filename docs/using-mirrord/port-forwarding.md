@@ -1,6 +1,6 @@
 ---
 title: "Port Forwarding"
-description: "Use mirrord port-forward to reach any destination the target pod can reach from a local port, like kubectl port-forward, or reverse-forward a pod port."
+description: "Use mirrord port-forward to reach services in your cluster from a local port."
 date: 2024-09-03T15:39:44+01:00
 lastmod: 2024-12-19T15:39:44+01:00
 draft: false

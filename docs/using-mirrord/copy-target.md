@@ -13,7 +13,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: "Use copy_target to make mirrord create a copy of the target pod and run against the copy, with optional scale_down to replace the original workload."
+description: "Make mirrord run against a copy of the target pod instead of the original."
 ---
 
 # Copying a Target

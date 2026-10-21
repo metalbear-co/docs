@@ -4,7 +4,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "How mirrord sends incoming traffic from a cluster pod to your local process, in mirror mode (a copy of each request) or steal mode (the request itself)."
+description: "How mirrord sends incoming traffic from a pod in the cluster to your local process."
 ---
 
 # Incoming Traffic

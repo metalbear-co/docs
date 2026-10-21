@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "mirrord limitations: supported languages, Kubernetes versions, service meshes like Istio, OpenShift, secure access tools, and statically linked binaries."
+description: "Known limitations of mirrord, and the setups where it does not work yet."
 ---
 
 # Limitations

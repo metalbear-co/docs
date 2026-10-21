@@ -1,6 +1,6 @@
 ---
 title: "Managing Sessions"
-description: "See and stop active mirrord Operator sessions in your cluster, how long sessions live, why a session closed, and the RBAC that the sessions commands need."
+description: "See which mirrord sessions are active in your cluster, and stop them when you need to."
 date: 2024-03-04T00:00:00+00:00
 lastmod: 2024-03-04T00:00:00+00:00
 draft: false

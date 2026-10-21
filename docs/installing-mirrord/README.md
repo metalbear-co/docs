@@ -1,6 +1,6 @@
 ---
 title: Installing mirrord
-description: "Install mirrord on your machine and in your cluster: local and cluster requirements for the CLI and IDE extensions, and when you need the mirrord Operator."
+description: "How to install mirrord, and what your machine and your cluster need before you start."
 ---
 
 # Installing mirrord

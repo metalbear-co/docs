@@ -3,7 +3,7 @@ title: Local Development with Cloud Context
 draft: false
 images: []
 toc: true
-description: "Run code on your machine in the context of your Kubernetes cluster. mirrord gives the local process the cluster's network, files, and env variables."
+description: "Run your code on your machine while it talks to the services in your Kubernetes cluster."
 tags:
   - oss
   - team

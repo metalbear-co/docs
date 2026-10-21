@@ -1,6 +1,6 @@
 ---
 title: mirrord Operator
-description: "Install and manage the mirrord Operator, the Kubernetes operator in your cluster that enables Team and Enterprise features like concurrent sessions."
+description: "How to install and manage the mirrord Operator, which runs in your cluster for Team and Enterprise."
 tags:
   - team
   - enterprise

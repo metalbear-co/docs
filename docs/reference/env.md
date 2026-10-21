@@ -9,7 +9,7 @@ menu:
     parent: reference
 weight: 150
 toc: true
-description: "Reference for how mirrord loads environment variables from the remote pod into your local process, how the mechanism works, and how to use it in a session."
+description: "How mirrord loads environment variables from the remote pod into your local process."
 tags:
   - oss
   - team

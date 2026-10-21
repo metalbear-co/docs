@@ -1,6 +1,6 @@
 ---
 title: Cloud Setup
-description: "Set up the mirrord usage dashboard served from the cloud, enable it on an existing Operator install, or migrate to it from the license server dashboard."
+description: "How to set up the mirrord usage dashboard that MetalBear hosts in the cloud."
 tags:
   - alpha
   - team

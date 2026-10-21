@@ -1,6 +1,6 @@
 ---
 title: "Comparisons"
-description: "How mirrord compares to remote debuggers, a copy of the cluster on your machine, and Telepresence, and why local code runs against your shared cluster."
+description: "How mirrord compares to other ways of developing against a Kubernetes cluster."
 date: 2020-11-16T13:59:39+01:00
 lastmod: 2020-11-16T13:59:39+01:00
 draft: false

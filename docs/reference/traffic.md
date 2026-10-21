@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Network traffic in mirrord: mirroring and stealing incoming traffic, HTTP filters, and how outgoing traffic and DNS go through the remote pod."
+description: "How mirrord handles incoming and outgoing network traffic for your local process."
 ---
 
 # Network Traffic
