@@ -49,16 +49,29 @@ The agent then runs mirrord commands as it needs them. When `MIRRORD_CI_API_KEY`
 
 ## 4. Keep agent sessions apart
 
-All the agents that use the same key share one identity. Many agent sessions can also target the same service at the same time. Configure mirrord so that each session gets only its own traffic and data:
+All the agents that use the same CI API key share one identity. Many agent sessions can also target the same service at the same time. Configure mirrord so that each session gets only its own traffic and data:
 
 - **Incoming traffic:** Use steal mode with an [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) on a header that is unique to each agent task. Without a filter, one agent session takes all the traffic of the target.
 - **Queues:** Use [queue splitting](../sharing-the-cluster/queue-splitting.md), so that each session gets only the messages that match its filter.
 - **Databases:** If you don't want all the agents to write to the same database, use [DB branching](../sharing-the-cluster/db-branching.md). Each session then writes to its own branch.
 
-You can put these settings in a `mirrord.json` file in the repository, and pass the unique header value from an environment variable. The header filter is a regular expression, so anchor it at both ends. Without the anchors, the filter for `task-1` also matches `task-10`. Use task IDs that contain only letters, numbers, and dashes. For example:
+Give each agent task its own mirrord session key, for example the ID of the task. Set the key in the `MIRRORD_KEY` environment variable of the agent environment, or pass it with `--key`. Then put the filters in a `mirrord.json` file in the repository and refer to the key with `{{ key }}`. The same key works in the [queue splitting](../sharing-the-cluster/queue-splitting.md) filters.
+
+The header filter is a regular expression, so anchor it at both ends. Without the anchors, the filter for the key `task-1` also matches `task-10`. Use keys that contain only letters, numbers, and dashes. For example:
 
 ```json
-"header_filter": "^x-agent-task: {{ get_env(name='AGENT_TASK_ID') }}$"
+{
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "^x-agent-task: {{ key }}$"
+        }
+      }
+    }
+  }
+}
 ```
 
-If the agent runs several services together, use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) with a session key that is unique to each agent task, for example `mirrord up --key "$AGENT_TASK_ID"`. mirrord makes the HTTP filter and the queue filter of each service from the key. Give the `--key` flag every time. Without it, `mirrord up` uses the OS username as the key. Agent environments usually all have the same username, so all the agents get the same key and receive each other's traffic and messages.
+If the agent runs several services together, use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) with the same session key, for example `mirrord up --key "$AGENT_TASK_ID"`. mirrord makes the HTTP filter and the queue filter of each service from the key. Give the `--key` flag every time. Without it, `mirrord up` uses the OS username as the key. Agent environments usually all have the same username, so all the agents get the same key and receive each other's traffic and messages.
