@@ -1,6 +1,6 @@
 ---
 title: Welcome
-description: Connect local code, run by developers or AI coding agents, to your live Kubernetes cluster
+description: "mirrord connects local code, run by developers or AI coding agents, to your Kubernetes cluster, so it runs against shared staging with no image or deploy."
 layout:
   title:
     visible: true
@@ -13,6 +13,8 @@ layout:
   pagination:
     visible: true
 ---
+
+# Welcome to the mirrord Docs
 
 mirrord is a tool that lets developers and AI coding agents run local code as if it were running inside a Kubernetes cluster, without building container images or deploying. Your code still runs locally, but mirrord proxies incoming and outgoing traffic, environment variables, and files back and forth between your local process and the cluster.
 

@@ -1,13 +1,13 @@
 ---
 title: Dashboard
-description: Dashboard for monitoring mirrord usage
+description: "The mirrord Dashboard shows sessions, users, targets, CI pipelines, and adoption trends across your organization, so admins can track usage in real time."
 tags:
   - alpha
   - team
   - enterprise
 ---
 
-# Dashboard
+# mirrord Admin Dashboard
 
 The mirrord Dashboard is a web-based interface for monitoring mirrord usage across your organization. It provides real-time visibility into sessions, users, targets, CI pipelines, and overall adoption trends.
 

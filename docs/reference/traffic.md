@@ -13,8 +13,10 @@ tags:
   - oss
   - team
   - enterprise
-description: Reference to working with network traffic with mirrord
+description: "Network traffic in mirrord: mirroring and stealing incoming traffic, HTTP filters, and how outgoing traffic and DNS go through the remote pod."
 ---
+
+# Network Traffic Reference
 
 ## Incoming
 

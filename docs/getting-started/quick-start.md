@@ -14,8 +14,10 @@ tags:
   - team
   - enterprise
 shallowToc: true
-description: How to (very) quickly start using mirrord
+description: "Get mirrord running in under 5 minutes: install the CLI, point kubectl at your cluster, pick a target workload, and run your local code in its context."
 ---
+
+# mirrord Quick Start Guide
 
 Get mirrord running in under 5 minutes. You'll need:
 

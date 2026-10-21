@@ -4,6 +4,8 @@ tags:
   - team
   - enterprise
 ---
+# Queue Splitting Overview
+
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
 1. Running your application with mirrord without any special configuration will result in your local application competing with the deployed application (and potentially other mirrord runs by teammates) for queue messages.
@@ -23,7 +25,7 @@ Queue splitting needs Kubernetes `1.30` or later.
 Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
 {% endhint %}
 
-### Choose your queue service
+## Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
@@ -389,7 +391,7 @@ Filter definition contains the following fields:
 
 If a `filter` (or `message_filter`) and a `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
-#### Composing filters
+### Composing filters
 
 `filter` takes one of three forms. A single `metadata` regex:
 
@@ -445,7 +447,7 @@ A `message_filter` of `{ "tenant": "^blue$", "region": "eu" }` is the same as `f
 
 Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
 
-#### One queue or many
+### One queue or many
 
 `feature.split_queues` accepts two shapes.
 

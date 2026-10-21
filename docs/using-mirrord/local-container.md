@@ -1,11 +1,13 @@
 ---
 title: Working with Local Containers
-description: Running mirrord with local containers (Docker, Podman, nerdctl)
+description: "Run mirrord with local containers in Docker, Podman, or nerdctl, so a containerized app gets the cluster's network, files, and environment variables."
 tags:
   - oss
   - team
   - enterprise
 ---
+
+# Running in Local Containers
 
 The common way to use mirrord is on a locally running process. This way you can easily debug it in your IDE, as well as make quick changes and test them out without going through the additional layer of containerization.
 

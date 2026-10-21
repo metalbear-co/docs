@@ -8,8 +8,10 @@ tags:
   - oss
   - team
   - enterprise
-description: Connect Postman to your cluster via mirrord.
+description: "Route Postman requests through a local SOCKS5 proxy with mirrord, so you can call internal Kubernetes services like http://my-service:8080 directly."
 ---
+
+# Using Postman with mirrord
 
 By routing Postman traffic through a local SOCKS5 proxy, you can send API requests to kubernetes internal services (e.g., `http://my-service:8080`) directly from your local machine.
 

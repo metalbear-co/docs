@@ -9,10 +9,10 @@ menu:
     parent: overview
 weight: 170
 toc: true
-description: A list of third-party guides and videos about mirrord.
+description: "A list of third-party guides, blog posts, and videos about mirrord from the community, with the type and a short description of each resource."
 ---
 
-# Third-party
+# Third-Party Guides and Videos
 
 List of third-party guides and videos about mirrord:
 

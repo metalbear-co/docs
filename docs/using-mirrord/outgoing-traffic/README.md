@@ -1,11 +1,13 @@
 ---
 title: Outgoing Traffic
-description: How mirrord handles outgoing network traffic from your local process
+description: "How mirrord routes outgoing requests from your local process through the remote pod, so local code reaches databases, APIs, and brokers in the cluster."
 tags:
   - oss
   - team
   - enterprise
 ---
+
+# Handling Outgoing Traffic
 
 By default, mirrord intercepts outgoing network requests from your local process and routes them through the remote pod. This means your local code can access cluster-internal services - databases, APIs, message brokers - as if it were running inside the cluster.
 

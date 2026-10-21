@@ -1,6 +1,6 @@
 ---
 title: "Inspecting Live Traffic"
-description: "Monitor incoming traffic to a pod using the mirrord dump command"
+description: "Use the mirrord dump command to inspect incoming traffic to a Deployment, Service, Pod, or StatefulSet in your terminal, with automatic port detection."
 date: 2025-08-11T00:00:00+03:00
 lastmod: 2025-08-11T00:00:00+03:00
 draft: false
@@ -10,6 +10,8 @@ menu:
 toc: true
 tags: ["oss", "team", "enterprise"]
 ---
+
+# Inspecting Live Traffic
 
 The `mirrord dump` command lets you inspect incoming traffic to a Kubernetes resource - such as a Deployment, Service, Pod, or StatefulSet - directly in your terminal.
 

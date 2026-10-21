@@ -13,8 +13,10 @@ toc: true
 tags:
   - beta
   - enterprise
-description: High availability for mirrord Operator in Enterprise Tier
+description: "High availability for the mirrord Operator on the Enterprise plan: session persistence across Operator restarts, leader election, and standby replicas."
 ---
+
+# Operator High Availability
 
 {% hint style="info" %}
 Session persistence — the ability to survive an Operator restart without terminating active mirrord sessions — is available to users on the Enterprise pricing plan.

@@ -1,6 +1,6 @@
 ---
 title: Schema Migrations
-description: Automatically run schema migrations against a mirrord DB branch
+description: "Run schema migrations automatically against a mirrord DB branch, so it has the migrations from your working tree before your local code connects to it."
 tags:
   - alpha
   - team

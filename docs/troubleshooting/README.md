@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-description: Common issues and debugging utilities for mirrord
+description: "Fix common mirrord issues, use utilities like response header injection and latency diagnosis, and collect the logs to attach to a bug report."
 ---
 
 - **[Common Issues](common-issues.md)** - Solutions for frequently encountered problems

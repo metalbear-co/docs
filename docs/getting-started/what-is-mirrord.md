@@ -1,9 +1,9 @@
 ---
 title: What is mirrord?
-description: How mirrord works and what mirrord for Teams adds
+description: "mirrord lets developers and AI agents run local code in the context of a Kubernetes cluster. See how it works and what the Team and Enterprise plans add."
 ---
 
-# What is mirrord?
+# What is mirrord and How It Works
 
 mirrord lets developers (or AI agents) run local code in the context of their cloud environment. Your code runs on your machine, but talks to real cloud services - databases, queues, APIs - as if it were deployed in the cluster.
 
@@ -32,7 +32,7 @@ The same model powers **mirrord for CI** — running integration and end-to-end 
 
 Working on several microservices at once? [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) runs multiple mirrord sessions from a single config file, like `docker compose` for mirrord.
 
-### mirrord for Teams
+## mirrord for Teams
 
 mirrord's core functionality is free and open source. Individual developers can install it and start using it immediately.
 
@@ -47,7 +47,7 @@ mirrord's core functionality is free and open source. Individual developers can 
 
 Features marked with **\[Teams]** in these docs require a mirrord for Teams license.
 
-### Enterprise plan
+## Enterprise plan
 
 On top of everything in the Team plan, the Enterprise plan adds:
 

@@ -10,14 +10,14 @@ docs: null
 teams: null
 weight: 550
 toc: true
-description: Recording and displaying user session metrics in Jira
+description: "The mirrord Jira integration records how much time developers spent with mirrord on each issue, and how many times they used it, inside the Jira issue."
 tags:
   - alpha
   - team
   - enterprise
 ---
 
-# Jira Integration
+# Jira Integration for Usage Tracking
 
 With the mirrord Jira integration you can track how much mirrord has been used for each task on a per-issue basis, both as total time of use and the number of times it was used.
 

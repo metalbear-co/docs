@@ -13,8 +13,10 @@ tags:
   - oss
   - team
   - enterprise
-description: What are the limitations to using mirrord?
+description: "mirrord limitations: supported languages, Kubernetes versions, service meshes like Istio, OpenShift, secure access tools, and statically linked binaries."
 ---
+
+# Known Limitations of mirrord
 
 ## What frameworks/languages does mirrord support?
 

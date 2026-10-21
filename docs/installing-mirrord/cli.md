@@ -1,7 +1,9 @@
 ---
 title: CLI
-description: Installing and using the mirrord CLI
+description: "Install the mirrord CLI with Homebrew, the install script, or Chocolatey on Windows, then list targets, set up a config, and verify the installation."
 ---
+
+# Installing the mirrord CLI
 
 The mirrord CLI is the core tool for running mirrord from the command line.
 

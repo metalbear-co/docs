@@ -1,11 +1,13 @@
 ---
 title: Branch Management
-description: How to manage isolated mirrord DB branches for visibility and control
+description: "Use the mirrord db-branches CLI commands to see the status of the database branches in your cluster and to destroy the branches that you no longer need."
 tags:
 - beta
 - team
 - enterprise
 ---
+
+# Database Branch Management
 
 mirrord provides CLI commands to inspect and manage database branches:
 

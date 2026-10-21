@@ -13,8 +13,10 @@ tags:
   - oss
   - team
   - enterprise
-description: General questions about mirrord.
+description: "General questions about mirrord: what it does, how it connects a local process to a Kubernetes target, and what happens to traffic, files, and env vars."
 ---
+
+# General Questions About mirrord
 
 ## What does mirrord actually do?
 

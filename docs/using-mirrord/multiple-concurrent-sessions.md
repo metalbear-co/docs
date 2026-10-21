@@ -5,7 +5,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "How to use mirrord up"
+description: "Use mirrord up to start and run many mirrord sessions from one config file, like docker compose for mirrord, when your work spans several services."
 date: 2026-04-014T16:25:00+04:00
 lastmod: 2026-04-014T16:25:00+04:00
 draft: false
