@@ -1,14 +1,14 @@
 ---
-title: Letting Cloud Agents Run mirrord
-description: Let cloud and background coding agents use mirrord with a CI API key, so that each agent session does not take a seat.
+title: Using mirrord with Cloud Agents
+description: Let cloud agents such as Cursor cloud agents, Codex cloud, Claude Code on the web, and Devin run and test code against your staging cluster with mirrord, without a seat for each session.
 draft: false
 toc: true
 tags: ["enterprise"]
 ---
 
-# Cloud Agents
+# Using mirrord with Cloud Agents
 
-Many coding agents run in the cloud, not on a developer's machine. Examples are Cursor background agents, Claude Code on the web, Codex cloud tasks, Devin, and agent pods that your platform team runs. These agents can use mirrord to run and test their changes against your staging cluster, the same way an agent on a laptop does.
+Many coding agents run in the cloud, not on a developer's machine. Examples are Cursor cloud agents, Codex cloud, Claude Code on the web, Devin, and agent pods that your platform team runs. These agents can use mirrord to run and test their changes against your staging cluster, the same way an agent on a laptop does.
 
 A cloud agent needs a different identity from a developer. By default, mirrord authenticates to the Operator with a user certificate that it creates for each machine. A cloud agent usually starts in a new, short-lived environment for each task. Each environment then registers as a new user and takes up a seat.
 
