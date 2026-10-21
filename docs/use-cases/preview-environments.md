@@ -4,7 +4,7 @@ tags:
   - beta
   - enterprise
 lastmod: 2026-04-15T00:00:00.000Z
-description: "Preview Environments run only the new or changed services in isolated pods in your cluster, so teams can review code with live traffic and no side effects."
+description: "Preview Environments run new or changed services in separate pods with live traffic, while databases, queues, and other dependencies can remain shared."
 ---
 
 # Preview Environments

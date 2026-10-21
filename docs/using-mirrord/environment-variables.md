@@ -1,6 +1,6 @@
 ---
 title: Environment Variables
-description: "Control which environment variables mirrord loads from the remote pod: include or exclude them, override values, load from a file, and map or unset names."
+description: "Control which environment variables mirrord loads from the remote pod: include or exclude them, override values, load from a file, and unset variables."
 draft: false
 toc: true
 tags: ["oss", "team", "enterprise"]
