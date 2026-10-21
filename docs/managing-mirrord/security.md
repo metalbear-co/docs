@@ -22,7 +22,7 @@ This discussion is only relevant for users on the Team and Enterprise pricing pl
 
 Love using mirrord but need help getting your security team on board? Talk to one of our technical experts!
 
-<a href="https://metalbear.com/mirrord/demo/" class="button primary">Get Security Support</a>
+<a href="https://metalbear.com/contact/" class="button primary">Get Security Support</a>
 
 You can also visit our [Trust Center](https://trust.metalbear.com) for an overview of MetalBear's security posture, certifications, and compliance documentation.
 
