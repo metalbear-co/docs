@@ -77,23 +77,24 @@ You can load overrides from a dotenv-style file:
 }
 ```
 
-## Mapping variable names
+## Replacing values by name pattern
 
-If your local code expects a different variable name than what the remote pod uses:
+Use `mapping` to replace the values of remote variables whose names match a regex pattern. The variable names do not change, so `mapping` cannot rename a variable.
 
 ```json
 {
   "feature": {
     "env": {
       "mapping": {
-        "REMOTE_DB_URL": "DATABASE_URL"
+        ".+_TIMEOUT": "10000",
+        "LOG_.+_VERBOSITY": "debug"
       }
     }
   }
 }
 ```
 
-This maps the remote `REMOTE_DB_URL` value into the local `DATABASE_URL` variable.
+With this configuration, a remote `CONNECTION_TIMEOUT=500` becomes `CONNECTION_TIMEOUT=10000` in your local process, and `LOG_FILE_VERBOSITY=info` becomes `LOG_FILE_VERBOSITY=debug`.
 
 ## Unsetting variables
 
