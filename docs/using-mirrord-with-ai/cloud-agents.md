@@ -53,7 +53,7 @@ All the agents that use the same key share one identity. Many agent sessions can
 
 - **Incoming traffic:** Use steal mode with an [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) on a header that is unique to each agent task. Without a filter, one agent session takes all the traffic of the target.
 - **Queues:** Use [queue splitting](../sharing-the-cluster/queue-splitting.md), so that each session gets only the messages that match its filter.
-- **Databases (optional):** If you don't want all the agents to write to the same database, use [DB branching](../sharing-the-cluster/db-branching.md). Each session then writes to its own branch.
+- **Databases:** If you don't want all the agents to write to the same database, use [DB branching](../sharing-the-cluster/db-branching.md). Each session then writes to its own branch.
 
 You can put these settings in a `mirrord.json` file in the repository, and pass the unique header value from an environment variable. The header filter is a regular expression, so anchor it at both ends. Without the anchors, the filter for `task-1` also matches `task-10`. Use task IDs that contain only letters, numbers, and dashes. For example:
 
