@@ -119,13 +119,12 @@ This feature requires at least mirrord version 3.278.0.
 Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets two toggles, both optional:
 
 - `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
-- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split, mirrored with `incoming: mirror` and stolen otherwise.
+- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split with `queue_mode: steal`, whatever `incoming` is.
 
 ```yaml
 modes:
   watch:
-    incoming: mirror
-    queues: split
+    incoming: mirror # queue messages are still stolen
 
 services:
   orders:
@@ -140,7 +139,7 @@ The built-in modes are the same as these definitions:
 | --- | --- | --- |
 | `split` | `split` | not set |
 | `replace` | `replace` | not set |
-| `mirror` | `mirror` | not set |
+| `mirror` | `mirror` | `mirror` |
 
 Their names are reserved: a mode named `split`, `replace` or `mirror` under `modes` is an error. So is selecting a mode that doesn't exist, with `default_mode` or `--mode`; `mirrord up` fails before starting any service and lists the modes it knows.
 
