@@ -38,5 +38,6 @@
   <rect x="800" y="30" width="230" height="64" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
   <text x="915" y="58" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Target app</text>
   <text x="915" y="78" font-size="12.5" fill="#333344" text-anchor="middle">deployed consumer</text>
-  <use href="#k8s" x="1002" y="38" width="20" height="20"/>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="1012" y="76" width="36" height="36"/>
 </svg>

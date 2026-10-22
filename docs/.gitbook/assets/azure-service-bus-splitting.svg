@@ -97,6 +97,7 @@
   <rect x="960" y="490" width="216" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
   <text x="1068" y="526" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Deployed app</text>
   <text x="1068" y="546" font-size="12.5" fill="#333344" text-anchor="middle">unchanged, not restarted</text>
-  <use href="#k8s" x="1148" y="58" width="20" height="20"/>
-  <use href="#k8s" x="1148" y="498" width="20" height="20"/>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="1158" y="112" width="36" height="36"/>
+  <use href="#k8s" x="1158" y="552" width="36" height="36"/>
 </svg>

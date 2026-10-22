@@ -43,10 +43,10 @@ Two diagrams show the style well. Copy from them when you start a new one:
 
 The Kubernetes logo shows what runs in the cluster. Use it in two places:
 
-- **Next to the label of a Kubernetes cluster boundary.** Put a 20px logo at the label's `x` and `y - 16`, and move the label text 26px to the right. Do not put it on a broker boundary, such as "Kafka cluster".
-- **On a box that runs in the cluster, when the diagram has no Kubernetes cluster boundary.** Put a 20px logo in the top-right corner of the box, at `x + width - 28`, `y + 8`. Examples: the mirrord operator, a forwarder, the deployed app, a preview pod. Do not put it on brokers or managed services. Keep at least 6px between the logo and the box title.
+- **On a Kubernetes cluster boundary.** Center a 36px logo on the top-right corner of the boundary, at `x + width - 18`, `y - 18`. Do not put it on a broker boundary, such as "Kafka cluster".
+- **On a box that runs in the cluster, when the diagram has no Kubernetes cluster boundary.** Center a 36px logo on the bottom-right corner of the box, at `x + width - 18`, `y + height - 18`. Examples: the mirrord operator, a forwarder, the deployed app, a preview pod. Do not put it on brokers or managed services.
 
-Define the symbol once in `<defs>`, and place it with `<use href="#k8s" x="..." y="..." width="20" height="20"/>`:
+Define the symbol once in `<defs>`, and place it with `<use href="#k8s" x="..." y="..." width="36" height="36"/>`. The logo half covers the corner, so make sure it does not cover an arrow or text, and grow the canvas when it goes past the edge:
 
 ```xml
 <symbol id="k8s" viewBox="0 0 32 32">

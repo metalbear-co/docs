@@ -21,8 +21,7 @@
 
   <!-- Cluster boundary -->
   <rect x="230" y="30" width="470" height="300" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="250" y="42" width="20" height="20"/>
-  <text x="276" y="58" font-size="15" font-weight="700" fill="#4a44b8">Kubernetes cluster</text>
+  <text x="250" y="58" font-size="15" font-weight="700" fill="#4a44b8">Kubernetes cluster</text>
 
   <!-- Caller -->
   <rect x="20" y="130" width="170" height="96" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
@@ -65,4 +64,6 @@
   <!-- Caption -->
   <text x="480" y="372" font-size="14" fill="#333344" text-anchor="middle">mirrord intercepts at the service pod, after the gateway. A request that reaches your local</text>
   <text x="480" y="394" font-size="14" fill="#333344" text-anchor="middle">process has already been authenticated, routed, and transformed by the real gateway.</text>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="682" y="12" width="36" height="36"/>
 </svg>

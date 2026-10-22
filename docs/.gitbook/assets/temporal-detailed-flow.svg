@@ -27,8 +27,7 @@
 
   <!-- Worker 1: split-enabled flow, with mirrord -->
   <rect x="20" y="42" width="1120" height="438" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="36" y="52" width="20" height="20"/>
-  <text x="62" y="68" font-size="15" font-weight="700" fill="#4a44b8">Worker 1: split-enabled flow, with mirrord</text>
+  <text x="36" y="68" font-size="15" font-weight="700" fill="#4a44b8">Worker 1: split-enabled flow, with mirrord</text>
 
   <!-- checkout: split -->
   <rect x="40" y="106" width="130" height="56" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
@@ -104,8 +103,7 @@
 
   <!-- Worker 2: normal flow, no mirrord -->
   <rect x="20" y="500" width="1120" height="192" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="36" y="510" width="20" height="20"/>
-  <text x="62" y="526" font-size="15" font-weight="700" fill="#4a44b8">Worker 2: normal flow, no mirrord</text>
+  <text x="36" y="526" font-size="15" font-weight="700" fill="#4a44b8">Worker 2: normal flow, no mirrord</text>
 
   <!-- reports -->
   <rect x="40" y="542" width="130" height="56" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
@@ -156,4 +154,7 @@
   <text x="800" y="904" font-size="12.5" fill="#ffffff" text-anchor="middle">polls <tspan font-family="Menlo, Consolas, monospace">mirrord-session-dev-...-checkout</tspan></text>
   <text x="800" y="922" font-size="12.5" fill="#ffffff" text-anchor="middle">and <tspan font-family="Menlo, Consolas, monospace">mirrord-session-dev-...-shipping</tspan></text>
   <text x="800" y="940" font-size="12.5" fill="#ffffff" text-anchor="middle">receives only the tasks that match its filters</text>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="1122" y="24" width="36" height="36"/>
+  <use href="#k8s" x="1122" y="482" width="36" height="36"/>
 </svg>

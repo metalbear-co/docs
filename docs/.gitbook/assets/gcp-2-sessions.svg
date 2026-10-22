@@ -82,6 +82,7 @@
   <rect x="870" y="478" width="260" height="64" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="1000" y="506" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord 2</text>
   <text x="1000" y="526" font-size="12.5" fill="#ffffff" text-anchor="middle">user 2's local app</text>
-  <use href="#k8s" x="702" y="142" width="20" height="20"/>
-  <use href="#k8s" x="702" y="486" width="20" height="20"/>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="712" y="180" width="36" height="36"/>
+  <use href="#k8s" x="712" y="524" width="36" height="36"/>
 </svg>

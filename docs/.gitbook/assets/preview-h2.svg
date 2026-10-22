@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2 1202 802" width="1202" height="802" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">Preview environment replicas across clusters</title>
   <desc id="d">The developer runs mirrord preview start, stop, or status with the mirrord CLI against the mirrord operator on the Primary cluster, which is management-only. The Primary operator sends one copy of the preview to every workload cluster. On the Default cluster, the operator runs the original preview task. The preview pods steal matched HTTP traffic that enters that cluster and reach the branch DB pod by pod IP, with no tunnel. On the member cluster, the operator runs the replica copy, and replica pods steal matched HTTP traffic that enters that cluster. The customer load balancer sends live traffic into any cluster. A replica reaches the branch DB in four steps. One: the app container connects to the db sidecar at 127.0.0.1 on the branch port. Two: the sidecar connects to the local operator's tunnel gateway over mTLS. Three: the request travels on one HTTP/2 stream of the connection that the Primary dials in through the member cluster's API server. Four: the Primary authorizes the request, then port-forwards to the branch DB pod through the Default cluster's API server. The member namespace holds no cluster credential. On both clusters, the deployed app's patched consumer sends matched messages into one shared temp queue, and the previews compete-consume it, so each message is handled once.</desc>
   <defs>
@@ -17,7 +17,7 @@
       <circle cx="16" cy="16" r="2.4" fill="#ffffff"/>
     </symbol>
   </defs>
-  <rect x="0" y="0" width="1200" height="800" fill="#ffffff"/>
+  <rect x="0" y="-2" width="1202" height="802" fill="#ffffff"/>
 
   <!-- Developer -->
   <rect x="20" y="58" width="220" height="64" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
@@ -26,16 +26,14 @@
 
   <!-- Primary cluster -->
   <rect x="300" y="20" width="580" height="122" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="320" y="30" width="20" height="20"/>
-  <text x="346" y="46" font-size="15" font-weight="700" fill="#4a44b8">Primary cluster (management-only)</text>
+  <text x="320" y="46" font-size="15" font-weight="700" fill="#4a44b8">Primary cluster (management-only)</text>
   <rect x="340" y="58" width="500" height="64" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="590" y="85" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord operator (Primary)</text>
   <text x="590" y="106" font-size="12.5" fill="#ffffff" text-anchor="middle">sends one copy of the preview to every workload cluster</text>
 
   <!-- Default cluster -->
   <rect x="20" y="180" width="510" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="40" y="190" width="20" height="20"/>
-  <text x="66" y="206" font-size="15" font-weight="700" fill="#4a44b8">Default cluster</text>
+  <text x="40" y="206" font-size="15" font-weight="700" fill="#4a44b8">Default cluster</text>
   <rect x="310" y="220" width="190" height="70" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="405" y="244" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">operator</text>
   <text x="405" y="263" font-size="12.5" fill="#ffffff" text-anchor="middle">runs the original</text>
@@ -54,8 +52,7 @@
 
   <!-- Member cluster -->
   <rect x="670" y="180" width="510" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <use href="#k8s" x="690" y="190" width="20" height="20"/>
-  <text x="716" y="206" font-size="15" font-weight="700" fill="#4a44b8">Member cluster (full replica)</text>
+  <text x="690" y="206" font-size="15" font-weight="700" fill="#4a44b8">Member cluster (full replica)</text>
   <rect x="700" y="220" width="230" height="70" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="815" y="244" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">operator</text>
   <text x="815" y="263" font-size="12.5" fill="#ffffff" text-anchor="middle">dispatches on labels,</text>
@@ -143,4 +140,8 @@
   <circle cx="52" cy="772" r="11" fill="#756DF3"/>
   <text x="52" y="777" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
   <text x="74" y="777" font-size="13" fill="#232141">The Primary authorizes it, then port-forwards to the branch DB pod through the Default API server. No cluster credential is in the member namespace.</text>
+  <!-- Kubernetes logos: what runs in the cluster -->
+  <use href="#k8s" x="862" y="2" width="36" height="36"/>
+  <use href="#k8s" x="512" y="162" width="36" height="36"/>
+  <use href="#k8s" x="1162" y="162" width="36" height="36"/>
 </svg>
