@@ -105,6 +105,8 @@ The branch node owns all 16384 hash slots, so every key your application uses la
 
 With `"mode": "all"` the source may be a standalone Redis or a Redis Cluster. From a cluster, keys are copied from every master node, following the addresses the cluster announces, with the same credentials and TLS settings as the source connection. `patterns` apply the same way.
 
+A standalone source needs nothing beyond what the copy reads, so a source user limited to `+@read` works. A cluster source user also needs `cluster|slots` and `cluster|nodes`, which the copy uses to find the masters and to check that no slot moved between them while it ran. If the cluster is resharding during the copy, the branch fails to start instead of coming up with missing keys; start the session again once the resharding is over.
+
 `"cluster": true` only applies to remote branches; a local branch always runs a standalone instance.
 
 {% hint style="info" %}
