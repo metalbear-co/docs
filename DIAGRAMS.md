@@ -37,7 +37,27 @@ Two diagrams show the style well. Copy from them when you start a new one:
 - Box: `rx="12"`. A box inside a box: `rx="8"` to `rx="10"`.
 - Database: a cylinder (an `ellipse` top on a `path` body), same stroke and colors as a box.
 - Queue or topic: a box with three thin vertical lines at the right end, or a plain box with the type in the secondary text.
-- Do not draw icons, logos, mascots, laptops, clouds, or hand-drawn shapes. Put the kind of thing in the text: "Kubernetes cluster", "Your machine".
+- Do not draw icons, logos, mascots, laptops, clouds, or hand-drawn shapes. Put the kind of thing in the text: "Kubernetes cluster", "Your machine". The Kubernetes logo is the one exception (see below).
+
+## Kubernetes logo
+
+The Kubernetes logo shows what runs in the cluster. Use it in two places:
+
+- **Next to the label of a Kubernetes cluster boundary.** Put a 20px logo at the label's `x` and `y - 16`, and move the label text 26px to the right. Do not put it on a broker boundary, such as "Kafka cluster".
+- **On a box that runs in the cluster, when the diagram has no Kubernetes cluster boundary.** Put a 20px logo in the top-right corner of the box, at `x + width - 28`, `y + 8`. Examples: the mirrord operator, a forwarder, the deployed app, a preview pod. Do not put it on brokers or managed services. Keep at least 6px between the logo and the box title.
+
+Define the symbol once in `<defs>`, and place it with `<use href="#k8s" x="..." y="..." width="20" height="20"/>`:
+
+```xml
+<symbol id="k8s" viewBox="0 0 32 32">
+  <polygon points="16.00,1.60 27.73,7.25 30.62,19.94 22.51,30.11 9.49,30.11 1.38,19.94 4.27,7.25" fill="#326CE5" stroke="#326CE5" stroke-width="2" stroke-linejoin="round"/>
+  <g fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+  <circle cx="16" cy="16" r="7"/>
+  <line x1="16.00" y1="13.40" x2="16.00" y2="5.80"/><line x1="18.03" y1="14.38" x2="23.97" y2="9.64"/><line x1="18.53" y1="16.58" x2="25.94" y2="18.27"/><line x1="17.13" y1="18.34" x2="20.43" y2="25.19"/><line x1="14.87" y1="18.34" x2="11.57" y2="25.19"/><line x1="13.47" y1="16.58" x2="6.06" y2="18.27"/><line x1="13.97" y1="14.38" x2="8.03" y2="9.64"/>
+  </g>
+  <circle cx="16" cy="16" r="2.4" fill="#ffffff"/>
+</symbol>
+```
 
 ## Text
 

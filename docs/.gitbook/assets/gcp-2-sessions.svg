@@ -8,6 +8,14 @@
     <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#756DF3"/>
     </marker>
+    <symbol id="k8s" viewBox="0 0 32 32">
+      <polygon points="16.00,1.60 27.73,7.25 30.62,19.94 22.51,30.11 9.49,30.11 1.38,19.94 4.27,7.25" fill="#326CE5" stroke="#326CE5" stroke-width="2" stroke-linejoin="round"/>
+      <g fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+        <circle cx="16" cy="16" r="7"/>
+        <line x1="16.00" y1="13.40" x2="16.00" y2="5.80"/><line x1="18.03" y1="14.38" x2="23.97" y2="9.64"/><line x1="18.53" y1="16.58" x2="25.94" y2="18.27"/><line x1="17.13" y1="18.34" x2="20.43" y2="25.19"/><line x1="14.87" y1="18.34" x2="11.57" y2="25.19"/><line x1="13.47" y1="16.58" x2="6.06" y2="18.27"/><line x1="13.97" y1="14.38" x2="8.03" y2="9.64"/>
+      </g>
+      <circle cx="16" cy="16" r="2.4" fill="#ffffff"/>
+    </symbol>
   </defs>
   <rect x="0" y="0" width="1200" height="572" fill="#ffffff"/>
 
@@ -74,4 +82,6 @@
   <rect x="870" y="478" width="260" height="64" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="1000" y="506" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord 2</text>
   <text x="1000" y="526" font-size="12.5" fill="#ffffff" text-anchor="middle">user 2's local app</text>
+  <use href="#k8s" x="702" y="142" width="20" height="20"/>
+  <use href="#k8s" x="702" y="486" width="20" height="20"/>
 </svg>
