@@ -1,6 +1,6 @@
 ---
 title: Working with Local Containers
-description: "Run mirrord with a local container, so your containerized app gets the cluster's context."
+description: "Run your app in a local container with mirrord, so it gets the cluster's traffic, files, and environment variables."
 tags:
   - oss
   - team

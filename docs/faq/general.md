@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Answers to the most common questions about what mirrord is and how it works."
+description: "Answers to common questions about mirrord, including what it installs in your cluster and how it protects your shared environment."
 ---
 
 # General Questions About mirrord

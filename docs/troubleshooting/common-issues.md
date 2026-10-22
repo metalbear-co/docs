@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Fixes for the most common problems with mirrord, and what to check first when a session fails."
+description: "Fixes for common mirrord problems, from traffic that never reaches your local process to files read locally instead of remotely."
 ---
 
 # Common Issues

@@ -13,7 +13,7 @@ toc: true
 tags:
   - team
   - enterprise
-description: "What security teams need to know before they approve mirrord for Teams."
+description: "How mirrord for Teams handles your data, access control, and compliance, for security teams that evaluate it."
 ---
 
 # Security

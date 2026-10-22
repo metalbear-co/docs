@@ -13,7 +13,7 @@ tags:
   - oss
   - team
   - enterprise
-description: "Known limitations of mirrord, and the setups where it does not work yet."
+description: "Which languages, Kubernetes versions, and cluster setups mirrord supports, and where it does not work yet."
 ---
 
 # Limitations
