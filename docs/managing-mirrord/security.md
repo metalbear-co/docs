@@ -13,8 +13,10 @@ toc: true
 tags:
   - team
   - enterprise
-description: Security in mirrord for Teams
+description: "How mirrord for Teams handles your data, access control, and compliance, for security teams that evaluate it."
 ---
+
+# Security
 
 {% hint style="info" %}
 This discussion is only relevant for users on the Team and Enterprise pricing plans.

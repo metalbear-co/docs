@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Welcome](README.md)
+* [Welcome to the mirrord Docs](README.md "Welcome")
 
 ## Getting Started
 
@@ -39,8 +39,8 @@
   * [Working with API Gateways](using-mirrord/incoming-traffic/api-gateways.md)
 * [Outgoing Traffic](using-mirrord/outgoing-traffic/README.md)
   * [Filtering Outgoing Traffic](using-mirrord/outgoing-traffic/filter-outgoing-traffic.md)
-* [Environment Variables](using-mirrord/environment-variables.md)
-* [File Operations](using-mirrord/file-operations.md)
+* [Importing Environment Variables](using-mirrord/environment-variables.md)
+* [Reading and Writing Remote Files](using-mirrord/file-operations.md)
 * [Port Forwarding](using-mirrord/port-forwarding.md)
 * [Connecting Tools to the Cluster](using-mirrord/connecting-tools/README.md)
   * [Web Browsing](using-mirrord/connecting-tools/web-browsing.md)
@@ -57,7 +57,7 @@
 
 ## Sharing the Cluster
 
-* [Overview](sharing-the-cluster/overview.md)
+* [Sharing the Cluster Overview](sharing-the-cluster/overview.md "Overview")
 * [Managing Sessions](sharing-the-cluster/sessions.md)
 * [Policies](sharing-the-cluster/policies.md)
   * [Outgoing Traffic Policies](sharing-the-cluster/outgoing-traffic-policies.md)
@@ -115,11 +115,11 @@
 
 ## FAQ
 
-* [General](faq/general.md)
+* [General Questions About mirrord](faq/general.md "General")
 * [Limitations](faq/limitations.md)
 * [Comparisons](faq/comparisons.md)
 * [Troubleshooting](troubleshooting/README.md)
-  * [Utilities](troubleshooting/utilities.md)
+  * [Troubleshooting Utilities](troubleshooting/utilities.md "Utilities")
   * [Common Issues](troubleshooting/common-issues.md)
   * [Collecting Logs](troubleshooting/collecting-logs.md)
 
@@ -128,12 +128,12 @@
 * [Architecture](reference/architecture.md)
 * [Targets](reference/targets.md)
 * [Network Traffic](reference/traffic.md)
-* [Environment Variables](reference/env.md)
-* [File Operations](reference/fileops.md)
+* [Environment Variables Reference](reference/env.md "Environment Variables")
+* [File Operations Reference](reference/fileops.md "File Operations")
 
 ***
 
 * [Feature Release Status](reference/release-stages.md)
   * [Feature Support Matrix](reference/feature-matrix.md)
-* [Third-party](reference/third-party.md)
+* [Third-Party Guides and Videos](reference/third-party.md)
 * [Contributing](contributing.md)

@@ -13,8 +13,10 @@ tags:
   - oss
   - team
   - enterprise
-description: Some common issues and workarounds.
+description: "Fixes for common mirrord problems, from traffic that never reaches your local process to files read locally instead of remotely."
 ---
+
+# Common Issues
 
 ## I've run my program with mirrord, but it seems to have no effect
 

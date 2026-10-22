@@ -14,6 +14,8 @@ layout:
     visible: true
 ---
 
+# Welcome to the mirrord Docs
+
 mirrord is a tool that lets developers and AI coding agents run local code as if it were running inside a Kubernetes cluster, without building container images or deploying. Your code still runs locally, but mirrord proxies incoming and outgoing traffic, environment variables, and files back and forth between your local process and the cluster.
 
 The result is that your local process behaves as if it's running in the cloud, even though it's still running on your machine. Use mirrord to read from the live cluster (things like real env vars, real service responses, real queue contents) when writing or generating code, so your code is grounded in what's actually deployed. Then run it against those same services once it's written, and find out immediately whether it works instead of waiting on CI and staging.

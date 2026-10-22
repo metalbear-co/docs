@@ -1,6 +1,6 @@
 ---
 title: Cloud Setup
-description: Set up the mirrord usage dashboard served from the cloud
+description: "How to set up the mirrord Dashboard that MetalBear hosts in the cloud."
 tags:
   - alpha
   - team

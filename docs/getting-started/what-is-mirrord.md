@@ -1,6 +1,6 @@
 ---
 title: What is mirrord?
-description: How mirrord works and what mirrord for Teams adds
+description: "How mirrord runs your local code in the context of your cluster, and what the paid plans add."
 ---
 
 # What is mirrord?
@@ -32,7 +32,7 @@ The same model powers **mirrord for CI** — running integration and end-to-end 
 
 Working on several microservices at once? [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) runs multiple mirrord sessions from a single config file, like `docker compose` for mirrord.
 
-### mirrord for Teams
+## mirrord for Teams
 
 mirrord's core functionality is free and open source. Individual developers can install it and start using it immediately.
 
@@ -47,7 +47,7 @@ mirrord's core functionality is free and open source. Individual developers can 
 
 Features marked with **\[Teams]** in these docs require a mirrord for Teams license.
 
-### Enterprise plan
+## Enterprise plan
 
 On top of everything in the Team plan, the Enterprise plan adds:
 

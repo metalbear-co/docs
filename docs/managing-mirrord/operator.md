@@ -1,6 +1,6 @@
 ---
 title: mirrord Operator
-description: Install and manage the mirrord Operator for Teams
+description: "How to install and manage the mirrord Operator, which runs in your cluster for Team and Enterprise."
 tags:
   - team
   - enterprise
