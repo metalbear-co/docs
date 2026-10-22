@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1202 640" width="1202" height="640" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">Two SQS splitting sessions</title>
-  <desc id="d">A producer sends messages to an SQS message queue. The mirrord operator consumes these messages. It sends messages that match filter x to a temporary queue for the first local application, and messages that match filter y to a temporary queue for the second local application. Both local applications run with mirrord. It sends messages that do not match any filter to a temporary queue for the deployed application. Each application consumes messages from its own temporary queue.</desc>
+  <desc id="d">A producer sends messages to an SQS message queue. The mirrord operator consumes these messages. It sends messages that match filter x to a temporary queue for the first local application, and messages that match filter y to a temporary queue for the second local application. Both local applications run with mirrord. It sends messages that do not match any filter to a temporary queue for the deployed application. Each application consumes messages from its own temporary queue. A message that matches both filters goes to only one of the two sessions.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -39,6 +39,9 @@
   <rect x="20" y="290" width="220" height="300" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="130" y="437" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord operator</text>
   <text x="130" y="457" font-size="12.5" fill="#ffffff" text-anchor="middle">routes by filter</text>
+  <text x="130" y="489" font-size="12.5" fill="#ffffff" text-anchor="middle">a message that matches</text>
+  <text x="130" y="505" font-size="12.5" fill="#ffffff" text-anchor="middle">both filters goes to</text>
+  <text x="130" y="521" font-size="12.5" fill="#ffffff" text-anchor="middle">only one of the sessions</text>
 
   <!-- Session x: temporary queue and local application -->
   <line x1="240" y1="330" x2="483" y2="330" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>

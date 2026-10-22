@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1202 490" width="1202" height="490" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">How mirrord ci works</title>
-  <desc id="d">A CI runner runs your tests and your microservice with mirrord. The tests send test traffic to the service in the Kubernetes cluster. The mirrord agent in the service pod sends incoming traffic to the microservice on the CI runner. The microservice sends outgoing traffic, database access, and file reads and writes to the agent. The agent sends that outgoing traffic to other services and that database access to the database.</desc>
+  <desc id="d">A CI runner runs your tests and your microservice with mirrord. The tests send test traffic to the service in the Kubernetes cluster. The mirrord agent, a separate pod in the network namespace of the service pod, sends incoming traffic to the microservice on the CI runner. The microservice sends outgoing traffic, database access, and file reads and writes to the agent. The agent sends that outgoing traffic to other services and that database access to the database.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -33,36 +33,42 @@
   <text x="260" y="336" font-size="12.5" fill="#ffffff" text-anchor="middle">runs with mirrord</text>
 
   <!-- Test traffic to the service -->
-  <polyline points="140,290 140,60 710,60 710,196" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <polyline points="140,290 140,60 710,60 710,166" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="425" y="50" font-size="12.5" fill="#333344" text-anchor="middle">test traffic</text>
 
-  <!-- Service pod with the mirrord agent -->
-  <rect x="600" y="200" width="220" height="240" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="710" y="226" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Service</text>
-  <rect x="622" y="245" width="176" height="76" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
-  <text x="710" y="289" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
-  <rect x="622" y="350" width="176" height="70" rx="10" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
-  <text x="710" y="391" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Deployed container</text>
+  <!-- Target pod -->
+  <rect x="600" y="170" width="220" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="710" y="205" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Service pod (target)</text>
+  <text x="710" y="226" font-size="12.5" fill="#333344" text-anchor="middle">deployed container</text>
+
+  <!-- mirrord agent: a separate pod in the target's network namespace -->
+  <line x1="710" y1="250" x2="710" y2="300" stroke="#232141" stroke-width="2"/>
+  <text x="720" y="280" font-size="12.5" fill="#333344">same network namespace</text>
+  <rect x="600" y="300" width="220" height="90" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
+  <text x="710" y="336" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
+  <text x="710" y="357" font-size="12.5" fill="#ffffff" text-anchor="middle">separate pod on the</text>
+  <text x="710" y="373" font-size="12.5" fill="#ffffff" text-anchor="middle">target's node</text>
 
   <!-- Agent and microservice -->
-  <line x1="622" y1="268" x2="334" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <text x="435" y="258" font-size="12.5" fill="#4a44b8" text-anchor="middle">incoming traffic</text>
-  <line x1="330" y1="300" x2="618" y2="300" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="435" y="322" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
-  <text x="435" y="338" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
-  <text x="435" y="354" font-size="12.5" fill="#333344" text-anchor="middle">file reads and writes</text>
+  <line x1="600" y1="320" x2="334" y2="320" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <text x="465" y="310" font-size="12.5" fill="#4a44b8" text-anchor="middle">incoming traffic</text>
+  <line x1="330" y1="360" x2="596" y2="360" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="450" y="382" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
+  <text x="450" y="398" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
+  <text x="450" y="414" font-size="12.5" fill="#333344" text-anchor="middle">file reads and writes</text>
 
   <!-- Other services and database -->
-  <rect x="1000" y="200" width="160" height="86" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="1080" y="238" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Other</text>
-  <text x="1080" y="258" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">services</text>
-  <line x1="798" y1="262" x2="996" y2="262" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="900" y="254" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
-  <polyline points="798,304 1080,304 1080,350" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="900" y="296" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
-  <path d="M1010 368 L1010 436 A70 14 0 0 0 1150 436 L1150 368" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <ellipse cx="1080" cy="368" rx="70" ry="14" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="1080" y="414" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Database</text>
+  <rect x="1000" y="170" width="160" height="80" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <text x="1080" y="205" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Other</text>
+  <text x="1080" y="225" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">services</text>
+  <polyline points="820,320 900,320 900,210 996,210" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="948" y="200" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
+  <line x1="820" y1="370" x2="1006" y2="370" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="910" y="360" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
+  <path d="M1010 330 L1010 426 A70 14 0 0 0 1150 426 L1150 330" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <ellipse cx="1080" cy="330" rx="70" ry="14" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <text x="1080" y="390" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Database</text>
+
   <!-- Kubernetes logos: what runs in the cluster -->
   <use href="#k8s" x="1162" y="102" width="36" height="36"/>
 </svg>

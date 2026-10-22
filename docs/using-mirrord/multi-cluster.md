@@ -136,6 +136,10 @@ The flow is the same as single-cluster, applied in every cluster:
 The key property: **messages never travel cluster-to-cluster to reach you**. Wherever a message lands, that cluster's operator catches it and routes it to your session.
 
 {% hint style="info" %}
+Azure Service Bus topic splitting is the exception. All clusters share one Service Bus namespace, so only the Default cluster's operator creates the ingest subscription and runs the forwarder. The operators on the other clusters create no shared resources. They only point their workloads at the subscriptions that the Default cluster creates.
+{% endhint %}
+
+{% hint style="info" %}
 Create your `MirrordSplitConfig` resources on the **Primary cluster**. The operator automatically syncs them to all Workload clusters — you don't need to create them on each cluster manually.
 {% endhint %}
 

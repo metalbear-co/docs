@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2 1202 442" width="1202" height="442" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">Preview environment creation workflow</title>
-  <desc id="d">Step 1: on your machine, you run mirrord preview start --config-file &lt;mirrord.json&gt; --image &lt;code-image&gt; --key &lt;env-key&gt;; the key is optional. Step 2: mirrord uses the env key in every filter in mirrord.json, for example the header filter key-{{ env_key }}. Step 3: in the staging cluster, where cars-service and users-service call each other, mirrord starts a temporary cars-service preview pod that runs your image and lives until the TTL expires. Requests to cars-service that match the env key filter go to the preview pod.</desc>
+  <desc id="d">Step 1: on your machine, you run mirrord preview start --config-file &lt;mirrord.json&gt; --image &lt;code-image&gt; --key &lt;env-key&gt;; the key is optional. Step 2: mirrord uses the env key in every filter in mirrord.json, for example the header filter key-{{ key }}. Step 3: in the staging cluster, where cars-service and users-service call each other, mirrord starts a temporary cars-service preview pod that runs your image and lives until the TTL expires. Requests to cars-service that match the env key filter go to the preview pod.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -41,7 +41,7 @@
   <text x="74" y="260.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
   <text x="94" y="261" font-size="14" font-weight="700" fill="#232141" font-family="Menlo, Consolas, monospace">mirrord.json</text>
   <text x="70" y="290" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141">"header_filter":</text>
-  <text x="70" y="308" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8">  "key-{{ env_key }}"</text>
+  <text x="70" y="308" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8">  "key-{{ key }}"</text>
   <text x="70" y="336" font-size="12.5" fill="#333344">The env key goes into every filter.</text>
 
   <!-- Staging cluster -->
@@ -60,12 +60,13 @@
 
   <!-- Preview environment -->
   <rect x="510" y="212" width="650" height="190" rx="14" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <text x="530" y="240" font-size="15" font-weight="700" fill="#4a44b8">Preview environment (one env key)</text>
+  <text x="530" y="240" font-size="15" font-weight="700" fill="#4a44b8">Preview environment</text>
+  <text x="530" y="257" font-size="12.5" fill="#333344">one env key</text>
 
   <!-- Filtered traffic to cars-service preview -->
-  <line x1="700" y1="150" x2="700" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <text x="710" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
-  <text x="710" y="194" font-size="12.5" fill="#4a44b8">env key</text>
+  <line x1="730" y1="150" x2="730" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <text x="740" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
+  <text x="740" y="194" font-size="12.5" fill="#4a44b8">env key</text>
 
   <!-- cars-service preview pod -->
   <rect x="540" y="272" width="220" height="104" rx="10" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>

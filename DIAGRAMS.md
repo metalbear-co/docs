@@ -28,7 +28,7 @@ Two diagrams show the style well. Copy from them when you start a new one:
 | Boundary (cluster, machine, namespace) | `#F5F4FE`, dashed `#756DF3` stroke, `stroke-dasharray="8 6"` | label `#4a44b8` |
 | Inactive or dropped path | none | `#8a8a99` |
 
-- Outline every box with `stroke="#232141" stroke-width="2"`. A boundary is the one exception.
+- Outline every box with `stroke="#232141" stroke-width="2"`, except boundaries and temporary resources, which use the dashed purple stroke above.
 - Secondary text inside boxes uses `#333344` (or `#ffffff` on a purple box).
 - Do not use other colors. Do not use red, green, or blue to show "match" and "no match". Use the purple path for the mirrord route and the dark path for the normal route.
 

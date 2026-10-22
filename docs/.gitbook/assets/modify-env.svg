@@ -56,12 +56,13 @@
 
   <!-- Preview environment -->
   <rect x="510" y="212" width="650" height="190" rx="14" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <text x="530" y="240" font-size="15" font-weight="700" fill="#4a44b8">Preview environment (one env key)</text>
+  <text x="530" y="240" font-size="15" font-weight="700" fill="#4a44b8">Preview environment</text>
+  <text x="530" y="257" font-size="12.5" fill="#333344">one env key</text>
 
   <!-- Filtered traffic to cars-service preview -->
-  <line x1="700" y1="150" x2="700" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <text x="710" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
-  <text x="710" y="194" font-size="12.5" fill="#4a44b8">env key</text>
+  <line x1="730" y1="150" x2="730" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <text x="740" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
+  <text x="740" y="194" font-size="12.5" fill="#4a44b8">env key</text>
 
   <!-- cars-service preview pod -->
   <rect x="540" y="272" width="220" height="104" rx="10" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>

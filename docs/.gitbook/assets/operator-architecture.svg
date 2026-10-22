@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1212 620" width="1212" height="620" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">mirrord for Teams architecture</title>
-  <desc id="d">Two developers run local processes with mirrord. Each local process connects to the mirrord Operator in the Kubernetes cluster. The Operator sends incoming traffic to each local process, and each local process sends outgoing traffic, database access, and file reads and writes to the Operator. The Operator connects to a mirrord agent in each target pod. Internet traffic and traffic from other services reach the target pods. The agents send outgoing traffic to other services and database access to the database.</desc>
+  <desc id="d">Two developers run local processes with mirrord. Each local process connects to the mirrord Operator in the Kubernetes cluster. The Operator sends incoming traffic to each local process, and each local process sends outgoing traffic, database access, and file reads and writes to the Operator. The Operator connects to a mirrord agent for each target pod. Each agent runs as a separate pod in the network namespace of its target pod. Internet traffic and traffic from other services reach the target pods. The agents send outgoing traffic to other services and database access to the database.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -33,28 +33,26 @@
   <line x1="685" y1="148" x2="685" y2="166" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <line x1="835" y1="148" x2="835" y2="166" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
 
-  <!-- Target pods, each with a mirrord agent -->
-  <rect x="470" y="170" width="130" height="130" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="535" y="196" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
-  <rect x="482" y="212" width="106" height="70" rx="8" fill="#756DF3" stroke="#232141" stroke-width="2"/>
-  <text x="535" y="243" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord</text>
-  <text x="535" y="261" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">agent</text>
-  <rect x="620" y="170" width="130" height="130" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="685" y="196" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
-  <rect x="632" y="212" width="106" height="70" rx="8" fill="#756DF3" stroke="#232141" stroke-width="2"/>
-  <text x="685" y="243" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord</text>
-  <text x="685" y="261" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">agent</text>
-  <rect x="770" y="170" width="130" height="130" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="835" y="196" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
-  <rect x="782" y="212" width="106" height="70" rx="8" fill="#756DF3" stroke="#232141" stroke-width="2"/>
-  <text x="835" y="243" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord</text>
-  <text x="835" y="261" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">agent</text>
-
+  <!-- Target pods, each with a separate mirrord agent pod in its network namespace -->
+  <rect x="470" y="170" width="130" height="60" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="535" y="206" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
+  <line x1="535" y1="230" x2="535" y2="250" stroke="#232141" stroke-width="2"/>
+  <rect x="470" y="250" width="130" height="50" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
+  <text x="535" y="280" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
+  <rect x="620" y="170" width="130" height="60" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="685" y="206" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
+  <line x1="685" y1="230" x2="685" y2="250" stroke="#232141" stroke-width="2"/>
+  <rect x="620" y="250" width="130" height="50" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
+  <text x="685" y="280" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
+  <rect x="770" y="170" width="130" height="60" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="835" y="206" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Pod</text>
+  <line x1="835" y1="230" x2="835" y2="250" stroke="#232141" stroke-width="2"/>
+  <rect x="770" y="250" width="130" height="50" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
+  <text x="835" y="280" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
   <!-- Operator to agents -->
-  <line x1="535" y1="286" x2="535" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-  <line x1="685" y1="286" x2="685" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-  <line x1="835" y1="286" x2="835" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-
+  <line x1="535" y1="300" x2="535" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="685" y1="300" x2="685" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <line x1="835" y1="300" x2="835" y2="356" stroke="#232141" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
   <!-- mirrord Operator -->
   <rect x="450" y="360" width="470" height="200" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="685" y="466" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord Operator</text>
@@ -82,15 +80,15 @@
   <text x="320" y="590" font-size="12.5" fill="#333344" text-anchor="middle">file reads and writes</text>
 
   <!-- Other services and database -->
-  <rect x="1020" y="160" width="150" height="86" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="1095" y="198" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Other</text>
-  <text x="1095" y="218" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">services</text>
-  <line x1="1020" y1="184" x2="904" y2="184" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="960" y="176" font-size="12.5" fill="#333344" text-anchor="middle">incoming traffic</text>
-  <line x1="888" y1="228" x2="1016" y2="228" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="960" y="220" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
-  <polyline points="888,268 1095,268 1095,346" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="960" y="260" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
+  <rect x="1020" y="160" width="150" height="120" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <text x="1095" y="214" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Other</text>
+  <text x="1095" y="234" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">services</text>
+  <line x1="1020" y1="190" x2="904" y2="190" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="960" y="182" font-size="12.5" fill="#333344" text-anchor="middle">incoming traffic</text>
+  <line x1="900" y1="266" x2="1016" y2="266" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="960" y="258" font-size="12.5" fill="#333344" text-anchor="middle">outgoing traffic</text>
+  <polyline points="900,290 1095,290 1095,346" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="960" y="308" font-size="12.5" fill="#333344" text-anchor="middle">DB access</text>
   <path d="M1025 364 L1025 440 A70 14 0 0 0 1165 440 L1165 364" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <ellipse cx="1095" cy="364" rx="70" ry="14" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <text x="1095" y="414" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Database</text>
