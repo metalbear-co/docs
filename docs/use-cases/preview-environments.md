@@ -571,7 +571,7 @@ output with `--resource` gives the same result.
 
 `--resource` and `--chart` are not supported with a management-only multi-cluster operator yet,
 because the target lives in another cluster than the one the CLI talks to. `--resource` requires
-CLI 3.266.0 or later and `--chart` CLI 3.275.0 or later, both with operator 3.213.0 or later;
+CLI 3.271.0 or later and `--chart` CLI 3.275.0 or later, both with operator 3.218.0 or later;
 with an older operator the CLI refuses them instead of starting a preview from the live spec.
 
 ***
