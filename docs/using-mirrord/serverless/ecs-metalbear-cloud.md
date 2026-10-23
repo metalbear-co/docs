@@ -105,7 +105,7 @@ Register the new task definition revision and update the service to use it. Task
 
 ## Verify
 
-1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors.
+1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors. With `MIRRORD_AGENT_RUST_LOG=info` in the container's `environment`, they also show `Registering with the MetalBear Cloud sessions-manager`.
 2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), without `"operator": true`, `mirrord exec` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code
