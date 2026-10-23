@@ -492,7 +492,7 @@ spec:
 Any filter the session sets on that queue replaces the split config's as a whole, an empty `message_filter: {}` included (it keeps meaning "split the queue, deliver nothing"), and a queue the session does not list delivers nothing to the local application, whether or not the split config has a filter for it.
 
 {% hint style="warning" %}
-Filters in the split config require mirrord `3.277.0` or later, and mirrord operator `3.224.0` or later. Against an older operator the CLI refuses to start a session whose entry has no filter and names the missing feature.
+Filters in the split config require mirrord `3.279.0` or later, and mirrord operator `3.225.0` or later. Against an older operator the CLI refuses to start a session whose entry has no filter and names the missing feature.
 {% endhint %}
 
 ### One queue or many
