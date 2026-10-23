@@ -110,7 +110,7 @@ A standalone source needs nothing beyond what the copy reads, so a source user l
 `"cluster": true` only applies to remote branches; a local branch always runs a standalone instance.
 
 {% hint style="info" %}
-Redis Cluster branches require mirrord `3.277.0` or later, and mirrord operator `3.224.0` or later. Against an older operator the CLI refuses to start the session and names the missing feature, rather than bringing up a standalone branch the cluster client cannot use.
+Redis Cluster branches require mirrord `3.279.0` or later, and mirrord operator `3.225.0` or later. Against an older operator the CLI refuses to start the session and names the missing feature, rather than bringing up a standalone branch the cluster client cannot use.
 {% endhint %}
 
 ## TLS-Enabled Custom Images
