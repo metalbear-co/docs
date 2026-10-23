@@ -220,7 +220,7 @@ Set the task role on the task definition, and add the connection variables to th
 
 | Variable | Value |
 | --- | --- |
-| `MIRRORD_OPERATOR_API_URL` | The `endpoint` printed above, e.g. `https://ABC123.gr7.<REGION>.eks.amazonaws.com`. Setting it selects the Operator-hosted mode. |
+| `MIRRORD_OPERATOR_API_URL` | The `endpoint` printed above, e.g. `https://ABC123.gr7.<REGION>.eks.amazonaws.com`. Setting it selects the Operator-hosted mode; without it, the bootstrap registers with the MetalBear Cloud sessions-manager instead. |
 | `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` | `<CLUSTER_NAME>`. Setting it switches on authentication as the task role. It's signed into the token, and EKS rejects tokens for another cluster. |
 | `MIRRORD_OPERATOR_API_CA_DATA` | The `ca` printed above (base64-encoded PEM). The API server's certificate is issued by the cluster's own CA, not a public one. |
 
@@ -268,7 +268,7 @@ Delete the access entry (`aws eks delete-access-entry`) to revoke one task role,
 
 ## Troubleshooting
 
-The bootstrap's messages appear in the application container's logs. For problems that don't depend on the deployment mode, see [Amazon ECS](ecs.md#troubleshooting).
+The bootstrap's messages appear in the application container's logs. For problems that don't depend on the deployment mode, see [Amazon ECS](ecs.md#troubleshooting). With `MIRRORD_AGENT_RUST_LOG=info` in the application container's `environment`, the bootstrap also logs which sessions-manager it registers with: `Registering with the sessions-manager hosted by the mirrord operator, selected by MIRRORD_OPERATOR_API_URL`.
 
 | Symptom | Likely cause |
 | --- | --- |
@@ -279,6 +279,7 @@ The bootstrap's messages appear in the application container's logs. For problem
 | `403 Forbidden` on `serverlessagentassignments` | The user is `system:anonymous` because `MIRRORD_OPERATOR_EKS_CLUSTER_NAME` isn't set, or the access entry's group isn't `mirrord-ecs-workloads`, or the ClusterRoleBinding is missing. Check with `kubectl auth can-i` ([Map the ECS task role into the cluster](#map-the-ecs-task-role-into-the-cluster)). |
 | `404 Not Found` | `operator.sessionsManager` isn't enabled, or the Operator image is older than **3.223.0**. Check any image or tag overrides in your Helm values ([Enable sessions-manager](operator-hosted.md#enable-sessions-manager)). |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The task sets more than one; keep only `MIRRORD_OPERATOR_API_URL`. |
+| `HTTP control plane returned 401 Unauthorized`, and the Operator logs no registration | `MIRRORD_OPERATOR_API_URL` isn't set on the task, so the bootstrap registers with the MetalBear Cloud sessions-manager instead ([Add the connection variables](#add-the-connection-variables)). |
 | `MIRRORD_OPERATOR_API_CA_DATA is required when MIRRORD_OPERATOR_EKS_CLUSTER_NAME is set` | A [connection variable](#add-the-connection-variables) is missing on the task. |
 | `no AWS region to sign the EKS token for` | `MIRRORD_OPERATOR_API_URL` isn't an EKS endpoint hostname, and neither `AWS_REGION` nor `AWS_DEFAULT_REGION` is set. Set `AWS_REGION` to the cluster's region. |
 | `No AWS credentials provider found in environment` | The task definition has no `taskRoleArn`. |
