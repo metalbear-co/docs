@@ -13,8 +13,10 @@ toc: true
 tags:
   - team
   - enterprise
-description: Security in mirrord for Teams
+description: "How mirrord for Teams handles your data, access control, and compliance, for security teams that evaluate it."
 ---
+
+# Security
 
 {% hint style="info" %}
 This discussion is only relevant for users on the Team and Enterprise pricing plans.
@@ -162,7 +164,7 @@ roleRef:
 
 For CI runners, bind the runner's ServiceAccount, Kubernetes group, or other authenticated identity to `mirrord-operator-ci` instead of `mirrord-operator-user`.
 
-In addition, the Operator impersonates any user that calls its API, and thus only operates on pods or deployments for which the user has `get` permissions.
+In addition, the Operator verifies each caller's permissions with a Kubernetes `SubjectAccessReview` for the calling user's identity (user, groups and extra fields), and thus only operates on pods or deployments for which the user has `get` permissions. The Operator does not impersonate the user when making this check or when acting on their behalf.
 
 To see the latest definition, we recommend checking our [Helm chart](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/cluster-role.yaml).
 
