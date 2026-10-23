@@ -110,7 +110,7 @@ This works without changing the application or the cluster, as long as the code 
 
 - `value` is the source URL the branch copies from. It has no password: with `iam_auth`, the branch init container signs its own IAM token with the target pod's service account. The variable does not need to exist in the pod spec.
 - `variable` is the name your local process reads. mirrord sets it to the branch URL.
-- `name` is the database name from `value`. The operator never reads the literal URL, so it needs the name to hand your process a branch URL for your database rather than `postgres`. mirrord `3.276.0` and later take it from `value` when you leave `name` out; set it yourself on older CLIs.
+- `name` is the database name from `value`. The operator never reads the literal URL, so it needs the name to hand your process a branch URL for your database rather than `postgres`. mirrord `3.278.0` and later take it from `value` when you leave `name` out; set it yourself on older CLIs.
 - `env.override` flips the switch (`USE_SSM` here; use your application's own flag) on your machine only, so the application reads `DATABASE_URL` instead of building the URL itself. The deployed workload is not touched.
 
 To avoid copying the URL into the config, point `connection.url` at the same parameter your application reads instead, with an [AWS SSM Parameter Store source](connection.md#aws-ssm-parameter-store-source). The branch init container then reads the parameter with the target pod's service account. In that case `name` is required, because mirrord never sees the URL.

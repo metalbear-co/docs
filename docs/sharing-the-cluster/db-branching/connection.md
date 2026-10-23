@@ -445,7 +445,7 @@ For an individual parameter, use an `aws_ssm_parameter` field. [`value_selector`
 {% hint style="info" %}
 **Setup**: the branch pod inherits the target pod's service account, so that account's AWS identity must be allowed `ssm:GetParameter` on the parameter, plus `kms:Decrypt` on its key for a `SecureString`. The region comes from the ARN when a full ARN is given; for a plain parameter name, `AWS_REGION` or `AWS_DEFAULT_REGION` must be set in the target pod spec.
 
-The SSM Parameter Store source needs operator `3.223.0` and mirrord `3.276.0` or later. An older operator cannot read it, so the CLI refuses to start the session against one.
+The SSM Parameter Store source needs operator `3.224.0` and mirrord `3.278.0` or later. An older operator cannot read it, so the CLI refuses to start the session against one.
 {% endhint %}
 
 ### Literal Value
