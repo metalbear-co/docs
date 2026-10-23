@@ -10,6 +10,8 @@ menu:
 toc: true
 tags: ["team", "enterprise"]
 ---
+# DB Branching
+
 {% hint style="info" %}
 This feature is available to users on the Team and Enterprise pricing plans.
 {% endhint %}
@@ -108,6 +110,7 @@ Developers define branches in their `mirrord.json`:
 | `version` | Database engine version, used as the tag on the operator's default image (or the registry an admin configured for this engine). Mutually exclusive with `image`. Does not apply to branches created in your account with the provider. |
 | `image` | Full image reference for the branch container, including the tag (for example `registry.example.com/postgresql:15-partman`). Overrides the operator's default image and any admin-configured registry entirely. Mutually exclusive with `version`, since the tag is part of the reference. Cluster admins can restrict which images are accepted - see [Restricting Branch Images](#restricting-branch-images). For `generic` branches the image is required and lives in the same field - see the [Generic](db-branching/generic.md) page. Does not apply to branches created in your account with the provider. |
 | `profile` | Name of a branch config profile the cluster admin defined for this engine. Selects which pod settings the branch runs with - image registry, pull secrets, TLS mode, resources. When omitted, the operator's default settings apply. See [Branch Config Profiles](#branch-config-profiles). Does not apply to branches created in your account with the provider. |
+| `namespace` | When `true`, the branch runs in its own namespace (`mirrord-<key>` by default), instead of the target's namespace. Branches started under the same session `key` and operator namespace pattern share it. Needs the operator Helm chart value `operator.dbBranchNamespaces`. See [A Namespace per Key](#a-namespace-per-key). Does not apply to branches created in your account with the provider. |
 | `name` | Remote database name to clone, the override URL uses `name` so the connection URL looks like .../dbname. If name is ommited, the override URL just points to the database server; the application must select the DB manually in that case. For Redis, `name` is the database **index** Redis uses to select a logical database rather than a name, so it must be a valid non-negative number. If omitted, it defaults to index `0`. Does not apply to branches created in your account with the provider. |
 | `ttl_secs` / `ttl_mins` | Override for branch time-to-live (TTL), expressed in seconds or minutes. The two fields are mutually exclusive — set whichever is more convenient. The default is 5 minutes. |
 | `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
@@ -160,11 +163,85 @@ operator:
 
 A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
 
+To block branching for specific databases or copy modes, use the [db branching policy](policies.md#db-branching-policy).
+
+## Branch Pod Labels and Annotations
+
+Cluster admins can put labels and annotations on every branch pod of an engine with `dbPod.labels` and `dbPod.annotations` in the operator's Helm values. This is useful when a cluster-wide tool reads pod metadata - for example Karpenter, which otherwise deletes a branch pod while it consolidates an underutilized node, ending the session's database mid-run:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      annotations:
+        karpenter.sh/do-not-disrupt: "true"
+      labels:
+        team: platform
+```
+
+The operator puts them on the branch database pod and, from operator 3.219.0 on, on the pods of the branch's [schema migration](db-branching/migrations.md) and copy Jobs, so the whole branch falls under the same rules; earlier versions set them on the database pod only. Each engine has its own `<engine>BranchConfig` block, and a [profile](#branch-config-profiles) is a complete `dbPod`, so set them again in each profile that needs them. Only branches created after the change pick them up.
+
+## A Namespace per Key
+
+By default, a branch pod runs in the same namespace as the session's target. Setting `namespace: true` on a branch runs it in a namespace of its own instead, named after the session key: `mirrord-<key>` by default. This is useful when you want everything a developer's session created in one place, to see it, to put a quota on it, or to clean it up in one go.
+
+```json
+{
+  "key": "alice-checkout",
+  "feature": {
+    "db_branches": [
+      {
+        "type": "pg",
+        "namespace": true,
+        "connection": {
+          "url": "DATABASE_URL"
+        }
+      }
+    ]
+  }
+}
+```
+
+With the default operator namespace pattern, the branch runs in the namespace `mirrord-alice-checkout`. The operator creates the namespace when the first branch needs it, and deletes it a few minutes after its last branch is gone. Branches started under the same key and operator namespace pattern share that namespace, whichever target they branch.
+
+A few things to know:
+
+- Set `key` explicitly. Without one, mirrord generates a new key for every run, and with it a new namespace.
+- **Reusing an existing branch does not change its namespace.** If you reuse an explicit `id` created under another key, the branch stays in the original key’s namespace, and mirrord displays a warning. For example, a branch created under `alice` remains in `mirrord-alice` when reused under `bob`. Switching `namespace` on or off for an existing branch fails. To change its placement, use a new `id`, or destroy the existing branch and recreate it; destroying it deletes its branch data.
+- A key with characters a namespace name cannot hold (uppercase letters, `_`, a long key) gets a cleaned-up name with a short hash at the end.
+- The branch's `BranchDatabase` resource stays in the target's namespace, so `mirrord db-branches -n <target namespace>` still lists it. Only the branch pod, its Service, storage and Jobs move.
+- The branch pod reads the Secrets, ConfigMaps and service account of the target's namespace. The operator copies the ones it uses into the key's namespace, and resolves the source's short Service names (for example `postgres:5432`) in the target's namespace.
+- Cloud workload identity (GKE Workload Identity, AWS IRSA, EKS Pod Identity) is bound to a namespace. If the branch uses [IAM authentication](db-branching/iam-authentication.md) or a secret manager source, bind the service account in the generated branch namespaces too.
+- If the generated namespace already exists and the operator did not create it, the branch fails instead of running there.
+- Network policies that only let the target's namespace reach the source database have to allow the key's namespace as well.
+
+Cluster admins enable this in the operator Helm chart:
+
+```yaml
+operator:
+  dbBranchNamespaces: true
+  dbBranchNamespacePattern: "mirrord-{{key}}"
+```
+
+Set `operator.dbBranchNamespacePattern` to `"t-{{key}}"` to create `t-alice-checkout` for key `alice-checkout`. The pattern must contain exactly one `{{key}}` placeholder, with at most 53 lowercase letters, digits, or hyphens around it. For example, `"{{key}}-test"` is also supported. Invalid key characters are replaced and long names shortened, with a hash suffix to distinguish keys.
+
+Changing the pattern applies to new branches. Existing branches retain their recorded namespace, including when reused or restarted. While old and new branches coexist, the same key can therefore have branches in namespaces from both patterns. Keep any workload identity bindings and network policies for the old namespaces until those branches are gone.
+
+This lets the operator create, list and delete namespaces. It only deletes namespaces it created, which carry the label `operator.metalbear.co/db-branch-namespace: "true"`. The setting has no effect on an operator installed with `namespaced: true`. Without it, a session that sets `namespace: true` fails with an error naming the missing feature.
+
 ## Branch Storage
 
 By default, each branch stores its database on its own PersistentVolumeClaims: one for the data directory and one for staging the dump during the copy, 20Gi each. The claims are provisioned with the cluster's default StorageClass when the branch is created and deleted together with it, so branching a large database does not depend on how much spare disk the node happens to have.
 
 On clusters without a default StorageClass, branches automatically fall back to node-local `emptyDir` volumes, capped at 1Gi for data and 100Mi for the dump.
+
+### Pod replacement
+
+A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
+
+Sessions reach such a branch through a per-branch Service rather than the pod's address, so a session attached before the replacement stays attached and finds the branch at the same address once it is `Ready`. Branches that cannot be rebuilt (below) keep the pod's address, which reaches every port the image serves. Open database connections do not survive the pod: the application has to reconnect or retry, as it would after any database restart.
+
+Engines whose setup copies the source again on every start (Redis, DynamoDB, CockroachDB, MSSQL, Spanner) and generic branches cannot be rebuilt without losing what the branch holds, so such a branch is marked `Failed` with the reason, and a new session creates a fresh one.
 
 ### Upgrading from older versions
 
@@ -326,6 +403,67 @@ Profiles work for every engine, each in its own `<engine>BranchConfig` block.
 {% hint style="info" %}
 Branch config profiles require operator and Helm chart `3.190.0` or later, and mirrord CLI `3.244.1` or later. Against an older operator, a branch that sets `profile` fails with a clear error instead of silently running the default settings.
 {% endhint %}
+
+## Branches Defined on the Workload
+
+A cluster admin can define a workload's branches once, on its `MirrordSplitConfig`, and let every session take them from there with `"db_branches": "*"`. This is useful when several services share a database and their branches should match, or when `mirrord exec` and `mirrord up` must not drift: the definition lives next to the workload, not in each developer's `mirrord.json`.
+
+The entries go under `dbBranches` on the workload's `MirrordSplitConfig` (the same resource that defines its queues for [queue splitting](queue-splitting.md); it needs no `queues`). Each entry is a `db_branches` entry with camelCase keys, an `id` sessions refer to, and a `copy` block that also lists the `allowedModes` a session may pick:
+
+An entry differs from an inline `db_branches` entry in three ways, because it lives on the cluster rather than on a developer's machine:
+
+* `location` is not accepted: a split config only branches databases that run in the cluster, never a local Redis.
+* `migrations` need `name` (the source database they run against) and cannot use `path`, a local directory the operator cannot read; bake the files into an image and use `image` with `locations` (flyway) or `searchPath` (liquibase), or the container flavor.
+* `generic` entries have no `copy.mode` or `copy.allowedModes`; a generic branch either runs a copy Job or starts empty.
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: cake-maker
+  namespace: bakery
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cake-maker
+  dbBranches:
+    - id: orders-pg
+      type: pg
+      version: "16"
+      ttlSecs: 1800
+      connection:
+        url: DATABASE_URL
+      copy:
+        mode: schema
+        allowedModes: [schema, empty]
+```
+
+The operator checks every entry when the resource is applied and reports the verdict on its `Accepted` condition, so a typo shows up in `kubectl describe` instead of at the first session.
+
+A session asks for every entry with `"*"`, or for some of them by id:
+
+```json
+{
+  "feature": {
+    "db_branches": "*"
+  }
+}
+```
+
+```json
+{
+  "feature": {
+    "db_branches": ["orders-pg", "sessions-redis"]
+  }
+}
+```
+
+* An id that matches no entry fails the session, naming the ids the workload has. A workload with no `dbBranches` gives no branches, and the session continues without them.
+* Inline entries in `mirrord.json` win entirely: with them, the session ignores the workload's `dbBranches` and says which `MirrordSplitConfig` it passed over.
+* The branch id is the entry id plus the session key (`orders-pg-a1b2c3`), so every service started under one key that points at the same entry shares one branch. The first session creates it from its own entry; later ones attach, and only their copy mode is checked: a service whose entry asks for a different mode than the branch was created with fails, naming the service that created it. Two sessions that ask for the same branch at once end up on one branch.
+* Each branch records the source it was copied from (host, port, database) in its status, as far as the operator can see it without reading Secrets. When two branches under one key were copied from the same database, the session that got the second one is told; if they were meant to be one branch, give both entries the same id.
+* The feature needs a mirrord Operator that resolves `dbBranches`; against an older one the session fails before it starts, naming the operator version.
 
 ## Running With DB Branches
 
