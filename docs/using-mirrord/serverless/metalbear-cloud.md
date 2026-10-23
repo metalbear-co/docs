@@ -110,7 +110,7 @@ mirrord login
 mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead.
 
 * **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
-* **Expiry:** the sign-in isn't renewed automatically. When it expires, sessions are refused until the developer runs `mirrord login` again.
+* **Expiry:** the sign-in isn't renewed automatically. Once it expires, mirrord warns when a session starts, and new sessions are refused until the developer runs `mirrord login` again. A session that's already running keeps working, and picks up a new sign-in when it reconnects, without a restart.
 * **No API key:** mirrord doesn't use `MIRRORD_SESSIONS_MANAGER_API_KEY` on a developer's machine. Remove it from shells and IDE run configurations that set it.
 
 ---
@@ -126,7 +126,9 @@ The workload's messages appear in the application container's logs, and the deve
 | `HTTP control plane returned 401 Unauthorized` | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |
-| `You are not logged in to https://app.metalbear.com, so the sessions-manager will refuse this session` | The developer hasn't run `mirrord login`, or their sign-in expired. Run `mirrord login`. |
-| mirrord on a developer's machine is refused with `401 Unauthorized` | The developer isn't signed in, or their sign-in expired. Run `mirrord login`. |
-| `failed to read the mirrord login token store` | mirrord can't read `~/.mirrord/auth.json`. Check its permissions, or run `mirrord login` again. |
+| `You are not logged in to https://app.metalbear.com, so a sessions-manager that authenticates its users will refuse this session` | The developer hasn't run `mirrord login`. Run `mirrord login`. |
+| `Your login to https://app.metalbear.com expired at <time>` | The developer's sign-in expired, and isn't renewed automatically. Run `mirrord login`. |
+| `Could not read your login to https://app.metalbear.com from ~/.mirrord/auth.json` | mirrord can't read the file, for example because of its permissions, and starts the session without a sign-in, which is refused. Check its permissions, or run `mirrord login` again. |
+| `HTTP control plane returned 401 Unauthorized` in mirrord's output on a developer's machine | The developer isn't signed in, their sign-in expired, or `~/.mirrord/auth.json` can't be read. One of the warnings above appears first. Run `mirrord login`. |
+| `sessions-manager refused your mirrord login, which has expired, been revoked, or is for another organization` | The sign-in was sent but refused, for example because it was revoked. Run `mirrord login`. |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets variables of both modes; keep only those of [Connecting workloads](#connecting-workloads). |
