@@ -126,7 +126,7 @@ Download the dedicated mirrord CLI binary for your platform from the link [provi
 
 ### With MetalBear Cloud
 
-In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rather than through the Operator, and authenticates with your MetalBear account instead of your kubeconfig. Sign in once:
+In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rather than through the Operator, and authenticates with your MetalBear account instead of your kubeconfig. Sign in once, to the organization that runs the workloads:
 
 ```bash
 mirrord login
