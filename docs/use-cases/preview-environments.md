@@ -302,6 +302,9 @@ Enable it in the mirrord configuration:
 * `sleep_after_secs` - scale the preview pods to zero after this many seconds without traffic
   (minimum 30). When unset, the environment never idles automatically.
 * `wake_timeout_secs` - How long an incoming request is held while the preview pods start before the request fails (default: 90 seconds).
+  It also gives the image pull of a waking pod that long to succeed: a failed pull is retried
+  instead of ending the environment, and only a pull still failing after `wake_timeout_secs`
+  does. Raise it when your registry is slow or the image is large.
 
 ### Idle Behavior
 
