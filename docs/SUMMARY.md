@@ -57,6 +57,7 @@
   * [Amazon ECS](using-mirrord/serverless/ecs.md)
     * [Connecting ECS to the Operator](using-mirrord/serverless/ecs-operator-hosted.md)
     * [Connecting ECS to MetalBear Cloud](using-mirrord/serverless/ecs-metalbear-cloud.md)
+    * [ECS Quickstart](using-mirrord/serverless/ecs-quickstart.md)
 * [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 * [Targeting Pods by Label](using-mirrord/targeting-pods-by-label.md)
 * [Local UI](using-mirrord/local-ui.md)
