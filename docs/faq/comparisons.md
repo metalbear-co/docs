@@ -23,7 +23,7 @@ Our assumption is that some environments are too complex to run wholly on your l
 
 ## How is mirrord different from Telepresence?
 
-Both connect code on your machine to a remote cluster. The main differences are:
+Telepresence connects code on your machine to a remote cluster. mirrord does that too, and also lets a whole team share that cluster safely, with isolated queues and databases, preview environments, and CI runs. The main differences are:
 
 - **Scope on your machine.** mirrord loads into the process you run, so other processes on your machine aren't affected and you can run [several services side by side](../using-mirrord/multiple-concurrent-sessions.md), each against a different [target](../reference/targets.md). Telepresence connects the whole machine through a network tunnel managed by a privileged daemon, or a container in its Docker mode.
 - **Changes to the cluster.** By default, Telepresence injects a Traffic Agent sidecar into the target's pods, which restarts them once, and the sidecar stays in the pods until you remove it. mirrord's [agent](../reference/architecture.md) is short-lived and shares the target pod's network namespace without adding a sidecar or restarting the pod.
