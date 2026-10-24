@@ -13,6 +13,8 @@ toc: true
 tags: ["oss", "team", "enterprise"]
 ---
 
+# Comparisons
+
 ## Why not just use a remote debugger?
 
 When you use a remote debugger, you still have to deploy new code to the cluster. When you plug local code into the cloud with mirrord, you don't have to wait for cloud deployment. Using mirrord is also less disruptive to the cluster, since the stable version of the code is still running and handling requests.

@@ -29,7 +29,7 @@ redirects:
   using-mirrord/postman: using-mirrord/connecting-tools/postman
   using-mirrord/targetless: using-mirrord/targetless
   using-mirrord/sessions: sharing-the-cluster/sessions
-  using-mirrord/sharing-the-cluster: sharing-the-cluster
+  using-mirrord/sharing-the-cluster: sharing-the-cluster/overview
   using-mirrord/queue-splitting: sharing-the-cluster/queue-splitting
   using-mirrord/db-branching: sharing-the-cluster/db-branching
   using-mirrord/db-branch-management: sharing-the-cluster/db-branching/management
@@ -48,5 +48,5 @@ redirects:
   # Coming soon / old preview-env locations → new locations
   coming-soon/preview-env/preview-env: use-cases/preview-environments
   coming-soon/preview-env: use-cases/preview-environments
-  using-mirrord/preview-environments: sharing-the-cluster/preview-environments
-  using-mirrord/preview-environments-in-ci: sharing-the-cluster/preview-environments-in-ci
+  using-mirrord/preview-environments: use-cases/preview-environments
+  using-mirrord/preview-environments-in-ci: use-cases/preview-environments-in-ci

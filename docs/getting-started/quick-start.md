@@ -14,8 +14,10 @@ tags:
   - team
   - enterprise
 shallowToc: true
-description: How to (very) quickly start using mirrord
+description: "Get mirrord running against your cluster in a few minutes, from the install to your first session."
 ---
+
+# Quick Start
 
 Get mirrord running in under 5 minutes. You'll need:
 
@@ -23,7 +25,7 @@ Get mirrord running in under 5 minutes. You'll need:
 - **In the cluster:** A running workload (deployment, pod, [etc.](../reference/targets.md)) you want to work with. [Kubernetes 1.22+](../installing-mirrord/README.md#cluster-requirements), Linux kernel 5.4+, and a containerd, CRI-O, or Docker runtime.
 
 {% hint style="info" %}
-This guide gets one developer running. To let a team share a cluster - [concurrent sessions](../sharing-the-cluster/overview.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [database branching](../sharing-the-cluster/db-branching.md), [preview environments](../use-cases/preview-environments.md), and [CI](../use-cases/mirrord-for-ci.md) - see [mirrord for Teams](what-is-mirrord.md#mirrord-for-teams) and [Enterprise](what-is-mirrord.md#mirrord-for-enterprise).
+This guide gets one developer running. To let a team share a cluster - [concurrent sessions](../sharing-the-cluster/overview.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [database branching](../sharing-the-cluster/db-branching.md), [preview environments](../use-cases/preview-environments.md), and [CI](../use-cases/mirrord-for-ci.md) - see [mirrord for Teams](what-is-mirrord.md#mirrord-for-teams) and [Enterprise](what-is-mirrord.md#enterprise-plan).
 {% endhint %}
 
 ## Install
