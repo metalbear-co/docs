@@ -71,7 +71,7 @@ The tasks only make outbound connections, to the hosts in [Network access](metal
 
 * The tasks' security group allows outbound TCP 443 to them.
 * The tasks' subnets route to the internet, through a NAT gateway for private subnets, or have a public IP for public ones.
-* Any firewall or egress proxy on the path allows `app.metalbear.com` and MetalBear's sessions-manager, doesn't buffer responses, and has an idle timeout of at least 300 seconds.
+* Any firewall or egress proxy on the path allows `app.metalbear.com` and `sm-aws-use1.app.metalbear.com` (or `*.app.metalbear.com`, see [Network access](metalbear-cloud.md#network-access)), doesn't buffer responses, and has an idle timeout of at least 300 seconds.
 
 ## Add the connection variables
 

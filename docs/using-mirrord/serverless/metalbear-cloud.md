@@ -83,6 +83,8 @@ Both workloads and developers' machines need outbound HTTPS (TCP 443) to:
 | `sm-aws-use1.app.metalbear.com`, MetalBear's sessions-manager | Registering, and the session's traffic. |
 | `app.metalbear.com` | Exchanging the API key for a token, and `mirrord login`. |
 
+MetalBear may add sessions-managers in other regions under `app.metalbear.com`. To allow them without another firewall change, allow `*.app.metalbear.com` alongside `app.metalbear.com` rather than the exact sessions-manager host. The wildcard doesn't match `app.metalbear.com` itself, so it's still needed.
+
 Sessions hold their connections open for as long as the developer runs them. Any proxy or firewall on the path must not buffer responses and needs an idle timeout of at least 300 seconds.
 
 ## Connecting workloads
