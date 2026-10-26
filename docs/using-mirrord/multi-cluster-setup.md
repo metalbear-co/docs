@@ -652,7 +652,7 @@ A: Yes. Set `managementOnly: false` (the Helm chart default is `true`) so the Pr
 A: Yes. A session started with `multi_cluster: false` stays on the Primary and runs as a regular single-cluster session, with the Primary's local queue splitting and database branching.
 
 **Q: Which resources can I exclude from syncing to the member clusters?**
-A: Label a `MirrordSplitConfig` or `MirrordPropertyList` with `skip-mc-sync` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
+A: Label a `MirrordSplitConfig` or `MirrordPropertyList` with `operator.metalbear.co/skip-mc-sync: "true"` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
 
 **Q: What happens if a downstream cluster is unreachable?**
 A: The session creation will fail. The operator reports connection errors in the `MirrordOperator` status (see Verify the Connection above).
