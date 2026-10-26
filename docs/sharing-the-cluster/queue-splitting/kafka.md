@@ -149,7 +149,7 @@ Each entry in the `spec.queues` list describes one or more Kafka queues consumed
 * `id` - arbitrary queue ID that developers [reference](kafka.md#setting-a-filter) from their mirrord config.
 * `kind` - must be `kafka`.
 * `clientConfig` - name of the `MirrordPropertyList` with the Kafka client connection (from the previous step). Can also be set once for all Kafka queues with `spec.clientConfigs.kafka`.
-* `appConfig.topic` - how the application discovers the topic name. Each entry can use:
+* `appConfig.topic` - how the application discovers the topic names. Each distinct topic is split under the queue ID, and a filter on the queue ID applies to all of them. Each entry can use:
   * `env` - exact environment variable name containing the topic name.
   * `envLike` - regex matching environment variable names.
   * `volume` - read the topic name from a file mounted from a `configMap` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
@@ -160,7 +160,7 @@ Each entry in the `spec.queues` list describes one or more Kafka queues consumed
 *   One of the following must be set:
 
     * `appConfig.groupId` - how the application discovers the consumer Kafka group id. Use for standard Kafka consumers. The operator's forwarder joins this group, and the consumer's environment is left untouched.
-    * `appConfig.appId` - how the application discovers the Kafka Streams application id. Use for Kafka Streams consumers. The operator patches this variable to a fresh application id. Kafka Streams requires the Java client (`mirrord.client_implementation: java`).
+    * `appConfig.appId` - how the application discovers the Kafka Streams application id. Use for Kafka Streams consumers. The operator patches this variable to a fresh application id. List every topic the application reads in the same queue entry. Kafka Streams requires the Java client (`mirrord.client_implementation: java`).
 
     Both use the same structure as `appConfig.topic`.
 
