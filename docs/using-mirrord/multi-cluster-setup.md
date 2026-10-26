@@ -578,6 +578,8 @@ The chart creates two ClusterRoles (permission definitions):
 
 These multi-cluster roles are separate from the Operator API roles used by mirrord clients. Interactive users are usually bound to `mirrord-operator-user`, while CI runner identities for machine sessions such as `mirrord ci` and `mirrord preview` should be bound to the CI-specific `mirrord-operator-ci` role.
 
+If you write your own, narrower role for member clusters instead of using the chart's, the Primary's health check only reads the `mirrordoperators` resource (`get`). The remaining rules in `mirrord-operator-envoy-remote` cover the features you use: `sessions` (`get`, `list`, `delete`), `events` (`get`, `list`, `watch`) for [`mirrord subscribe`](subscribe.md#multi-cluster), and `branchtunnels` plus `pods/portforward` for preview branch databases. `serviceaccounts/token` (`create`) is only needed with bearer-token authentication, not with EKS or AKS authentication.
+
 A ClusterRole by itself doesn't grant anything — it only defines what actions are possible. ClusterRoleBindings connect the ClusterRole to an identity (a ServiceAccount or a group).
 
 ### How Bindings Differ by Auth Type
@@ -646,7 +648,13 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 A: No. The developer experience is identical to single-cluster. Developers run `mirrord exec` as usual and the operator handles everything. Note that multi-cluster sessions only work when the developer connects to the Primary cluster — connecting directly to a downstream cluster will start a regular single-cluster session on that cluster.
 
 **Q: Can the Primary cluster also run workloads?**
-A: Yes. By default, the Primary cluster participates as a workload cluster. Set `managementOnly: true` only if the Primary has no application pods.
+A: Yes. Set `managementOnly: false` (the Helm chart default is `true`) so the Primary participates as a workload cluster, and set `managementOnly: true` only if the Primary has no application pods. See [Management-Only Mode](multi-cluster.md#management-only-mode) for what the setting changes.
+
+**Q: Can I run some sessions on the Primary only?**
+A: Yes. A session started with `multi_cluster: false` stays on the Primary and runs as a regular single-cluster session, with the Primary's local queue splitting and database branching.
+
+**Q: Which resources can I exclude from syncing to the member clusters?**
+A: Label a `MirrordSplitConfig` or `MirrordPropertyList` with `skip-mc-sync` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
 
 **Q: What happens if a downstream cluster is unreachable?**
 A: The session creation will fail. The operator reports connection errors in the `MirrordOperator` status (see Verify the Connection above).

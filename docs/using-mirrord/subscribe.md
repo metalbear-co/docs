@@ -95,6 +95,10 @@ This covers queue messages only. An HTTP request that matches no filter never re
 
 Every event has the same envelope — `service_name` (the intercepted workload), `timestamp`, and a `data` payload. On a [multi-cluster](multi-cluster.md) Primary the envelope also has `cluster`, see [Multi-cluster](#multi-cluster) below:
 
+{% hint style="info" %}
+The Operator's header and property redaction, and `operator.hideHeadersAndProperties`, apply only to the [Operator's logs](../managing-mirrord/monitoring.md). The `subscribe` stream carries header and property values as they are, so restrict who can subscribe accordingly.
+{% endhint %}
+
 ```json
 {
   "service_name": "my-app",
