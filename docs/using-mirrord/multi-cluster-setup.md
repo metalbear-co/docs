@@ -578,8 +578,6 @@ The chart creates two ClusterRoles (permission definitions):
 
 These multi-cluster roles are separate from the Operator API roles used by mirrord clients. Interactive users are usually bound to `mirrord-operator-user`, while CI runner identities for machine sessions such as `mirrord ci` and `mirrord preview` should be bound to the CI-specific `mirrord-operator-ci` role.
 
-If you write your own, narrower role for member clusters instead of using the chart's, the Primary's health check only reads the `mirrordoperators` resource (`get`). The remaining rules in `mirrord-operator-envoy-remote` cover the features you use: `sessions` (`get`, `list`, `delete`), `events` (`get`, `list`, `watch`) for [`mirrord subscribe`](subscribe.md#multi-cluster), and `branchtunnels` plus `pods/portforward` for preview branch databases. `serviceaccounts/token` (`create`) is only needed with bearer-token authentication, not with EKS or AKS authentication.
-
 A ClusterRole by itself doesn't grant anything — it only defines what actions are possible. ClusterRoleBindings connect the ClusterRole to an identity (a ServiceAccount or a group).
 
 ### How Bindings Differ by Auth Type
