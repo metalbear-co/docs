@@ -18,12 +18,13 @@ tags:
 
 `mirrord ui` launches a small local web dashboard that watches every active mirrord session on your machine and, when you're connected to a mirrord operator, every operator session your kubeconfig can see across the cluster. It runs entirely on your laptop. Nothing in your cluster has to change to use it.
 
-The dashboard has two tabs:
+The dashboard has three tabs:
 
 - **Session Monitor** (the default) watches your live sessions and shows a real-time event stream for each one.
+- **Events** shows the interception events the operator publishes for [`mirrord subscribe`](subscribe.md), across every session in the selected context.
 - **Config Wizard** walks you through generating a `mirrord.json`. See [Onboarding Wizard](../getting-started/onboarding-wizard.md) for a full guide to that tab.
 
-This page covers the Session Monitor. Both tabs stay loaded once opened, so switching between them keeps their state (a running event stream, an in-progress config) intact.
+This page covers the Session Monitor. Tabs stay loaded once opened, so switching between them keeps their state (a running event stream, an in-progress config) intact.
 
 ## What it shows
 
@@ -107,7 +108,7 @@ _The sessions and event data shown throughout this page come from a demo cluster
 
 Along the top of the window you'll find, from left to right:
 
-- The **mirrord** brand and the two tabs (**Session Monitor**, **Config Wizard**).
+- The **mirrord** brand and the three tabs (**Session Monitor**, **Events**, **Config Wizard**).
 - A **Context** picker and a **Namespace** picker. These scope the operator (cluster) session list. The Context picker lists the contexts in your kubeconfig, tagging the active one as "current". The Namespace picker defaults to "All namespaces" and lets you type to filter, or type a namespace that isn't listed to use it anyway (handy when listing namespaces is blocked by RBAC). Your local sessions are always shown regardless of these pickers, they only scope the cluster view.
 - An **account chip** showing a connection status dot (green when connected to the operator, red when not), your Kubernetes username, and a menu. Open the menu for "Running as" and a **Settings** entry.
 - A **theme toggle** (light / dark). The three-way System / Light / Dark choice lives in Settings.
