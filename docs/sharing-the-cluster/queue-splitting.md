@@ -4,6 +4,8 @@ tags:
   - team
   - enterprise
 ---
+# Queue Splitting
+
 If your application consumes messages from a queue service, you should choose a configuration that matches your intention:
 
 1. Running your application with mirrord without any special configuration will result in your local application competing with the deployed application (and potentially other mirrord runs by teammates) for queue messages.
@@ -16,10 +18,14 @@ The word "queue" in this doc is used to also refer to "topic" in the context of 
 {% endhint %}
 
 {% hint style="info" %}
+Queue splitting needs Kubernetes `1.30` or later.
+{% endhint %}
+
+{% hint style="info" %}
 Queue splitting also works when your environment spans several Kubernetes clusters — see [Queue Splitting in Multi-Cluster](../using-mirrord/multi-cluster.md#queue-splitting-in-multi-cluster).
 {% endhint %}
 
-### Choose your queue service
+## Choose your queue service
 
 Setup and configuration differ per queue service. Pick the one you use to see the full guide:
 
@@ -56,6 +62,54 @@ Please note that:
 1. Temporary queues created for the deployed targets will not be deleted as long as there are any targets' pods that use them.
 2. In case of SQS splitting, deployed targets will keep reading from the temporary queues as long as their temporary queues have unconsumed messages.
 3. For Google Cloud Pub/Sub, the operator creates temporary topics and subscriptions. The target workload's subscription environment variable is patched to read from a temporary subscription, while the operator drains the original subscription and forwards messages through temporary topics.
+
+## Selecting Containers
+
+Use `containerNames` in a `MirrordSplitConfig` app-config reference to restrict it to specific containers. This spelling works with Kustomize's `images:` transformer. The legacy spelling `containers` remains supported; do not set both fields on the same reference. Omitting both preserves the default container selection; an empty list preserves the existing empty-selection behavior.
+
+Before adopting `containerNames`, upgrade both the operator and its CRD to a release that supports this field and wait for the operator rollout to complete. Older installations can reject or ignore the new field, losing the intended container restriction. Existing manifests using `containers` do not need migration. Before rolling back to an older operator, change `containerNames` back to `containers` in your manifests and applied resources.
+
+## One Config for Several Workloads
+
+A `MirrordSplitConfig` names one workload with `targetRef`. When many workloads consume the same queues in the same way, write one config with `targetSelector` instead, and it applies to every Deployment, StatefulSet or Argo Rollout in its namespace whose labels match. A workload that gets the labels later is covered from its next session on, with nothing else to apply:
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: pubsub-consumers
+  namespace: staging
+spec:
+  targetSelector:
+    matchLabels:
+      queues: pubsub
+    matchExpressions:
+      - key: tier
+        operator: In
+        values: [worker, api]
+  queues:
+    - id: events
+      kind: googlePubSub
+      appConfig:
+        subscription:
+          - envLike: "^.*_SUBSCRIPTION$"
+```
+
+A config has either `targetRef` or `targetSelector`, not both; the `Accepted` condition reports a config that has neither or both.
+
+Every config that applies to a workload is merged for its sessions, so a shared selector config and a per-workload `targetRef` config can be used together:
+
+* A queue id or a `dbBranches` entry id defined identically by several configs is one queue or one entry.
+* A queue id, a `dbBranches` entry, or one of `ttl`, `drainTimeout` and `tmpNameTemplate` that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
+* `restart` and `clientConfigs` merge field by field: one config can set `restart.timeout` and another `restart.strategy`, or each can name its own broker's client config. Only the same field set to two values (`restart.timeout`, `clientConfigs.sqs`) is a conflict.
+
+The older `MirrordWorkloadQueueRegistry` and `MirrordKafkaTopicsConsumer` objects of a workload stay in effect under selector configs: their queues are added to the merge, and their settings fill in what the configs leave unset. A config that names the workload with `targetRef` replaces them, as it always has.
+
+Each config that applies to a workload shows the workload's split phase and session count in its status, and a split session names every config merged into it in its status. The operator log line that starts a split lists them too.
+
+{% hint style="info" %}
+`targetSelector` needs operator `3.220.0` or later on every cluster that reads the config, including remote clusters of a multi-cluster setup. An older operator cannot read a config without `targetRef`.
+{% endhint %}
 
 ## Queue Names in Mounted Config Files
 
@@ -102,7 +156,7 @@ The `volume` source fields:
 * `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
 * `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
-If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containers` list is not needed either - the file is shared by every container that mounts the volume.
+If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containerNames` list is not needed either - the file is shared by every container that mounts the volume.
 
 The operator never modifies your ConfigMap. When a split starts, it:
 
@@ -211,7 +265,7 @@ Things to know:
 
 * The referenced file's content is pinned for the length of the split. If the same file also carries values that rotate, such as credentials, the deployed application keeps reading the values from when the split started. Other injected files are untouched.
 * If both a `podFile` source and an `env`/`envLike` or `volume` source are set on the same entry, the other source takes precedence and `podFile` is ignored. `fallback` does not apply to `podFile`.
-* A `containers` list on the entry limits which containers get the overriding mount. Without one, every application container gets it.
+* A `containerNames` list on the entry limits which containers get the overriding mount. Without one, every application container gets it.
 * The remote file system and directory file descriptor notes for `volume` sources apply here as well.
 
 ## Autoscaled Targets with KEDA
@@ -231,6 +285,26 @@ Triggers are redirected wherever a split moves the target onto a temporary queue
 A Temporal target polls a task queue the operator serves, which KEDA cannot measure, so KEDA is paused at one replica for the duration of the split instead.
 
 A `ScaledObject` none of whose triggers name a split queue directly is left alone. This includes triggers that read the queue name from an environment variable, such as `queueURLFromEnv`, and triggers that measure lag through a query. Unless they measure the temporary queue some other way, the target may be scaled to zero for the duration of the split. A Kafka target keeps its consumer group unless the split gives it a temporary one, so a query over that group's lag across all topics already follows the temporary topic.
+
+{% hint style="info" %}
+Scale trigger overrides require mirrord operator `3.221.0` or later, and operator Helm chart `3.221.0`.
+{% endhint %}
+
+To redirect a trigger that measures the queue through a query, list it under `scaleTriggerOverrides` in the `MirrordSplitConfig`, by its `name`, with the metadata values it should have during the split. In a value, `{{<queue id>.queue}}` stands for the queue the target reads during the split, and, for Kafka and NATS JetStream, `{{<queue id>.group}}` for its consumer group or consumer. The operator sets these values when the split starts, and puts the trigger's own values back when it ends.
+
+```yaml
+spec:
+  queues:
+    - id: orders
+      kind: kafka
+      # ...
+  scaleTriggerOverrides:
+    - name: lag
+      metadata:
+        query: sum(kafka_consumergroup_lag{consumergroup="{{orders.group}}", topic="{{orders.queue}}"})
+```
+
+A value naming a queue id the `MirrordSplitConfig` does not declare, or a `group` its queue does not have, makes the operator refuse the `MirrordSplitConfig`, and splits of its workloads fail. An override naming a trigger or metadata key the `ScaledObject` does not have, or a queue the split does not include, is not applied.
 
 A GitOps tool deploying the `ScaledObject` would put the original triggers back. The operator therefore registers a mutating webhook that reapplies its rewrite to every update of a redirected `ScaledObject`, including the dry runs Flux compares against. Flux sees the `ScaledObject` as in sync and keeps reconciling it: changes from Git roll out during the split, and the triggers stay redirected. When the split ends, the operator undoes only its own rewrite, so those changes stay.
 
@@ -296,7 +370,7 @@ It pairs each queue ID with a queue filter definition, and accepts either an obj
 
 Filter definition contains the following fields:
 * `queue_type` - `SQS`, `Kafka`, `RMQ`, `GCPPubSub`, `AzureServiceBus`, `RedisPubSub`, `Temporal`, `BullMQ`, `NATS`, or `NATSPubSub`
-* `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. Not supported for `Temporal`.
+* `queue_mode` - optional, `steal` (default) or `mirror`. In `steal` mode, a matched message goes only to your local application. In `mirror` mode, a matched message goes to your local application **and** is still delivered to the deployed application, so both process a copy. `Temporal` supports `steal` only, and a `mirror` request runs as `steal` with a warning - see [Temporal queue mode](queue-splitting/temporal.md#queue-mode).
 * `filter` - a composable message filter, shaped like the [HTTP filter](../using-mirrord/incoming-traffic/filter-incoming-traffic.md): one `metadata` regex, or an `any_of` / `all_of` list of `metadata` regexes.
   A `metadata` regex is matched against every message attribute (SQS, GCP Pub/Sub), header (Kafka, RabbitMQ, NATS, NATS pub/sub), application property (Azure Service Bus), JSON field (Redis Pub/Sub, BullMQ), or task metadata entry (Temporal) rendered as `<name>: <value>`, the same way the HTTP filter sees headers.
   The message matches when any attribute line matches, so one regex can pin an attribute by name (`^tenant: blue$`) or find a marker wherever it is propagated (`.*mirrord-session={{ key }}.*`). Matching is case sensitive. See [Composing filters](#composing-filters).
@@ -323,7 +397,7 @@ Filter definition contains the following fields:
 
 If a `filter` (or `message_filter`) and a `jq_filter` are specified for the same queue, both must match for a message to be matched.
 
-#### Composing filters
+### Composing filters
 
 `filter` takes one of three forms. A single `metadata` regex:
 
@@ -379,7 +453,7 @@ A `message_filter` of `{ "tenant": "^blue$", "region": "eu" }` is the same as `f
 
 Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
 
-#### One queue or many
+### One queue or many
 
 `feature.split_queues` accepts two shapes.
 
@@ -422,7 +496,7 @@ For multiple queues, use the **array** form, which moves the ID into each entry 
 Both forms take the same filter fields (`queue_type`, `filter`, `message_filter`, `jq_filter`, `payload_protobuf`). Unlike the object form, the array form also lets the **same** queue ID be split on more than one broker, since the ID is not a unique key.
 
 {% hint style="info" %}
-When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code.
+When choosing which SQS attributes, Kafka headers or Pub/Sub attributes to filter on, first check whether your framework, messaging client, or observability library already propagates message metadata for you. Many modern stacks can forward tracing-related context out of the box, especially for Kafka headers. Prefer enabling that before adding manual propagation code. See [Header Propagation](header-propagation.md).
 
 To have your AI agent do this, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill. It adds `baggage` to every message your services publish, restores it in each consumer, and covers Kafka, SQS/SNS, RabbitMQ, GCP Pub/Sub, Azure Service Bus, NATS, Redis Pub/Sub, BullMQ, and Temporal.
 {% endhint %}

@@ -15,6 +15,8 @@ tags:
 description: Steal a subset of incoming traffic using HTTP header, W3C baggage or tracestate, path or method filters
 ---
 
+# Filtering Incoming Traffic
+
 By default, mirrord mirrors **all** traffic coming into the remote target, and sends a copy to your local process. But in most cases, you don’t need _every_ request. With filtering, you can tell mirrord exactly which requests you want your local process to receive so you can test independently without affecting other developers or the shared environment.
 
 [AI agents using mirrord](../../using-mirrord-with-ai/README.md) can also take advantage of the same mechanism by setting filters, allowing them to safely target and test only the requests relevant to the changes they’re working on. This way any number of AI agents can concurrently test their code using the same shared Kubernetes environment.
@@ -50,7 +52,7 @@ Run your process with mirrord using the steal configuration, then send a request
 For HTTP-based traffic, the recommended way to isolate requests is to match on the W3C trace propagation headers: `baggage` or `tracestate`. Custom headers still work, but `baggage` and `tracestate` are usually the clearest option because many browsers, gateways, service meshes, and tracing libraries already know how to preserve them across service boundaries.
 
 {% hint style="info" %}
-A filter on `baggage` only matches past the first service if every service forwards the header. To have your AI agent set that up, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill.
+A filter on `baggage` only matches past the first service if every service forwards the header. See [Header Propagation](../../sharing-the-cluster/header-propagation.md) for how to set this up. To have your AI agent set that up, use the [`mirrord-header-propagation`](https://github.com/metalbear-co/skills/tree/main/skills/mirrord-header-propagation) skill.
 {% endhint %}
 
 For incoming HTTP traffic (including HTTP2 and gRPC), mirrord also supports filtering a subset of the remote target's traffic. You can do this by specifying a filter on either an HTTP header or path. To control whether traffic is duplicated (mirror) or redirected (steal), set the mode field:

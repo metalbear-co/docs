@@ -14,13 +14,19 @@ tags:
   - team
   - enterprise
 shallowToc: true
-description: How to (very) quickly start using mirrord
+description: "Get mirrord running against your cluster in a few minutes, from the install to your first session."
 ---
+
+# Quick Start
 
 Get mirrord running in under 5 minutes. You'll need:
 
 - **Locally:** macOS (Intel/Apple Silicon), Linux (x86_64), or Windows (x86_64/WSL). `kubectl` configured and pointing at your cluster.
-- **In the cluster:** A running workload (deployment, pod, [etc.](../reference/targets.md)) you want to work with. Linux kernel 4.20+, Docker or containerd runtime.
+- **In the cluster:** A running workload (deployment, pod, [etc.](../reference/targets.md)) you want to work with. [Kubernetes 1.22+](../installing-mirrord/README.md#cluster-requirements), Linux kernel 5.4+, and a containerd, CRI-O, or Docker runtime.
+
+{% hint style="info" %}
+This guide gets one developer running. To let a team share a cluster - [concurrent sessions](../sharing-the-cluster/overview.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [database branching](../sharing-the-cluster/db-branching.md), [preview environments](../use-cases/preview-environments.md), and [CI](../use-cases/mirrord-for-ci.md) - see [mirrord for Teams](what-is-mirrord.md#mirrord-for-teams) and [Enterprise](what-is-mirrord.md#enterprise-plan).
+{% endhint %}
 
 ## Install
 
@@ -151,7 +157,7 @@ Install the [mirrord browser extension](https://chromewebstore.google.com/detail
 
 mirrord reads config from `<project-path>/.mirrord/mirrord.json` (also supports `.toml` and `.yaml`). You can also prefix config files, e.g. `my-config.mirrord.json`.
 
-Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config).
+Run `mirrord wizard` to generate a config file interactively, or see the full [configuration options](https://metalbear.com/mirrord/docs/config). To keep an Operator preference across projects, see [Global Configuration](../installing-mirrord/global-configuration.md).
 
 {% hint style="info" %}
 The IDE extensions provide autocomplete for mirrord config files.

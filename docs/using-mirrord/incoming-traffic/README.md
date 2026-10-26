@@ -4,8 +4,10 @@ tags:
   - oss
   - team
   - enterprise
-description: How mirrord handles incoming network traffic from the cluster
+description: "How mirrord sends incoming traffic from a pod in the cluster to your local process."
 ---
+
+# Incoming Traffic
 
 mirrord lets your local process receive network traffic that would normally go to a pod in the cluster. There are two modes:
 
@@ -38,3 +40,4 @@ To steal filtered traffic for several services at once, [`mirrord up`](../multip
   - [Debug from Browser](debug-from-browser.md) - Use the Chrome extension to route browser traffic to your local process
 - **[Steal HTTPS Requests](steal-https.md)** **[Teams]** - Decrypt and steal HTTPS traffic using TLS certificates
 - **[Inspect Live Traffic](inspect-live-traffic.md)** - Monitor incoming traffic without running a local process
+- **[Working with API Gateways](api-gateways.md)** - Use mirrord with services behind Kong, Envoy Gateway, NGINX, Traefik, or your own gateway
