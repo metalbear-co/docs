@@ -28,7 +28,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 1. An AWS account, and the AWS CLI signed in to it.
 2. Terraform 1.6 or later.
 3. Python 3.12 or another Python 3 version that FastAPI supports.
-4. The mirrord CLI, at the version in [Required versions](README.md#required-versions).
+4. The mirrord CLI.
 5. `<API_KEY>`, the serverless agent API key of your MetalBear organization. It begins with `metalbear_key_`. An organization admin generates it in the MetalBear dashboard, in **Settings → Serverless agents**. The dashboard shows the key only once, so keep it.
 
 {% hint style="info" %}
