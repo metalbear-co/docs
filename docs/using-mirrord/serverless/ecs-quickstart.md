@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-mirrord for Amazon ECS is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
+mirrord for Amazon ECS is **experimental**, and may change without notice.
 {% endhint %}
 
 This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
@@ -39,7 +39,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 2. Terraform 1.6 or later.
 3. Python 3.12 or another Python 3 version that FastAPI supports.
 4. The mirrord CLI, at the version in [Required versions](README.md#required-versions).
-5. `<API_KEY>`, [provided by MetalBear](README.md#api-key-provided-by-metalbear). It begins with `metalbear_key_`.
+5. `<API_KEY>`, the serverless agent API key of your MetalBear organization. It begins with `metalbear_key_`. An organization admin generates it in the MetalBear dashboard, in **Settings → Serverless agents**. The dashboard shows the key only once, so keep it.
 
 {% hint style="info" %}
 This quickstart creates billable AWS resources: a NAT gateway, an Application Load Balancer, a `db.t4g.micro` RDS instance and one Fargate task. Run `terraform destroy` when you finish; see [Clean up](#clean-up).
