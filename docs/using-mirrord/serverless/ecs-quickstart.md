@@ -27,7 +27,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 
 1. An AWS account, and the AWS CLI signed in to it.
 2. Terraform 1.6 or later.
-3. Python 3.12 or another Python 3 version that FastAPI supports.
+3. Python 3.10 or later.
 4. The mirrord CLI.
 5. A MetalBear account. To generate the API key, you must be an admin of your MetalBear organization.
 
@@ -124,6 +124,8 @@ When the app starts, it creates the `orders` table in RDS if the table does not 
 ```bash
 export URL=$(terraform output -raw url)
 ```
+
+The repository's `mirrord.json` tells mirrord which requests to send to your laptop: only HTTP requests whose `baggage` header contains `mirrord-session=quickstart`. This is your session header. Each developer uses a different session key, so each one gets only their own requests. For the full configuration, see [The mirrord configuration](#the-mirrord-configuration).
 
 Send a request with your session header:
 
