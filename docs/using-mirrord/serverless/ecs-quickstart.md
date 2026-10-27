@@ -12,24 +12,14 @@ mirrord for Amazon ECS is **experimental**, and may change without notice.
 
 This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
 
-* **Incoming traffic:** requests to the public load balancer that carry your session header reach the process on your laptop. All other requests still go to the ECS task.
-* **Outgoing traffic:** your local process connects to the RDS database, which has no public endpoint. The connection leaves from the ECS task, inside the VPC. mirrord also gives the local process the task's environment variables, so it gets the database settings from the task.
+* **Real requests reach your laptop:** requests to the public load balancer that carry your session header reach the process on your laptop. All other requests still go to the ECS task.
+* **Your laptop reads the real database:** your local process reads and writes the orders in the RDS database, which has no public endpoint. mirrord sends the database connection through the ECS task, inside the VPC. It also gives the local process the task's environment variables, so the process gets the database settings from the task.
 
-The sample uses the [MetalBear Cloud](metalbear-cloud.md) mode. You need no Kubernetes cluster and no mirrord Operator. The code and the Terraform configuration are in the [mirrord-ecs-quickstart](https://github.com/metalbear-co/mirrord-ecs-quickstart) repository.
+The ECS task connects to mirrord through MetalBear Cloud. The code and the Terraform configuration are in the [mirrord-ecs-quickstart](https://github.com/metalbear-co/mirrord-ecs-quickstart) repository.
 
 ## How it works
 
-```
-                       ┌──────────────── VPC ────────────────────────────┐
- curl ──► ALB ────────►│ ECS task (Fargate)                              │
-          │            │  orders app + mirrord remote bootstrap ──► RDS  │
-          │            └──────────────┬──────────────────────────────────┘
-          │                           │ outbound HTTPS
-          │                 MetalBear sessions-manager
-          │                           │
-          │   with header             ▼
-          └─ baggage: mirrord-session=quickstart ──► your laptop: mirrord exec
-```
+![The client sends requests to the load balancer and the ECS task. The mirrord remote bootstrap in the task sends requests with your header through the MetalBear sessions-manager to the app on your machine. The task connects to the private RDS database for both apps.](../../.gitbook/assets/ecs-quickstart.svg)
 
 The ECS task and your laptop both make only outbound HTTPS connections to the MetalBear sessions-manager, which pairs them. mirrord needs no inbound access to your VPC. The public load balancer is part of the sample app, so that you can send requests to it.
 
