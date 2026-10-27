@@ -31,7 +31,7 @@ The sample uses the [MetalBear Cloud](metalbear-cloud.md) mode. You need no Kube
           └─ baggage: mirrord-session=quickstart ──► your laptop: mirrord exec
 ```
 
-The ECS task and your laptop both make only outbound HTTPS connections to the MetalBear sessions-manager, which pairs them. Nothing in your VPC accepts inbound connections from outside.
+The ECS task and your laptop both make only outbound HTTPS connections to the MetalBear sessions-manager, which pairs them. mirrord needs no inbound access to your VPC. The public load balancer is part of the sample app, so that you can send requests to it.
 
 ## Prerequisites
 
@@ -118,6 +118,12 @@ mirrord exec -f mirrord.json -- uvicorn main:app --app-dir app --port 8080
 When the app starts, it creates the `orders` table in RDS if the table does not exist. So the log line `Application startup complete` also shows that your local process reached the private database.
 
 ## Send requests
+
+`mirrord exec` keeps its terminal busy. Open a second terminal, go to the `terraform` directory of the repository, and set the service URL again:
+
+```bash
+export URL=$(terraform output -raw url)
+```
 
 Send a request with your session header:
 
