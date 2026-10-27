@@ -137,7 +137,7 @@ The built-in modes are the same as these definitions:
 
 | Mode | `incoming` | `queues` |
 | --- | --- | --- |
-| `split` | `split` | not set |
+| `split` | `split` | `split` |
 | `replace` | `replace` | not set |
 | `mirror` | `mirror` | `mirror` |
 
