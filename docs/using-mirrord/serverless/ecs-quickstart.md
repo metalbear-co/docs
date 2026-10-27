@@ -72,7 +72,7 @@ terraform init
 terraform apply
 ```
 
-The apply takes about 10 minutes, mostly for RDS. Terraform stores the API key in AWS Secrets Manager, and ECS gives it to the task as `MIRRORD_SESSIONS_MANAGER_API_KEY`.
+The apply takes about 6 minutes, mostly for RDS. Terraform stores the API key in AWS Secrets Manager, and ECS gives it to the task as `MIRRORD_SESSIONS_MANAGER_API_KEY`.
 
 When the apply finishes, keep the service URL, and send a request to it:
 
@@ -81,7 +81,7 @@ export URL=$(terraform output -raw url)
 curl $URL/orders
 ```
 
-The ECS task sends the response, with `"version": "v1"` and three orders from the database.
+The ECS task sends the response, with `"version": "v1"` and three orders from the database. The task needs 1 or 2 minutes to start after the apply. If the load balancer returns `503`, wait, and send the request again.
 
 ## Run the service locally
 
