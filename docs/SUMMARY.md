@@ -51,6 +51,7 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
+* [ECS Quickstart](using-mirrord/serverless/ecs-quickstart.md)
 * [Multiple concurrent sessions (mirrord up)](using-mirrord/multiple-concurrent-sessions.md)
 * [Targeting Pods by Label](using-mirrord/targeting-pods-by-label.md)
 * [Local UI](using-mirrord/local-ui.md)
