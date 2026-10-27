@@ -29,13 +29,23 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 2. Terraform 1.6 or later.
 3. Python 3.12 or another Python 3 version that FastAPI supports.
 4. The mirrord CLI.
-5. `<API_KEY>`, the serverless agent API key of your MetalBear organization. It begins with `metalbear_key_`. An organization admin generates it in the MetalBear dashboard, in **Settings → Serverless agents**. The dashboard shows the key only once, so keep it.
+5. A MetalBear account. To generate the API key, you must be an admin of your MetalBear organization.
 
 {% hint style="info" %}
 This quickstart creates billable AWS resources: a NAT gateway, an Application Load Balancer, a `db.t4g.micro` RDS instance and one Fargate task. Run `terraform destroy` when you finish; see [Clean up](#clean-up).
 {% endhint %}
 
 ---
+
+## Get an API key
+
+The ECS task signs in to MetalBear Cloud with the serverless agent API key of your organization. Your organization has one active key at a time. If it already has a key, ask the admin who generated it for the key, and go to the next step.
+
+1. Open the [MetalBear dashboard](https://app.metalbear.com), and go to **Settings → Serverless agents**.
+2. Generate the key.
+3. Copy the key, and keep it. It begins with `metalbear_key_`. The dashboard shows the key only once.
+
+This guide calls the key `<API_KEY>`.
 
 ## Deploy the service to ECS
 
