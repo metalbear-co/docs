@@ -408,6 +408,18 @@ A session asks for every entry with `"*"`, or for some of them by id:
 }
 ```
 
+To seed the branches with another copy mode than each entry's `copy.mode`, put the request under `entries` and the mode under `copy`:
+
+```json
+{
+  "feature": {
+    "db_branches": { "entries": "*", "copy": { "mode": "empty" } }
+  }
+}
+```
+
+The mode replaces only `copy.mode`: the rest of the entry's `copy` block stays, and PostgreSQL `additional_databases` keep their own `copy`. A mode missing from an entry's `copy.allowedModes` fails the session before any branch is created, and `generic` entries, which have no copy modes, ignore it. It needs a mirrord Operator that applies requested copy modes; against an older one the session fails before it starts.
+
 * An id that matches no entry fails the session, naming the ids the workload has. A workload with no `dbBranches` gives no branches, and the session continues without them.
 * Inline entries in `mirrord.json` win entirely: with them, the session ignores the workload's `dbBranches` and says which `MirrordSplitConfig` it passed over.
 * The branch id is the entry id plus the session key (`orders-pg-a1b2c3`), so every service started under one key that points at the same entry shares one branch. The first session creates it from its own entry; later ones attach, and only their copy mode is checked: a service whose entry asks for a different mode than the branch was created with fails, naming the service that created it. Two sessions that ask for the same branch at once end up on one branch.

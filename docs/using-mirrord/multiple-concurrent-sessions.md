@@ -116,10 +116,11 @@ Traffic is mirrored to your local process, and the deployed service runs uninter
 This feature requires at least mirrord version 3.278.0.
 {% endhint %}
 
-Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets two toggles, both optional:
+Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets three toggles, all optional:
 
 - `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
 - `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split with `queue_mode: steal`, whatever `incoming` is.
+- `db_branching`: which [DB branches defined on the workload](../sharing-the-cluster/db-branching.md#branches-defined-on-the-workload) the service runs against, whatever `incoming` is. `empty`, `schema` or `all` branches every entry with that copy mode, `inherit` with each entry's own `copy.mode`, and `off` branches none. When not set, a custom mode requests no branches.
 
 ```yaml
 modes:
@@ -141,7 +142,19 @@ The built-in modes are the same as these definitions:
 | `replace` | `replace` | not set |
 | `mirror` | `mirror` | `mirror` |
 
-Their names are reserved: a mode named `split`, `replace` or `mirror` under `modes` is an error. So is selecting a mode that doesn't exist, with `default_mode` or `--mode`; `mirrord up` fails before starting any service and lists the modes it knows.
+Without `db_branching`, `split` and `mirror` request every entry with its own copy mode, like `inherit`, when the target is a single workload, and `replace` requests none. Unlike `inherit`, they run against the source databases instead of failing when the operator can't branch or the workload has no entries.
+
+A mode named `split`, `replace` or `mirror` under `modes` changes that built-in mode's `db_branching` for every service in the file, and may set nothing else:
+
+```yaml
+modes:
+  split:
+    db_branching: schema
+```
+
+Selecting a mode that doesn't exist, with `default_mode` or `--mode`, is an error; `mirrord up` fails before starting any service and lists the modes it knows.
+
+A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator, its workload has no DB branch entries, or an entry's `copy.allowedModes` leaves out the requested copy mode. Set `db_branching: off` to run against the source databases instead. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them.
 
 A mode with `incoming: replace` behaves like `replace`: `queues` and `http_filter` are ignored, with a message, and the target must support `replace`.
 
@@ -222,7 +235,7 @@ All fields map directly to their `mirrord.json` counterparts.
 
 #### `modes`
 
-A map from mode names to custom modes, each with optional `incoming` and `queues`. See [Custom modes](#custom-modes).
+A map from mode names to custom modes, each with optional `incoming`, `queues` and `db_branching`. See [Custom modes](#custom-modes).
 
 #### `services`
 
