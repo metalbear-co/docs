@@ -12,7 +12,7 @@ The root of the GitBook docs is `./docs`, as defined in `.gitbook.yaml`. See [th
 
 ### Development
 
-**When you open a PR with changes**, GitBook will publish a preview and display the link under the `Checks` section at the bottom of the page that will show your changes - it does so via the [GitBook bot](https://github.com/gitbook-bot) installed in this repo. Use the preview labeled "*GitBook - metalbear.com*".
+**When you open a PR with changes**, GitBook will publish a preview and display the link under the `Checks` section at the bottom of the page that will show your changes - it does so via the [GitBook bot](https://github.com/gitbook-bot) installed in this repo. Use the preview labeled "*GitBook - metalbear.com/mirrord/docs/*".
 
 Changes to **content and basic structure** are possible in the repo, and other changes must be made via the [GitBook platform](https://app.gitbook.com). To do so, you will need access to the MetalBear organisation.
 
