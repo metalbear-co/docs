@@ -14,6 +14,8 @@ tags:
   - enterprise
 ---
 
+# Header Propagation
+
 To share a cluster, each developer marks their traffic with a header, and mirrord sends each session only the traffic that carries its value. Two features work this way:
 
 * [HTTP filters](../using-mirrord/incoming-traffic/filter-incoming-traffic.md) match a header on the requests that reach the target.

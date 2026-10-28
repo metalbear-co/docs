@@ -15,6 +15,9 @@ menu:
 weight: 140
 toc: true
 ---
+
+# Multiple concurrent sessions (mirrord up)
+
 ## Introduction
 
 `mirrord up` allows creating and running multiple mirrord sessions based on configuration defined in a single file — think `docker compose` but for mirrord. This can be useful for cases when you need to debug multiple related microservices and would like to manage their lifecycle together.

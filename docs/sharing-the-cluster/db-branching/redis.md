@@ -7,6 +7,8 @@ tags:
   - enterprise
 ---
 
+# Redis
+
 This page covers DB branching for Redis. For the general concepts, the full list of config fields, and how a session behaves, see the [DB Branching overview](../db-branching.md).
 
 Redis is the only engine that supports both branch locations:
