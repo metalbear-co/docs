@@ -1,0 +1,19 @@
+name: Vale
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  vale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Install Vale
+        run: |
+          curl -sSL -o "$RUNNER_TEMP/vale.tgz" https://github.com/errata-ai/vale/releases/download/v3.13.1/vale_3.13.1_Linux_64-bit.tar.gz
+          echo "99bd899f0ac52054444ffe3df571c749cc811f3b606cf5ef740c9a5a2db33df6  $RUNNER_TEMP/vale.tgz" | sha256sum -c
+          tar -xzf "$RUNNER_TEMP/vale.tgz" -C "$RUNNER_TEMP" vale
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - run: vale .

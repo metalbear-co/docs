@@ -324,8 +324,8 @@ the new agent pods have the node as owner.
 
 ## Node pool upgrades of your cloud provider
 
-A node pool upgrade of your cloud provider, for example a GKE surge upgrade, an EKS managed node group update or an AKS
-node image upgrade, cordons and drains each node with the Eviction API. mirrord pods do not stop the drain, unless a
+A node pool upgrade of your cloud provider (for example a GKE surge upgrade, an EKS managed node group update, or an AKS
+node image upgrade) cordons and drains each node with the Eviction API. mirrord pods do not stop the drain, unless a
 PodDisruptionBudget applies to them (see
 [PodDisruptionBudgets that stop a drain](#poddisruptionbudgets-that-stop-a-drain)). For the effect on active sessions,
 see [What happens to an active session](#what-happens-to-an-active-session).
@@ -362,7 +362,7 @@ To keep sessions alive on spot nodes:
 When Cluster Autoscaler scales down, it only removes a node if it can move all the pods of the node. A mirrord agent pod
 or copy pod stops the scale-down of its node, in every Operator version.
 
-By default, Cluster Autoscaler only moves pods that a ReplicationController, ReplicaSet, Job or StatefulSet controls.
+By default, Cluster Autoscaler only moves pods that a ReplicationController, ReplicaSet, Job, or StatefulSet controls.
 mirrord pods have no such controller:
 
 - Targetless agent pods and copy pods have no controller.

@@ -138,7 +138,7 @@ If you enable `s3_event` for an SQS queue (via its `queueConfig`), the operator 
 {% step %}
 #### Authorize deployed consumers
 
-In order to be targeted with SQS splitting, a deployed consumer must be able to use the temporary queues created by mirrord. E.g. if the consumer application retrieves the queue's URL based on its name, lists queue's tags, consumes and deletes messages from the queue — it must be able to do the same on a temporary queue.
+In order to be targeted with SQS splitting, a deployed consumer must be able to use the temporary queues created by mirrord. E.g. if the consumer application retrieves the queue's URL based on its name, lists queue's tags, and consumes and deletes messages from the queue — it must be able to do the same on a temporary queue.
 
 Any temporary queues managed by mirrord are created with the same policy as the original queues they are splitting (with the single change of updating the queue name in the policy). Therefore, access control based on SQS policies should automatically be taken care of.
 

@@ -27,7 +27,7 @@ This feature is available to users on the Enterprise pricing plan.
 
 ## Architecture
 
-The license server exposes an API that the operator uses to obtain a license, which the operator requires to run. It also allows the operator to keep track of active users, check and enforce seat counts, and store telemetry data.
+The license server exposes an API that the operator uses to obtain a license, which the operator requires to run. It also allows the operator to keep track of active users, store telemetry data, and check and enforce seat counts.
 
 Authentication between the operator and license server is done using a license key (chosen by the person setting up the license server) and is not to be confused with the license certificate file provided by MetalBear.
 

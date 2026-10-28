@@ -227,7 +227,7 @@ Set `operator.dbBranchNamespacePattern` to `"t-{{key}}"` to create `t-alice-chec
 
 Changing the pattern applies to new branches. Existing branches retain their recorded namespace, including when reused or restarted. While old and new branches coexist, the same key can therefore have branches in namespaces from both patterns. Keep any workload identity bindings and network policies for the old namespaces until those branches are gone.
 
-This lets the operator create, list and delete namespaces. It only deletes namespaces it created, which carry the label `operator.metalbear.co/db-branch-namespace: "true"`. The setting has no effect on an operator installed with `namespaced: true`. Without it, a session that sets `namespace: true` fails with an error naming the missing feature.
+This lets the operator create, list, and delete namespaces. It only deletes namespaces it created, which carry the label `operator.metalbear.co/db-branch-namespace: "true"`. The setting has no effect on an operator installed with `namespaced: true`. Without it, a session that sets `namespace: true` fails with an error naming the missing feature.
 
 ## Branch Storage
 
@@ -237,7 +237,7 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 ### Pod replacement
 
-A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
+A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse, or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
 
 Sessions reach such a branch through a per-branch Service rather than the pod's address, so a session attached before the replacement stays attached and finds the branch at the same address once it is `Ready`. Branches that cannot be rebuilt (below) keep the pod's address, which reaches every port the image serves. Open database connections do not survive the pod: the application has to reconnect or retry, as it would after any database restart.
 

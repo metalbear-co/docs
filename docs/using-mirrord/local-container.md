@@ -23,7 +23,7 @@ For example:
 mirrord container -- docker run nginx
 ```
 
-In addition to Docker, Podman and nerdctl are also supported.
+Podman and nerdctl are supported in addition to Docker.
 
 ## Emulated local containers
 

@@ -79,7 +79,7 @@ To specify a filter on a header, use the `feature.network.incoming.http_filter.h
 Note that, with the configuration above, mirrord applies the HTTP header filter on ports 80 and 8080, while stealing from all other eligible ports without filtering.
 To prevent mirrord from stealing unwanted ports, set `feature.network.incoming.ports` to an explicit list.
 
-In general, stealing and filtering follow these rules:
+Stealing and filtering generally follow these rules:
 
 1. When `feature.network.incoming.ports` is **not** set, **all eligible ports** are stolen.
 2. When `feature.network.incoming.http_filter.ports` is **not** set but an HTTP filter is provided, **all ports** are filtered.
@@ -107,7 +107,7 @@ Note that both `header_filter` and `path_filter` take regex value, so for exampl
 
 ### Filtering out healthchecks using a negative look-ahead
 
-The HTTP filters both take "fancy" regexes that support negative look-aheads. This can be useful for avoiding the stealing of Kubernetes liveness, readiness and startup probes.
+The HTTP filters both take "fancy" regexes that support negative look-aheads. This can be useful for avoiding the stealing of Kubernetes liveness, readiness, and startup probes.
 
 For filtering out any probes sent to the application by kubernetes, you can use this header filter, to require a user-agent that does not start with "kube-probe":
 

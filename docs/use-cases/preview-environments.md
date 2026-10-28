@@ -198,7 +198,7 @@ mirrord preview up \
   -k pr-123
 ```
 
-This starts two previews under the key `pr-123`, one per `--image`. The previews start in parallel, and the command returns once every preview is ready, idle or failed. Each preview reports its key, namespace, session and preview URL as `mirrord preview start` does, with every line prefixed by the service name.
+This starts two previews under the key `pr-123`, one per `--image`. The previews start in parallel, and the command returns once every preview is ready, idle, or failed. Each preview reports its key, namespace, session, and preview URL as `mirrord preview start` does, with every line prefixed by the service name.
 
 Use `-f` to read a file other than `mirrord-up.yaml`. The file is [rendered](../using-mirrord/multiple-concurrent-sessions.md#templating) as it is for `mirrord up`, with the preview's key as `{{ key }}`.
 

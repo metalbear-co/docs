@@ -146,7 +146,7 @@ Liquibase starts from a single root changelog rather than scanning a directory, 
 | `search_path` | Liquibase search path inside `image`. Mutually exclusive with `path`, and requires `image`. |
 | `image` | Migration runner image. Optional with `path` (defaults to `liquibase/liquibase:4.33`), required with `search_path`. |
 
-Exactly one of `path` or `search_path` is required. Liquibase 4.33 bundles the PostgreSQL, MariaDB and SQL Server drivers; a custom `image` must carry the driver for your dialect, and MySQL branches are reached over `jdbc:mariadb://`.
+Exactly one of `path` or `search_path` is required. Liquibase 4.33 bundles the PostgreSQL, MariaDB, and SQL Server drivers; a custom `image` must carry the driver for your dialect, and MySQL branches are reached over `jdbc:mariadb://`.
 
 Mind the interaction with `copy.mode`: if your source database isn't itself Liquibase-managed, use `"copy": { "mode": "empty" }` and let the changelogs build the branch schema from scratch. If the source is Liquibase-managed, `all` brings both history tables across with everything else, and `schema` needs [special configuration](#carrying-migration-history-onto-the-branch).
 

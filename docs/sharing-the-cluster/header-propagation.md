@@ -129,4 +129,4 @@ Prefer `baggage` if you can. Tracing libraries forward it with little or no extr
 
 ## Check your ingress
 
-For HTTP, the header must also survive the edge of your cluster. Most ingress controllers and load balancers pass request headers through unchanged, but some API gateways, CDNs and WAFs remove headers they don't recognize. If the first service receives the request without your header (checked with `mirrord dump`, or with header logging if the service terminates TLS), check the configuration of whatever sits in front of it.
+For HTTP, the header must also survive the edge of your cluster. Most ingress controllers and load balancers pass request headers through unchanged, but some API gateways, CDNs, and WAFs remove headers they don't recognize. If the first service receives the request without your header (checked with `mirrord dump`, or with header logging if the service terminates TLS), check the configuration of whatever sits in front of it.
