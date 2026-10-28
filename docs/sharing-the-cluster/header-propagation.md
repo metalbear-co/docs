@@ -123,7 +123,7 @@ ctx := metadata.AppendToOutgoingContext(c, "x-dev-session", session)
 resp, err := billingClient.GetInvoice(ctx, invoiceReq)
 ```
 
-For a message, put the header in the message's metadata: a Kafka or RabbitMQ header, an SQS or Pub/Sub message attribute, or an Azure Service Bus application property. A queue splitting filter matches against that metadata. See [Setting a Filter for a mirrord Run](queue-splitting.md#setting-a-filter-for-a-mirrord-run) for how each broker exposes it.
+For a message, put the header in the message's metadata: a Kafka, RabbitMQ, NATS, or Temporal header, an SQS or Pub/Sub message attribute, or an Azure Service Bus application property. A queue splitting filter matches against that metadata. See [Setting a Filter for a mirrord Run](queue-splitting.md#setting-a-filter-for-a-mirrord-run) for how each broker exposes it.
 
 Prefer `baggage` if you can. Tracing libraries forward it with little or no extra code, and other mirrord features, including [preview environments](../use-cases/preview-environments.md) and the [browser extension](../using-mirrord/incoming-traffic/debug-from-browser.md), use it by default.
 
