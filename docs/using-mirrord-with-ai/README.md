@@ -6,8 +6,6 @@ toc: true
 tags: ["oss", "team", "enterprise"]
 ---
 
-# Using mirrord with AI
-
 AI coding models don’t have the full context of your application — external dependencies, environment variables, and the way services interact in production. The code they generate might look correct in isolation, but things often break once you try integrating it with the rest of your system.
 
 If you're using tools like Claude Code, Cursor, or Codex, mirrord lets you safely test AI-generated code in a real, production-like Kubernetes environment in seconds, instead of relying on mocks or waiting for CI/CD to reveal integration issues.
