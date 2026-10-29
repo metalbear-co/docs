@@ -156,6 +156,8 @@ Selecting a mode that doesn't exist, with `default_mode` or `--mode`, is an erro
 
 A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator, its workload has no DB branch entries, or an entry's `copy.allowedModes` leaves out the requested copy mode. Set `db_branching: off` to run against the source databases instead. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them.
 
+A mode's `queues` is checked before any service starts too: the run fails, naming the mode, when the service has no usable mirrord Operator, or one that splits no queues. Without `queues`, the run goes on without queue splitting, and says so when the operator splits no queues. A service whose `config_patch` sets `split_queues` keeps them.
+
 A mode with `incoming: replace` behaves like `replace`: `queues` and `http_filter` are ignored, with a message, and the target must support `replace`.
 
 `config_patch` is applied last, so it overrides what the mode sets.
