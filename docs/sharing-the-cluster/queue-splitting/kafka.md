@@ -149,7 +149,7 @@ Each entry in the `spec.queues` list describes one or more Kafka queues consumed
 * `id` - arbitrary queue ID that developers [reference](kafka.md#setting-a-filter) from their mirrord config.
 * `kind` - must be `kafka`.
 * `clientConfig` - name of the `MirrordPropertyList` with the Kafka client connection (from the previous step). Can also be set once for all Kafka queues with `spec.clientConfigs.kafka`.
-* `appConfig.topic` - how the application discovers the topic names. Each distinct topic is split under the queue ID, and a filter on the queue ID applies to all of them. Each entry can use:
+* `appConfig.topic` - how the application discovers the topic names. Each distinct topic is split under the queue ID, and a filter on the queue ID applies to all of them. An environment variable can hold one topic, or a JSON object of topics. Each entry can use:
   * `env` - exact environment variable name containing the topic name.
   * `envLike` - regex matching environment variable names.
   * `volume` - read the topic name from a file mounted from a `configMap` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
