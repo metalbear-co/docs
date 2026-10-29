@@ -453,6 +453,48 @@ A `message_filter` of `{ "tenant": "^blue$", "region": "eu" }` is the same as `f
 
 Queue filter policies (`splitQueues` in a mirrord policy) check `message_filter` entries and `all_of` / `any_of` branches by attribute name. A `metadata` regex cannot prove which attribute it filters on, so on a queue covered by such a policy rule it is rejected the same way a lone `jq_filter` is.
 
+### Filters in the split config
+
+A queue entry of the `MirrordSplitConfig` can carry a `filter` and a `jqFilter` of its own. This is useful when the session marker sits somewhere every developer would otherwise have to spell out, such as a field in the message body: the cluster admin writes the `jqFilter` once, and a developer's entry only has to name the queue.
+
+```yaml
+apiVersion: queues.mirrord.metalbear.co/v1
+kind: MirrordSplitConfig
+metadata:
+  name: orders-consumer
+  namespace: staging
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orders-consumer
+  queues:
+    - id: orders
+      kind: sqs
+      jqFilter: '.Body | fromjson | .tenant == "blue"'
+      appConfig:
+        queue:
+          - env: ORDERS_QUEUE_NAME
+```
+
+`filter` is written exactly like the session's `filter` in a mirrord config (`metadata`, `all_of`, `any_of`), so you can paste one from there, and `jqFilter` takes the same program as the session's `jq_filter`. A session that lists the queue with no `filter`, `message_filter` or `jq_filter` uses them:
+
+```json
+{
+  "feature": {
+    "split_queues": {
+      "orders": { "queue_type": "SQS" }
+    }
+  }
+}
+```
+
+Any filter the session sets on that queue replaces the split config's as a whole, an empty `message_filter: {}` included (it keeps meaning "split the queue, deliver nothing"), and a queue the session does not list delivers nothing to the local application, whether or not the split config has a filter for it.
+
+{% hint style="warning" %}
+Filters in the split config require mirrord `3.280.0` or later, and mirrord operator `3.226.0` or later. Against an older operator the CLI refuses to start a session whose entry has no filter and names the missing feature.
+{% endhint %}
+
 ### One queue or many
 
 `feature.split_queues` accepts two shapes.
@@ -502,7 +544,7 @@ To have your AI agent do this, use the [`mirrord-header-propagation`](https://gi
 {% endhint %}
 
 {% hint style="info" %}
-An entry with no `filter`, an empty `message_filter`, and no `jq_filter` is treated as a match-none directive.
+An entry with no `filter`, no `message_filter` and no `jq_filter` uses the filter of its split config queue entry (see [Filters in the split config](#filters-in-the-split-config)). When the split config has none either, the entry matches nothing. An empty `message_filter: {}` is a filter of the entry's own and matches nothing.
 {% endhint %}
 
 For complete, copy-pasteable filter examples, see the "Setting a filter" section on each queue service page.
