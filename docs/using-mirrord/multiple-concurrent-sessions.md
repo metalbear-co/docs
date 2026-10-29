@@ -120,7 +120,7 @@ Define your own modes under `modes`, then select them by name like a built-in on
 
 - `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
 - `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split with `queue_mode: steal`, whatever `incoming` is.
-- `db_branching`: which [DB branches defined on the workload](../sharing-the-cluster/db-branching.md#branches-defined-on-the-workload) the service runs against, whatever `incoming` is. `empty`, `schema` or `all` branches every entry with that copy mode, `inherit` with each entry's own `copy.mode`, and `off` branches none. When not set, a custom mode requests no branches.
+- `db_branching`: which [DB branches defined on the workload](../sharing-the-cluster/db-branching.md#branches-defined-on-the-workload) the service runs against, whatever `incoming` is. `empty`, `schema` or `all` branches every entry with that copy mode, `inherit` with each entry's own `copy.mode`, and `off` branches none. When not set, the mode branches like the built-in mode its `incoming` names.
 
 ```yaml
 modes:
@@ -142,7 +142,7 @@ The built-in modes are the same as these definitions:
 | `replace` | `replace` | not set |
 | `mirror` | `mirror` | `mirror` |
 
-Without `db_branching`, `split` and `mirror` request every entry with its own copy mode, like `inherit`, when the target is a single workload, and `replace` requests none. Unlike `inherit`, they run against the source databases instead of failing when the operator can't branch or the workload has no entries.
+Without `db_branching`, a mode with `incoming: split` or `incoming: mirror`, built-in or custom, requests every entry with its own copy mode, like `inherit`, when the target is a single workload, and one with `incoming: replace` requests none. Unlike `inherit`, it runs against the source databases instead of failing when the operator can't branch or the workload has no entries.
 
 A mode named `split`, `replace` or `mirror` under `modes` changes that built-in mode's `db_branching` for every service in the file, and may set nothing else:
 
