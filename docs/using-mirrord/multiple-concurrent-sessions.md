@@ -67,7 +67,7 @@ If you'd rather have your local process take over a service completely, use `rep
 
 ### Service modes
 
-Service modes are set per service with `default_mode` in the config file, or for a whole run with the `--mode` flag.
+Service modes are set per service with `default_mode` in the config file, or for a whole run with the `--mode` flag. Both take a built-in mode (`split`, `replace`, `mirror`) or a [custom mode](#custom-modes).
 
 The following config file sets `replace` mode for `user-auth-service`, while leaving `stage-user-dashboard-app` in the default `split` mode.
 
@@ -113,9 +113,46 @@ This feature requires at least mirrord version 3.258.0.
 
 Traffic is mirrored to your local process, and the deployed service runs uninterrupted. Only requests matching the service's `http_filter` are mirrored to your machine. When no filter is provided, mirrord generates one from the session key: `baggage: .*mirrord-session={key}.*`.
 
+#### Custom modes
+
+{% hint style="info" %}
+This feature requires at least mirrord version 3.278.0.
+{% endhint %}
+
+Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets two toggles, both optional:
+
+- `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
+- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split with `queue_mode: steal`, whatever `incoming` is.
+
+```yaml
+modes:
+  watch:
+    incoming: mirror # queue messages are still stolen
+
+services:
+  orders:
+    default_mode: watch
+    run:
+      command: ["node", "app.js"]
+```
+
+The built-in modes are the same as these definitions:
+
+| Mode | `incoming` | `queues` |
+| --- | --- | --- |
+| `split` | `split` | `split` |
+| `replace` | `replace` | not set |
+| `mirror` | `mirror` | `mirror` |
+
+Their names are reserved: a mode named `split`, `replace` or `mirror` under `modes` is an error. So is selecting a mode that doesn't exist, with `default_mode` or `--mode`; `mirrord up` fails before starting any service and lists the modes it knows.
+
+A mode with `incoming: replace` behaves like `replace`: `queues` and `http_filter` are ignored, with a message, and the target must support `replace`.
+
+`config_patch` is applied last, so it overrides what the mode sets.
+
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration. A [custom mode](#custom-modes) can choose how queues are split with `queues`.
 
 Services in `replace` mode don't use queue splitting: the deployed workload is scaled down, so your local process consumes every message from its queues.
 
@@ -186,6 +223,10 @@ Common configuration options, applied to all defined services. Currently the fol
 
 All fields map directly to their `mirrord.json` counterparts.
 
+#### `modes`
+
+A map from mode names to custom modes, each with optional `incoming` and `queues`. See [Custom modes](#custom-modes).
+
 #### `services`
 
 A map from service ids to a `ServiceConfig`. Each entry in this map defines and configures a mirrord process that will be run as part of the session.
@@ -232,7 +273,7 @@ Specifies the environment variable configuration for the given service. Maps dir
 
 ##### `services.*.default_mode`
 
-Either `split` (the default), `replace` or `mirror`. See [Service modes](#service-modes) for what each one does and when to use it.
+Either `split` (the default), `replace`, `mirror`, or the name of a mode under `modes`. See [Service modes](#service-modes) for what each one does and when to use it.
 
 The `--mode` flag overrides this for every service being launched.
 
@@ -365,7 +406,7 @@ Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom
 
 ### `-m`, `--mode`
 
-Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split`, `replace` or `mirror` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
+Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split`, `replace`, `mirror`, or the name of a mode under `modes` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
 
 ### `--key`
 
