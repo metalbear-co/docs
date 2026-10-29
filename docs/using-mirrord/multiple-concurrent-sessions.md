@@ -155,7 +155,9 @@ modes:
 
 Selecting a mode that doesn't exist, with `default_mode` or `--mode`, is an error; `mirrord up` fails before starting any service and lists the modes it knows.
 
-A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator, its workload has no DB branch entries, or an entry's `copy.allowedModes` leaves out the requested copy mode. Set `db_branching: off` to run against the source databases instead. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them.
+A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator (the message says why: `operator: false`, none installed, or a license that can't be used), its workload has no DB branch entries, an entry's database engine is turned off in the operator, or an entry's `copy.allowedModes` leaves out the requested copy mode. Set `db_branching: off` to run against the source databases instead. A mode without the line runs against them in each of those cases, saying so. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them.
+
+Services started under one key share each branch, so the run also fails before any service starts when two of them ask for the same branch with different copy modes. A later session under the same key that asks for another copy mode than the branch was created with fails too, naming who created it; start it under a different key, or ask for the same mode.
 
 A mode's `queues` is checked before any service starts too: the run fails, naming the mode, when the service has no usable mirrord Operator, or one that splits no queues. Without `queues`, the run goes on without queue splitting, and says so when the operator splits no queues. A service whose `config_patch` sets `split_queues` keeps them.
 
