@@ -119,13 +119,14 @@ This feature requires at least mirrord version 3.278.0.
 Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets three toggles, all optional:
 
 - `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
-- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split with `queue_mode: steal`, whatever `incoming` is.
+- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split like `incoming`: mirrored with `incoming: mirror`, stolen otherwise.
 - `db_branching`: which [DB branches defined on the workload](../sharing-the-cluster/db-branching.md#branches-defined-on-the-workload) the service runs against, whatever `incoming` is. `empty`, `schema` or `all` branches every entry with that copy mode, `inherit` with each entry's own `copy.mode`, and `off` branches none. When not set, the mode branches like the built-in mode its `incoming` names.
 
 ```yaml
 modes:
   watch:
-    incoming: mirror # queue messages are still stolen
+    incoming: mirror
+    queues: split # mirror requests, but steal queue messages
 
 services:
   orders:
