@@ -80,8 +80,10 @@ Both workloads and developers' machines need outbound HTTPS (TCP 443) to:
 
 | Host | Used for |
 | --- | --- |
-| MetalBear's sessions-manager | Registering, and the session's traffic. |
+| `sm-aws-use1.app.metalbear.com`, MetalBear's sessions-manager | Registering, and the session's traffic. |
 | `app.metalbear.com` | Exchanging the API key for a token, and `mirrord login`. |
+
+MetalBear may add sessions-managers in other regions under `app.metalbear.com`. To allow them without another firewall change, allow `*.app.metalbear.com` alongside `app.metalbear.com` rather than the exact sessions-manager host. The wildcard doesn't match `app.metalbear.com` itself, so it's still needed.
 
 Sessions hold their connections open for as long as the developer runs them. Any proxy or firewall on the path must not buffer responses and needs an idle timeout of at least 300 seconds.
 
@@ -93,7 +95,7 @@ Each workload needs one variable, next to the ones that [name the workload](ecs.
 | --- | --- |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY` | `<API_KEY>`, injected from your secret store. |
 
-The bootstrap connects to MetalBear's sessions-manager by default. Don't set `MIRRORD_OPERATOR_API_URL` or `MIRRORD_OPERATOR_KUBE_CONTEXT`, which select the [Operator-hosted mode](operator-hosted.md) instead.
+The bootstrap connects to MetalBear's sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`, when no other variable selects one. Don't set `MIRRORD_OPERATOR_API_URL` or `MIRRORD_OPERATOR_KUBE_CONTEXT`, which select the [Operator-hosted mode](operator-hosted.md) instead, or `MIRRORD_SESSIONS_MANAGER_URL`, which points the bootstrap at a different sessions-manager.
 
 How to set them depends on the platform:
 
@@ -107,7 +109,7 @@ Developers need no Kubernetes access and no API key. They sign in to their Metal
 mirrord login
 ```
 
-mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead.
+mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead. When the session starts, mirrord prints `Connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
 
 * **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
 * **Expiry:** the sign-in isn't renewed automatically. Once it expires, mirrord warns when a session starts, and new sessions are refused until the developer runs `mirrord login` again. A session that's already running keeps working, and picks up a new sign-in when it reconnects, without a restart.
@@ -117,7 +119,7 @@ mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and 
 
 ## Troubleshooting
 
-The workload's messages appear in the application container's logs, and the developer's in mirrord's output.
+The workload's messages appear in the application container's logs, and the developer's in mirrord's output. To see which sessions-manager a workload registers with, and why, set `MIRRORD_AGENT_RUST_LOG=info` on it. The bootstrap then logs its choice when it starts, for example `Registering with the MetalBear Cloud sessions-manager, since neither MIRRORD_OPERATOR_API_URL nor MIRRORD_SESSIONS_MANAGER_URL is set`.
 
 | Symptom | Likely cause |
 | --- | --- |
@@ -132,3 +134,6 @@ The workload's messages appear in the application container's logs, and the deve
 | `HTTP control plane returned 401 Unauthorized` in mirrord's output on a developer's machine | The developer isn't signed in, their sign-in expired, or `~/.mirrord/auth.json` can't be read. One of the warnings above appears first. Run `mirrord login`. |
 | `sessions-manager refused your mirrord login, which has expired, been revoked, or is for another organization` | The sign-in was sent but refused, for example because it was revoked. Run `mirrord login`. |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets variables of both modes; keep only those of [Connecting workloads](#connecting-workloads). |
+| mirrord prints `Connecting through the sessions-manager hosted by the mirrord operator` | `mirrord.json` sets `"operator": true`. Remove it ([Developer setup](#developer-setup)). |
+| mirrord prints `Connecting through the sessions-manager at <URL>` | `sessions_manager.url` is set in `mirrord.json`, or `MIRRORD_SESSIONS_MANAGER_URL` in the developer's shell or IDE run configuration. Unset both. |
+| `the sessions-manager URL is invalid` | `sessions_manager.url` or `MIRRORD_SESSIONS_MANAGER_URL` holds something other than a URL. Unset both to use MetalBear Cloud. |

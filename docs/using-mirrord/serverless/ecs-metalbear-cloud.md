@@ -71,7 +71,7 @@ The tasks only make outbound connections, to the hosts in [Network access](metal
 
 * The tasks' security group allows outbound TCP 443 to them.
 * The tasks' subnets route to the internet, through a NAT gateway for private subnets, or have a public IP for public ones.
-* Any firewall or egress proxy on the path allows `app.metalbear.com` and MetalBear's sessions-manager, doesn't buffer responses, and has an idle timeout of at least 300 seconds.
+* Any firewall or egress proxy on the path allows `app.metalbear.com` and `sm-aws-use1.app.metalbear.com` (or `*.app.metalbear.com`, see [Network access](metalbear-cloud.md#network-access)), doesn't buffer responses, and has an idle timeout of at least 300 seconds.
 
 ## Add the connection variables
 
@@ -105,7 +105,7 @@ Register the new task definition revision and update the service to use it. Task
 
 ## Verify
 
-1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors.
+1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors. With `MIRRORD_AGENT_RUST_LOG=info` in the container's `environment`, they also show `Registering with the MetalBear Cloud sessions-manager`.
 2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), without `"operator": true`, `mirrord exec` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code

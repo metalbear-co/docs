@@ -11,7 +11,7 @@ tags:
 # Serverless Workloads
 
 {% hint style="warning" %}
-Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us for a [dedicated CLI binary download link](#required-versions). The MetalBear Cloud mode also needs an [API key](#api-key-provided-by-metalbear), which we provide on request.
+Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, install a [supported mirrord CLI](#required-versions). The MetalBear Cloud mode also needs an [API key](#api-key-provided-by-metalbear), which we provide on request.
 {% endhint %}
 
 Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
@@ -68,10 +68,10 @@ Setup is split by what it touches, so you only redo the parts that change:
 ### Required versions
 
 * **Operator:** version **3.223.0 or later**, installed from the `metalbear/mirrord-operator` Helm chart. Follow the [Operator installation guide](../../managing-mirrord/operator.md), then [enable sessions-manager](operator-hosted.md#enable-sessions-manager).
-* **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0`, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
-* **CLI:** a dedicated mirrord CLI binary from a download link provided by MetalBear. Download the binary for your platform from that link instead of installing a regular mirrord release by version.
+* **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.229.0` or later, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
+* **CLI:** mirrord **3.282.0 or later**, a regular release, installed as described in [Installing the mirrord CLI](../../installing-mirrord/cli.md).
 
-Use the CLI MetalBear supplies for these released components. When upgrading, confirm that the CLI supports the Operator and bootstrap versions you plan to use.
+Earlier CLIs and bootstraps don't connect to the MetalBear Cloud sessions-manager by default. To use them with MetalBear Cloud, set `MIRRORD_SESSIONS_MANAGER_URL=https://sm-aws-use1.app.metalbear.com/sm` both in the developer's environment and on the workload, or upgrade.
 
 ### API key provided by MetalBear
 
@@ -93,7 +93,7 @@ To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_
 
 ## Using mirrord with a Serverless Workload
 
-Download the dedicated mirrord CLI binary for your platform from the link [provided by MetalBear](#required-versions), and install it on your `PATH`. Use this binary rather than a regular mirrord release. Then create a `mirrord.json` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
+Install a [supported mirrord CLI](#required-versions), then create a `mirrord.json` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
 
 ```json
 {
@@ -118,7 +118,7 @@ Download the dedicated mirrord CLI binary for your platform from the link [provi
 }
 ```
 
-* [`operator: true`](https://metalbear.com/mirrord/docs/config/options#root-operator) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator.
+* [`operator: true`](https://metalbear.com/mirrord/docs/config/options#root-operator) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator. Without it, mirrord connects to MetalBear Cloud instead; see [Which sessions-manager mirrord connects through](#which-sessions-manager-mirrord-connects-through).
 * [`target.path`](https://metalbear.com/mirrord/docs/config/options#target-path) is `serverless/` followed by the service name, and [`target.namespace`](https://metalbear.com/mirrord/docs/config/options#target-namespace) is the environment the service runs in. These are the names your platform team gave the workload when setting it up, not Kubernetes resources or namespaces. Ask them for the values.
 * [`key`](https://metalbear.com/mirrord/docs/config/options#root-key) identifies your session. It's substituted into `{{ key }}` in the HTTP filter, so only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process. Regular traffic and other developers' requests keep going to the serverless workload. See [Filtering Incoming Traffic](../incoming-traffic/filter-incoming-traffic.md) for other filters.
 * `feature.network.outgoing` sends your local process's outgoing connections through the serverless workload, so they reach whatever the workload can reach.
@@ -133,6 +133,18 @@ mirrord login
 ```
 
 Then leave `operator` out of `mirrord.json` (or set it to `false`), and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
+
+### Which sessions-manager mirrord connects through
+
+mirrord picks the sessions-manager from your configuration, in this order:
+
+1. [`operator: true`](https://metalbear.com/mirrord/docs/config/options#root-operator): the sessions-manager hosted by the Operator, reached through your kubeconfig's current context. `sessions_manager.url` and `MIRRORD_SESSIONS_MANAGER_URL` are then ignored.
+2. A URL in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url), or in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable, which overrides it: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
+3. Otherwise, the MetalBear Cloud sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`.
+
+When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `Connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json`, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
+
+The workload picks its sessions-manager the same way, from its own variables: `MIRRORD_OPERATOR_API_URL` selects the Operator, `MIRRORD_SESSIONS_MANAGER_URL` a sessions-manager at that URL, and with neither set, it registers with MetalBear Cloud. Your deployment mode's connection guide lists which to set.
 
 ### Running your service
 
