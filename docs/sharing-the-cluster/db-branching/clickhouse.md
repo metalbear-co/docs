@@ -56,6 +56,10 @@ It’s only recommended for very small or empty databases.
 Copying large datasets can significantly increase branch creation time and storage usage.
 {% endhint %}
 
+{% hint style="info" %}
+A branch is a single ClickHouse server, so copied tables get the plain counterpart of a replicated engine: `ReplicatedMergeTree`, or the `SharedMergeTree` ClickHouse Cloud uses for every MergeTree table, becomes `MergeTree`. Branching a ClickHouse Cloud database needs operator `3.229.0` or later. Migrations your application runs against a branch must name the plain engines too.
+{% endhint %}
+
 ### Filtered Data Clone
 
 Developers can customize what gets copied per table. This allows copying only specific rows or subsets of data using SQL query filters.
