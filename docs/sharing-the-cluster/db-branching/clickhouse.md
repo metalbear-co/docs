@@ -57,7 +57,7 @@ Copying large datasets can significantly increase branch creation time and stora
 {% endhint %}
 
 {% hint style="info" %}
-A branch is a single ClickHouse server, so copied tables get the plain counterpart of a replicated engine: `ReplicatedMergeTree`, or the `SharedMergeTree` ClickHouse Cloud uses for every MergeTree table, becomes `MergeTree`. Branching a ClickHouse Cloud database needs operator `3.229.0` or later. Migrations your application runs against a branch must name the plain engines too.
+A branch is a single ClickHouse server, so copied tables get the plain counterpart of a replicated engine, with the engine's own arguments kept: `ReplicatedReplacingMergeTree` becomes `ReplacingMergeTree`, as does `SharedReplacingMergeTree`, one of the `Shared*` engines ClickHouse Cloud gives every MergeTree table. Branching a ClickHouse Cloud database requires mirrord operator `3.229.0` or later. Migrations your application runs against a branch must name the plain engines too.
 {% endhint %}
 
 ### Filtered Data Clone
