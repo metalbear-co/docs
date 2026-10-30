@@ -7,7 +7,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the released bootstrap image and dedicated CLI.
+Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
 This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
@@ -62,7 +62,7 @@ Merge the example into your existing task definition, preserving its launch type
   "containerDefinitions": [
     {
       "name": "install-mirrord-remote-bootstrap",
-      "image": "ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0",
+      "image": "ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.229.0",
       "essential": false,
       "entryPoint": ["/bin/sh", "-c"],
       "command": [
@@ -91,7 +91,7 @@ Merge the example into your existing task definition, preserving its launch type
 }
 ```
 
-The example uses the public `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0` image. Bootstrap tags follow Operator release versions, not CLI versions; pin a release tag rather than `latest`. See [Required versions](README.md#required-versions) for the Operator and dedicated CLI requirements. If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
+The example uses the public `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.229.0` image. Bootstrap tags follow Operator release versions, not CLI versions; pin a release tag rather than `latest`. See [Required versions](README.md#required-versions) for the Operator and CLI requirements. If the ECS tasks can't pull from the image's registry, copy the image to a registry they can pull from, such as Amazon ECR. Because the setup container is non-essential with a `SUCCESS` dependency, a failed copy prevents the application container from starting, so you never silently run without mirrord.
 
 ## Name the workload
 

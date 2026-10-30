@@ -11,7 +11,7 @@ tags:
 # Serverless Workloads
 
 {% hint style="warning" %}
-Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, contact us for a [dedicated CLI binary download link](#required-versions). The MetalBear Cloud mode also needs an [API key](#api-key-provided-by-metalbear), which we provide on request.
+Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, install a [supported mirrord CLI](#required-versions). The MetalBear Cloud mode also needs an [API key](#api-key-provided-by-metalbear), which we provide on request.
 {% endhint %}
 
 Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
@@ -68,10 +68,10 @@ Setup is split by what it touches, so you only redo the parts that change:
 ### Required versions
 
 * **Operator:** version **3.223.0 or later**, installed from the `metalbear/mirrord-operator` Helm chart. Follow the [Operator installation guide](../../managing-mirrord/operator.md), then [enable sessions-manager](operator-hosted.md#enable-sessions-manager).
-* **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.223.0`, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
-* **CLI:** a dedicated mirrord CLI binary from a download link provided by MetalBear. Download the binary for your platform from that link instead of installing a regular mirrord release by version.
+* **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.229.0` or later, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
+* **CLI:** mirrord **3.282.0 or later**, a regular release, installed as described in [Installing the mirrord CLI](../../installing-mirrord/cli.md).
 
-Use the CLI MetalBear supplies for these released components. When upgrading, confirm that the CLI supports the Operator and bootstrap versions you plan to use.
+Earlier CLIs and bootstraps don't connect to the MetalBear Cloud sessions-manager by default. To use them with MetalBear Cloud, set `MIRRORD_SESSIONS_MANAGER_URL=https://sm-aws-use1.app.metalbear.com/sm` both in the developer's environment and on the workload, or upgrade.
 
 ### API key provided by MetalBear
 
@@ -93,7 +93,7 @@ To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_
 
 ## Using mirrord with a Serverless Workload
 
-Download the dedicated mirrord CLI binary for your platform from the link [provided by MetalBear](#required-versions), and install it on your `PATH`. Use this binary rather than a regular mirrord release. Then create a `mirrord.json` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
+Install a [supported mirrord CLI](#required-versions), then create a `mirrord.json` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
 
 ```json
 {
