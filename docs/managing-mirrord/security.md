@@ -104,6 +104,7 @@ These fields are always sent on every plan. The only exception is an Enterprise 
 7. organization_id (generated uuid)
 8. cluster_id (the UID of the cluster's `default` namespace, used as a stable, anonymous per-cluster identifier)
 9. kubernetes_version (the version of the Kubernetes cluster the Operator is running in)
+10. Operator resource usage, from Operator 3.229.0 (memory and CPU usage, uptime, and the number of sessions, agents, copy targets, split sessions, split configs, database branches, and preview sessions the Operator is handling)
 
 Operators older than 3.227.0 also send cluster_name (optional; set via the `operator.clusterName` Helm value) in this list. From 3.227.0 it is sent only with identity sharing enabled, see below.
 
