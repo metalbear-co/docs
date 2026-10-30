@@ -41,11 +41,11 @@
   <!-- Session 1: tenant=alpha -->
   <polyline points="560,198 560,230 200,230 200,266" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="216" y="254" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8" text-anchor="start">tenant=alpha</text>
-  <rect x="70" y="270" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="70" y="270" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="200" y="298" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-1-topic</text>
   <text x="200" y="318" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="200" y1="334" x2="200" y2="370" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="70" y="374" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="70" y="374" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="200" y="402" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-1-sub</text>
   <text x="200" y="422" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="200" y1="438" x2="200" y2="474" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
@@ -56,11 +56,11 @@
   <!-- No match: main route to the target app -->
   <line x1="600" y1="198" x2="600" y2="266" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="616" y="254" font-size="12.5" fill="#333344" text-anchor="start">no match</text>
-  <rect x="470" y="270" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="470" y="270" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="600" y="298" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-output-topic</text>
   <text x="600" y="318" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="600" y1="334" x2="600" y2="370" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="470" y="374" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="470" y="374" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="600" y="402" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-output-sub</text>
   <text x="600" y="422" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="600" y1="438" x2="600" y2="474" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
@@ -71,11 +71,11 @@
   <!-- Session 2: tenant=beta -->
   <polyline points="640,198 640,230 1000,230 1000,266" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="1016" y="254" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8" text-anchor="start">tenant=beta</text>
-  <rect x="870" y="270" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="870" y="270" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1000" y="298" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-2-topic</text>
   <text x="1000" y="318" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="1000" y1="334" x2="1000" y2="370" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="870" y="374" width="260" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="870" y="374" width="260" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1000" y="402" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-2-sub</text>
   <text x="1000" y="422" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="1000" y1="438" x2="1000" y2="474" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>

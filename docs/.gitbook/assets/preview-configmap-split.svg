@@ -48,26 +48,26 @@
   <line x1="1040" y1="290" x2="1040" y2="336" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
 
   <!-- Copies that the operator makes -->
-  <rect x="20" y="340" width="280" height="130" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="340" width="280" height="130" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="160" y="368" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Fallback copy</text>
   <text x="160" y="389" font-size="12.5" fill="#333344" text-anchor="middle">ConfigMap, unfiltered messages</text>
   <text x="160" y="420" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">qs-cm-...</text>
   <text x="160" y="440" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">topic: mirrord-tmp-fallback-orders</text>
 
-  <rect x="313" y="340" width="280" height="130" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="313" y="340" width="280" height="130" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="453" y="368" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Session A copy</text>
   <text x="453" y="389" font-size="12.5" fill="#333344" text-anchor="middle">ConfigMap, copy of <tspan font-family="Menlo, Consolas, monospace">worker-config</tspan></text>
   <text x="453" y="420" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">pcm-a-split-vol0</text>
   <text x="453" y="440" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">topic: mirrord-tmp-A-orders</text>
 
-  <rect x="607" y="340" width="280" height="130" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="607" y="340" width="280" height="130" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="747" y="368" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Rewritten <tspan font-family="Menlo, Consolas, monospace">config_mounts</tspan></text>
   <text x="747" y="389" font-size="12.5" fill="#333344" text-anchor="middle">your mirrord.json content, topic swapped</text>
   <text x="747" y="416" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">pcm-a-config-mounts</text>
   <text x="747" y="435" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">topic: mirrord-tmp-A-orders</text>
   <text x="747" y="454" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">logLevel: debug</text>
 
-  <rect x="900" y="340" width="280" height="130" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="900" y="340" width="280" height="130" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1040" y="368" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Session B copy</text>
   <text x="1040" y="389" font-size="12.5" fill="#333344" text-anchor="middle">ConfigMap, copy of <tspan font-family="Menlo, Consolas, monospace">worker-config</tspan></text>
   <text x="1040" y="420" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">pcm-b-split-vol0</text>

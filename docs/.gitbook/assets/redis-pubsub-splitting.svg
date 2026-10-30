@@ -40,7 +40,7 @@
   <!-- Non-matching messages: main temporary channel, read by the deployed consumer -->
   <line x1="642" y1="80" x2="738" y2="80" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="690" y="68" font-size="12.5" fill="#333344" text-anchor="middle">non-matching</text>
-  <rect x="742" y="40" width="210" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="742" y="40" width="210" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="847" y="76" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Main temp channel</text>
   <text x="847" y="96" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">mirrord-main-orders-...</text>
   <line x1="952" y1="80" x2="988" y2="80" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
@@ -52,7 +52,7 @@
   <!-- Matching messages: session channel, read by the local app -->
   <line x1="642" y1="208" x2="738" y2="208" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="690" y="196" font-size="12.5" fill="#4a44b8" text-anchor="middle">matching</text>
-  <rect x="742" y="168" width="210" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="742" y="168" width="210" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="847" y="204" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Session channel</text>
   <text x="847" y="224" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">mirrord-user1-orders-...</text>
   <line x1="952" y1="208" x2="988" y2="208" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>

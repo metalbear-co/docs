@@ -57,13 +57,13 @@
   <text x="988" y="374" font-size="12.5" fill="#4a44b8" text-anchor="end">matches <tspan font-family="Menlo, Consolas, monospace">tenant=^globex$</tspan></text>
 
   <!-- Temporary streams -->
-  <rect x="20" y="400" width="360" height="70" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="400" width="360" height="70" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="200" y="429" font-size="14" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-tmp-&lt;a&gt;-orders-app</text>
   <text x="200" y="452" font-size="12.5" fill="#333344" text-anchor="middle">session A's own stream + durable consumer</text>
-  <rect x="420" y="400" width="360" height="70" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="420" y="400" width="360" height="70" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="600" y="429" font-size="14" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-tmp-main-orders-app</text>
   <text x="600" y="452" font-size="12.5" fill="#333344" text-anchor="middle">fallback: every unmatched message</text>
-  <rect x="820" y="400" width="360" height="70" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="820" y="400" width="360" height="70" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1000" y="429" font-size="14" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-tmp-&lt;b&gt;-orders-app</text>
   <text x="1000" y="452" font-size="12.5" fill="#333344" text-anchor="middle">session B's own stream + durable consumer</text>
 

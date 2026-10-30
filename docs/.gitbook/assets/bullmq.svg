@@ -52,7 +52,7 @@
   <line x1="570" y1="230" x2="646" y2="230" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="608" y="202" font-size="12.5" fill="#4a44b8" text-anchor="middle">match</text>
   <text x="608" y="220" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8" text-anchor="middle">RPUSH</text>
-  <rect x="650" y="190" width="230" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="650" y="190" width="230" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="765" y="212" font-size="12.5" fill="#333344" text-anchor="middle">per-session queue</text>
   <text x="765" y="234" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">bull:mirrord-tmp-&lt;session&gt;</text>
   <text x="765" y="252" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">-orders:wait</text>
@@ -66,7 +66,7 @@
   <line x1="570" y1="330" x2="646" y2="330" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="608" y="302" font-size="12.5" fill="#333344" text-anchor="middle">no match</text>
   <text x="608" y="320" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">RPUSH</text>
-  <rect x="650" y="290" width="230" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="650" y="290" width="230" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="765" y="312" font-size="12.5" fill="#333344" text-anchor="middle">main queue</text>
   <text x="765" y="334" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">bull:mirrord-tmp-&lt;main&gt;</text>
   <text x="765" y="352" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">-orders:wait</text>

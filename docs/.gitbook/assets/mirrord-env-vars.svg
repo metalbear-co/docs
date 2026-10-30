@@ -20,9 +20,9 @@
   <rect x="0" y="0" width="1202" height="340" fill="#ffffff"/>
 
   <!-- Boundaries -->
-  <rect x="20" y="40" width="360" height="270" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="40" width="360" height="270" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="44" y="68" font-size="15" font-weight="700" fill="#4a44b8">Your machine</text>
-  <rect x="520" y="40" width="660" height="270" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="520" y="40" width="660" height="270" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="544" y="68" font-size="15" font-weight="700" fill="#4a44b8">Remote cluster</text>
 
   <!-- Local process with mirrord-layer -->

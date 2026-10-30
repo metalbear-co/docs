@@ -20,7 +20,7 @@
   <rect x="0" y="-2" width="1202" height="622" fill="#ffffff"/>
 
   <!-- Cluster A -->
-  <rect x="20" y="20" width="560" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="20" width="560" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="40" y="48" font-size="15" font-weight="700" fill="#4a44b8">Cluster A (us-east-1)</text>
   <rect x="50" y="68" width="200" height="56" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <text x="135" y="101" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Original queue</text>
@@ -30,14 +30,14 @@
   <rect x="50" y="160" width="200" height="60" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="150" y="186" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord operator</text>
   <text x="150" y="205" font-size="12.5" fill="#ffffff" text-anchor="middle">applies your filter</text>
-  <rect x="340" y="160" width="210" height="60" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="340" y="160" width="210" height="60" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="445" y="186" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Temp queue</text>
   <text x="445" y="205" font-size="12.5" fill="#333344" text-anchor="middle">for the deployed workload</text>
   <rect x="340" y="268" width="210" height="56" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
   <text x="445" y="301" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Deployed consumers</text>
 
   <!-- Cluster B -->
-  <rect x="620" y="20" width="560" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="620" y="20" width="560" height="340" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="640" y="48" font-size="15" font-weight="700" fill="#4a44b8">Cluster B (eu-west-1)</text>
   <rect x="650" y="68" width="200" height="56" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <text x="735" y="101" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Original queue</text>
@@ -47,14 +47,14 @@
   <rect x="650" y="160" width="200" height="60" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="750" y="186" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord operator</text>
   <text x="750" y="205" font-size="12.5" fill="#ffffff" text-anchor="middle">applies the same filter</text>
-  <rect x="940" y="160" width="210" height="60" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="940" y="160" width="210" height="60" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1045" y="186" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Temp queue</text>
   <text x="1045" y="205" font-size="12.5" fill="#333344" text-anchor="middle">for the deployed workload</text>
   <rect x="940" y="268" width="210" height="56" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
   <text x="1045" y="301" font-size="14" font-weight="700" fill="#232141" text-anchor="middle">Deployed consumers</text>
 
   <!-- Temporary session queue -->
-  <rect x="440" y="420" width="320" height="64" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="440" y="420" width="320" height="64" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="600" y="447" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Temporary session queue</text>
   <text x="600" y="468" font-size="12.5" fill="#333344" text-anchor="middle">created by mirrord for your session</text>
 

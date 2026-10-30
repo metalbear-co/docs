@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2 1202 442" width="1202" height="442" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" width="1200" height="660" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">Preview environment modification workflow</title>
-  <desc id="d">Step 4: on your machine, you run mirrord preview start --target users-service --image &lt;code-image&gt; --key &lt;env-key&gt; with the key of an existing preview environment. Step 5: in the staging cluster, mirrord starts a temporary users-service preview pod that runs your image and lives until the TTL expires. It joins the cars-service preview pod from step 3. The two preview pods act as one isolated environment, and requests to cars-service and users-service that match the env key filter go to them.</desc>
+  <desc id="d">Step 4: on your machine, you run mirrord preview start with a different target, users-service, a container image from a registry, and the env key of the existing preview. The CLI prints the same env key and a new preview session. Step 5: another temporary preview pod, for users-service, starts with a TTL. The cars-service and users-service preview pods form one isolated preview environment, and traffic to both services is filtered by the same env key.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -17,76 +17,86 @@
       <circle cx="16" cy="16" r="2.4" fill="#ffffff"/>
     </symbol>
   </defs>
-  <rect x="0" y="-2" width="1202" height="442" fill="#ffffff"/>
+  <rect x="0" y="0" width="1200" height="660" fill="#ffffff"/>
 
   <!-- Your machine -->
-  <rect x="20" y="20" width="400" height="400" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="20" width="540" height="620" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="40" y="48" font-size="15" font-weight="700" fill="#4a44b8">Your machine</text>
 
-  <!-- CLI command -->
-  <rect x="50" y="70" width="340" height="130" rx="10" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <circle cx="74" cy="94" r="11" fill="#756DF3"/>
-  <text x="74" y="98.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
-  <text x="94" y="99" font-size="14" font-weight="700" fill="#232141">Add a service to the preview</text>
-  <text x="70" y="126" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">mirrord preview start</text>
-  <text x="70" y="144" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --target users-service</text>
-  <text x="70" y="162" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --image &lt;code-image&gt;</text>
-  <text x="70" y="180" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --key &lt;env-key&gt;</text>
+  <!-- The command -->
+  <rect x="40" y="64" width="500" height="166" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <circle cx="62" cy="88" r="11" fill="#756DF3"/>
+  <text x="62" y="92.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="80" y="93" font-size="14" font-weight="700" fill="#232141">Add a service to the preview</text>
+  <text x="60" y="116" font-size="12.5"  fill="#333344" xml:space="preserve">Inputs: a different target, a container image in a registry,</text>
+  <text x="60" y="133" font-size="12.5"  fill="#333344" xml:space="preserve">and the env key of the existing preview.</text>
+  <text x="60" y="158" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">mirrord preview start</text>
+  <text x="60" y="175" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --target users-service</text>
+  <text x="60" y="192" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --image &lt;code-image&gt;</text>
+  <text x="60" y="209" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  --key &lt;env-key&gt;</text>
 
-  <!-- Same env key note -->
-  <rect x="50" y="232" width="340" height="120" rx="10" fill="#ffffff" stroke="#232141" stroke-width="2"/>
-  <text x="70" y="261" font-size="14" font-weight="700" fill="#232141">Same env key, new target</text>
-  <text x="70" y="290" font-size="12.5" fill="#333344">The key is the one from step 1, so the new</text>
-  <text x="70" y="308" font-size="12.5" fill="#333344">pod joins the same preview environment.</text>
-  <text x="70" y="336" font-size="12.5" fill="#333344">Traffic is filtered by the same env key.</text>
+  <!-- Same env key -->
+  <rect x="40" y="246" width="500" height="196" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <text x="60" y="275" font-size="14" font-weight="700" fill="#232141">Same env key, new target</text>
+  <text x="60" y="302" font-size="12.5"  fill="#333344" xml:space="preserve">The key is the one from step 1, so the new preview pod</text>
+  <text x="60" y="319" font-size="12.5"  fill="#333344" xml:space="preserve">joins the same preview environment.</text>
+  <text x="60" y="336" font-size="12.5"  fill="#333344" xml:space="preserve"></text>
+  <text x="60" y="353" font-size="12.5"  fill="#333344" xml:space="preserve">Requests that carry the key go to the preview pods,</text>
+  <text x="60" y="370" font-size="12.5"  fill="#333344" xml:space="preserve">not to the deployed services.</text>
+
+  <!-- CLI output -->
+  <rect x="40" y="458" width="500" height="166" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
+  <text x="60" y="484" font-size="14" font-weight="700" fill="#232141">Output</text>
+  <text x="60" y="510" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">✓ mirrord preview start</text>
+  <text x="60" y="527" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  ✓ preview session resource created</text>
+  <text x="60" y="544" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  ✓ preview pod is ready</text>
+  <text x="60" y="561" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">info:</text>
+  <text x="60" y="578" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  * key: &lt;env-key&gt;</text>
+  <text x="60" y="595" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" xml:space="preserve">  * session: preview-session-users-service-&lt;id&gt;</text>
 
   <!-- Staging cluster -->
-  <rect x="480" y="20" width="700" height="400" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <text x="500" y="48" font-size="15" font-weight="700" fill="#4a44b8">Staging cluster</text>
+  <rect x="600" y="20" width="580" height="620" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
+  <text x="620" y="48" font-size="15" font-weight="700" fill="#4a44b8">Staging cluster</text>
 
   <!-- Deployed services -->
-  <rect x="540" y="70" width="220" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
-  <text x="650" y="106" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">cars-service</text>
-  <text x="650" y="126" font-size="12.5" fill="#333344" text-anchor="middle">deployed</text>
-  <rect x="920" y="70" width="220" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
-  <text x="1030" y="106" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">users-service</text>
-  <text x="1030" y="126" font-size="12.5" fill="#333344" text-anchor="middle">deployed</text>
-  <line x1="760" y1="98" x2="916" y2="98" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <line x1="920" y1="124" x2="764" y2="124" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <rect x="640" y="80" width="200" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="740" y="116" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">cars-service</text>
+  <text x="740" y="136" font-size="12.5" fill="#333344" text-anchor="middle">deployed</text>
+  <rect x="960" y="80" width="200" height="80" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
+  <text x="1060" y="116" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">users-service</text>
+  <text x="1060" y="136" font-size="12.5" fill="#333344" text-anchor="middle">deployed</text>
+  <line x1="840" y1="108" x2="956" y2="108" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="960" y1="134" x2="844" y2="134" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
 
   <!-- Preview environment -->
-  <rect x="510" y="212" width="650" height="190" rx="14" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <text x="530" y="240" font-size="15" font-weight="700" fill="#4a44b8">Preview environment</text>
-  <text x="530" y="257" font-size="12.5" fill="#333344">one env key</text>
+  <rect x="620" y="250" width="540" height="300" rx="14" fill="#ffffff" stroke="#756DF3" stroke-width="2"/>
+  <text x="640" y="278" font-size="15" font-weight="700" fill="#4a44b8">Preview environment</text>
+  <text x="640" y="296" font-size="12.5" fill="#333344">one env key</text>
 
-  <!-- Filtered traffic to cars-service preview -->
-  <line x1="730" y1="150" x2="730" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <text x="740" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
-  <text x="740" y="194" font-size="12.5" fill="#4a44b8">env key</text>
+  <!-- Filtered traffic to the preview pods -->
+  <line x1="800" y1="160" x2="800" y2="336" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <text x="810" y="196" font-size="12.5" fill="#4a44b8" text-anchor="start">filtered by</text>
+  <text x="810" y="212" font-size="12.5" fill="#4a44b8" text-anchor="start">env key</text>
+  <rect x="640" y="340" width="220" height="110" rx="10" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <circle cx="662" cy="364" r="11" fill="#756DF3"/>
+  <text x="662" y="368.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="680" y="369" font-size="14" font-weight="700" fill="#232141">cars-service preview</text>
+  <text x="750" y="398" font-size="12.5" fill="#333344" text-anchor="middle">temporary pod, your image</text>
+  <text x="750" y="416" font-size="12.5" fill="#333344" text-anchor="middle">lives until the TTL expires</text>
+  <line x1="1120" y1="160" x2="1120" y2="336" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
+  <text x="1110" y="196" font-size="12.5" fill="#4a44b8" text-anchor="end">filtered by</text>
+  <text x="1110" y="212" font-size="12.5" fill="#4a44b8" text-anchor="end">env key</text>
+  <rect x="920" y="340" width="220" height="110" rx="10" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <circle cx="942" cy="364" r="11" fill="#756DF3"/>
+  <text x="942" y="368.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+  <text x="960" y="369" font-size="14" font-weight="700" fill="#232141">users-service preview</text>
+  <text x="1030" y="398" font-size="12.5" fill="#333344" text-anchor="middle">temporary pod, your image</text>
+  <text x="1030" y="416" font-size="12.5" fill="#333344" text-anchor="middle">lives until the TTL expires</text>
+  <text x="890" y="500" font-size="12.5" fill="#333344" text-anchor="middle">Both preview pods form one isolated environment.</text>
 
-  <!-- cars-service preview pod -->
-  <rect x="540" y="272" width="220" height="104" rx="10" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <circle cx="562" cy="296" r="11" fill="#756DF3"/>
-  <text x="562" y="300.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
-  <text x="580" y="301" font-size="14" font-weight="700" fill="#232141">cars-service preview</text>
-  <text x="650" y="330" font-size="12.5" fill="#333344" text-anchor="middle">temporary pod, your image</text>
-  <text x="650" y="350" font-size="12.5" fill="#333344" text-anchor="middle">lives until the TTL expires</text>
+  <!-- The CLI starts the preview -->
+  <polyline points="540,140 580,140 580,395 616,395" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
 
-  <!-- Filtered traffic to users-service preview -->
-  <line x1="1080" y1="150" x2="1080" y2="268" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <text x="1090" y="178" font-size="12.5" fill="#4a44b8">filtered by</text>
-  <text x="1090" y="194" font-size="12.5" fill="#4a44b8">env key</text>
-
-  <!-- users-service preview pod -->
-  <rect x="920" y="272" width="220" height="104" rx="10" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
-  <circle cx="942" cy="296" r="11" fill="#756DF3"/>
-  <text x="942" y="300.5" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
-  <text x="960" y="301" font-size="14" font-weight="700" fill="#232141">users-service preview</text>
-  <text x="1030" y="330" font-size="12.5" fill="#333344" text-anchor="middle">temporary pod, your image</text>
-  <text x="1030" y="350" font-size="12.5" fill="#333344" text-anchor="middle">lives until the TTL expires</text>
-
-  <!-- CLI creates the preview -->
-  <polyline points="390,135 450,135 450,306 506,306" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <!-- Kubernetes logos: what runs in the cluster -->
   <use href="#k8s" x="1162" y="2" width="36" height="36"/>
 </svg>

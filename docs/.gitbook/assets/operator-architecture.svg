@@ -20,7 +20,7 @@
   <rect x="0" y="0" width="1212" height="620" fill="#ffffff"/>
 
   <!-- Cluster boundary -->
-  <rect x="390" y="100" width="800" height="500" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="390" y="100" width="800" height="500" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="414" y="128" font-size="15" font-weight="700" fill="#4a44b8">Kubernetes cluster</text>
 
   <!-- Internet traffic to the target pods -->

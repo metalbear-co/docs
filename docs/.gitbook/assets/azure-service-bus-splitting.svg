@@ -33,7 +33,7 @@
   <line x1="436" y1="90" x2="568" y2="90" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="502" y="62" font-size="12.5" fill="#4a44b8" text-anchor="middle">matches</text>
   <text x="502" y="76" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8" text-anchor="middle">route IS NULL</text>
-  <rect x="572" y="50" width="220" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="572" y="50" width="220" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="682" y="77" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Ingest subscription</text>
   <text x="682" y="97" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">mirrord-ingest-*</text>
   <text x="682" y="115" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">rule: route IS NULL</text>
@@ -74,7 +74,7 @@
   <!-- Matched copies: session subscription to the developer -->
   <polyline points="436,445 470,445 470,410 596,410" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="530" y="396" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#4a44b8" text-anchor="middle">route = &lt;id&gt;</text>
-  <rect x="600" y="370" width="230" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="600" y="370" width="230" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="715" y="397" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Session subscription</text>
   <text x="715" y="417" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">mirrord-s-*</text>
   <text x="715" y="435" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">rule: route = &lt;id&gt;</text>

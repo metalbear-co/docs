@@ -41,21 +41,21 @@
   <text x="300" y="386" font-size="12.5" fill="#ffffff" text-anchor="middle">reads sub-a, applies the filter</text>
   <polyline points="340,398 340,426 450,426 450,458" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="466" y="449" font-size="12.5" fill="#4a44b8" text-anchor="start">matched</text>
-  <rect x="330" y="462" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="330" y="462" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="450" y="486" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-topic-A</text>
   <text x="450" y="506" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="450" y1="518" x2="450" y2="546" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="330" y="550" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="330" y="550" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="450" y="574" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-sub-A</text>
   <text x="450" y="594" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="450" y1="606" x2="450" y2="634" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <polyline points="260,398 260,426 150,426 150,458" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="166" y="449" font-size="12.5" fill="#333344" text-anchor="start">unmatched</text>
-  <rect x="30" y="462" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="30" y="462" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="150" y="486" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-topic-A</text>
   <text x="150" y="506" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="150" y1="518" x2="150" y2="546" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="30" y="550" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="30" y="550" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="150" y="574" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-sub-A</text>
   <text x="150" y="594" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="150" y1="606" x2="150" y2="722" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
@@ -79,21 +79,21 @@
   <text x="900" y="386" font-size="12.5" fill="#ffffff" text-anchor="middle">reads sub-b, applies the filter</text>
   <polyline points="860,398 860,426 750,426 750,458" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="766" y="449" font-size="12.5" fill="#4a44b8" text-anchor="start">matched</text>
-  <rect x="630" y="462" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="630" y="462" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="750" y="486" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-topic-B</text>
   <text x="750" y="506" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="750" y1="518" x2="750" y2="546" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="630" y="550" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="630" y="550" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="750" y="574" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">session-sub-B</text>
   <text x="750" y="594" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="750" y1="606" x2="750" y2="634" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <polyline points="940,398 940,426 1050,426 1050,458" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="1066" y="449" font-size="12.5" fill="#333344" text-anchor="start">unmatched</text>
-  <rect x="930" y="462" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="930" y="462" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1050" y="486" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-topic-B</text>
   <text x="1050" y="506" font-size="12.5" fill="#333344" text-anchor="middle">temporary topic</text>
   <line x1="1050" y1="518" x2="1050" y2="546" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <rect x="930" y="550" width="240" height="56" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="930" y="550" width="240" height="56" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="1050" y="574" font-size="15" font-weight="700" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">main-sub-B</text>
   <text x="1050" y="594" font-size="12.5" fill="#333344" text-anchor="middle">temporary subscription</text>
   <line x1="1050" y1="606" x2="1050" y2="722" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>

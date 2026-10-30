@@ -26,7 +26,7 @@
   <text x="985" y="28" font-size="12.5" font-weight="700" fill="#333344" text-anchor="middle">Receiver</text>
 
   <!-- Worker 1: split-enabled flow, with mirrord -->
-  <rect x="20" y="42" width="1120" height="438" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="42" width="1120" height="438" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="36" y="68" font-size="15" font-weight="700" fill="#4a44b8">Worker 1: split-enabled flow, with mirrord</text>
 
   <!-- checkout: split -->
@@ -39,9 +39,9 @@
   <text x="340" y="148" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#ffffff" text-anchor="middle">workflow_id ^dev-</text>
   <polyline points="450,134 488,134 488,106 516,106" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <polyline points="450,134 488,134 488,162 516,162" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="520" y="84" width="280" height="44" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="520" y="84" width="280" height="44" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="660" y="111" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-main-...-checkout</text>
-  <rect x="520" y="140" width="280" height="44" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="520" y="140" width="280" height="44" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="660" y="167" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-session-dev-...-checkout</text>
   <line x1="800" y1="106" x2="876" y2="106" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <line x1="800" y1="162" x2="876" y2="162" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
@@ -60,9 +60,9 @@
   <text x="340" y="268" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#ffffff" text-anchor="middle">activity_type ^ShipOrder$</text>
   <polyline points="450,254 488,254 488,226 516,226" fill="none" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <polyline points="450,254 488,254 488,282 516,282" fill="none" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
-  <rect x="520" y="204" width="280" height="44" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="520" y="204" width="280" height="44" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="660" y="231" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-main-...-shipping</text>
-  <rect x="520" y="260" width="280" height="44" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="520" y="260" width="280" height="44" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <text x="660" y="287" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#232141" text-anchor="middle">mirrord-session-dev-...-shipping</text>
   <line x1="800" y1="226" x2="876" y2="226" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <line x1="800" y1="282" x2="876" y2="282" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
@@ -102,7 +102,7 @@
   <text x="985" y="433" font-size="12.5" font-weight="700" fill="#232141" text-anchor="middle">cluster worker</text>
 
   <!-- Worker 2: normal flow, no mirrord -->
-  <rect x="20" y="500" width="1120" height="192" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="500" width="1120" height="192" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="36" y="526" font-size="15" font-weight="700" fill="#4a44b8">Worker 2: normal flow, no mirrord</text>
 
   <!-- reports -->
@@ -141,7 +141,7 @@
   <text x="220" y="756" font-size="12.5" fill="#333344" text-anchor="middle">receives replies on the real queue name</text>
 
   <!-- Your machine -->
-  <rect x="20" y="796" width="1160" height="176" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="20" y="796" width="1160" height="176" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="36" y="822" font-size="15" font-weight="700" fill="#4a44b8">Your machine</text>
   <text x="36" y="842" font-size="12.5" fill="#333344">Local workers run with mirrord. They connect through the operator proxy, not to Temporal directly.</text>
   <rect x="40" y="858" width="420" height="94" rx="12" fill="#756DF3" stroke="#232141" stroke-width="2"/>

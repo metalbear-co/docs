@@ -16,18 +16,22 @@
       </g>
       <circle cx="16" cy="16" r="2.4" fill="#ffffff"/>
     </symbol>
+    <symbol id="rabbitmq" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="15" fill="#ffffff" stroke="#232141" stroke-width="1.5"/>
+      <path transform="translate(5.5 5.5) scale(0.875)" fill="#FF6600" d="M23.035 9.601h-7.677a.956.956 0 01-.962-.962V.962a.956.956 0 00-.962-.956H10.56a.956.956 0 00-.962.956V8.64a.956.956 0 01-.962.962H5.762a.956.956 0 01-.961-.962V.962A.956.956 0 003.839 0H.959a.956.956 0 00-.956.962v22.076A.956.956 0 00.965 24h22.07a.956.956 0 00.962-.962V10.58a.956.956 0 00-.962-.98zm-3.86 8.152a1.437 1.437 0 01-1.437 1.443h-1.924a1.437 1.437 0 01-1.436-1.443v-1.917a1.437 1.437 0 011.436-1.443h1.924a1.437 1.437 0 011.437 1.443z"/>
+    </symbol>
   </defs>
   <rect x="0" y="0" width="1202" height="640" fill="#ffffff"/>
 
   <!-- RabbitMQ cluster -->
-  <rect x="460" y="116" width="300" height="500" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="460" y="116" width="300" height="500" rx="16" fill="#F5F4FE" stroke="#756DF3" stroke-width="2"/>
   <text x="478" y="142" font-size="15" font-weight="700" fill="#4a44b8" text-anchor="start">RabbitMQ cluster</text>
 
   <!-- Producer -->
   <rect x="520" y="20" width="180" height="56" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <text x="610" y="54" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">Producer</text>
-  <line x1="610" y1="76" x2="610" y2="158" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="622" y="102" font-size="12.5" fill="#333344" text-anchor="start">send messages</text>
+  <line x1="650" y1="76" x2="650" y2="158" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="638" y="102" font-size="12.5" fill="#333344" text-anchor="end">send messages</text>
 
   <!-- Queue -->
   <rect x="485" y="160" width="250" height="80" rx="12" fill="#ffffff" stroke="#232141" stroke-width="2"/>
@@ -50,7 +54,7 @@
   <line x1="240" y1="330" x2="483" y2="330" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="352" y="304" font-size="12.5" fill="#4a44b8" text-anchor="middle">send messages</text>
   <text x="352" y="320" font-size="12.5" fill="#4a44b8" text-anchor="middle">matching filter x</text>
-  <rect x="485" y="290" width="250" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="485" y="290" width="250" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <line x1="699" y1="310" x2="699" y2="350" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="707" y1="310" x2="707" y2="350" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="715" y1="310" x2="715" y2="350" stroke="#756DF3" stroke-width="1.5"/>
@@ -67,7 +71,7 @@
   <line x1="240" y1="440" x2="483" y2="440" stroke="#756DF3" stroke-width="2.5" marker-end="url(#arrow-purple)"/>
   <text x="352" y="414" font-size="12.5" fill="#4a44b8" text-anchor="middle">send messages</text>
   <text x="352" y="430" font-size="12.5" fill="#4a44b8" text-anchor="middle">matching filter y</text>
-  <rect x="485" y="400" width="250" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="485" y="400" width="250" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <line x1="699" y1="420" x2="699" y2="460" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="707" y1="420" x2="707" y2="460" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="715" y1="420" x2="715" y2="460" stroke="#756DF3" stroke-width="1.5"/>
@@ -84,7 +88,7 @@
   <line x1="240" y1="550" x2="483" y2="550" stroke="#232141" stroke-width="2.5" marker-end="url(#arrow)"/>
   <text x="352" y="524" font-size="12.5" fill="#333344" text-anchor="middle">send messages</text>
   <text x="352" y="540" font-size="12.5" fill="#333344" text-anchor="middle">not matching any filter</text>
-  <rect x="485" y="510" width="250" height="80" rx="12" fill="#F5F4FE" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="485" y="510" width="250" height="80" rx="12" fill="#ffffff" stroke="#756DF3" stroke-width="2" stroke-dasharray="8 6"/>
   <line x1="699" y1="530" x2="699" y2="570" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="707" y1="530" x2="707" y2="570" stroke="#756DF3" stroke-width="1.5"/>
   <line x1="715" y1="530" x2="715" y2="570" stroke="#756DF3" stroke-width="1.5"/>
@@ -98,4 +102,5 @@
   <!-- Kubernetes logos: what runs in the cluster -->
   <use href="#k8s" x="222" y="572" width="36" height="36"/>
   <use href="#k8s" x="1162" y="572" width="36" height="36"/>
+  <use href="#rabbitmq" x="742" y="98" width="36" height="36"/>
 </svg>
