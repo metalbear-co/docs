@@ -68,7 +68,7 @@ File-based licenses (`.pem` certificates) are not supported for Team subscriptio
 
 ## Telemetry
 
-Team licenses require telemetry to be sent back to MetalBear. Telemetry is used for seat tracking and subscription management.
+Team licenses require telemetry to be sent back to MetalBear. Telemetry is used for seat tracking, subscription management, and monitoring Operator stability between releases.
 
 ### What is sent
 
@@ -81,7 +81,7 @@ Every telemetry batch includes the following HTTP headers:
 The following event types are sent:
 
 - **Startup** — emitted once when the Operator starts
-- **Alive** — a periodic heartbeat sent every hour (escalates to every minute if the telemetry endpoint has been unreachable for over an hour)
+- **Alive** — a periodic heartbeat sent every hour (escalates to every minute if the telemetry endpoint has been unreachable for over an hour). From Operator 3.229.0, it also contains the Operator's memory and CPU usage, its uptime, and the number of sessions, agents, copy targets, split sessions, split configs, database branches, and preview sessions it is handling
 - **Session** — emitted when a session ends, containing: session duration, target workload kind, a `ci` flag, and anonymized identifiers for the user and target (see below)
 
 ### Anonymization
