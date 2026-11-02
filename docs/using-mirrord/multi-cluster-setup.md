@@ -650,7 +650,7 @@ A: No. The developer experience is identical to single-cluster. Developers run `
 A: Yes. Set `managementOnly: false` (the Helm chart default is `true`) so the Primary participates as a workload cluster, and set `managementOnly: true` only if the Primary has no application pods. See [Management-Only Mode](multi-cluster.md#management-only-mode) for what the setting changes.
 
 **Q: Can I run some sessions on the Primary only?**
-A: Yes. A session started with `multi_cluster: false` stays on the Primary and runs as a regular single-cluster session, with the Primary's local queue splitting and database branching.
+A: Yes, if the Primary runs workloads (`managementOnly: false`). A session started with `multi_cluster: false` stays on the Primary and runs as a regular single-cluster session, with the Primary's local queue splitting and database branching. With `managementOnly: true`, `multi_cluster: false` is not supported.
 
 **Q: Which resources can I exclude from syncing to the member clusters?**
 A: Label a `MirrordSplitConfig` or `MirrordPropertyList` with `operator.metalbear.co/skip-mc-sync: "true"` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
