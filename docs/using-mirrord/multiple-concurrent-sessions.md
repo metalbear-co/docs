@@ -147,6 +147,8 @@ modes:
     db_branching: schema
 ```
 
+`mirrord preview up` and `mirrord preview sync` run every service as `split`, so they use the `db_branching` of a `split` entry and no other mode's.
+
 Selecting a mode that doesn't exist, with `default_mode` or `--mode`, is an error; `mirrord up` fails before starting any service and lists the modes it knows.
 
 A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator (the message says why: `operator: false`, none installed, or a license that can't be used), its workload has no DB branch entries, an entry's database engine is turned off in the operator, or an entry's `copy.allowedModes` leaves out the requested copy mode. A mode without `db_branching` runs against the source databases in each of those cases, and says so. To do the same in a mode that sets it, use `db_branching: off`. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them. A service whose target isn't a single workload, such as `target: none`, ignores `db_branching` with a message, since there is no workload to look entries up on.
