@@ -83,12 +83,14 @@ During a session, the Primary operator routes each operation based on its type. 
 | Operation                                        | Routed to                                                             |
 | ------------------------------------------------ | --------------------------------------------------------------------- |
 | Incoming traffic (mirror / steal)                | **All** workload clusters                                              |
-| Environment variables                            | Default cluster only, or the [consumer cluster](#splitting-from-one-cluster) when a split config names one |
-| File operations                                  | Default cluster only, or the [consumer cluster](#splitting-from-one-cluster) when a split config names one |
+| Environment variables                            | Default cluster only \*                                               |
+| File operations                                  | Default cluster only \*                                               |
 | DNS resolution                                   | Default cluster only                                                   |
 | Outgoing traffic (TCP / UDP)                     | Default cluster only                                                   |
 | [Database branching](#database-branching-in-multi-cluster) | Default cluster only (the branch is created once)           |
-| [Queue splitting](#queue-splitting-in-multi-cluster) | **All** workload clusters — each filters messages locally, unless the split config names a [consumer cluster](#splitting-from-one-cluster) |
+| [Queue splitting](#queue-splitting-in-multi-cluster) | **All** workload clusters \* (each filters messages locally)        |
+
+\* The [consumer cluster](#splitting-from-one-cluster) instead, when a split config names one.
 
 Responses from all clusters are merged into the single connection back to your local application, so wherever a request or message lands, it reaches your local process the same way.
 
@@ -173,7 +175,7 @@ spec:
           - env: ORDERS_QUEUE_NAME
 ```
 
-The name is the `name` of one of the clusters in the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster.
+The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster.
 
 Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.230.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
 
