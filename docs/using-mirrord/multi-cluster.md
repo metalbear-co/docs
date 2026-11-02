@@ -84,7 +84,7 @@ During a session, the Primary operator routes each operation based on its type. 
 | ------------------------------------------------ | --------------------------------------------------------------------- |
 | Incoming traffic (mirror / steal)                | **All** workload clusters                                              |
 | Environment variables                            | Default cluster only, or the [consumer cluster](#splitting-from-one-cluster) when a split config names one |
-| File operations                                  | Default cluster only                                                   |
+| File operations                                  | Default cluster only, or the [consumer cluster](#splitting-from-one-cluster) when a split config names one |
 | DNS resolution                                   | Default cluster only                                                   |
 | Outgoing traffic (TCP / UDP)                     | Default cluster only                                                   |
 | [Database branching](#database-branching-in-multi-cluster) | Default cluster only (the branch is created once)           |
@@ -151,7 +151,7 @@ To monitor active splits across all clusters, run `mirrord queues status -A` (or
 
 ### Splitting From One Cluster
 
-When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue: it runs the forwarder, creates the temporary queues and patches its copy of the workload, and your local application reads its environment variables from it. The other clusters' child sessions leave their copy of the workload and its queues untouched.
+When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue: it runs the forwarder, creates the temporary queues and patches its copy of the workload, and your local application reads its environment variables and files from it. The other clusters' child sessions leave their copy of the workload and its queues untouched.
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1
@@ -175,7 +175,7 @@ spec:
 
 The name is the `name` of one of the clusters in the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster.
 
-Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.230.0` or later on every cluster.
+Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.230.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
 
 ### Per-Service Details
 
