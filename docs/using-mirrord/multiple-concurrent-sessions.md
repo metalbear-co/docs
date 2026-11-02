@@ -135,13 +135,7 @@ services:
       command: ["node", "app.js"]
 ```
 
-The built-in modes are the same as these definitions:
-
-| Mode | `incoming` | `queues` |
-| --- | --- | --- |
-| `split` | `split` | `split` |
-| `replace` | `replace` | not set |
-| `mirror` | `mirror` | `mirror` |
+A built-in mode is the same as a custom mode with only `incoming` set to its name.
 
 Without `db_branching`, a mode with `incoming: split` or `incoming: mirror`, built-in or custom, requests every entry with its own copy mode, like `inherit`, when the target is a single workload, and one with `incoming: replace` requests none. Unlike `inherit`, it runs against the source databases instead of failing when the operator can't branch or the workload has no entries.
 
