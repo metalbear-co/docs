@@ -502,7 +502,7 @@ The cluster key names in the `clusters` map should match the real cluster names.
 
 ### Where Data Is Stored
 
-When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). `namespace` is the namespace where the mirrord operator runs on that cluster (default `mirrord`), not a workload namespace. The Default cluster is set only by `defaultCluster`. The per-cluster `isDefault` field is ignored. Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).
+When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). `namespace` is the namespace where the mirrord operator runs on that cluster (default `mirrord`), not a workload namespace. The Default cluster is set only by `defaultCluster`. The per-cluster `isDefault` field is deprecated and ignored. Use `defaultCluster`. Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).
 
 For EKS IAM and AKS Workload Identity clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM/Entra ID, not stored credentials.
 
