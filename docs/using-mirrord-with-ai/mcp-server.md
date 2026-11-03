@@ -107,7 +107,3 @@ The server sends the agent instructions when it connects. They tell the agent to
 ## Versions
 
 The docs, skills, and config schema come from the installed mirrord binary, so the answers match the version you run. To get newer docs and skills, upgrade mirrord.
-
-## Telemetry
-
-The server reports usage events: which client connected and which tools it called. To turn them off, set `MIRRORD_TELEMETRY=false` in the server's environment.
