@@ -59,7 +59,7 @@ The plugin gives Claude Code skills for mirrord: how to find a target, write a v
 To let Claude Code validate configs against your installed mirrord version, also register the [mirrord MCP server](./mcp-server.md):
 
 ```sh
-claude mcp add --scope user mirrord -- "$(which mirrord)" mcp
+claude mcp add --scope user mirrord -- mirrord mcp
 ```
 
 ## 3. Tell Claude Code how to test in this repository

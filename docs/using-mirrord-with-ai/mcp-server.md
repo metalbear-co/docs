@@ -24,7 +24,7 @@ Use the absolute path to the `mirrord` binary. Clients that start from a desktop
 which mirrord
 ```
 
-Replace `/absolute/path/to/mirrord` below with the output.
+On Windows, run `where mirrord`. Replace `/absolute/path/to/mirrord` below with the output.
 
 {% tabs %}
 {% tab title="Claude Code" %}
@@ -74,8 +74,6 @@ Add the entry under `"mcp"` in `~/.config/opencode/opencode.json`:
 {% endtab %}
 {% endtabs %}
 
-If your kubeconfig is not at `~/.kube/config`, give the server the same `KUBECONFIG` as your terminal: `--env KUBECONFIG=/path/to/config` for Claude Code and Codex, `"env": { "KUBECONFIG": "/path/to/config" }` in the JSON entries, and `"environment"` instead of `"env"` for OpenCode.
-
 Restart the client after you register the server.
 
 To check the connection, ask the agent to validate your `.mirrord/mirrord.json` with the `validate_config` tool. If the client lists no `mirrord` tools, check the path in the entry with `/absolute/path/to/mirrord mcp --help`.
@@ -88,7 +86,7 @@ To check the connection, ask the agent to validate your `.mirrord/mirrord.json` 
 | `explain_config_option` | Explains one option by its dotted path, such as `feature.network.incoming.mode`: what it does, the values it takes, its default, and the mirrord plan it needs. |
 | `get_skill` | Lists the mirrord skills, or returns one skill and the files it bundles. |
 | `search_docs` | Searches the docs, skills, and config options by keywords, and returns the best matching pages. |
-| `read_doc` | Returns the full Markdown of one page that `search_docs` found. |
+| `read_doc` | Returns the full Markdown of one page or config option that `search_docs` found. Without a path, lists every page. |
 
 ## Resources and prompts
 
