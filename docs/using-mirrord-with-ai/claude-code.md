@@ -56,6 +56,12 @@ In Claude Code, run:
 
 The plugin gives Claude Code skills for mirrord: how to find a target, write a valid `mirrord.json`, run a session, and use the features for shared clusters. Claude Code loads the right skill when your prompt needs it. See [Agent Skills for mirrord](./ai-skills-plugin.md) for the full list.
 
+To let Claude Code validate configs against your installed mirrord version, also register the [mirrord MCP server](./mcp-server.md):
+
+```sh
+claude mcp add --scope user mirrord -- "$(which mirrord)" mcp
+```
+
 ## 3. Tell Claude Code how to test in this repository
 
 {% hint style="warning" %}
@@ -148,6 +154,7 @@ For other errors, see [Common Issues](../troubleshooting/common-issues.md).
 ## Related
 
 - [Agent Skills for mirrord](./ai-skills-plugin.md)
+- [mirrord MCP Server](./mcp-server.md)
 - [Configure AI agents to use mirrord](./the-meta-prompt.md) (the meta-prompt)
 - [metalbear.com/agents.md](https://metalbear.com/agents.md), instructions written for agents
 - [mirrord integrations](https://metalbear.com/mirrord/integrations/), setup for Codex, Cursor, GitHub Copilot, and other agents

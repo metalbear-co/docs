@@ -13,6 +13,7 @@ If you're using tools like Claude Code, Cursor, or Codex, mirrord lets you safel
 Here are some ways you can connect mirrord to your AI coding workflow:
 
 - **[Agent skills for mirrord](./ai-skills-plugin.md)** - Install skills that give your AI assistant built-in mirrord expertise.
+- **[mirrord MCP Server](./mcp-server.md)** - Register the MCP server built into the mirrord CLI, so your agent validates configs and reads the docs of your installed mirrord version.
 - **[Test Claude Code Changes Against Staging](./claude-code.md)** - Set up Claude Code to run the code it writes against the real services in your staging cluster, step by step.
 - **[Configure AI Agents to Use mirrord](./the-meta-prompt.md)** - A prompt generator that creates project-specific `AGENTS.md` files and configurations automatically, saving hours of manual setup across multiple services.
 - **[metalbear.com/agents.md](https://metalbear.com/agents.md)** - A short operational reference written for agents rather than people: install commands, finding targets, running code through mirrord, configuration, and etiquette on a shared cluster. Point an agent at the URL directly when you want it to pick mirrord up without any repository setup.
