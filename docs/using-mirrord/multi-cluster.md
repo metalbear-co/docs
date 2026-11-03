@@ -72,7 +72,7 @@ If the Primary cluster only orchestrates and doesn't run application workloads, 
 
 In management-only mode, the Primary resolves multi-cluster targets against the Default cluster, doesn't run [preview environment](../use-cases/preview-environments.md) controllers, and doesn't get the RBAC it needs to tunnel to branch databases locally.
 
-Leave `managementOnly` set to `false` if the Primary runs application workloads, even when most sessions run on other clusters. With `managementOnly: false`, sessions started with `multi_cluster: false` run on the Primary as regular single-cluster sessions, using its local queue splitting and database branching controllers. With `managementOnly: true`, `multi_cluster: false` is not supported.
+Set `managementOnly` to `false` if the Primary runs application workloads, even when most sessions run on other clusters. With `managementOnly: false`, sessions started with `multi_cluster: false` run on the Primary as regular single-cluster sessions, using its local queue splitting and database branching controllers. With `managementOnly: true`, `multi_cluster: false` is not supported.
 
 ***
 
