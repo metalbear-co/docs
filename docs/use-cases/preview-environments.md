@@ -271,6 +271,10 @@ When `mirrord-up.yaml` (or the file passed with `-f`) exists, `mirrord preview d
 
 By default, opening a Preview Environment as a recipient requires the mirrord browser extension, which injects the `baggage: mirrord-session=<key>` header the operator routes on. That works for developers, but it's a non-starter for sharing a preview with a non-technical stakeholder.
 
+{% hint style="info" %}
+To share a service running on your machine instead, see [Sharing Local Services](sharing-local-services.md).
+{% endhint %}
+
 `mirrord-share-ingress` moves that header injection off the client and onto a server-side component, so a plain HTTPS link works on its own with nothing to install on the recipient's side. Each shareable preview is reachable at its own host, `<slug>.<shareDomain>`, printed by `mirrord preview start` as the `preview URL`.
 
 The `slug` mirrors the preview's key with a random suffix (for example `pr-myrepo-a1b2c3`), so the link is recognizable but unguessable; [stable share hosts](#stable-share-hosts) drop the suffix. Running `mirrord preview start` again with the same key and target (for example on every push to a PR) replaces the session but keeps its host, so a link already posted keeps working with the new image. Once the session is gone, after `mirrord preview stop` or an expired TTL, the next start gets a new suffix. When the session's TTL expires the host stops resolving, and the link falls through to a "preview not found" page. By default that page redirects to your app domain after a few seconds; with `shareIngress.notFound.redirect: false` it is a plain 404 (see [Setup](#setup)).
