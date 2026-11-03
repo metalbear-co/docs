@@ -9,19 +9,19 @@ tags:
 # MetalBear Cloud Sessions-Manager
 
 {% hint style="warning" %}
-The MetalBear Cloud sessions-manager is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
+The MetalBear Cloud sessions-manager is **experimental**, and may change without notice.
 {% endhint %}
 
 In the MetalBear Cloud [deployment mode](README.md#deployment-modes), sessions-manager is hosted by MetalBear. There's nothing to install in your infrastructure, and you don't need a Kubernetes cluster or the mirrord Operator. Workloads and developers connect to it directly over HTTPS. Workloads authenticate with a MetalBear API key, and developers with their MetalBear account, through `mirrord login`. At a glance, the setup is:
 
-1. Get an API key from MetalBear ([API keys](#api-keys)).
+1. Get an API key ([API keys](#api-keys)).
 2. Allow outbound HTTPS from your workloads to MetalBear ([Network access](#network-access)).
 3. Connect each workload, which sets the API key on it ([Connecting workloads](#connecting-workloads)).
 4. Have developers sign in with `mirrord login` ([Developer setup](#developer-setup)).
 
 ## Prerequisites
 
-1. An API key `<API_KEY>`, [provided by MetalBear](README.md#api-key-provided-by-metalbear).
+1. An [API key](README.md#api-key), `<API_KEY>`.
 2. Outbound HTTPS access from your workloads and from developers' machines to MetalBear.
 
 ---
@@ -70,11 +70,11 @@ The API key authenticates your organization, not a specific workload: anyone who
 
 ## API keys
 
-MetalBear issues the API key for your organization when you request access. It begins with `metalbear_key_`; mirrord refuses to start with a value that doesn't.
+Generate the API key for your organization at [app.metalbear.com](https://app.metalbear.com). It begins with `metalbear_key_`; mirrord refuses to start with a value that doesn't.
 
 Only workloads use the key; developers don't need it. Store it in a secret store, such as AWS Secrets Manager, rather than in plain configuration or source control. Your platform's connection guide shows how to inject it into the workload, for example [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md#store-the-api-key).
 
-To rotate the key, request a new one, update it wherever it's stored, and restart the workloads, then ask MetalBear to revoke the old one. Once a key is revoked, new registrations with it are refused; sessions that are already open continue until they end.
+To rotate the key, generate a new one, update it wherever it's stored, and restart the workloads, then revoke the old one. Once a key is revoked, new registrations with it are refused; sessions that are already open continue until they end.
 
 ## Network access
 

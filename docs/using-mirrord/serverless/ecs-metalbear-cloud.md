@@ -9,7 +9,7 @@ tags:
 # Connecting ECS to MetalBear Cloud
 
 {% hint style="warning" %}
-Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
+Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [MetalBear Cloud sessions-manager](metalbear-cloud.md). The task authenticates with your MetalBear API key, which ECS injects from AWS Secrets Manager. No Kubernetes cluster, mirrord Operator or IAM permissions on the task role are needed. At a glance, the setup is:
@@ -22,7 +22,7 @@ This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md)
 ## Prerequisites
 
 1. The ECS task definition set up with the [remote bootstrap](ecs.md), up to [Connect to your deployment mode](ecs.md#connect-to-your-deployment-mode).
-2. `<API_KEY>`, [provided by MetalBear](README.md#api-key-provided-by-metalbear).
+2. An [API key](README.md#api-key), `<API_KEY>`.
 3. An IAM **execution role** on the ECS service (`executionRoleArn` in the task definition). This is not the task role.
 4. The AWS CLI, with permission to manage Secrets Manager secrets, IAM role policies and the ECS task definition.
 
