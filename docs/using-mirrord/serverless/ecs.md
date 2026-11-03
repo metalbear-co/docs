@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# Amazon ECS
+
 {% hint style="warning" %}
 Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}

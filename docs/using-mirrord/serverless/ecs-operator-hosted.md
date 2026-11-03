@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# Connecting ECS to the Operator
+
 {% hint style="warning" %}
 Connecting ECS to the Operator is **experimental**, and may change without notice. Set up the [Operator-hosted sessions-manager](operator-hosted.md) and [remote bootstrap](ecs.md) before following this guide.
 {% endhint %}
@@ -97,7 +99,15 @@ aws eks describe-cluster --name <CLUSTER_NAME> --region <REGION> \
 
 # Only if the above printed CONFIG_MAP:
 aws eks update-cluster-config --name <CLUSTER_NAME> --region <REGION> \
-  --access-config authenticationMode=API_AND_CONFIG_MAP
+  --access-config authenticationMode=API_AND_CONFIG_MAP \
+  --query update.id --output text
+```
+
+The change takes a few minutes. Before creating the access entry, wait until the update's status is `Successful`, using the update ID the command printed:
+
+```bash
+aws eks describe-update --name <CLUSTER_NAME> --region <REGION> \
+  --update-id <UPDATE_ID> --query update.status --output text
 ```
 
 Then create the access entry for the task role, placing it in the group bound in the previous step:

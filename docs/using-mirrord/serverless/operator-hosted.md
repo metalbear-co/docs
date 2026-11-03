@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# Operator-Hosted Sessions-Manager
+
 {% hint style="warning" %}
 The Operator-hosted sessions-manager is **experimental**, and may change without notice. It requires Operator **3.223.0 or later**; see [Required versions](README.md#required-versions).
 {% endhint %}

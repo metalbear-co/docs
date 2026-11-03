@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# MetalBear Cloud Sessions-Manager
+
 {% hint style="warning" %}
 The MetalBear Cloud sessions-manager is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
 {% endhint %}
@@ -125,7 +127,7 @@ The workload's messages appear in the application container's logs, and the deve
 | --- | --- |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY must hold a MetalBear API key, which begins with metalbear_key_` | The variable holds something else, such as the secret's ARN instead of its value, or has extra whitespace or quotes. |
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
-| `HTTP control plane returned 401 Unauthorized` | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
+| `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |
 | `You are not logged in to https://app.metalbear.com, so a sessions-manager that authenticates its users will refuse this session` | The developer hasn't run `mirrord login`. Run `mirrord login`. |

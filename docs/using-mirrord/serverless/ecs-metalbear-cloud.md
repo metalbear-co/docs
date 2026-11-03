@@ -6,6 +6,8 @@ tags:
   - enterprise
 ---
 
+# Connecting ECS to MetalBear Cloud
+
 {% hint style="warning" %}
 Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice. It needs an API key that MetalBear provides on request; see [API key provided by MetalBear](README.md#api-key-provided-by-metalbear).
 {% endhint %}
