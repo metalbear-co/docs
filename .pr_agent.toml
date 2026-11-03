@@ -16,3 +16,16 @@ ignore_pr_labels = ["no-qodo"]
 # Skip PRs opened by GitHub bot accounts (release and dependency bots). This is
 # Qodo's default, stated explicitly so the intent is visible.
 ignore_bot_pr = true
+
+[review_agent]
+# Extra instructions for the Issue finding agent. A value here replaces the
+# instructions set for that agent in the Qodo portal (Configurations > Prompts)
+# for this repository.
+# https://docs.qodo.ai/code-review/extra-instructions
+issues_user_guidelines = """
+A docs change can leave pages it does not touch wrong ("Changes That Reach
+Several Pages" in AGENTS.md). When a pull request changes what a config field,
+CLI flag, or Helm value does, report each other page under docs/ that still
+describes the old behavior. When it adds a database engine or queue service,
+report each list of its siblings it is missing from.
+"""
