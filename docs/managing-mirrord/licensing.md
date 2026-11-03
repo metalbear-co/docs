@@ -81,7 +81,7 @@ Every telemetry batch includes the following HTTP headers:
 The following event types are sent:
 
 - **Startup** — emitted once when the Operator starts
-- **Alive** — a periodic heartbeat sent every hour (escalates to every minute if the telemetry endpoint has been unreachable for over an hour). From Operator 3.229.0, it also contains the Operator's memory and CPU usage, its uptime, and the number of sessions, agents, copy targets, split sessions, split configs, database branches, and preview sessions it is handling
+- **Alive** — a periodic heartbeat sent every hour (escalates to every minute if the telemetry endpoint has been unreachable for over an hour). From Operator 3.230.0, it also contains the Operator's memory and CPU usage, its uptime, and the number of sessions, agents, copy targets, split sessions, split configs, database branches, and preview sessions it is handling
 - **Session** — emitted when a session ends, containing: session duration, target workload kind, a `ci` flag, and anonymized identifiers for the user and target (see below)
 
 ### Anonymization
