@@ -499,7 +499,7 @@ This lets you route messages by fields inside the message body. For example, to 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to reach the local application. Records for which the jq program errors (for example, a non-JSON payload piped to `fromjson`) are treated as not matching and stay on the deployed application's path.
 
 {% hint style="warning" %}
-`jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later, and is only supported with the default `librdkafka` client. Sessions using the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) fail with a clear error when a `jq_filter` is set.
+`jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later. With the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) it requires mirrord operator `3.230.0` or later; earlier operators fail the session with a clear error when a `jq_filter` is set.
 {% endhint %}
 
 ### Filtering on protobuf payloads
@@ -531,7 +531,7 @@ Some topics carry raw protobuf bytes instead of JSON - for example CDC events se
 In `payload_decoded`, field names appear exactly as written in the schema, enum values as their names, and 64-bit integers as JSON numbers. Fields at their default value are included. Records whose value fails to decode with the given schema are treated as not matching and stay on the deployed application's path.
 
 {% hint style="warning" %}
-`payload_protobuf` only supports plain protobuf values - schema registry framing (magic byte and schema id prefix) is not supported. Like `jq_filter`, it requires the default `librdkafka` client.
+`payload_protobuf` only supports plain protobuf values - schema registry framing (magic byte and schema id prefix) is not supported. It requires the default `librdkafka` client; sessions using the Java client (`mirrord.client_implementation: java`) fail with a clear error when it is set.
 {% endhint %}
 
 ## FAQ
