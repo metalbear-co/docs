@@ -46,7 +46,7 @@ That temporary queue is *exclusive* to the target workload.
 Similarly, the local application is reconfigured to consume messages from its own *exclusive* temporary queue.
 
 {% hint style="warning" %}
-Queue splitting requires that the application read the queue name from an environment variable, from a config file mounted from a ConfigMap volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)), or from a file injected into its pods, for example by Vault (see [Queue Names Injected by Vault or CSI Drivers](#queue-names-injected-by-vault-or-csi-drivers)).
+Queue splitting requires that the application read the queue name from an environment variable, from a config file mounted from a ConfigMap or Secret volume (see [Queue Names in Mounted Config Files](#queue-names-in-mounted-config-files)), or from a file injected into its pods, for example by Vault (see [Queue Names Injected by Vault or CSI Drivers](#queue-names-injected-by-vault-or-csi-drivers)).
 This lets the operator override the name to change the queue that the application reads from.
 {% endhint %}
 
@@ -114,10 +114,10 @@ Each config that applies to a workload shows the workload's split phase and sess
 ## Queue Names in Mounted Config Files
 
 {% hint style="info" %}
-Mounted config file sources require mirrord operator `3.198.0` or later.
+Mounted config file sources require mirrord operator `3.198.0` or later; Secret-backed volumes require `3.230.0` or later.
 {% endhint %}
 
-A queue name can also be read from a file mounted from a ConfigMap volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap - and duplicating the names into the pod's environment is not an option.
+A queue name can also be read from a file mounted from a ConfigMap or Secret volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap, or next to credentials in a Secret - and duplicating the names into the pod's environment is not an option.
 
 To use it, set a `volume` source in the `appConfig` entry instead of `env` or `envLike`. A complete `MirrordSplitConfig` for a Kafka consumer reading both its topic and group from a mounted `application.yaml`:
 
@@ -151,27 +151,27 @@ spec:
 
 The `volume` source fields:
 
-* `volume.name` - name of a `configMap` volume in the target's pod spec. Other volume types are rejected.
-* `volume.file` - path of the file within the volume: the ConfigMap data key, or the item `path` when the volume remaps keys via `items`.
+* `volume.name` - name of a `configMap` or `secret` volume in the target's pod spec. Other volume types are rejected.
+* `volume.file` - path of the file within the volume: the ConfigMap or Secret data key, or the item `path` when the volume remaps keys via `items`.
 * `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
 * `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
 If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containerNames` list is not needed either - the file is shared by every container that mounts the volume.
 
-The operator never modifies your ConfigMap. When a split starts, it:
+The operator never modifies your ConfigMap or Secret. When a split starts, it:
 
-1. Creates a copy of the ConfigMap with the temporary fallback names substituted. The copy is labeled and managed by the operator.
+1. Creates a copy of the ConfigMap or Secret with the temporary fallback names substituted. The copy is labeled and managed by the operator, and a Secret is copied into another Secret, never into a ConfigMap.
 2. Redirects the volume in the target's pods to the copy. This restarts the workload, the same way environment variable injection does.
 3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session. Nothing containing session names is written to the cluster.
 
-When the last session ends, the pods are restored to the original ConfigMap and the copy is deleted.
+When the last session ends, the pods are restored to the original ConfigMap or Secret and the copy is deleted.
 
 Things to know:
 
 * `valueSelector` rewrites re-serialize the copied file, so YAML comments and formatting are lost in the copy (never in your original). `valuePattern` rewrites keep the file byte-identical outside the swapped name.
 * Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
 * The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
-* Editing the original ConfigMap while a split is running does not update the copy. Content changes are picked up when the next split starts.
+* Editing the original ConfigMap or Secret while a split is running does not update the copy. Content changes are picked up when the next split starts.
 
 ### Preview Environments
 
