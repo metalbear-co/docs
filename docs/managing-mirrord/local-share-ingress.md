@@ -62,5 +62,6 @@ Before it creates a link, the Operator checks share-ingress. When a check fails,
 | Can't create a share link: the operator couldn't reach share-ingress | The Service exists, but share-ingress doesn't answer; check that it runs and that NetworkPolicy allows the Operator to reach it |
 | Can't create a share link: share-ingress serves share hosts under | The two charts have different `shareDomain` values |
 | Can't create a share link: the installed share-ingress doesn't support local share links | The share-ingress chart is older than the Operator chart |
+| Can't create a share link: the installed share-ingress (local share version …) is newer than this operator supports | The Operator chart is older than the share-ingress chart; upgrade the Operator |
 | Can't create a share link: the operator's share domain | `operator.shareIngress.shareDomain` isn't a valid DNS name |
 | Can't create a share link: the operator's share-ingress address isn't a valid URL | `operator.shareIngress.serviceUrl` isn't a valid URL |
