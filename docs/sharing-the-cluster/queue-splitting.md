@@ -114,7 +114,7 @@ Each config that applies to a workload shows the workload's split phase and sess
 ## Queue Names in Mounted Config Files
 
 {% hint style="info" %}
-Mounted config file sources require mirrord operator `3.198.0` or later; Secret-backed volumes require `3.230.0` or later.
+Mounted config file sources require mirrord operator `3.198.0` or later; Secret-backed volumes require `3.231.0` or later.
 {% endhint %}
 
 A queue name can also be read from a file mounted from a ConfigMap or Secret volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap, or next to credentials in a Secret - and duplicating the names into the pod's environment is not an option.
@@ -160,9 +160,9 @@ If both a `volume` source and an `env`/`envLike` source are set on the same entr
 
 The operator never modifies your ConfigMap or Secret. When a split starts, it:
 
-1. Creates a copy of the ConfigMap or Secret with the temporary fallback names substituted. The copy is labeled and managed by the operator, and a Secret is copied into another Secret, never into a ConfigMap.
+1. Creates a copy of the ConfigMap or Secret with the temporary fallback names substituted. The copy is labeled and managed by the operator, and a Secret is copied into another Secret.
 2. Redirects the volume in the target's pods to the copy. This restarts the workload, the same way environment variable injection does.
-3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session. Nothing containing session names is written to the cluster.
+3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session. The operator keeps that version in the status of the split session object (`MirrordClusterSplitSession`) while the session runs.
 
 When the last session ends, the pods are restored to the original ConfigMap or Secret and the copy is deleted.
 
@@ -172,10 +172,12 @@ Things to know:
 * Your local application must read the mounted path through mirrord's remote file system. If your mirrord config marks that path as local (`feature.fs` local patterns), the local app reads its own file and never sees the session queue names.
 * The session file content is served for reads that open the file by its full path. Reads that go through a directory file descriptor with a relative path (`openat` after opening the directory) bypass the override, and the local application then sees the copy's fallback names instead of its session names. Most applications open config files by full path and are unaffected.
 * Editing the original ConfigMap or Secret while a split is running does not update the copy. Content changes are picked up when the next split starts.
+* The copy holds every key of the Secret as it was when the split started. If the Secret also carries values that rotate, such as credentials, pods restarted during the split keep reading the values from when it started.
+* The split session's status holds the full text of the file, including anything else stored in it. For a file from a Secret, whoever can read `MirrordClusterSplitSession` objects can read that file, so keep access to them as narrow as access to the Secret. The operator's default user role does not grant it.
 
 ### Preview Environments
 
-A [preview environment](../use-cases/preview-environments.md) pod runs in the cluster and reads real mounted files, so the operator delivers session queue names by preparing the files each reader mounts. The queue names are located inside each file with the same `valueSelector` / `valuePattern` from the split config (see [the field reference above](#queue-names-in-mounted-config-files)). With a split running, every reader of the "same" config file sees its own version - and your original ConfigMap is never modified:
+A [preview environment](../use-cases/preview-environments.md) pod runs in the cluster and reads real mounted files, so the operator delivers session queue names by preparing the files each reader mounts. The queue names are located inside each file with the same `valueSelector` / `valuePattern` from the split config (see [the field reference above](#queue-names-in-mounted-config-files)). With a split running, every reader of the "same" config file sees its own version - and your original ConfigMap or Secret is never modified:
 
 ![Preview environments with mounted-config queue splitting](../.gitbook/assets/preview-configmap-split.svg)
 
@@ -206,6 +208,8 @@ Which queues get split, and where their names live, comes from the same two plac
 ```
 
 The per-session copies are owned by the `PreviewSession` and deleted with it; the fallback copy goes when the last session ends.
+
+A `secret` volume gets its per-session copy as a Secret, with every key and the `type` of the original. The operator never writes a Secret's content into a ConfigMap: if a preview built with `--resource` declares the volume as `configMap` while the target mounts it from a Secret, the preview fails with an error naming the volume. Declare it as a `secret` volume in your manifest.
 
 `config_mounts` entries compose with this. When the file content your mirrord config sends (`feature.preview.config_mounts` in `mirrord.json`) carries the same queue config, the operator bakes the session's queue names into it before mounting, and keeps every other value. For a session whose split renamed `orders`:
 
