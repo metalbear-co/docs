@@ -39,11 +39,15 @@ mirrord exec --share --key feature-checkout --config-file .mirrord/web.toml -- n
 
 You can also set `share = true` at the top level of the configuration file. `--share` turns sharing on even when the file sets `share = false`.
 
-Once your application listens on the port, mirrord prints the link and this note:
+Before your application starts, mirrord prints the link, the port it waits for, and where a failure is logged:
 
 ```text
-Note: people who open this link reach the service running on your machine until you stop this session. Who can open it is set by your cluster's access rules.
+Share link: https://<link-host>
+It routes to your application once it listens on port 3000, and ends when your application stops listening on that port or exits. If the link fails, mirrord stops your application and writes why to the internal proxy log at <log-path>.
+Note: people who open this link reach the service running on your machine. Who can open it is set by your cluster's access rules.
 ```
+
+Until your application listens on the port, the link answers with 404. In the IDE extensions, mirrord shows the link in a notification and in the mirrord log.
 
 The link opens only the service you share. If you share `payments`, the link opens the `payments` API.
 
@@ -93,10 +97,10 @@ Without `ports`, the target container must declare exactly one port that mirrord
 The link stops working when:
 
 * You stop the session, or mirrord on your machine crashes.
-* Your application stops listening on the port. This includes a dev server that restarts its listener when your code changes. mirrord prints that the link ended, and the session keeps running, but the link doesn't come back. Restart the session to get a new link.
+* Your application stops listening on the port. This includes a dev server that restarts its listener when your code changes. The session keeps running, but the link doesn't come back. mirrord doesn't print that it ended. Restart the session to get a new link.
 
   Node.js closes its listener in a way mirrord sees only with `experimental.hook_libc_syscall = true`. Without it, the link stays until your Node application exits, and requests to it hang.
-* The Operator loses the mirrord agent on the pod that the link opens, usually within a minute. mirrord prints why and stops your application. See [Silence on a live connection](../sharing-the-cluster/sessions.md#silence-on-a-live-connection).
+* The Operator loses the mirrord agent on the pod that the link opens, usually within a minute. mirrord stops your application and writes why to the internal proxy log, whose path it prints with the link. See [Silence on a live connection](../sharing-the-cluster/sessions.md#silence-on-a-live-connection).
 
 If you stop the session before your application listens on the port, for example with Ctrl-C while a dev server is still building, the link is removed after the internal proxy's idle timeout, `internal_proxy.idle_timeout`, 5 seconds by default. mirrord waits that long so that a wrapper such as `npm run dev` can hand over to the process that serves your application without losing the link.
 
