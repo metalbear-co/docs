@@ -8,12 +8,12 @@ tags:
 
 # Share Ingress for Local Sessions
 
-With `mirrord-share-ingress` installed, developers can [share links to services running on their own machines](../use-cases/sharing-local-services.md), not only to [Preview Environments](../use-cases/preview-environments.md#sharing-a-preview-via-a-link). Share-ingress receives the visitor's request from your public ingress, adds the session's `baggage` header, and forwards it over plain HTTP to the target pod, where mirrord steals it for the developer's session.
+With `mirrord-share-ingress` installed, developers can [share links to services running on their own machines](../use-cases/sharing-local-services.md), not only to [Preview Environments](../use-cases/preview-environments.md#sharing-a-preview-via-a-link). Share-ingress receives the visitor's request from your public ingress, adds the session's `baggage` header, and forwards it over plain HTTP to the Kubernetes Service named after the session's target, on the Service port that leads to the shared port. On the target pod, mirrord steals the request for the developer's session. A target needs a Service of the same name that exposes the shared port, so developers can't share label targets or targets without such a Service.
 
 ## Prerequisites
 
 * A Team or Enterprise license. Local sharing doesn't need `operator.previewEnv`.
-* The Operator can reach the share-ingress Service, and share-ingress can reach target pod IPs on the shared ports over plain HTTP. Check NetworkPolicy and service mesh rules.
+* The Operator can reach the share-ingress Service, and share-ingress can reach the targets' Services on the shared ports over plain HTTP. Check NetworkPolicy and service mesh rules.
 * Wildcard DNS, a wildcard certificate, and access control for the share domain. A random link is not authentication: decide who may open developers' local services, and enforce it at your public ingress or gateway.
 
 ## Configure the charts
@@ -45,6 +45,8 @@ helm upgrade --install mirrord-share-ingress metalbear/mirrord-operator-share-in
 ```
 
 The Operator looks for the `mirrord-share-ingress` Service in its own namespace. If share-ingress runs in another namespace, set `operator.shareIngress.serviceUrl` to its internal URL, for example `http://mirrord-share-ingress.share.svc`.
+
+Share-ingress finds the links in the `status.share` field of `MirrordClusterSession` objects, so its chart grants it `get`, `list`, and `watch` on the cluster-scoped `mirrordclustersessions`. These objects also carry each session's owner: the local username, hostname, and Kubernetes user.
 
 A link that no longer works gets the same 404 page as an expired preview link. To change that page, see `shareIngress.appDomain` and `shareIngress.notFound.redirect` in the [preview setup](../use-cases/preview-environments.md#setup).
 

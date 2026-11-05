@@ -8,7 +8,7 @@ tags:
 
 # Sharing Local Services
 
-`mirrord exec --share` prints an HTTPS link to the service running on your machine. Anyone who opens the link reaches your local version, with nothing to install, until you stop the session. Your service keeps using its cluster dependencies through mirrord.
+`mirrord exec --share` prints an HTTPS link to the service running on your machine. Anyone who opens the link reaches your local version while it runs, with nothing to install. Your service keeps using its cluster dependencies through mirrord.
 
 ## Prerequisites
 
@@ -18,6 +18,7 @@ tags:
 * Incoming mode `steal`. Sessions in `mirror` or `off` mode can't be shared.
 * `mirrord exec`. `mirrord container` and `mirrord port-forward` can't share a session.
 * A Kubernetes target. Sessions with `copy_target` and multi-cluster sessions can't be shared yet.
+* A target that a Kubernetes Service of the same name exposes on the shared port, such as `deployment/web` with a Service `web`. The link reaches your session through that Service. Label targets and targetless sessions can't be shared, and a target without such a Service fails with an error that says what to change.
 
 ## Share one service
 
@@ -39,15 +40,15 @@ mirrord exec --share --key feature-checkout --config-file .mirrord/web.toml -- n
 
 You can also set `share = true` at the top level of the configuration file. `--share` turns sharing on even when the file sets `share = false`.
 
-Before your application starts, mirrord prints the link, the port it waits for, and where a failure is logged:
+Before your application starts, mirrord prints the link, the port your application listens on, and where a failure is logged:
 
 ```text
 Share link: https://<link-host>
-It routes to your application once it listens on port 3000, and ends when your application stops listening on that port or exits. If the link fails, mirrord stops your application and writes why to the internal proxy log at <log-path>.
+Requests to it reach your application while it listens on port 3000, and the service running in the cluster otherwise. The link lasts as long as this session. If the session fails, mirrord stops your application and writes why to the internal proxy log at <log-path>.
 Note: people who open this link reach the service running on your machine. Who can open it is set by your cluster's access rules.
 ```
 
-Until your application listens on the port, the link answers with 404. In the IDE extensions, mirrord shows the link in a notification. With `MIRRORD_PROGRESS_MODE=off`, mirrord doesn't print the link.
+Until your application listens on the port, requests through the link reach the service running in the cluster. In the IDE extensions, mirrord shows the link in a notification. With `MIRRORD_PROGRESS_MODE=off`, mirrord doesn't print the link.
 
 The link opens only the service you share. If you share `payments`, the link opens the `payments` API.
 
@@ -94,16 +95,19 @@ Without `ports`, the target container must declare exactly one port that mirrord
 
 ## Lifetime
 
-The link stops working when:
+The link lasts as long as the session. Requests through it reach your application while it listens on the port, and the service running in the cluster otherwise. So the cluster's version answers:
 
-* You stop the session, or mirrord on your machine crashes.
-* Your application stops listening on the port. This includes a dev server that restarts its listener when your code changes. The session keeps running, but the link doesn't come back. mirrord doesn't print that it ended. Restart the session to get a new link.
+* Before your application listens on the port, for example while a dev server is still building.
+* After your application stops listening on the port, for example while a dev server restarts its listener when your code changes. Once your application listens again, the link reaches it again.
+* On pods behind the Service that run without the session's mirrord agent, for example when the session has agents on fewer pods than the Service selects.
 
-  Node.js closes its listener in a way mirrord sees only with `experimental.hook_libc_syscall = true`. Without it, the link stays until your Node application exits, and requests to it hang.
-* The Operator loses the mirrord agent on the pod that the link opens, usually within a minute. mirrord stops your application and writes why to the internal proxy log, whose path it prints with the link. See [Silence on a live connection](../sharing-the-cluster/sessions.md#silence-on-a-live-connection).
+Node.js closes its listener in a way mirrord sees only with `experimental.hook_libc_syscall = true`. Without it, mirrord keeps stealing the port until your Node application exits, so requests through the link hang instead of reaching the cluster's version.
 
-If you stop the session before your application listens on the port, for example with Ctrl-C while a dev server is still building, the link is removed after the internal proxy's idle timeout, `internal_proxy.idle_timeout`, 5 seconds by default. mirrord waits that long so that a wrapper such as `npm run dev` can hand over to the process that serves your application without losing the link.
+The link stops working when the session ends:
 
-Every session gets a new link. Another session with the same key and the same target fails and prints the existing link, with the message `A share link for this key and service already exists`. This includes a session that you start within the idle timeout after you stopped one that never listened. The same key with a different target works.
+* When you stop the session, or mirrord on your machine crashes, the cluster's version keeps answering for about 30 seconds, until the Operator removes the session. Then the link answers with 404.
+* When the Operator closes the session, for example because it lost the mirrord agent, mirrord stops your application and writes why to the internal proxy log, whose path it prints with the link. See [Silence on a live connection](../sharing-the-cluster/sessions.md#silence-on-a-live-connection).
+
+Every session gets a new link. Another running session with the same key and the same target fails and prints the existing link, with the message `A share link for this key and service already exists`. A session that you stopped counts only until mirrord's internal proxy exits, `internal_proxy.idle_timeout` after your application, 5 seconds by default. mirrord waits that long so that a wrapper such as `npm run dev` can hand over to the process that serves your application without ending the session. After that, the same command gets a new link. The same key with a different target works.
 
 For an environment that keeps running without your machine, use [Preview Environments](preview-environments.md).
