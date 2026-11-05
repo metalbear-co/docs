@@ -127,6 +127,8 @@ export URL=$(terraform output -raw url)
 
 The repository's `mirrord.json` tells mirrord which requests to send to your laptop: only HTTP requests whose `baggage` header contains `mirrord-session=quickstart`. This is your session header. Each developer uses a different session key, so each one gets only their own requests. For the full configuration, see [The mirrord configuration](#the-mirrord-configuration).
 
+![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-quickstart-requests.svg)
+
 Send a request with your session header:
 
 ```bash
