@@ -90,7 +90,7 @@ During a session, the Primary operator routes each operation based on its type. 
 | [Database branching](#database-branching-in-multi-cluster) | Default cluster only (the branch is created once)           |
 | [Queue splitting](#queue-splitting-in-multi-cluster) | **All** workload clusters \* (each filters messages locally)        |
 
-\* The [consumer cluster](#splitting-from-one-cluster) instead, when a split config names one.
+\* The [consumer cluster](#splitting-from-one-cluster) instead, when the session splits queues and a split config names one. A session without `feature.split_queues` against the same workload stays on the Default cluster.
 
 Responses from all clusters are merged into the single connection back to your local application, so wherever a request or message lands, it reaches your local process the same way.
 
@@ -153,7 +153,11 @@ To monitor active splits across all clusters, run `mirrord queues status -A` (or
 
 ### Splitting From One Cluster
 
-When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue: it runs the forwarder, creates the temporary queues and patches its copy of the workload, and your local application reads its environment variables and files from it. The other clusters' child sessions leave their copy of the workload and its queues untouched.
+When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue for `mirrord exec` sessions going through the Primary: it runs the forwarder, creates the temporary queues and patches its copy of the workload, and your local application reads its environment variables and files from it. The other clusters' child sessions leave their copy of the workload and its queues untouched.
+
+{% hint style="warning" %}
+`consumerCluster` does not apply to preview environments or copy target sessions. Previews still split on every cluster, and multi-cluster copy target sessions split on the Default cluster.
+{% endhint %}
 
 ```yaml
 apiVersion: queues.mirrord.metalbear.co/v1
@@ -175,7 +179,9 @@ spec:
           - env: ORDERS_QUEUE_NAME
 ```
 
-The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster.
+The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session that splits queues fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster. A session that splits no queues never looks at the name.
+
+If the workload's queues still come from a `MirrordWorkloadQueueRegistry`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces the registry, so the session would lose the registry's queues.
 
 Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.230.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
 
@@ -183,7 +189,7 @@ Leave `consumerCluster` unset to keep splitting on every workload cluster. `cons
 
 Most services behave identically everywhere, with small differences in where temporary resources are created:
 
-* **[Amazon SQS](../sharing-the-cluster/queue-splitting/sqs.md)** — each Workload cluster creates its own temporary queues and patches the target workload locally. Session queue names are shared between clusters so matched messages from every cluster reach your session.
+* **[Amazon SQS](../sharing-the-cluster/queue-splitting/sqs.md)** — each Workload cluster creates its own temporary queues and patches the target workload locally, or only the [consumer cluster](#splitting-from-one-cluster) when a split config names one. Session queue names are shared between clusters so matched messages from every cluster reach your session.
 * **[GCP Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)** — each Workload cluster creates its own fallback topic and subscription (what the deployed workload reads from). The per-session topic and subscription are created once on the Default cluster, and their names are shared with the other clusters for reuse.
 * **[`mirrord subscribe`](subscribe.md#multi-cluster)** — one subscription against the Primary streams the events of every cluster, each naming the cluster that intercepted it.
 
