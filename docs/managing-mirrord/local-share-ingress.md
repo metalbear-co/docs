@@ -66,7 +66,7 @@ Before it creates a link, the Operator checks share-ingress. When a check fails,
 | Can't create a share link: the operator's share domain | `operator.shareIngress.shareDomain` isn't a valid DNS name |
 | Can't create a share link: the operator's share-ingress address isn't a valid URL | `operator.shareIngress.serviceUrl` isn't a valid URL |
 
-After the Operator creates the link, mirrord reads it once from the developer's session, before the application starts. When a read fails, `--share` fails with one of these messages:
+After the Operator creates the link, mirrord reads it from the developer's session before the application starts, retrying for a short time while the Operator registers it. When a read fails, `--share` fails with one of these messages:
 
 | Message starts with | Cause |
 |---|---|

@@ -47,7 +47,7 @@ It routes to your application once it listens on port 3000, and ends when your a
 Note: people who open this link reach the service running on your machine. Who can open it is set by your cluster's access rules.
 ```
 
-Until your application listens on the port, the link answers with 404. In the IDE extensions, mirrord shows the link in a notification and in the mirrord log.
+Until your application listens on the port, the link answers with 404. In the IDE extensions, mirrord shows the link in a notification. With `MIRRORD_PROGRESS_MODE=off`, mirrord doesn't print the link.
 
 The link opens only the service you share. If you share `payments`, the link opens the `payments` API.
 
