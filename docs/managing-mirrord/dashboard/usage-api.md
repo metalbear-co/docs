@@ -13,7 +13,7 @@ tags:
 This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). Configuring a self-hosted license server rules that out: the operator then ignores any cloud API key you set, logs a warning, authenticates with its license key against your own server, and sends us no identities, so there is nothing here to read. Anonymized product telemetry still leaves the cluster either way.
 {% endhint %}
 
-The dashboard at [app.metalbear.com](https://app.metalbear.com) is fine for looking at usage. It is less fine when you want the numbers in Looker, or a weekly script that lists who stopped using mirrord. The usage API returns the same report and trends the dashboard renders, plus the raw session rows the dashboard never shows, behind a key you can give to a cron job.
+The dashboard at [app.metalbear.com](https://app.metalbear.com) is fine for looking at usage. It is less fine when you want the numbers in Looker, or a weekly script that lists who stopped using mirrord. The usage API returns the same report and trends the dashboard renders, plus the raw session rows the dashboard never shows and the service map from [Topology](topology.md), behind a key you can give to a cron job.
 
 ## Get a key
 
@@ -47,7 +47,7 @@ Every call below takes `Authorization: Bearer $TOKEN`.
 
 ## Endpoints
 
-All three live under `https://app.metalbear.com/api/v1/usage` and answer JSON.
+All four live under `https://app.metalbear.com/api/v1/usage` and answer JSON.
 
 ### Report
 
@@ -139,6 +139,43 @@ while :; do
 done
 ```
 
+### Topology
+
+```
+GET /api/v1/usage/topology?from=2026-08-01&to=2026-08-31
+```
+
+The service map the dashboard's [Topology](topology.md) page draws, as a list of edges between a session's target workload and a cluster Service:
+
+```json
+{
+  "reportPeriod": { "from": "2026-08-01T00:00:00Z", "to": "2026-09-01T00:00:00Z" },
+  "edges": [
+    {
+      "workload": { "kind": "Deployment", "name": "order-service", "namespace": "shop" },
+      "service": { "name": "inventory-service", "namespace": "shop" },
+      "direction": "outgoing",
+      "port": 80,
+      "sessionCount": 12,
+      "uniqueUsers": 3,
+      "lastSeen": "2026-08-29T16:02:11Z"
+    }
+  ]
+}
+```
+
+| Field | What it holds |
+| --- | --- |
+| `workload` | The session's target: `kind`, `name`, `namespace` |
+| `service` | The Service on the other end: `name`, `namespace`, and `preview` when it fronts a preview environment |
+| `direction` | `outgoing` when the workload connected to the service, `incoming` when a pod behind the service connected to the workload |
+| `port` | The service port, on `outgoing` edges that reported one |
+| `sessionCount` | Sessions in which the connection happened at least once, not individual connections |
+| `uniqueUsers` | Engineers behind those sessions |
+| `lastSeen` | The latest session that made the connection |
+
+There is one edge per workload, service and direction, capped at the 500 busiest by `sessionCount`. The map only covers services your engineers reached through mirrord sessions, so it is a view of what mirrord saw, not of the whole cluster. It needs a paid plan; on Free the endpoint answers `403`. With no edges in the period, `edges` is omitted rather than sent empty.
+
 ## Dates and periods
 
 `from` and `to` accept a date (`2026-08-01`), a timestamp with an offset (`2026-08-01T09:00:00+02:00`), or a timestamp without one, which is read as UTC. An offset's `+` has to be percent-encoded as `%2B` in the query string, otherwise it arrives as a space and you get a 400. `curl --get --data-urlencode` does it for you. A date given as `to` covers that whole day, so `to=2026-08-31` includes August 31. Otherwise the window is half-open: `from` is included, `to` is not. Leave `from` out and it starts at the beginning of time; leave `to` out and it ends now. `from` has to be before `to` or you get a 400.
@@ -151,7 +188,7 @@ The rows do reconcile with the report, but only once you group by `kind`: rows w
 
 ## Identity sharing
 
-The report and the session rows carry engineer identities only while identity sharing is on for your organization, the same switch that decides what the dashboard shows. It is set when the operator's cloud API key is generated and can be changed under **Settings**. With it off, `displayName` and `user.id` are pseudonymous hashes, and `kubernetesUsername`, `clientUsername` and `clientHostname` are `null`. `target` is dropped from the session rows entirely rather than sent as `null`, and `targetMetrics` and `userTargetMetrics` disappear from the report the same way. A change applies to the next token you fetch, not to one you already hold.
+The report, the session rows and the topology carry engineer identities only while identity sharing is on for your organization, the same switch that decides what the dashboard shows. It is set when the operator's cloud API key is generated and can be changed under **Settings**. With it off, `displayName` and `user.id` are pseudonymous hashes, and `kubernetesUsername`, `clientUsername` and `clientHostname` are `null`. `target` is dropped from the session rows entirely rather than sent as `null`, and `targetMetrics` and `userTargetMetrics` disappear from the report the same way, and the topology comes back without `edges`, because workload and service names are shared under the same switch. A change applies to the next token you fetch, not to one you already hold.
 
 ## Errors and limits
 
@@ -159,7 +196,7 @@ The report and the session rows carry engineer identities only while identity sh
 | --- | --- |
 | `400` | A bad parameter: `from` at or after `to`, an unparseable date, a resolved bound outside 1970 to 9999, or a malformed `cursor` (an empty one included). `to=9999-12-31` is rejected too, because an inclusive date is resolved to the start of the next day |
 | `401` | No token, a malformed one, or an expired one. Fetch a new token |
-| `403` | Right token, wrong door: an operator token on this API, or a usage token on an operator endpoint |
+| `403` | Right token, wrong door: an operator token on this API, a usage token on an operator endpoint, or a topology request on the Free plan |
 | `429` | Over the limit. `Retry-After` says how many seconds to wait |
 
-The limit is 60 requests a minute per organization, counted across the three endpoints. A full export of a large month is a handful of pages, so a script that pauses on 429 and honours `Retry-After` will not notice it.
+The limit is 60 requests a minute per organization, counted across the four endpoints. A full export of a large month is a handful of pages, so a script that pauses on 429 and honours `Retry-After` will not notice it.
