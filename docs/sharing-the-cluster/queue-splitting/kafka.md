@@ -78,10 +78,6 @@ The operator recognizes these `mirrord.`-prefixed keys:
 * `mirrord.split_topic.replication_factor` - the replication factor for temporary topics (see [Temporary Topic Replication Factor](kafka.md#temporary-topic-replication-factor)).
 * `mirrord.ssl.truststore.base64`, `mirrord.ssl.keystore.base64`, `mirrord.ssl.keystore.alias` - TLS credentials held in Java KeyStores (see [authenticating with a Java KeyStore](kafka.md#how-do-i-authenticate-the-operators-kafka-client-with-a-java-keystore)).
 
-{% hint style="warning" %}
-`queue_mode: mirror` with the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) requires mirrord operator `3.231.0` or later. Earlier operators fail the session at start, because their Kafka sidecar rejects the request with a 400 error.
-{% endhint %}
-
 {% hint style="info" %}
 The Kafka consumer group used by the operator's own client is managed by mirrord, so a `group.id` property is not needed here.
 {% endhint %}
