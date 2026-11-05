@@ -152,7 +152,7 @@ Each entry in the `spec.queues` list describes one or more Kafka queues consumed
 * `appConfig.topic` - how the application discovers the topic name. Each entry can use:
   * `env` - exact environment variable name containing the topic name.
   * `envLike` - regex matching environment variable names.
-  * `volume` - read the topic name from a file mounted from a `configMap` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
+  * `volume` - read the topic name from a file mounted from a `configMap` or `secret` volume (`volume.name` + `volume.file`) instead of an environment variable. See [Queue Names in Mounted Config Files](../queue-splitting.md#queue-names-in-mounted-config-files).
   * `fallback` - fallback topic name if the variable is absent (only valid with `env`). The env var is still rewritten to point at the temporary topic.
   * `valueSelector` - a selector extracting the topic name from the variable's value: nested keys (`.kafka.topic`) and `.[]` to iterate arrays or object values. Useful when the value holds JSON rather than a plain name. Pipes, functions, and other jq operators are not supported.
   * `valuePattern` - a regex used when the topic name is embedded in a larger string. The capture group (named `value`, otherwise the first group) marks the part that is the name; only that part is swapped for the temporary topic and the surrounding text is kept as-is.
@@ -177,7 +177,7 @@ If the consumer reads its topic and group from a mounted config file instead of 
 appConfig:
   topic:
     - volume:
-        name: app-config          # configMap volume in the pod spec
+        name: app-config          # configMap or secret volume in the pod spec
         file: application.yaml
       valueSelector: ".kafka.consumer.topic.main.name"
   groupId:
