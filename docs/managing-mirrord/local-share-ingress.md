@@ -65,3 +65,11 @@ Before it creates a link, the Operator checks share-ingress. When a check fails,
 | Can't create a share link: the installed share-ingress (local share version …) is newer than this operator supports | The Operator chart is older than the share-ingress chart; upgrade the Operator |
 | Can't create a share link: the operator's share domain | `operator.shareIngress.shareDomain` isn't a valid DNS name |
 | Can't create a share link: the operator's share-ingress address isn't a valid URL | `operator.shareIngress.serviceUrl` isn't a valid URL |
+
+After the Operator creates the link, mirrord reads it from the developer's session: once before the application starts, and again while it waits for the application to listen. When a read fails, `--share` fails with one of these messages:
+
+| Message starts with | Cause |
+|---|---|
+| Share links need permission to get `sessions` in the `operator.metalbear.co` API group | The developer's roles don't grant the `get` verb on `sessions` in the target's namespace. The chart's mirrord user roles grant it; add it to roles you manage yourself. See [How do I configure Role Based Access Control](security.md#how-do-i-configure-role-based-access-control-for-mirrord-for-teams) |
+| The cluster refused to read this session's share link | Kubernetes refused the read for another reason, such as expired credentials. The message ends with the cluster's reason |
+| Reading this session's share link timed out | The cluster didn't answer in time; check the developer's connection to the cluster |

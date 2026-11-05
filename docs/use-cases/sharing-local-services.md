@@ -14,6 +14,7 @@ tags:
 
 * A Team or Enterprise license.
 * Your platform team has set up [Share Ingress for Local Sessions](../managing-mirrord/local-share-ingress.md).
+* Your Kubernetes roles grant the `get` verb on `sessions` in the `operator.metalbear.co` API group, in the target's namespace. The built-in mirrord user roles grant it. Without it, mirrord fails with an error that names this permission.
 * Incoming mode `steal`. Sessions in `mirror` or `off` mode can't be shared.
 * `mirrord exec`. `mirrord container` and `mirrord port-forward` can't share a session.
 * A Kubernetes target. Sessions with `copy_target` and multi-cluster sessions can't be shared yet.
@@ -97,6 +98,8 @@ The link stops working when:
   Node.js closes its listener in a way mirrord sees only with `experimental.hook_libc_syscall = true`. Without it, the link stays until your Node application exits, and requests to it hang.
 * The Operator loses the mirrord agent on the pod that the link opens, usually within a minute. mirrord prints why and stops your application. See [Silence on a live connection](../sharing-the-cluster/sessions.md#silence-on-a-live-connection).
 
-Every session gets a new link. Another session with the same key and the same target fails and prints the existing link. The same key with a different target works.
+If you stop the session before your application listens on the port, for example with Ctrl-C while a dev server is still building, the link is removed after the internal proxy's idle timeout, `internal_proxy.idle_timeout`, 5 seconds by default. mirrord waits that long so that a wrapper such as `npm run dev` can hand over to the process that serves your application without losing the link.
+
+Every session gets a new link. Another session with the same key and the same target fails and prints the existing link, with the message `A share link for this key and service already exists`. This includes a session that you start within the idle timeout after you stopped one that never listened. The same key with a different target works.
 
 For an environment that keeps running without your machine, use [Preview Environments](preview-environments.md).
