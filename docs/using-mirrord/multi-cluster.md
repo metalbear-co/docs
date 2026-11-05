@@ -183,7 +183,7 @@ The name is one of the keys of the Primary's `operator.multiCluster.clusters`, o
 
 If the workload's queues still come from a `MirrordWorkloadQueueRegistry`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces the registry, so the session would lose the registry's queues.
 
-Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.230.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
+Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.231.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
 
 ### Per-Service Details
 
