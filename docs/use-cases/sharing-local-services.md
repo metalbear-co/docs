@@ -45,7 +45,7 @@ Before your application starts, mirrord prints the link, the port your applicati
 ```text
 Share link: https://<link-host>
 Requests to it reach your application while it listens on port 3000, and the service running in the cluster otherwise. The link lasts as long as this session. If the session fails, mirrord stops your application and writes why to the internal proxy log at <log-path>.
-Note: people who open this link reach the service running on your machine. Who can open it is set by your cluster's access rules.
+Note: people who open this link reach the service running on your machine, and the one running in the cluster whenever a request doesn't reach your machine. Who can open it is set by your cluster's access rules for share links.
 ```
 
 Until your application listens on the port, requests through the link reach the service running in the cluster. In the IDE extensions, mirrord shows the link in a notification. With `MIRRORD_PROGRESS_MODE=off`, mirrord doesn't print the link.

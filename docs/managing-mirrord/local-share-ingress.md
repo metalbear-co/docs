@@ -14,7 +14,7 @@ With `mirrord-share-ingress` installed, developers can [share links to services 
 
 * A Team or Enterprise license. Local sharing doesn't need `operator.previewEnv`.
 * The Operator can reach the share-ingress Service, and share-ingress can reach the targets' Services on the shared ports over plain HTTP. Check NetworkPolicy and service mesh rules.
-* Wildcard DNS, a wildcard certificate, and access control for the share domain. A random link is not authentication: decide who may open developers' local services, and enforce it at your public ingress or gateway.
+* Wildcard DNS, a wildcard certificate, and access control for the share domain. A random link is not authentication: decide who may open share links, and enforce it at your public ingress or gateway. A request that the developer's session doesn't steal, such as one sent before the local application listens, reaches the target's Service in the cluster, past whatever authentication that service's own ingress has. So the share domain's access control protects the shared targets' Services too, not only developers' machines.
 
 ## Configure the charts
 
