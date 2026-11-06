@@ -599,6 +599,12 @@ In practice:
 - **EKS IAM downstream cluster**: `multiClusterMember=true` + `multiClusterMemberIamGroup=mirrord-operator-envoy`
 - **AKS Workload Identity downstream cluster**: `multiClusterMember=true` + `multiClusterMemberAzureGroup=mirrord-operator-envoy`
 
+### Copy Target Pods on a Remote Default Cluster
+
+When the Default cluster is a downstream cluster, the Primary operator creates `copy_target` pods there and watches them. Unless the Primary operator is installed with `namespaced: true`, it watches pods in all namespaces of the Default cluster, so its identity there needs `list` and `watch` on pods cluster-wide. The `mirrord-operator-envoy` ClusterRole and its ClusterRoleBinding grant this.
+
+If you replace that ClusterRoleBinding with a Role and RoleBinding in a single namespace, the watch fails with `403 Forbidden` and the operator retries it indefinitely. In that case, install the Primary operator with `namespaced: true` and list the namespaces in `allowedNamespaces`, so it watches only those namespaces.
+
 ---
 
 ## Verify the Connection
@@ -653,7 +659,7 @@ A: Yes. Set `managementOnly: false` (the Helm chart default is `true`) so the Pr
 A: Yes, if the Primary runs workloads (`managementOnly: false`). A session started with `multi_cluster: false` stays on the Primary and runs as a regular single-cluster session, with the Primary's local queue splitting and database branching. With `managementOnly: true`, `multi_cluster: false` is not supported.
 
 **Q: Which resources can I exclude from syncing to the member clusters?**
-A: Label a `MirrordSplitConfig` or `MirrordPropertyList` with `operator.metalbear.co/skip-mc-sync: "true"` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
+A: The operator syncs every `MirrordSplitConfig` and `MirrordPropertyList` to every member cluster, also when the clusters run different services. Label a `MirrordSplitConfig` or `MirrordPropertyList` with `operator.metalbear.co/skip-mc-sync: "true"` to keep the operator from syncing it. This is useful when your GitOps tool already applies the resource on every cluster. The operator skips it silently.
 
 **Q: What happens if a downstream cluster is unreachable?**
 A: The session creation will fail. The operator reports connection errors in the `MirrordOperator` status (see Verify the Connection above).
