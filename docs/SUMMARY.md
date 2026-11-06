@@ -19,6 +19,7 @@
 
 * [Remocal Development](use-cases/local-development.md)
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
+* [Sharing Local Services](use-cases/sharing-local-services.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
 * [Chaos Testing](use-cases/chaos-testing.md)
@@ -116,6 +117,7 @@
 * [High Availability](managing-mirrord/high-availability.md)
 * [Scalability](managing-mirrord/scalability.md)
 * [Node Upgrades and Scale-Down](managing-mirrord/node-upgrades.md)
+* [Share Ingress for Local Sessions](managing-mirrord/local-share-ingress.md)
 * [Licensing](managing-mirrord/licensing.md)
 * [License Server](managing-mirrord/license-server.md)
 * [Versioning](managing-mirrord/versioning.md)

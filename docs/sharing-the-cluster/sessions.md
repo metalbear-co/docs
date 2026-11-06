@@ -186,7 +186,7 @@ The session management commands are:
 ### `sessions` RBAC
 
 Every `mirrord-operator-user` has access to **all** session operations by **default**, as it comes
-with `deletecollection` and `delete` privileges for the `sessions` resource. The CI-specific
+with `deletecollection`, `delete`, and `get` privileges for the `sessions` resource. The CI-specific
 `mirrord-operator-ci` ClusterRole, intended for machine sessions such as `mirrord ci` and
 `mirrord preview`, has the same session permissions by default. You may limit either role by
 changing the RBAC configuration. Here is a sample `role.yaml` with the other Operator rules
@@ -205,9 +205,14 @@ rules:
   verbs:
   - deletecollection
   - delete
+  - get
 ```
 
 For CI identities, apply the same change to `mirrord-operator-ci`.
 
 - `mirrord operator session kill-all` requires the `deletecollection` verb;
 - `mirrord operator session kill --id {id}` requires the `delete` verb;
+- `mirrord exec --share` requires the `get` verb in the namespace of the session's target, because
+  it reads its [share link](../use-cases/sharing-local-services.md) from its own session. The
+  per-namespace roles from `roleNamespaces` grant it too. A user can read any session in the
+  namespaces where the verb is granted, but only the session's owner sees its share link.
