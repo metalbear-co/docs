@@ -304,7 +304,7 @@ spec:
         query: sum(kafka_consumergroup_lag{consumergroup="{{orders.group}}", topic="{{orders.queue}}"})
 ```
 
-A value naming a queue id the `MirrordSplitConfig` does not declare, or a `group` its queue does not have, makes the operator refuse the `MirrordSplitConfig`, and splits of its workloads fail. An override naming a trigger or metadata key the `ScaledObject` does not have, or a queue the split does not include, is not applied.
+A value naming a queue id the `MirrordSplitConfig` does not declare, or a `group` its queue does not have, makes the operator refuse the `MirrordSplitConfig`, and splits of its workloads fail. An override naming a trigger or metadata key the `ScaledObject` does not have, a queue the split does not include, or the `queue` of a queue id that resolves to several queues is not applied.
 
 A GitOps tool deploying the `ScaledObject` would put the original triggers back. The operator therefore registers a mutating webhook that reapplies its rewrite to every update of a redirected `ScaledObject`, including the dry runs Flux compares against. Flux sees the `ScaledObject` as in sync and keeps reconciling it: changes from Git roll out during the split, and the triggers stay redirected. When the split ends, the operator undoes only its own rewrite, so those changes stay.
 
