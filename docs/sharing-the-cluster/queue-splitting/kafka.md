@@ -500,6 +500,14 @@ If both `message_filter` and `jq_filter` are specified for the same queue, both 
 
 {% hint style="warning" %}
 `jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later. With the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) it requires mirrord operator `3.230.0` or later; earlier operators fail the session with a clear error when a `jq_filter` is set.
+
+With the Java client, the jq program runs inside the operator's Kafka sidecar on a different jq engine than the operator's own, so a few things to know:
+
+- The sidecar supports the jq language (paths, comparisons, `if`, `try`, `reduce`, `foreach`, `as` bindings, `def`, string interpolation) and the common builtins: `select`, `map`, `test`, `match`, `capture`, `sub`, `gsub`, `split`, `fromjson`, `tojson`, `tostring`, `tonumber`, `ascii_downcase`, `startswith`, `endswith`, `contains`, `any`, `all`, `@base64d`, `length`, `keys`, `has`, `in`, `to_entries`, `with_entries`, `sort_by`, `group_by`, `unique`, `flatten`, `range`, `limit`, `first`, `last`, `paths`, `getpath`, `walk`, and the usual string, number, array, and type functions. Not available are builtins that reach outside the record (`now`, `env`, `$ENV`, `input`, `debug`, `stderr`, `$__loc__`), the other `@` formats (`@sh`, `@uri`, `@csv`, `@tsv`, `@html`), date formatting beyond `todate`/`fromdate`, `ltrimstr`/`rtrimstr` on non-strings, `tojson`/`sort` corner cases on NaN, and SQL-style builtins.
+- The operator checks the program when the session starts and rejects it right away if it uses a builtin, variable, or regex feature the sidecar does not support, naming the construct in the error. Regexes follow the same syntax as with the librdkafka client (no look-around, backreferences, or Unicode classes like `\p{L}`).
+- The sidecar runs at most 8 jq programs at the same time. A program that keeps running past its time limit (500 ms per record) fails its session and keeps one of those slots busy until it finishes or the operator restarts, so keep programs simple.
+
+The matching decision is the same on both clients: the first boolean output of the program decides, errors on the way are skipped, and no boolean output is no match.
 {% endhint %}
 
 ### Filtering on protobuf payloads
