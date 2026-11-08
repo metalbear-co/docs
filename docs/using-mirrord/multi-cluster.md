@@ -83,14 +83,14 @@ During a session, the Primary operator routes each operation based on its type. 
 | Operation                                        | Routed to                                                             |
 | ------------------------------------------------ | --------------------------------------------------------------------- |
 | Incoming traffic (mirror / steal)                | **All** workload clusters                                              |
-| Environment variables                            | Default cluster only \*                                               |
-| File operations                                  | Default cluster only \*                                               |
+| Environment variables                            | Default cluster only                                                   |
+| File operations                                  | Default cluster only                                                   |
 | DNS resolution                                   | Default cluster only                                                   |
 | Outgoing traffic (TCP / UDP)                     | Default cluster only                                                   |
 | [Database branching](#database-branching-in-multi-cluster) | Default cluster only (the branch is created once)           |
 | [Queue splitting](#queue-splitting-in-multi-cluster) | **All** workload clusters \* (each filters messages locally)        |
 
-\* The [consumer cluster](#splitting-from-one-cluster) instead, when the session splits queues and a split config names one. A session without `feature.split_queues` against the same workload stays on the Default cluster.
+\* The Default cluster only, when the split config names it as the [consumer cluster](#splitting-from-one-cluster).
 
 Responses from all clusters are merged into the single connection back to your local application, so wherever a request or message lands, it reaches your local process the same way.
 
@@ -130,7 +130,7 @@ If the Primary cluster is also the Default cluster, no synchronization is requir
 
 [Queue splitting](../sharing-the-cluster/queue-splitting.md) works in multi-cluster mode for **every supported queue service** — Amazon SQS, Kafka, RabbitMQ, Google Cloud Pub/Sub, Azure Service Bus, NATS (JetStream and core pub/sub), Redis Pub/Sub, Temporal, and BullMQ. A single session can even split several queue services at once, across all clusters. See the [Feature Support Matrix](../reference/feature-matrix.md) for maturity levels.
 
-The flow is the same as single-cluster, applied in every cluster:
+The flow is the same as single-cluster, applied in every cluster (or in [one cluster](#splitting-from-one-cluster), when the config names it):
 
 1. **One config, synced everywhere.** You create your `MirrordSplitConfig` (and any `MirrordPropertyList` client configs) on the **Primary cluster** only. The operator automatically syncs them to all Workload clusters.
 2. **One filter, applied everywhere.** When you start a session with [`feature.split_queues`](../sharing-the-cluster/queue-splitting.md#setting-a-filter), the Primary pushes your message filter to every child session, so every cluster applies the exact same filter.
@@ -146,17 +146,21 @@ Create your `MirrordSplitConfig` resources on the **Primary cluster**. The opera
 {% endhint %}
 
 {% hint style="warning" %}
-Each Workload cluster needs its own credentials for the queue service (for example, AWS credentials with SQS permissions). This is independent of the multi-cluster authentication method — even if a cluster connects via bearer token, its operator still needs queue-service credentials to create temporary queues.
+Each Workload cluster that splits needs its own credentials for the queue service (for example, AWS credentials with SQS permissions). This is independent of the multi-cluster authentication method — even if a cluster connects via bearer token, its operator still needs queue-service credentials to create temporary queues. With a [consumer cluster](#splitting-from-one-cluster) set, only that cluster needs them.
 {% endhint %}
 
 To monitor active splits across all clusters, run `mirrord queues status -A` (or `kubectl get queuesplits -A`) against the Primary cluster — it [aggregates the view from every connected cluster](../sharing-the-cluster/queue-splitting/status.md#multi-cluster).
 
 ### Splitting From One Cluster
 
-When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue for `mirrord exec` sessions going through the Primary: it runs the forwarder, creates the temporary queues and patches its copy of the workload, and your local application reads its environment variables and files from it. The other clusters' child sessions leave their copy of the workload and its queues untouched.
+When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue for sessions going through the Primary (`mirrord exec`, `mirrord up`, `mirrord ci`, the IDE extensions): it runs the forwarder, creates the temporary queues and patches its copy of the workload. The other clusters' child sessions leave their copy of the workload and its queues untouched.
+
+The consumer cluster has to be the [Default cluster](#default-cluster). Your local application reads its environment variables and files from the Default cluster, and the split queue names are written into them by the operator that runs the split, so a split anywhere else would leave your application reading the original queues. If the cluster that consumes the queues is not your Default cluster today, make it the Default (`operator.multiCluster.defaultCluster` on the Primary).
+
+[`MirrordPolicy`](../sharing-the-cluster/policies.md) rules for queue splitting still apply on every cluster: each child session is checked against its own cluster's `splitQueues` policy with the filter you asked for, and only then does a cluster that is not the consumer run a plain session. Keep a policy on each cluster, as [above](#access-control).
 
 {% hint style="warning" %}
-`consumerCluster` does not apply to preview environments or copy target sessions. Previews still split on every cluster, and multi-cluster copy target sessions split on the Default cluster.
+`consumerCluster` does not apply to preview environments. Previews still split on every cluster. Multi-cluster copy target sessions split on the Default cluster as they always did, and are refused like any other session when the config names another cluster.
 {% endhint %}
 
 ```yaml
@@ -179,18 +183,20 @@ spec:
           - env: ORDERS_QUEUE_NAME
 ```
 
-The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session that splits queues fails to start when the name matches none of the clusters it spans, or when it also uses [database branches](#database-branching-in-multi-cluster) and the consumer cluster is not the Default cluster. A session that splits no queues never looks at the name.
+The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads and is the Default. A session that splits queues is refused when the name matches none of the clusters it spans, or names a cluster other than the Default; the error says which cluster is the Default. A session that splits no queues never looks at the name.
 
-If the workload's queues still come from a `MirrordWorkloadQueueRegistry`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces the registry, so the session would lose the registry's queues.
+If the workload's queues still come from a `MirrordWorkloadQueueRegistry` or a `MirrordKafkaTopicsConsumer`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces both, so the session would lose their queues.
 
-Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.231.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older.
+Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.231.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older, or whose license does not include the feature.
 
 ### Per-Service Details
 
 Most services behave identically everywhere, with small differences in where temporary resources are created:
 
-* **[Amazon SQS](../sharing-the-cluster/queue-splitting/sqs.md)** — each Workload cluster creates its own temporary queues and patches the target workload locally, or only the [consumer cluster](#splitting-from-one-cluster) when a split config names one. Session queue names are shared between clusters so matched messages from every cluster reach your session.
+* **[Amazon SQS](../sharing-the-cluster/queue-splitting/sqs.md)** — each Workload cluster creates its own temporary queues and patches the target workload locally. Session queue names are shared between clusters so matched messages from every cluster reach your session.
 * **[GCP Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)** — each Workload cluster creates its own fallback topic and subscription (what the deployed workload reads from). The per-session topic and subscription are created once on the Default cluster, and their names are shared with the other clusters for reuse.
+
+With a [consumer cluster](#splitting-from-one-cluster) set, only the Default cluster creates temporary resources and patches its workload, for every service.
 * **[`mirrord subscribe`](subscribe.md#multi-cluster)** — one subscription against the Primary streams the events of every cluster, each naming the cluster that intercepted it.
 
 ***
@@ -205,7 +211,7 @@ Most services behave identically everywhere, with small differences in where tem
 | HTTP reaches the preview from | The Default cluster only | Every cluster |
 | Queue messages reach the preview from | Every cluster | Every cluster |
 
-Everything else behaves the same in both modes. With `replicas`, each cluster serves its own traffic and idles on it independently, and all replicas share one [branch database](../sharing-the-cluster/db-branching.md) - a write from any cluster is visible to all of them, and nothing reaches the source database.
+Everything else behaves the same in both modes. Previews do not read [`consumerCluster`](#splitting-from-one-cluster): they split on every cluster either way. With `replicas`, each cluster serves its own traffic and idles on it independently, and all replicas share one [branch database](../sharing-the-cluster/db-branching.md) - a write from any cluster is visible to all of them, and nothing reaches the source database.
 
 Replicas on other clusters reach the branch database through a tunnel between the operators, initiated by the Primary. Workload clusters need no route to the Default cluster, and no cluster credentials are ever placed in your namespaces.
 
