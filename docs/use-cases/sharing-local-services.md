@@ -38,7 +38,9 @@ Run your application with `--share`:
 mirrord exec --share --key feature-checkout --config-file .mirrord/web.toml -- node server.js
 ```
 
-You can also set `share = true` at the top level of the configuration file. `--share` turns sharing on even when the file sets `share = false`.
+You can also set `share = true` at the top level of the configuration file, or set the environment variable `MIRRORD_SHARE=true`. `--share` turns sharing on even when the file sets `share = false`.
+
+mirrord sends the key as it is in the `baggage` header, so a shared session's key can hold only printable ASCII characters other than space, `"`, `%`, `,`, `;`, and `\`. A key such as `feature/checkout` works. mirrord refuses other keys before the session starts.
 
 Before your application starts, mirrord prints the link, the port your application listens on, and where a failure is logged:
 
@@ -89,7 +91,7 @@ This filter works for keys made of letters, digits, `-`, and `_`.
 
 ## Choose the port
 
-The link opens the first port in `feature.network.incoming.ports`. With `ports = [3000, 8080]`, the link opens port 3000, and mirrord steals both ports as usual.
+The link opens the first port in `feature.network.incoming.ports` that the target's Service exposes. With `ports = [3000, 8080]`, the link opens port 3000, and mirrord steals both ports as usual. If the Service exposes only 8080, the link opens 8080. When the Service exposes none of the ports, mirrord fails with an error that names the Service.
 
 Without `ports`, the target container must declare exactly one port that mirrord steals. Otherwise, mirrord asks you to set `feature.network.incoming.ports`.
 
