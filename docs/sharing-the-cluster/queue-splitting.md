@@ -156,6 +156,8 @@ The `volume` source fields:
 * `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
 * `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
+A `secret` volume must set `valueSelector` or `valuePattern`, and a session against a target whose split config leaves both out fails to start. Only the queue name is taken out of the file: without one of the two, the whole file would be the queue name, and the Secret's content would end up in the split session object (which is cluster-scoped), in its error messages, and in the operator's logs. Keep the selector narrow for the same reason: `.[]` over an object that also holds a password makes the password a queue name.
+
 If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containerNames` list is not needed either - the file is shared by every container that mounts the volume.
 
 The operator never modifies your ConfigMap or Secret. When a split starts, it:
@@ -209,7 +211,7 @@ Which queues get split, and where their names live, comes from the same two plac
 
 The per-session copies are owned by the `PreviewSession` and deleted with it; the fallback copy goes when the last session ends.
 
-A `secret` volume gets its per-session copy as a Secret, with every key and the `type` of the original. The operator never writes a Secret's content into a ConfigMap: if a preview built with `--resource` declares the volume as `configMap` while the target mounts it from a Secret, the preview fails before the split starts, with an error naming the volume. Declare it as a `secret` volume in your manifest.
+A `secret` volume gets its per-session copy as a Secret, with every key and the `type` of the original. The operator never writes a Secret's content into a ConfigMap: if a preview built with `--resource` declares a volume as `configMap` while the target mounts it from a Secret, the preview fails before the split starts, with an error naming the volume. The check covers every volume the target's split config reads queue names from, not only the queues the preview splits: previews on one target share a split, and the files of every queue anyone splits reach each of them. Declare such volumes as `secret` volumes in your manifest.
 
 `config_mounts` entries compose with this. When the file content your mirrord config sends (`feature.preview.config_mounts` in `mirrord.json`) carries the same queue config, the operator bakes the session's queue names into it before mounting, and keeps every other value. For a session whose split renamed `orders`:
 
