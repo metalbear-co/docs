@@ -56,9 +56,9 @@ The link opens only the service you share. If you share `payments`, the link ope
 
 ## Share a change that spans several services
 
-Suppose you changed the frontend `web`, and it calls `payments` through the cluster. Run both locally with the same key, each with `--share`.
+Suppose you changed the frontend `web` and the `payments` service it calls through the cluster. Share `web`, and run `payments` locally with a regular steal session on the same key. You send people only the link that `web` prints.
 
-Save `.mirrord/payments.toml`:
+Run `web` with `--share`, as in [Share one service](#share-one-service). Save `.mirrord/payments.toml`, with an HTTP filter on the key:
 
 ```toml
 target = "deployment/payments"
@@ -66,28 +66,20 @@ target = "deployment/payments"
 [feature.network.incoming]
 mode = "steal"
 ports = [8080]
-```
 
-Run it in a second terminal:
-
-```bash
-mirrord exec --share --key feature-checkout --config-file .mirrord/payments.toml -- node payments.js
-```
-
-Send people the link that `web` prints. Requests through that link carry `baggage: mirrord-session=feature-checkout`. **Each service must forward the `baggage` header, unchanged, on its calls to the next service**, usually through its tracing or context propagation middleware. Without it, the call from `web` reaches the cluster's `payments` instead of yours.
-
-`payments` prints a link too. You can ignore it, or use it to call the `payments` API directly.
-
-A shared session steals only HTTP requests whose `baggage` carries its key. With a custom HTTP filter, it steals requests that match the filter or carry the key. A steal session without `--share` keeps its configured filter, or steals all traffic on its ports when it has none.
-
-To run `payments` without `--share` and without a second link, give it an explicit filter instead:
-
-```toml
 [feature.network.incoming.http_filter]
 header_filter = "^baggage: .*mirrord-session={{ key }}.*$"
 ```
 
-This filter works for keys made of letters, digits, `-`, and `_`.
+Run it in a second terminal, without `--share`:
+
+```bash
+mirrord exec --key feature-checkout --config-file .mirrord/payments.toml -- node payments.js
+```
+
+Requests through the link carry `baggage: mirrord-session=feature-checkout`. **`web` must forward the `baggage` header on its calls to `payments`**, usually through its tracing or context propagation middleware. Middleware can add its own members to the header: the filter above still matches. Without the header, the call from `web` reaches the cluster's `payments` instead of yours. The filter works for keys made of letters, digits, `-`, and `_`.
+
+A shared session steals only HTTP requests whose `baggage` header is exactly `mirrord-session=<key>`, which is the header share-ingress puts on every request it forwards, replacing any `baggage` the request had. With a custom HTTP filter, it steals requests that match the filter or carry the key. A steal session without `--share` keeps its configured filter, or steals all traffic on its ports when it has none, so give `payments` the filter above rather than `--share`: a shared `payments` would miss calls from `web` whose `baggage` holds other members too.
 
 ## Choose the port
 
