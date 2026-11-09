@@ -19,18 +19,18 @@ If your cluster has no internet access, see [Air-gapped / offline clusters](../m
 
 ## Requirements
 
-- A mirrord for Teams license. [Register at app.metalbear.com](https://app.metalbear.com) to get started.
+- A mirrord for Teams license, Team or Enterprise. [Register at app.metalbear.com](https://app.metalbear.com) to get started.
 - Kubernetes `1.22` or later. Some features need a newer version (see [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements)).
 - Permission to create cluster-scoped objects, such as CRDs, ClusterRoles, and an APIService. In most clusters, that's the `cluster-admin` role.
 - Nodes running `linux/amd64` or `linux/arm64`, with Linux kernel 5.4 or later and a containerd, CRI-O, or Docker runtime.
-- The Kubernetes API server can reach the Operator pods over TCP on port 443. Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
-- Your nodes can pull images from `ghcr.io/metalbear-co`. If they can't, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
+- The Kubernetes API server can reach the Operator pods over TCP, on the port in the `operator.port` Helm value (443 by default). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
+- Your nodes can pull the mirrord images from `ghcr.io/metalbear-co`. Some features pull other public images, such as the database images for DB branching. If your nodes can't reach these registries, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
 
 For details on each requirement, see [Requirements](../managing-mirrord/operator.md#requirements) on the Operator page.
 
 ## Default install
 
-You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install.
+You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install. If your organization already has an operator API key, for example, from an earlier install, [install with that key](#install-with-an-existing-key) instead.
 
 1. Run:
 
@@ -50,7 +50,7 @@ You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a k
 
    Type `y` and press Enter. To skip the question, pass `--yes`. In CI, or anywhere without a terminal, the command doesn't ask.
 
-4. Wait for the command to finish. It creates your organization's operator API key, installs the Operator, and gives it up to 5 minutes to become ready. At the end, you see:
+4. Wait for the command to finish. It creates your organization's operator API key, installs the Operator, and gives it up to 5 minutes to become ready. At the end, you see output like this, with your own version and names:
 
    ```text
    ✓ mirrord operator install
@@ -69,9 +69,9 @@ You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a k
 **AI coding agents:** to install without a person, follow [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md).
 {% endhint %}
 
-### Install into more clusters
+### Install with an existing key
 
-The first install creates your organization's operator API key. Install every other cluster with the same key. Anyone who has it can do this without logging in:
+Your organization has one operator API key, and the first default install creates it. Once the key exists, install every other cluster with it. Anyone who has the key can do this without logging in:
 
 ```bash
 mirrord operator install --api-key <key>
@@ -99,6 +99,7 @@ curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator
 
 Edit the values you need:
 
+- To install into a namespace other than `mirrord`, set `namespace`. Then use your namespace instead of `mirrord` in the commands on this page.
 - To pull images from your own registry, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
 - On OpenShift or GKE Autopilot, see [OpenShift](../managing-mirrord/operator.md#openshift) or [GKE Autopilot](../managing-mirrord/operator.md#gke-autopilot).
 - To let developers target [serverless workloads](../using-mirrord/serverless/README.md) outside Kubernetes, such as Amazon ECS tasks, set `operator.sessionsManager: true`. This is experimental. See [Operator-Hosted Sessions-Manager](../using-mirrord/serverless/operator-hosted.md).
@@ -157,6 +158,8 @@ Then [verify the installation](#verify-the-installation).
 
 ## Verify the installation
 
+If you installed with `--context <name>`, add `--context <name>` to the `kubectl` command, and run `mirrord operator status` with `MIRRORD_KUBE_CONTEXT=<name>` set.
+
 1. Check that the Operator pod is running:
 
    ```bash
@@ -174,7 +177,7 @@ Then [verify the installation](#verify-the-installation).
    mirrord operator status
    ```
 
-   The output starts with the Operator version and your organization's license:
+   The output starts with the Operator version and your organization's license, for example:
 
    ```text
    Operator version: 3.230.0
@@ -189,7 +192,7 @@ If either check fails, see [Common Issues](../troubleshooting/common-issues.md).
 
 ## Uninstall
 
-- **Default install:** run `mirrord operator uninstall`. Add `--context <name>` for a different kubecontext. This also deletes all mirrord policies and profiles in the cluster, so the command asks you to confirm first.
+- **Default install:** run `mirrord operator uninstall`. Add `--context <name>` for a different kubecontext. This also deletes all mirrord policies and profiles in the cluster. On a terminal, the command asks you to confirm first. With `--yes`, or without a terminal, it doesn't ask.
 - **Helm:** run `helm uninstall mirrord-operator` with the same kubecontext and namespace you installed with.
 
 ## Next steps
