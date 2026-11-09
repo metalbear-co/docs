@@ -193,7 +193,7 @@ If either check fails, see [Common Issues](../troubleshooting/common-issues.md).
 ## Uninstall
 
 - **Default install:** run `mirrord operator uninstall`. Add `--context <name>` for a different kubecontext. This also deletes all mirrord policies and profiles in the cluster. On a terminal, the command asks you to confirm first. With `--yes`, or without a terminal, it doesn't ask.
-- **Helm:** run `helm uninstall mirrord-operator` with the same kubecontext and namespace you installed with.
+- **Helm:** run `helm uninstall mirrord-operator` with the same kubecontext and current namespace you had when you ran `helm install`. Helm keeps its release record there, not in the namespace the chart installs the Operator into.
 
 ## Next steps
 
