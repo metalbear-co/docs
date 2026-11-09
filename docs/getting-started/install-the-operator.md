@@ -30,7 +30,7 @@ For details on each requirement, see [Requirements](../managing-mirrord/operator
 
 ## Default install
 
-You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install. If your organization already has an operator API key, for example, from an earlier install, [install with that key](#install-with-an-existing-key) instead.
+You need mirrord CLI `3.278.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install. If your organization already has an operator API key, for example, from an earlier install, [install with that key](#install-with-an-existing-key) instead.
 
 1. Run:
 
@@ -158,7 +158,7 @@ Then [verify the installation](#verify-the-installation).
 
 ## Verify the installation
 
-If you installed with `--context <name>`, add `--context <name>` to the `kubectl` command, and run `mirrord operator status` with `MIRRORD_KUBE_CONTEXT=<name>` set.
+If the Operator isn't in your current kubecontext, add `--context <name>` to the `kubectl` command, and run `mirrord operator status` with `MIRRORD_KUBE_CONTEXT=<name>` set.
 
 1. Check that the Operator pod is running:
 
