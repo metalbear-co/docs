@@ -40,4 +40,4 @@ Some features need a newer version of Kubernetes:
 
 ## mirrord Operator
 
-If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord Operator in your cluster. See the [mirrord Operator](../managing-mirrord/operator.md) page for installation instructions.
+If you're planning to use [mirrord for Teams](https://app.metalbear.com), you'll also need to install the mirrord Operator in your cluster. See [Install the Operator](../getting-started/install-the-operator.md).

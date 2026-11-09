@@ -1,0 +1,199 @@
+---
+title: Install the Operator
+description: "Install the mirrord Operator in your cluster, with one command or with Helm."
+tags:
+  - team
+  - enterprise
+---
+
+# Install the Operator
+
+The [mirrord Operator](../managing-mirrord/operator.md) runs in your cluster and enables the Team and Enterprise features. Install it once per cluster. From then on, mirrord uses it automatically for every session in that cluster.
+
+There are two ways to install it:
+
+- **[Default install](#default-install):** one command, `mirrord operator install`. Use it unless you need the Helm chart.
+- **[Custom install with Helm](#custom-install-with-helm):** when you need your own chart values, such as an internal image registry or a namespace other than `mirrord`.
+
+If your cluster has no internet access, see [Air-gapped / offline clusters](../managing-mirrord/operator.md#air-gapped-offline-clusters-enterprise) (Enterprise only).
+
+## Requirements
+
+- A mirrord for Teams license. [Register at app.metalbear.com](https://app.metalbear.com) to get started.
+- Kubernetes `1.22` or later. Some features need a newer version (see [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements)).
+- Permission to create cluster-scoped objects, such as CRDs, ClusterRoles, and an APIService. In most clusters, that's the `cluster-admin` role.
+- Nodes running `linux/amd64` or `linux/arm64`, with Linux kernel 5.4 or later and a containerd, CRI-O, or Docker runtime.
+- The Kubernetes API server can reach the Operator pods over TCP on port 443. Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
+- Your nodes can pull images from `ghcr.io/metalbear-co`. If they can't, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
+
+For details on each requirement, see [Requirements](../managing-mirrord/operator.md#requirements) on the Operator page.
+
+## Default install
+
+You need mirrord CLI `3.277.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install.
+
+1. Run:
+
+   ```bash
+   mirrord operator install
+   ```
+
+   This installs into your current kubecontext, or into the `kube_context` in your [Global Configuration](../installing-mirrord/global-configuration.md) if you set one. To use a different one, add `--context <name>`.
+
+2. If you aren't logged in to app.metalbear.com, a browser window opens. Approve the login there. If the browser doesn't open, open the URL that the command prints.
+
+3. The command checks for an existing Operator and for your permissions, then asks:
+
+   ```text
+   ? Install the mirrord operator into namespace `mirrord` of kubecontext `my-cluster`? (y/N)
+   ```
+
+   Type `y` and press Enter. To skip the question, pass `--yes`. In CI, or anywhere without a terminal, the command doesn't ask.
+
+4. Wait for the command to finish. It creates your organization's operator API key, installs the Operator, and gives it up to 5 minutes to become ready. At the end, you see:
+
+   ```text
+   ✓ mirrord operator install
+     ✓ no operator installed
+     ✓ fetching the operator manifest
+     ✓ checking permissions
+     ✓ creating the operator API key of the organization of you@example.com
+     ✓ installing the operator
+     ✓ waiting for the operator to become ready
+   mirrord operator 3.230.0 is installed in namespace `mirrord` of kubecontext `my-cluster`. To remove it, run `mirrord operator uninstall --context my-cluster`.
+   ```
+
+5. [Verify the installation](#verify-the-installation).
+
+{% hint style="info" %}
+**AI coding agents:** to install without a person, follow [Agent-Started Trials](../using-mirrord-with-ai/agent-started-trials.md).
+{% endhint %}
+
+### Install into more clusters
+
+The first install creates your organization's operator API key. Install every other cluster with the same key. Anyone who has it can do this without logging in:
+
+```bash
+mirrord operator install --api-key <key>
+```
+
+To read the key from a cluster where you ran the default install:
+
+```bash
+kubectl get deployment mirrord-operator -n mirrord \
+  -o jsonpath='{.spec.template.spec.containers[*].env[?(@.name=="OPERATOR_CLOUD_API_KEY")].value}'
+```
+
+For a Helm install, the key is in the secret, Secret Manager entry, or values file you gave the chart. Or ask an organization admin.
+
+## Custom install with Helm
+
+### Get the chart
+
+Add the MetalBear Helm repository and download the chart's `values.yaml`:
+
+```bash
+helm repo add metalbear https://metalbear-co.github.io/charts
+curl https://raw.githubusercontent.com/metalbear-co/charts/main/mirrord-operator/values.yaml --output values.yaml
+```
+
+Edit the values you need:
+
+- To pull images from your own registry, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
+- On OpenShift or GKE Autopilot, see [OpenShift](../managing-mirrord/operator.md#openshift) or [GKE Autopilot](../managing-mirrord/operator.md#gke-autopilot).
+- To let developers target [serverless workloads](../using-mirrord/serverless/README.md) outside Kubernetes, such as Amazon ECS tasks, set `operator.sessionsManager: true`. This is experimental. See [Operator-Hosted Sessions-Manager](../using-mirrord/serverless/operator-hosted.md).
+
+### Cloud API key
+
+The Operator uses a cloud API key to get its license. Generate one under **Settings** at [app.metalbear.com](https://app.metalbear.com). It's shown only once, so store it right away.
+
+When you generate the key, you choose whether to turn on **identity sharing**. With it on, usage metrics include developer usernames and session targets, so the usage dashboard can show them by name. With it off, they stay anonymized. To keep metrics anonymized regardless of this setting, set `cloud.anonymizeData: true` in your values. For the exact fields, see [What data does the Operator send to MetalBear cloud](../managing-mirrord/security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud).
+
+### Add the key to your values
+
+Pick one:
+
+**Kubernetes secret (recommended):** keeps the key out of your `values.yaml`. Set the secret's name now, and create the secret after installing:
+
+```yaml
+cloud:
+  apiKey:
+    keyRef: mirrord-operator-cloud-api-key
+```
+
+**Google Secret Manager:** store the key in GSM. The Operator reads it with Application Default Credentials (see `sa.gcpSa`):
+
+```yaml
+cloud:
+  apiKey:
+    gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
+```
+
+**Inline (dev/test):** the key sits in plain text in your values file:
+
+```yaml
+cloud:
+  apiKey:
+    key: <your API key>
+```
+
+### Install the chart
+
+```bash
+helm install -f values.yaml mirrord-operator metalbear/mirrord-operator
+```
+
+If you chose a Kubernetes secret, create it in the new `mirrord` namespace:
+
+```bash
+kubectl create secret generic mirrord-operator-cloud-api-key \
+  --namespace mirrord \
+  --from-literal=apiKey=<your API key>
+```
+
+The Operator starts as soon as the secret exists, so you don't need to restart anything. Creating the secret before installing works only if the `mirrord` namespace already exists and is managed by Helm. Otherwise, `helm install` can't adopt the namespace.
+
+Then [verify the installation](#verify-the-installation).
+
+## Verify the installation
+
+1. Check that the Operator pod is running:
+
+   ```bash
+   kubectl get pods -n mirrord
+   ```
+
+   ```text
+   NAME                                READY   STATUS    RESTARTS   AGE
+   mirrord-operator-7c9d8b6f5d-x2k4p   1/1     Running   0          1m
+   ```
+
+2. Check that mirrord can reach the Operator:
+
+   ```bash
+   mirrord operator status
+   ```
+
+   The output starts with the Operator version and your organization's license:
+
+   ```text
+   Operator version: 3.230.0
+   Operator default namespace: default
+   Operator License
+       name: Acme
+       organization: Acme
+       expire at: 31-Dec-2026
+   ```
+
+If either check fails, see [Common Issues](../troubleshooting/common-issues.md).
+
+## Uninstall
+
+- **Default install:** run `mirrord operator uninstall`. Add `--context <name>` for a different kubecontext. This also deletes all mirrord policies and profiles in the cluster, so the command asks you to confirm first.
+- **Helm:** run `helm uninstall mirrord-operator` with the same kubecontext and namespace you installed with.
+
+## Next steps
+
+- [Policies](../sharing-the-cluster/policies.md): control what developers can do in the cluster.
+- [Sharing the Cluster](../sharing-the-cluster/overview.md): concurrent sessions, queue splitting, and database branching.
+- [Onboarding Wizard](onboarding-wizard.md): guides developers through their first mirrord config.

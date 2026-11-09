@@ -113,7 +113,7 @@ None of these fields identify an individual developer or a workload in your clus
 
 ### Sent only with identity sharing enabled
 
-Identity sharing is an organization-level setting. An organization admin chooses it when generating a [cloud API key](operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com), where it is ticked by default, and can change it later for the current key on the same page. With it enabled, the Operator's events also carry, where applicable:
+Identity sharing is an organization-level setting. An organization admin chooses it when generating a [cloud API key](../getting-started/install-the-operator.md#cloud-api-key) at [app.metalbear.com](https://app.metalbear.com), where it is ticked by default, and can change it later for the current key on the same page. With it enabled, the Operator's events also carry, where applicable:
 
 1. Kubernetes username of the client, as authenticated by your Kubernetes API server
 2. Display name of the local account and hostname of the client machine
