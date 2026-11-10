@@ -22,7 +22,7 @@ If your cluster is isolated from the internet and external networks, for example
 ## Requirements
 
 - A mirrord for Teams license (Team or Enterprise) or a 7-day trial. To start the trial, sign up at [app.metalbear.com](https://app.metalbear.com), or run the [default install](#default-install) and sign up on the login page it opens.
-- Kubernetes `1.22` or later. Some features need a newer version (see [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements)).
+- Kubernetes `1.22` or later. Some features need a newer version (see [Cluster Requirements](install-mirrord.md#cluster-requirements)).
 - Permission to create cluster-scoped objects, such as CRDs, ClusterRoles, and an APIService. In most clusters, that's the `cluster-admin` role. You need it only to install: the Operator itself runs with its own, narrower role (see [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster)).
 - Nodes running `linux/amd64` or `linux/arm64`, with Linux kernel 5.4 or later and a containerd, CRI-O, or Docker runtime.
 - The Kubernetes API server can reach the Operator pods over TCP, on the port in the `operator.port` Helm value (443 by default). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).

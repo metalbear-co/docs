@@ -32,7 +32,7 @@ Before you install the Operator, make sure that your cluster and network meet th
 
 **Kubernetes version**
 
-The Operator needs Kubernetes `1.22` or later. Some features need a newer version. See [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements).
+The Operator needs Kubernetes `1.22` or later. Some features need a newer version. See [Cluster Requirements](../getting-started/install-mirrord.md#cluster-requirements).
 
 **Permissions**
 
