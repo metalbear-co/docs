@@ -230,6 +230,8 @@ A preview with code sync can [scale to zero](preview-environments.md#auto-scalin
 * With `--watch`, your first change wakes an idle preview.
 * A sync or a `prepare` that is running keeps the preview from going idle.
 
+A preview with code sync can't start idle, because the first sync needs a running pod. Set `sleep_after_secs` and leave `start_idle` unset: `mirrord preview sync` rejects `start_idle: true`.
+
 On an `emptyDir`, the code would be lost when the preview scales to zero, so idle mode is off. `mirrord preview status` shows why.
 
 ## Operator Setup
