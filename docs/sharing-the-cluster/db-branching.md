@@ -84,7 +84,7 @@ Developers define branches in their `mirrord.json`:
         "id": "users-mysql-db",             // Optional
         "location": "remote",               // Optional, default is "remote", Available options [remote | local]
         "type": "mysql",                    // See "Choose Your Database" above for supported values
-        "version": "8.0",
+        "version": "8.4",
         "name": "users-database-name",      // Optional
         "ttl_secs": 60,                     // Optional, mutually exclusive with `ttl_mins`
         "creation_timeout_secs": 20,        // Optional, Defaults to 60 if not specified

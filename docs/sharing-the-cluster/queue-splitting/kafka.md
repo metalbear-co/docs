@@ -423,7 +423,7 @@ operator:
   kafkaBranchConfig:
     brokerPod:
       # Any image configured through `KAFKA_` environment variables, like `apache/kafka`.
-      image: "docker.io/apache/kafka:4.1.0"
+      image: "docker.io/apache/kafka:4.4.0"
       imagePullSecrets:
         - name: kafka-registry
       annotations:

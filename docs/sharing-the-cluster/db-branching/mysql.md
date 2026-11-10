@@ -24,7 +24,7 @@ MySQL branching requires operator `3.129.0`, mirrord CLI `3.160.0`, and operator
       {
         "id": "users-mysql-db",
         "type": "mysql",
-        "version": "8.0",
+        "version": "8.4",
         "name": "users-database-name",
         "connection": {
           "url": "DATABASE_URL"
