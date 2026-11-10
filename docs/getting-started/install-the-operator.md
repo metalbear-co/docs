@@ -12,16 +12,16 @@ The [mirrord Operator](../managing-mirrord/operator.md) runs in your cluster and
 
 There are two ways to install it:
 
-- **[Default install](#default-install):** one command, `mirrord operator install`. Use it unless you need the Helm chart.
-- **[Custom install with Helm](#custom-install-with-helm):** when you need your own chart values, such as an internal image registry or a namespace other than `mirrord`.
+- **[Default install](#default-install):** one command, `mirrord operator install`, with the chart's default settings. Use it unless one of the Helm cases below applies.
+- **[Custom install with Helm](#custom-install-with-helm):** if your platform team manages cluster software with Helm or GitOps, or you need to change a default. For example, your nodes can't pull images from `ghcr.io` (see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional)), you want a namespace other than `mirrord`, or you run OpenShift or GKE Autopilot.
 
-If your cluster has no internet access, see [Air-gapped / offline clusters](../managing-mirrord/operator.md#air-gapped-offline-clusters-enterprise) (Enterprise only).
+If your cluster can't reach the internet, or your security policy doesn't allow the Operator to contact MetalBear, see [Air-gapped / offline clusters](../managing-mirrord/operator.md#air-gapped-offline-clusters-enterprise) (Enterprise only).
 
 ## Requirements
 
 - A mirrord for Teams license, Team or Enterprise. [Register at app.metalbear.com](https://app.metalbear.com) to get started.
 - Kubernetes `1.22` or later. Some features need a newer version (see [Cluster Requirements](../installing-mirrord/README.md#cluster-requirements)).
-- Permission to create cluster-scoped objects, such as CRDs, ClusterRoles, and an APIService. In most clusters, that's the `cluster-admin` role.
+- Permission to create cluster-scoped objects, such as CRDs, ClusterRoles, and an APIService. In most clusters, that's the `cluster-admin` role. You need it only to install: the Operator itself runs with its own, narrower role (see [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster)).
 - Nodes running `linux/amd64` or `linux/arm64`, with Linux kernel 5.4 or later and a containerd, CRI-O, or Docker runtime.
 - The Kubernetes API server can reach the Operator pods over TCP, on the port in the `operator.port` Helm value (443 by default). Private clusters often need a firewall rule for this. For an example, see [this GKE issue](../troubleshooting/common-issues.md#mirrord-operator-status-fails-with-503-service-unavailable-on-gke).
 - Your nodes can pull the mirrord images from `ghcr.io/metalbear-co`. Some features pull other public images, such as the database images for DB branching. If your nodes can't reach these registries, see [Using an Internal Registry](../managing-mirrord/operator.md#using-an-internal-registry-optional).
@@ -29,7 +29,7 @@ If your cluster has no internet access, see [Air-gapped / offline clusters](../m
 For details on each requirement, see [Requirements](../managing-mirrord/operator.md#requirements) on the Operator page.
 
 {% hint style="warning" %}
-**Security.** The Operator runs inside your cluster and sends MetalBear only license checks and usage metrics. Developers can only use mirrord on workloads their own Kubernetes access already lets them see. Before you install, read [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster), or share it with your security team.
+**Security:** the Operator runs inside your cluster and sends MetalBear only license checks and usage metrics. The metrics are anonymized unless your organization turns on identity sharing for its API key. Developers can only use mirrord on workloads their own Kubernetes access already lets them see. Before you install, read [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster), or share it with your security team.
 {% endhint %}
 
 ## Default install
