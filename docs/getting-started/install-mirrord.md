@@ -36,7 +36,7 @@ To install a specific release and check the download against the checksum publis
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh \
-  | MIRRORD_CHECKSUM=<sha256 of the zip> MIRRORD_INSTALL_DIR="$HOME/.local/bin" bash -s -- 3.271.0
+  | MIRRORD_CHECKSUM=<sha256 of the zip> MIRRORD_INSTALL_DIR="$HOME/.local/bin" bash -s -- <version>
 ```
 
 `MIRRORD_VERIFY=1` checks against the published checksum without pinning one, and `MIRRORD_INSTALL_DIR` picks the directory (no `sudo`). In GitHub Actions, [`metalbear-co/setup-mirrord`](https://github.com/metalbear-co/setup-mirrord) does the same and caches the binary between runs.

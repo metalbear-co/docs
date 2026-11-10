@@ -25,7 +25,7 @@ For example, to run a Python app as if it were the remote pod:
 mirrord exec --target pod/app-pod-01 python main.py
 ```
 
-Or run a local container instead of a native process:
+On macOS or Linux, you can run a local container instead of a native process:
 
 ```bash
 mirrord container --target pod/app-pod-01 -- docker run nginx
