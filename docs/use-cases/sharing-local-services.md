@@ -85,7 +85,7 @@ A shared session steals only HTTP requests whose `baggage` header is exactly `mi
 
 The link opens the first port in `feature.network.incoming.ports` that the target's Service exposes. With `ports = [3000, 8080]`, the link opens port 3000, and mirrord steals both ports as usual. If the Service exposes only 8080, the link opens 8080. When the Service exposes none of the ports, mirrord fails with an error that names the Service.
 
-Without `ports`, the target container must declare exactly one port that mirrord steals. Otherwise, mirrord asks you to set `feature.network.incoming.ports`.
+Without `ports`, the link opens one of the ports that the target container declares, that mirrord steals and that the Service leads to, chosen as for preview environments: the port behind the Service's port 80 if the Service has one, otherwise the port behind the Service's first such port. When the Service leads to none of them, mirrord asks you to set `feature.network.incoming.ports`.
 
 ## Lifetime
 
