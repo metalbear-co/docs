@@ -90,7 +90,7 @@ During a session, the Primary operator routes each operation based on its type. 
 | [Database branching](#database-branching-in-multi-cluster) | Default cluster only (the branch is created once)           |
 | [Queue splitting](#queue-splitting-in-multi-cluster) | **All** workload clusters \* (each filters messages locally)        |
 
-\* The Default cluster only, when the split config names it as the [consumer cluster](#splitting-from-one-cluster).
+\* One cluster only, when the split config names a [consumer cluster](#splitting-from-one-cluster).
 
 Responses from all clusters are merged into the single connection back to your local application, so wherever a request or message lands, it reaches your local process the same way.
 
@@ -155,12 +155,12 @@ To monitor active splits across all clusters, run `mirrord queues status -A` (or
 
 When only one cluster's copy of the workload consumes the queue, set `spec.consumerCluster` on the `MirrordSplitConfig` to that cluster's name. Only that cluster's operator then splits the queue for sessions going through the Primary (`mirrord exec`, `mirrord up`, `mirrord ci`, the IDE extensions): it runs the forwarder, creates the temporary queues and patches its copy of the workload. The other clusters' child sessions leave their copy of the workload and its queues untouched.
 
-The consumer cluster has to be the [Default cluster](#default-cluster). Your local application reads its environment variables and files from the Default cluster, and the split queue names are written into them by the operator that runs the split, so a split anywhere else would leave your application reading the original queues. If the cluster that consumes the queues is not your Default cluster today, make it the Default (`operator.multiCluster.defaultCluster` on the Primary). That is a cluster-wide change, not a queue setting: the Default cluster also serves your application's environment variables and files, DNS and outgoing traffic, database branches, copy target pods and, in `default-cluster` preview mode, preview pods, for every workload. Two workloads that consume their queues in different clusters cannot both have a consumer cluster.
+The consumer cluster can be any cluster the session spans, the [Default cluster](#default-cluster) or another one. Your local application still reads its environment variables and files from the Default cluster: when the consumer is another cluster, the Primary connects to it first, copies the split queue names its operator produced onto the Default cluster's child session, and the Default cluster's operator writes them into the environment variables and files it serves, as it does for a split of its own. Everything else stays on the Default cluster, DNS and outgoing traffic included, so the queues the consumer cluster splits have to be reachable from the Default cluster's network. Each `MirrordSplitConfig` names its own consumer, so two workloads can consume their queues in two different clusters.
 
 [`MirrordPolicy`](../sharing-the-cluster/policies.md) rules for queue splitting still apply on every cluster: each child session is checked against its own cluster's `splitQueues` policy with the filter you asked for, and only then does a cluster that is not the consumer run a plain session. Keep a policy on each cluster, as [above](#access-control).
 
 {% hint style="warning" %}
-`consumerCluster` does not apply to preview environments. Previews still split on every cluster. Multi-cluster copy target sessions split on the Default cluster as they always did, and are refused like any other session when the config names another cluster.
+`consumerCluster` does not apply to preview environments. Previews still split on every cluster. Multi-cluster copy target sessions span only the Default cluster, so they honor `consumerCluster` only when it names the Default cluster and are refused otherwise.
 {% endhint %}
 
 ```yaml
@@ -183,7 +183,7 @@ spec:
           - env: ORDERS_QUEUE_NAME
 ```
 
-The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads and is the Default. A session that splits queues is refused when the name matches none of the clusters it spans, or names a cluster other than the Default; the error says which cluster is the Default. A session that splits no queues never looks at the name.
+The name is one of the keys of the Primary's `operator.multiCluster.clusters`, or the Primary's own `operator.multiCluster.clusterName` when it runs workloads. A session that splits queues is refused when the name matches none of the clusters it spans; the error lists them. A session that splits no queues never looks at the name.
 
 If the workload's queues still come from a `MirrordWorkloadQueueRegistry` or a `MirrordKafkaTopicsConsumer`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces both, so the session would lose their queues.
 
@@ -191,7 +191,7 @@ Leave `consumerCluster` unset to keep splitting on every workload cluster. `cons
 
 ### Per-Service Details
 
-Most services behave identically everywhere, with small differences in where temporary resources are created. With a [consumer cluster](#splitting-from-one-cluster) set, only the Default cluster creates temporary resources and patches its workload, for every service.
+Most services behave identically everywhere, with small differences in where temporary resources are created. With a [consumer cluster](#splitting-from-one-cluster) set, only that cluster creates temporary resources and patches its workload, for every service.
 
 * **[Amazon SQS](../sharing-the-cluster/queue-splitting/sqs.md)** — each Workload cluster creates its own temporary queues and patches the target workload locally. Session queue names are shared between clusters so matched messages from every cluster reach your session.
 * **[GCP Pub/Sub](../sharing-the-cluster/queue-splitting/gcp-pubsub.md)** — each Workload cluster creates its own fallback topic and subscription (what the deployed workload reads from). The per-session topic and subscription are created once on the Default cluster, and their names are shared with the other clusters for reuse.
