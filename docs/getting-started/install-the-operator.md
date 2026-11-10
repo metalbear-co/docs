@@ -8,7 +8,7 @@ tags:
 
 # Install the Operator
 
-The [mirrord Operator](../managing-mirrord/operator.md) runs in your cluster and adds the Team and Enterprise features, such as concurrent sessions, policies, queue splitting and database branching. Install it once per cluster. From then on, mirrord uses it automatically for every session in that cluster.
+The [mirrord Operator](../managing-mirrord/operator.md) runs in your cluster and adds the Team and Enterprise features, such as [policies](../sharing-the-cluster/policies.md), [queue splitting](../sharing-the-cluster/queue-splitting.md) and [database branching](../sharing-the-cluster/db-branching.md) (see [pricing](https://metalbear.com/mirrord/pricing/) for the full list per plan). Install it once per cluster. From then on, mirrord uses it automatically for every session in that cluster.
 
 If you install it for a trial, the Operator keeps working after the trial ends. Without a paid plan, it gives you the same features as open-source mirrord, plus a usage dashboard at [app.metalbear.com](https://app.metalbear.com) with the last 7 days of activity.
 
