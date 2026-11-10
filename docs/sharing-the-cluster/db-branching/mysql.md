@@ -155,7 +155,7 @@ In `empty` mode this login has every privilege on the branch; in `full` mode it 
 ### Limits
 
 - Accounts other than the declared user are recreated without a password and cannot log in.
-- The declared user's login needs `mysql_native_password` or `caching_sha2_password`, loaded on the branch server (MySQL 8.4 and later do not load `mysql_native_password` by default). Otherwise `full` fails the branch and `empty` creates it without that login.
+- The declared user's login needs `mysql_native_password` or `caching_sha2_password`, loaded on the branch server. MySQL 8.4 does not load `mysql_native_password` by default, so the operator starts branches on the default `mysql:8.4` image with `--mysql-native-password=ON`; a custom `image` or MySQL 9 and later gets no such flag. Otherwise `full` fails the branch and `empty` creates it without that login.
 - The declared user can log in from any host, without the TLS or X.509 requirement it has on the source.
 - Roles granted to a declared user without `SELECT` on the `mysql` schema are recreated empty, and the user gets their privileges directly.
 - Accounts are recreated when a branch is created. Changing the Helm value or rotating a source password affects new branches, not ones already running.
