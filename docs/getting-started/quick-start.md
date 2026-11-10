@@ -29,4 +29,4 @@ Get mirrord running against your cluster in a few minutes.
 
 ## Platform teams
 
-The Operator lets a team share a cluster, with [concurrent sessions](../sharing-the-cluster/overview.md), [queue splitting](../sharing-the-cluster/queue-splitting.md), [database branching](../sharing-the-cluster/db-branching.md), [preview environments](../use-cases/preview-environments.md) and [CI](../use-cases/mirrord-for-ci.md). [Install it](install-the-operator.md) once per cluster. It needs a [mirrord for Teams](what-is-mirrord.md#mirrord-for-teams) or [Enterprise](what-is-mirrord.md#enterprise-plan) license.
+The Operator lets a team share a cluster and adds the Team and Enterprise features. [Install it](install-the-operator.md) once per cluster, with a [mirrord for Teams](what-is-mirrord.md#mirrord-for-teams) or [Enterprise](what-is-mirrord.md#enterprise-plan) license, or a 7-day trial.
