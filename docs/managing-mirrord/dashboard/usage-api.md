@@ -170,7 +170,7 @@ The service map the dashboard's [Topology](topology.md) page draws, as a list of
 | `service` | The Service on the other end: `name`, `namespace`, and `preview` when it fronts a preview environment |
 | `direction` | `outgoing` when the workload connected to the service, `incoming` when a pod behind the service connected to the workload |
 | `port` | The service port, on `outgoing` edges that reported one |
-| `sessionCount` | Sessions in which the connection happened at least once, not individual connections |
+| `sessionCount` | Sessions or preview environment runs in which the connection happened at least once, not individual connections |
 | `uniqueUsers` | Engineers behind those sessions |
 | `lastSeen` | The latest session that made the connection |
 
