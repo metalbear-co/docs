@@ -21,7 +21,7 @@ For what your machine needs, see [Requirements](../getting-started/install-mirro
 
 ## Cluster Requirements
 
-For the Kubernetes version, node and feature requirements, see [Cluster Requirements](../getting-started/install-mirrord.md#cluster-requirements).
+For the Kubernetes version and node requirements, see [Cluster Requirements](../getting-started/install-mirrord.md#cluster-requirements).
 
 ## mirrord Operator
 

@@ -35,7 +35,7 @@ Use `mirrord exec --help` or `mirrord container --help` for all options.
 
 ## Multiple services
 
-To run several services together from one config file (think `docker compose`, but for mirrord), use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md):
+To run several services together from one config file, use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md):
 
 ```bash
 mirrord up init
