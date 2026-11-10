@@ -44,10 +44,37 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
 * With the experimental [MetalBear Cloud sessions-manager](../using-mirrord/serverless/metalbear-cloud.md), serverless workloads authenticate with a MetalBear API key exchanged for short-lived tokens, developers with their MetalBear account through `mirrord login`, and every session is scoped to your organization. See [How do serverless workloads authenticate to MetalBear Cloud?](#how-do-serverless-workloads-authenticate-to-metalbear-cloud).
 * With the experimental [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
+* The Operator's own permissions are listed in [What can the Operator access in my cluster?](#what-can-the-operator-access-in-my-cluster), with how to limit it to some namespaces.
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
 * Released container images and CLI binaries carry signed SLSA Build Level 2 provenance, so you can verify what you pulled before installing it. See [How is the Operator built and distributed](#how-is-the-operator-built-and-distributed).
 * Missing anything? Feel free to ask us on [Slack](https://metalbear.com/slack) or hi@metalbear.com
+
+## What can the Operator access in my cluster?
+
+The Operator runs in the `mirrord` namespace with the `mirrord-operator` ClusterRole. By default, it can:
+
+* Read nodes, and read pods, services and workloads (Deployments, StatefulSets, ReplicaSets, Jobs, CronJobs and Argo Rollouts) in every namespace.
+* Create and delete pods and jobs, to run mirrord agents.
+* Patch and scale Deployments, StatefulSets, ReplicaSets and Argo Rollouts, for features such as [copying a target](../using-mirrord/copy-target.md).
+* Create `SubjectAccessReview`s, to check each developer's permissions.
+
+It has no wildcard rules, and it can't impersonate users or change RBAC. It reads Secrets and ConfigMaps only if you turn on queue splitting or database branching. Other features, such as preview environments, add the permissions they need when you turn them on. For the full list, see the chart's [Operator rules](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/_operator-rules.tpl).
+
+Developers can only use mirrord on targets their own RBAC lets them `get`. See [How do I configure Role Based Access Control for mirrord for Teams?](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams).
+
+### Limiting the Operator to some namespaces
+
+If you install with the Helm chart, set `namespaced: true` and list the namespaces in `allowedNamespaces`:
+
+```yaml
+namespaced: true
+allowedNamespaces:
+  - team-a
+  - team-b
+```
+
+The `mirrord-operator` ClusterRole then keeps only the rules for cluster-scoped resources, such as nodes and `SubjectAccessReview`s. The rules for pods, workloads and Secrets move to a Role in each listed namespace and in the Operator's own namespace, and the Operator refuses sessions in any other namespace. The namespaces must exist before you install. If you set `agent.extraConfig.namespace`, `operator.applicationPauseAutoSync` or `operator.suspendFluxControllers`, also list the agent, Argo CD or Flux namespaces. This mode doesn't work with multi-cluster.
 
 ## How do I audit mirrord usage?
 
