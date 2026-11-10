@@ -501,7 +501,7 @@ This lets you route messages by fields inside the message body. For example, to 
 If both `message_filter` and `jq_filter` are specified for the same queue, both must match for a message to reach the local application. Records for which the jq program errors (for example, a non-JSON payload piped to `fromjson`) are treated as not matching and stay on the deployed application's path.
 
 {% hint style="warning" %}
-`jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later. With the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) it requires mirrord operator `3.231.0` or later; earlier operators fail the session with a clear error when a `jq_filter` is set. The same applies to a `keyJqFilter` in a `MirrordSplitConfig` entry a Java-client session takes.
+`jq_filter` for Kafka requires mirrord operator `3.183.0` or later and mirrord CLI `3.232.0` or later. With the Java client (`mirrord.client_implementation: java`, required for Kafka Streams) it requires mirrord operator `3.232.0` or later; earlier operators fail the session with a clear error when a `jq_filter` is set. The same applies to a `keyJqFilter` in a `MirrordSplitConfig` entry a Java-client session takes.
 
 With the Java client, the jq program runs inside the operator's Kafka sidecar on a different jq engine than the operator's own, so a few things to know:
 
