@@ -61,7 +61,7 @@ The Operator runs in the `mirrord` namespace with the `mirrord-operator` Cluster
 
 It has no wildcard rules, and it can't impersonate users or change RBAC. It reads Secrets and ConfigMaps only if you turn on queue splitting or database branching. Other features, such as preview environments, add the permissions they need when you turn them on. For the full list, see the chart's [Operator rules](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/_operator-rules.tpl).
 
-Developers can only use mirrord on targets their own RBAC lets them `get`. See [How do I configure Role Based Access Control for mirrord for Teams?](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). In [multi-cluster](../using-mirrord/multi-cluster.md#access-control) mode, this check doesn't apply: anyone who can reach the Primary cluster's Operator can target workloads on every connected cluster, so restrict them with [policies](../sharing-the-cluster/policies.md).
+Developers can only use mirrord on targets their own RBAC lets them `get`. See [How do I configure Role Based Access Control for mirrord for Teams?](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). In [multi-cluster](../using-mirrord/multi-cluster.md#access-control) mode, this check doesn't apply: anyone who can reach the Primary cluster's Operator can target workloads on every connected cluster. Control who can reach it with RBAC on the Primary cluster, and use [policies](../sharing-the-cluster/policies.md) to block specific operations, such as stealing traffic, on particular targets.
 
 ### Limiting the Operator to some namespaces
 
