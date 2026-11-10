@@ -70,7 +70,7 @@ cloud:
 helm upgrade mirrord-operator metalbear/mirrord-operator -f values.yaml
 ```
 
-Existing `license.*` values stay as they are. Create the secret that `keyRef` names, as shown in [Install the chart](../../getting-started/install-the-operator.md#install-the-chart), or set `cloud.apiKey.gsmRef` or `cloud.apiKey.key` in the same values file instead. The key is read at startup, so the upgrade's pod restart is what picks it up.
+Existing `license.*` values stay as they are. Create the secret that `keyRef` names, as shown in [Install the chart](../../getting-started/install-the-operator.md#install-the-chart), or set `cloud.apiKey.gsmRef` in the same values file instead. The key is read at startup, so the upgrade's pod restart is what picks it up.
 
 Your existing anonymized usage is already on the dashboard; it doesn't start from zero. From the upgrade forward, sessions carry identity (if sharing is on). Usernames also fill in on historical sessions once each developer runs a session with the key in place, since names resolve per user across all time; per-service detail for old sessions doesn't backfill.
 
