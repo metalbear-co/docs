@@ -264,9 +264,9 @@ operator:
   * `emptyDir` needs no StorageClass, but the code is lost with the pod, and idle mode is off.
 * `storage.storageClassName`: the StorageClass of the claim. When it's unset and the cluster has no default StorageClass, a preview with code sync fails with a message that names this setting.
 * `storage.size`: the size of the claim, or the size limit of the `emptyDir`. A sync that changes most of your files needs room for the old and the new files at the same time, so use about twice the size of the synced files. The kubelet evicts a pod whose `emptyDir` goes past its limit.
-* `fsGroup`: lets an app that doesn't run as root write to the code volume.
-  * The operator sets it only when neither the pod nor its app container sets `runAsGroup`, `runAsUser`, or `fsGroup`.
-  * It applies to every volume of the pod, so the pod's Secret and ConfigMap files become readable by that group. An app that rejects a group-readable key file then fails in the preview.
+* `fsGroup`: the group that a preview pod gets when nothing else names one, so that an app that doesn't run as root can write to the code volume.
+  * When the pod has no `fsGroup`, the operator gives it the app container's `runAsGroup` or `runAsUser`, else the pod's `runAsGroup` or `runAsUser`, else this value.
+  * The `fsGroup` applies to every volume of the pod, so the pod's Secret and ConfigMap files become readable by that group. An app that rejects a group-readable key file then fails in the preview.
   * Set it to `null` on platforms that assign groups themselves, such as OpenShift.
 * `maxPushBytes`: the most bytes, unpacked, that one sync may write. A larger sync is rejected before it changes anything, with a message that names this setting.
 * `sidecarResources`: the resources of the `mirrord-sync` sidecar and its `mirrord-sync-install` init container. Set them when a namespace quota requires requests or limits on every container.
