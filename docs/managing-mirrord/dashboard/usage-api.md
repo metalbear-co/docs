@@ -167,14 +167,14 @@ The service map the dashboard's [Topology](topology.md) page draws, as a list of
 | Field | What it holds |
 | --- | --- |
 | `workload` | The session's target: `kind`, `name`, `namespace` |
-| `service` | The Service on the other end: `name`, `namespace`, and `preview` when it fronts a preview environment |
+| `service` | The Service on the other end: `name`, `namespace`, and `preview` (`key`, `targetKind`, `targetName`) when it fronts a preview environment |
 | `direction` | `outgoing` when the workload connected to the service, `incoming` when a pod behind the service connected to the workload |
 | `port` | The service port, on `outgoing` edges that reported one |
 | `sessionCount` | Sessions or preview environment runs in which the connection happened at least once, not individual connections |
 | `uniqueUsers` | Engineers behind those sessions |
 | `lastSeen` | The latest session that made the connection |
 
-There is one edge per workload, service and direction, capped at the 500 busiest by `sessionCount`. The map only covers services your engineers reached through mirrord sessions, so it is a view of what mirrord saw, not of the whole cluster. It needs a paid plan; on Free the endpoint answers `403`. With no edges in the period, `edges` is omitted rather than sent empty.
+There is one edge per workload, service, direction and preview environment, capped at the 500 busiest by `sessionCount`. Two edges can share a workload, service and direction when they come from different previews, so keep `service.preview` when you group them. The map only covers services reached through mirrord sessions and preview environments, so it is a view of what mirrord saw, not of the whole cluster. Topology is off by default: the operator only collects connections once it is [turned on](topology.md#turn-it-on), and until then the endpoint returns no `edges`. It needs a paid plan; on Free the endpoint answers `403`. With no edges in the period, `edges` is omitted rather than sent empty.
 
 ## Dates and periods
 
