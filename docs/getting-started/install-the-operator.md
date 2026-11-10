@@ -108,8 +108,6 @@ Edit the values you need:
 
 The Operator uses a cloud API key to get its license. Generate one under **Settings** at [app.metalbear.com](https://app.metalbear.com). It's shown only once, so store it right away.
 
-When you generate the key, you choose whether to turn on **identity sharing**. With it on, usage metrics include developer usernames and session targets, so the usage dashboard can show them by name. With it off, they stay anonymized. To keep metrics anonymized regardless of this setting, set `cloud.anonymizeData: true` in your values. For the exact fields, see [What data does the Operator send to MetalBear cloud](../managing-mirrord/security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud).
-
 ### Add the key to your values
 
 Pick one:
