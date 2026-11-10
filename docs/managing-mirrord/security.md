@@ -30,7 +30,7 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 
 ## I'm a Security Engineer evaluating mirrord for Teams, what do I need to know?
 
-* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics include developer usernames and session targets when identity sharing is on, which is the default for keys created at app.metalbear.com; your organization can turn it off to keep them anonymized.
+* mirrord for Teams is completely on-prem. The only data sent to our cloud is license verification and usage metrics (see [details below](#what-data-does-the-mirrord-operator-send-to-metalbear-cloud)), which can be customized or disabled upon request. Usage metrics include developer usernames and session targets when identity sharing is on. It's ticked by default when an admin creates a key at app.metalbear.com, and a key that `mirrord operator install` creates keeps the organization's earlier choice. Your organization can turn it off to keep the metrics anonymized.
 * mirrord does not require root permissions on the user's machine.
 * mirrord for Teams uses Kubernetes RBAC, meaning it doesn't add a new attack vector to your cluster.
 * Communication between the mirrord client and the mirrord Operator takes place over your existing Kubernetes API. If you’ve configured your cluster to encrypt this communication (as is commonly done), then mirrord for Teams’ client-server communication is encrypted as well.
@@ -61,7 +61,7 @@ The Operator runs in the `mirrord` namespace with the `mirrord-operator` Cluster
 
 It has no wildcard rules, and it can't impersonate users or change RBAC. It reads Secrets and ConfigMaps only if you turn on queue splitting or database branching. Other features, such as preview environments, add the permissions they need when you turn them on. For the full list, see the chart's [Operator rules](https://github.com/metalbear-co/charts/blob/main/mirrord-operator/templates/_operator-rules.tpl).
 
-Developers can only use mirrord on targets their own RBAC lets them `get`. See [How do I configure Role Based Access Control for mirrord for Teams?](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams).
+Developers can only use mirrord on targets their own RBAC lets them `get`. See [How do I configure Role Based Access Control for mirrord for Teams?](#how-do-i-configure-role-based-access-control-for-mirrord-for-teams). In [multi-cluster](../using-mirrord/multi-cluster.md#access-control) mode, this check doesn't apply: anyone who can reach the Primary cluster's Operator can target workloads on every connected cluster, so restrict them with [policies](../sharing-the-cluster/policies.md).
 
 ### Limiting the Operator to some namespaces
 

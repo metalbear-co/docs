@@ -29,7 +29,7 @@ If your cluster can't reach the internet, or your security policy doesn't allow 
 For details on each requirement, see [Requirements](../managing-mirrord/operator.md#requirements) on the Operator page.
 
 {% hint style="warning" %}
-**Security:** the Operator runs inside your cluster and sends MetalBear only license checks and usage metrics. The metrics are anonymized unless your organization turns on identity sharing for its API key. Developers can only use mirrord on workloads their own Kubernetes access already lets them see. Before you install, read [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster), or share it with your security team.
+**Security:** the Operator runs inside your cluster and sends MetalBear only license checks and usage metrics. The metrics are anonymized unless identity sharing is on for your organization's API key. In a single cluster, developers can only use mirrord on workloads their own Kubernetes access already lets them see. Before you install, read [What can the Operator access in my cluster?](../managing-mirrord/security.md#what-can-the-operator-access-in-my-cluster), or share it with your security team.
 {% endhint %}
 
 ## Default install
