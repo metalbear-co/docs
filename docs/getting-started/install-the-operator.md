@@ -28,6 +28,17 @@ If your cluster has no internet access, see [Air-gapped / offline clusters](../m
 
 For details on each requirement, see [Requirements](../managing-mirrord/operator.md#requirements) on the Operator page.
 
+{% hint style="warning" %}
+**What the Operator can access in your cluster.** Read this before you install, or share it with your security team.
+
+- **Where it runs:** in your cluster, in the `mirrord` namespace. It sends MetalBear only license checks and [usage metrics](../managing-mirrord/security.md#what-data-does-the-mirrord-operator-send-to-metalbear-cloud).
+- **Its own permissions:** by default, it can read workloads in every namespace, create and delete pods and jobs to run agents, and patch and scale Deployments, StatefulSets, ReplicaSets and Argo Rollouts for features such as [copying a target](../using-mirrord/copy-target.md). It has no wildcard rules and can't impersonate users or change RBAC. It reads Secrets only if you turn on queue splitting or database branching. To limit it to some namespaces, set `namespaced: true` and list them in `allowedNamespaces` (not supported with multi-cluster).
+- **What developers can do through it:** only what their own RBAC allows. For every session, the Operator checks the developer's access with a `SubjectAccessReview` and works only on targets they can `get`. Grant access with the `mirrord-operator-user` ClusterRole, and restrict it further with [policies](../sharing-the-cluster/policies.md).
+- **Agent pods:** each session's agent runs on the target's node with `CAP_NET_ADMIN`, `CAP_SYS_PTRACE` and `CAP_SYS_ADMIN`. If you enforce Pod Security Standards, exclude the `mirrord` namespace.
+
+For the full permission list and hardening steps, see [Security](../managing-mirrord/security.md).
+{% endhint %}
+
 ## Default install
 
 You need mirrord CLI `3.278.0` or later (check with `mirrord --version`) and a kubeconfig pointing at the cluster. Only an organization admin can run the first install. If your organization already has an operator API key, for example, from an earlier install, [install with that key](#install-with-an-existing-key) instead.
