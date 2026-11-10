@@ -82,8 +82,6 @@ You can also download it from the [JetBrains Marketplace](https://plugins.jetbra
 
 mirrord supports Kubernetes `1.22` or later. This applies to the open-source version and to the [mirrord Operator](../managing-mirrord/operator.md). The nodes where agents run need Linux kernel `5.4` or later, and a containerd, CRI-O or Docker runtime.
 
-Features that need a newer version say so on their own page.
-
 ## Next steps
 
 - [Onboarding Wizard](onboarding-wizard.md): create your first mirrord config file.
