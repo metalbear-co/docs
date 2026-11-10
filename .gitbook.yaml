@@ -58,5 +58,6 @@ redirects:
   getting-started/installing-mirrord/cli/global-configuration: installing-mirrord/global-configuration
   getting-started/installing-mirrord/vscode: installing-mirrord/vscode
   getting-started/installing-mirrord/intellij: installing-mirrord/intellij
-  getting-started/installing-mirrord/operator: managing-mirrord/operator
+  getting-started/installing-mirrord/operator: getting-started/install-the-operator
+  installing-mirrord/operator: getting-started/install-the-operator
   getting-started/installing-mirrord/wsl: installing-mirrord/wsl
