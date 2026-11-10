@@ -90,7 +90,7 @@ kubectl get deployment mirrord-operator -n mirrord \
   -o jsonpath='{.spec.template.spec.containers[*].env[?(@.name=="OPERATOR_CLOUD_API_KEY")].value}'
 ```
 
-For a Helm install, the key is in the secret or Secret Manager entry you gave the chart, or in your values file if you set `cloud.apiKey.key`. Or ask an organization admin.
+For a Helm install, the key is in the secret or Secret Manager entry you gave the chart. Or ask an organization admin.
 
 ## Custom install with Helm
 
