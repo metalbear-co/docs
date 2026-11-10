@@ -128,7 +128,7 @@ cloud:
     gsmRef: projects/PROJECT_ID/secrets/SECRET_NAME/versions/latest
 ```
 
-**Inline (dev/test):** the key sits in plain text in your values file:
+**Inline (not recommended for staging or production):** the key sits in plain text in your values file:
 
 ```yaml
 cloud:
