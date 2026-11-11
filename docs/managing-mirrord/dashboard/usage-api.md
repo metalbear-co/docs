@@ -10,7 +10,7 @@ tags:
 # Usage API
 
 {% hint style="info" %}
-This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). Configuring a self-hosted license server rules that out: the operator then ignores any cloud API key you set, logs a warning, authenticates with its license key against your own server, and sends us no identities, so there is nothing here to read. Anonymized product telemetry still leaves the cluster either way.
+This is the cloud dashboard's data over HTTPS. It only has something to return if your operator runs with a cloud API key, see [Cloud Setup](cloud.md). Configuring a self-hosted license server rules that out: the operator then ignores any cloud API key you set, logs a warning, authenticates with its license key against your own server, and sends us no identities, so there is nothing here to read. Anonymized product telemetry still leaves the cluster, unless you turn it off on the Enterprise plan.
 {% endhint %}
 
 The dashboard at [app.metalbear.com](https://app.metalbear.com) is fine for looking at usage. It is less fine when you want the numbers in Looker, or a weekly script that lists who stopped using mirrord. The usage API returns the same report and trends the dashboard renders, plus the raw session rows the dashboard never shows, behind a key you can give to a cron job.
