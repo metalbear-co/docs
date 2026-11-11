@@ -343,7 +343,7 @@ spec:
 
 #### Drain timeout
 
-After all splitting sessions end, the operator will wait for the fallback subscription to drain before deleting temporary resources. Two settings control how long it waits:
+After all splitting sessions end, the operator will wait for the fallback subscription to drain before deleting temporary resources. In the queue model, scheduled messages hold the drain until they are due and the workload consumes them. Deferred messages don't, because the workload may never retrieve them. Two settings control how long it waits:
 
 | Setting                                         | Unit    | Scope      | Effect                                                                         |
 | ----------------------------------------------- | ------- | ---------- | ------------------------------------------------------------------------------ |
