@@ -50,3 +50,14 @@ redirects:
   coming-soon/preview-env: use-cases/preview-environments
   using-mirrord/preview-environments: use-cases/preview-environments
   using-mirrord/preview-environments-in-ci: use-cases/preview-environments-in-ci
+
+  # Installing mirrord section removed: install pages under Quick Start, IDE pages in IDE Extensions, the rest in Reference
+  installing-mirrord: getting-started/install-mirrord
+  getting-started/installing-mirrord: getting-started/install-mirrord
+  getting-started/installing-mirrord/cli: installing-mirrord/cli
+  getting-started/installing-mirrord/cli/global-configuration: installing-mirrord/global-configuration
+  getting-started/installing-mirrord/vscode: installing-mirrord/vscode
+  getting-started/installing-mirrord/intellij: installing-mirrord/intellij
+  getting-started/installing-mirrord/operator: getting-started/install-the-operator
+  installing-mirrord/operator: getting-started/install-the-operator
+  getting-started/installing-mirrord/wsl: installing-mirrord/wsl

@@ -11,6 +11,8 @@ tags:
 
 Install the CLI, the extension for your IDE, or both.
 
+For every IDE, coding agent and tool that mirrord works with, see [mirrord integrations](https://metalbear.com/mirrord/integrations/).
+
 ## Requirements
 
 - macOS (Intel or Apple Silicon), Linux (x86_64 or arm64), or Windows (x86_64). mirrord runs natively on Windows. If you prefer WSL, see the [WSL setup guide](../installing-mirrord/wsl.md).
