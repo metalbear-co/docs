@@ -138,6 +138,10 @@ RabbitMQ splitting in `mirrord up` requires an operator that supports it. Agains
 {% endhint %}
 
 {% hint style="info" %}
+A service in `mirror` mode asks for `mirror` on every one of its Kafka queues. With the Java Kafka client ([`mirrord.client_implementation: java`](../sharing-the-cluster/queue-splitting/kafka.md#configure-the-operators-kafka-client), required for Kafka Streams) this needs mirrord operator `3.232.0` or later, and with Kafka Streams the deployed service can still get its copy of a message whose copy to your machine the broker rejected, and then processes it a second time when it is redelivered. See [`queue_mode`](../sharing-the-cluster/queue-splitting.md#setting-a-filter-for-a-mirrord-run) for the operator versions that fail or steal instead.
+{% endhint %}
+
+{% hint style="info" %}
 Only messages containing the session key (`checkout-debug` in this case) are routed to your local session. All other messages continue to the deployed target.
 {% endhint %}
 
