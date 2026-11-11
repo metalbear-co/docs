@@ -6,14 +6,15 @@
 
 * [What is mirrord?](getting-started/what-is-mirrord.md)
 * [Quick Start](getting-started/quick-start.md)
+  * [Install mirrord](getting-started/install-mirrord.md)
   * [Onboarding Wizard](getting-started/onboarding-wizard.md)
-* [Installing mirrord](installing-mirrord/README.md)
-  * [CLI](installing-mirrord/cli.md)
-    * [Global Configuration](installing-mirrord/global-configuration.md)
-  * [VS Code](installing-mirrord/vscode.md)
-  * [JetBrains IDEs](installing-mirrord/intellij.md)
-  * [mirrord Operator](managing-mirrord/operator.md)
-  * [WSL (deprecated)](installing-mirrord/wsl.md)
+  * [Starting your first session](getting-started/first-session.md)
+  * [Install the Operator](getting-started/install-the-operator.md)
+
+## IDE Extensions
+
+* [VS Code](installing-mirrord/vscode.md)
+* [JetBrains IDEs](installing-mirrord/intellij.md)
 
 ## Use Cases
 
@@ -135,11 +136,16 @@
 
 ## Reference
 
+* [CLI](installing-mirrord/cli.md)
+  * [Global Configuration](installing-mirrord/global-configuration.md)
+* [Configuration Options](https://metalbear.com/mirrord/docs/config)
+* [mirrord Operator](managing-mirrord/operator.md)
 * [Architecture](reference/architecture.md)
 * [Targets](reference/targets.md)
 * [Network Traffic](reference/traffic.md)
 * [Environment Variables Reference](reference/env.md "Environment Variables")
 * [File Operations Reference](reference/fileops.md "File Operations")
+* [WSL (deprecated)](installing-mirrord/wsl.md)
 
 ***
 
