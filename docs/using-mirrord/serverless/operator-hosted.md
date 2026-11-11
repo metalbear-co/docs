@@ -2,14 +2,14 @@
 title: "Operator-Hosted Sessions-Manager"
 description: "Run sessions-manager inside the mirrord Operator, so developers can target serverless workloads such as Amazon ECS tasks through your cluster's API server."
 tags:
-  - experimental
+  - alpha
   - enterprise
 ---
 
 # Operator-Hosted Sessions-Manager
 
 {% hint style="warning" %}
-The Operator-hosted sessions-manager is **experimental**, and may change without notice. It requires Operator **3.223.0 or later**; see [Required versions](README.md#required-versions).
+The Operator-hosted sessions-manager is in **alpha**, and may change without notice. It requires Operator **3.223.0 or later**; see [Required versions](README.md#required-versions).
 {% endhint %}
 
 In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-manager runs inside the mirrord Operator. Enabling it is a Helm value: there's no additional deployment, service or load balancer, and the Operator isn't exposed outside the cluster. At a glance, the setup is:
@@ -20,7 +20,7 @@ In the Operator-hosted [deployment mode](README.md#deployment-modes), sessions-m
 
 ## Prerequisites
 
-1. A Kubernetes cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator license. For initial installation and licensing, follow the [Operator installation guide](../../getting-started/install-the-operator.md#custom-install-with-helm). The step-by-step workload guides cover EKS; other clusters work through a [kubeconfig context](#connection-variables).
+1. A Kubernetes cluster with mirrord Operator **3.223.0 or later** installed through its Helm chart, and a mirrord Operator Enterprise license. For initial installation and licensing, follow the [Operator installation guide](../../getting-started/install-the-operator.md#custom-install-with-helm). The step-by-step workload guides cover EKS; other clusters work through a [kubeconfig context](#connection-variables).
 2. `kubectl` and `helm`, with permission to manage the Operator Helm release and cluster RBAC.
 
 ---

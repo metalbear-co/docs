@@ -2,14 +2,15 @@
 title: "MetalBear Cloud Sessions-Manager"
 description: "Target serverless workloads such as Amazon ECS tasks without the mirrord Operator, through a sessions-manager hosted by MetalBear, with workloads authenticated by a MetalBear API key and developers by `mirrord login`."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
 # MetalBear Cloud Sessions-Manager
 
 {% hint style="warning" %}
-The MetalBear Cloud sessions-manager is **experimental**, and may change without notice.
+The MetalBear Cloud sessions-manager is in **alpha**, and may change without notice.
 {% endhint %}
 
 In the MetalBear Cloud [deployment mode](README.md#deployment-modes), sessions-manager is hosted by MetalBear. There's nothing to install in your infrastructure, and you don't need a Kubernetes cluster or the mirrord Operator. Workloads and developers connect to it directly over HTTPS. Workloads authenticate with a MetalBear API key, and developers with their MetalBear account, through `mirrord login`. At a glance, the setup is:
@@ -127,6 +128,7 @@ The workload's messages appear in the application container's logs, and the deve
 | --- | --- |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY must hold a MetalBear API key, which begins with metalbear_key_` | The variable holds something else, such as the secret's ARN instead of its value, or has extra whitespace or quotes. |
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
+| `mirrord exec` keeps waiting and never starts the session | No workload is registered under the service and environment in `mirrord.json`, or a firewall or proxy blocks or buffers the connection to sessions-manager. Check the workload's logs, and see [Network access](#network-access). |
 | `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |

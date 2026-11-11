@@ -2,14 +2,15 @@
 title: "Connecting ECS to MetalBear Cloud"
 description: "Connect an Amazon ECS task to the MetalBear Cloud sessions-manager: store the API key in AWS Secrets Manager, allow outbound HTTPS, and add the connection variables to the task."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
 # Connecting ECS to MetalBear Cloud
 
 {% hint style="warning" %}
-Connecting ECS to MetalBear Cloud is **experimental**, and may change without notice.
+Connecting ECS to MetalBear Cloud is in **alpha**, and may change without notice.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [MetalBear Cloud sessions-manager](metalbear-cloud.md). The task authenticates with your MetalBear API key, which ECS injects from AWS Secrets Manager. No Kubernetes cluster, mirrord Operator or IAM permissions on the task role are needed. At a glance, the setup is:
