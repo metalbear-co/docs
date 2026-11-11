@@ -177,6 +177,6 @@ Not sure where to start? Run `mirrord wizard` to walk through common use cases i
 | **Debug a queue consumer** | [Queue splitting](../sharing-the-cluster/queue-splitting.md) lets your local process consume messages without competing with the deployed service |
 | **Run a tool in cluster context** | [Targetless mode](../using-mirrord/targetless.md) lets you run scripts or tools with cluster network access, without impersonating a specific pod |
 | **Use mirrord with an AI agent** | [Set up Claude Code, Cursor, or Codex](../using-mirrord-with-ai/) to test generated code against your cluster automatically |
-| **Set up for your team** | Install the [mirrord Operator](../managing-mirrord/operator.md) for access control, policies, and multi-user support |
+| **Set up for your team** | [Install the mirrord Operator](install-the-operator.md) for access control, policies, and multi-user support |
 
 Need help or want to share feedback? [Join our Slack community](https://metalbear.com/slack)
