@@ -10,7 +10,7 @@ tags:
 # MetalBear Cloud Sessions-Manager
 
 {% hint style="warning" %}
-The MetalBear Cloud sessions-manager is in **alpha**, and may change without notice.
+The MetalBear Cloud sessions-manager is in **alpha**, and may change without notice. While it's in alpha, it's available on every plan, including Free.
 {% endhint %}
 
 In the MetalBear Cloud [deployment mode](README.md#deployment-modes), sessions-manager is hosted by MetalBear. There's nothing to install in your infrastructure, and you don't need a Kubernetes cluster or the mirrord Operator. Workloads and developers connect to it directly over HTTPS. Workloads authenticate with a MetalBear API key, and developers with their MetalBear account, through `mirrord login`. At a glance, the setup is:
@@ -112,7 +112,7 @@ Developers need no Kubernetes access and no API key. They sign in to their Metal
 mirrord login
 ```
 
-mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead. When the session starts, mirrord prints `Connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
+mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) with `"operator": false`. Without it, mirrord connects through the Operator if you've used one on this machine before. When the session starts, mirrord prints `Connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
 
 * **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
 * **Expiry:** the sign-in isn't renewed automatically. Once it expires, mirrord warns when a session starts, and new sessions are refused until the developer runs `mirrord login` again. A session that's already running keeps working, and picks up a new sign-in when it reconnects, without a restart.
@@ -128,7 +128,7 @@ The workload's messages appear in the application container's logs, and the deve
 | --- | --- |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY must hold a MetalBear API key, which begins with metalbear_key_` | The variable holds something else, such as the secret's ARN instead of its value, or has extra whitespace or quotes. |
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
-| `mirrord exec` keeps waiting and never starts the session | No workload is registered under the service and environment in `mirrord.json`, or a firewall or proxy blocks or buffers the connection to sessions-manager. Check the workload's logs, and see [Network access](#network-access). |
+| ``Feature `target.path` requires a mirrord Enterprise plan.`` | mirrord connected through the Operator instead of MetalBear Cloud. Set `"operator": false` in `mirrord.json` ([Developer setup](#developer-setup)). |
 | `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | The workload registers but the developer is never paired | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord.json`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |

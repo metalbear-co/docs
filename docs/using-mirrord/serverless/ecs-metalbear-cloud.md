@@ -10,7 +10,7 @@ tags:
 # Connecting ECS to MetalBear Cloud
 
 {% hint style="warning" %}
-Connecting ECS to MetalBear Cloud is in **alpha**, and may change without notice.
+Connecting ECS to MetalBear Cloud is in **alpha**, and may change without notice. While it's in alpha, it's available on every plan, including Free.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [MetalBear Cloud sessions-manager](metalbear-cloud.md). The task authenticates with your MetalBear API key, which ECS injects from AWS Secrets Manager. No Kubernetes cluster, mirrord Operator or IAM permissions on the task role are needed. At a glance, the setup is:
@@ -109,7 +109,7 @@ Register the new task definition revision and update the service to use it. Task
 ## Verify
 
 1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors. With `MIRRORD_AGENT_RUST_LOG=info` in the container's `environment`, they also show `Registering with the MetalBear Cloud sessions-manager`.
-2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), without `"operator": true`, `mirrord exec` connects, and a request with the `baggage` header reaches the local process.
+2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), with `"operator": false`, `mirrord exec` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code
 

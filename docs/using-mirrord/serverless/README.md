@@ -12,7 +12,7 @@ tags:
 # Serverless Workloads
 
 {% hint style="warning" %}
-Serverless workloads are in **alpha**: behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. The MetalBear Cloud mode is available on every plan, including Free; the Operator-hosted mode requires the Enterprise plan. To try them, install a [supported mirrord CLI](#required-versions).
+Serverless workloads are in **alpha**: behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. The MetalBear Cloud mode is available on every plan, including Free, while it's in alpha; the Operator-hosted mode requires the Enterprise plan. To try them, install a [supported mirrord CLI](#required-versions).
 {% endhint %}
 
 Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
@@ -43,20 +43,20 @@ Where sessions-manager runs is the [deployment mode](#deployment-modes).
 
 ## Deployment Modes
 
-| Mode | Sessions-manager runs | Authentication | Status |
-| --- | --- | --- | --- |
-| **Operator-hosted** | Inside the [mirrord Operator](../../managing-mirrord/operator.md) on your Kubernetes cluster, enabled with a Helm value. Both sides reach it through your cluster's API server. | Kubernetes identities and RBAC: developers use their kubeconfig, workloads a platform identity mapped into the cluster. | Alpha |
-| **MetalBear Cloud** | Hosted by MetalBear, so there's nothing for you to install or operate, and no Kubernetes cluster or Operator is needed. | Workloads use a MetalBear API key; developers sign in with `mirrord login`. | Alpha |
+| Mode | Sessions-manager runs | Authentication | Plans | Status |
+| --- | --- | --- | --- | --- |
+| **MetalBear Cloud** | Hosted by MetalBear, so there's nothing for you to install or operate, and no Kubernetes cluster or Operator is needed. | Workloads use a MetalBear API key; developers sign in with `mirrord login`. | All plans, including Free, while in alpha | Alpha |
+| **Operator-hosted** | Inside the [mirrord Operator](../../managing-mirrord/operator.md) on your Kubernetes cluster, enabled with a Helm value. Both sides reach it through your cluster's API server. | Kubernetes identities and RBAC: developers use their kubeconfig, workloads a platform identity mapped into the cluster. | Enterprise | Alpha |
 
 Developers target a serverless workload the same way, with a `serverless/` target, in every mode. The mode changes how sessions-manager is installed, and how each side connects and authenticates to it.
 
-**Which mode should I use?** If you already run the mirrord Operator, and your workloads can reach your cluster's API server, use the Operator-hosted mode: access is managed with the same Kubernetes RBAC as the rest of mirrord, and there are no secrets to distribute. Use MetalBear Cloud when you don't run the Operator, or when your workloads can't reach the API server.
+Start with MetalBear Cloud. On the Enterprise plan, if you already run the Operator and your workloads can reach your cluster's API server, you can use the Operator-hosted mode instead: access is then managed with Kubernetes RBAC, with no API key to distribute.
 
 ## Supported Workloads
 
-| Platform | Operator-hosted | MetalBear Cloud |
+| Platform | MetalBear Cloud | Operator-hosted |
 | --- | --- | --- |
-| [Amazon ECS](ecs.md) | [Supported](ecs-operator-hosted.md) | [Supported](ecs-metalbear-cloud.md) |
+| [Amazon ECS](ecs.md) | [Supported](ecs-metalbear-cloud.md) | [Supported](ecs-operator-hosted.md) |
 
 ## Setting Up
 
@@ -133,7 +133,7 @@ In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rathe
 mirrord login
 ```
 
-Then leave `operator` out of `mirrord.json` (or set it to `false`), and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
+Then set `"operator": false` in `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
 
 ### Which sessions-manager mirrord connects through
 
@@ -175,7 +175,7 @@ In the Operator-hosted mode, every connection goes through your cluster's API se
 ## Limitations
 
 * **One replica per session.** Your session is served by one registered replica of the service, such as one ECS task. If the service runs several, only requests that land on that replica can be stolen or mirrored. For testing, scale the service to one replica or route your test traffic to a specific one.
-* **No database branching or queue splitting.** Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data.
+* **No database branching or queue splitting.** Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data. With `feature.db_branches` or `feature.split_queues` set, mirrord doesn't start, and prints ``… is not supported with serverless targets.``
 * **Operator-hosted mode:**
   * **Development traffic only.** Session traffic flows through your cluster's API server. That's fine for development, but don't use a mirrord session for load testing.
   * **Operator restarts end sessions.** Restarting or upgrading the Operator ends active sessions. The workload registers again on its own; rerun `mirrord exec`.
