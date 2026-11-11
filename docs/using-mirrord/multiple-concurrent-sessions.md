@@ -67,7 +67,7 @@ If you'd rather have your local process take over a service completely, use `rep
 
 ### Service modes
 
-Service modes are set per service with `default_mode` in the config file, or for a whole run with the `--mode` flag.
+Service modes are set per service with `default_mode` in the config file, or for a whole run with the `--mode` flag. Both take a built-in mode (`split`, `replace`, `mirror`) or a [custom mode](#custom-modes).
 
 The following config file sets `replace` mode for `user-auth-service`, while leaving `stage-user-dashboard-app` in the default `split` mode.
 
@@ -113,9 +113,60 @@ This feature requires at least mirrord version 3.258.0.
 
 Traffic is mirrored to your local process, and the deployed service runs uninterrupted. Only requests matching the service's `http_filter` are mirrored to your machine. When no filter is provided, mirrord generates one from the session key: `baggage: .*mirrord-session={key}.*`.
 
+#### Custom modes
+
+{% hint style="info" %}
+This feature requires at least mirrord version 3.278.0.
+{% endhint %}
+
+Define your own modes under `modes`, then select them by name like a built-in one. Each mode sets three toggles, all optional:
+
+- `incoming`: `split` (the default), `replace` or `mirror`. Handles incoming traffic like the built-in mode of the same name.
+- `queues`: `split` or `mirror`. `split` steals the session's messages (`queue_mode: steal`), `mirror` copies them. When not set, every queue defined in the cluster is split like `incoming`: mirrored with `incoming: mirror`, stolen otherwise.
+- `db_branching`: which [DB branches defined on the workload](../sharing-the-cluster/db-branching.md#branches-defined-on-the-workload) the service runs against, whatever `incoming` is. `empty`, `schema` or `all` branches every entry with that copy mode, `inherit` with each entry's own `copy.mode`, and `off` branches none. When not set, it follows `incoming`, as described below.
+
+```yaml
+modes:
+  watch:
+    incoming: mirror
+    queues: split # mirror requests, but steal queue messages
+
+services:
+  orders:
+    default_mode: watch
+    run:
+      command: ["node", "app.js"]
+```
+
+A built-in mode is the same as a custom mode with only `incoming` set to its name.
+
+Without `db_branching`, a mode with `incoming: split` or `incoming: mirror`, built-in or custom, requests every entry with its own copy mode, like `inherit`, when the target is a single workload, and one with `incoming: replace` requests none. Unlike `inherit`, it runs against the source databases instead of failing when the operator can't branch or the workload has no entries.
+
+A mode named `split`, `replace` or `mirror` under `modes` changes that built-in mode's `db_branching` for every service in the file, and may set nothing else. It doesn't reach custom modes with the same `incoming`:
+
+```yaml
+modes:
+  split:
+    db_branching: schema
+```
+
+`mirrord preview up` and `mirrord preview sync` run every service as `split`, so they use the `db_branching` of a `split` entry and no other mode's.
+
+Selecting a mode that doesn't exist, with `default_mode` or `--mode`, is an error; `mirrord up` fails before starting any service and lists the modes it knows.
+
+A mode's `db_branching` is checked before any service starts, and before any branch is created. The run fails, naming the mode, when the service has no usable mirrord Operator (the message says why: `operator: false`, none installed, or a license that can't be used), its workload has no DB branch entries, an entry's database engine is turned off in the operator, or an entry's `copy.allowedModes` leaves out the requested copy mode. A mode without `db_branching` runs against the source databases in each of those cases, and says so. To do the same in a mode that sets it, use `db_branching: off`. A service that sets `db_branches` itself, in its config or `config_patch`, keeps them. A service whose target isn't a single workload, such as `target: none`, ignores `db_branching` with a message, since there is no workload to look entries up on.
+
+Services started under one key share each branch, so the run also fails before any service starts when two of them ask for the same branch with different copy modes. A later session under the same key that asks for another copy mode than the branch was created with fails too, naming who created it; start it under a different key, or ask for the same mode.
+
+A mode's `queues` is checked before any service starts too: the run fails, naming the mode, when the service has no usable mirrord Operator, or one that splits no queues. Without `queues`, the run goes on without queue splitting, and says so when the operator splits no queues. A service whose `config_patch` sets `split_queues` keeps them.
+
+A mode with `incoming: replace` behaves like `replace`: `queues` and `http_filter` are ignored, with a message, and the target must support `replace`.
+
+`config_patch` is applied last, so it overrides what the mode sets.
+
 ### Queue Splitting
 
-`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration.
+`mirrord up` supports queue splitting automatically for every service in `split` and `mirror` mode. You don't need to add any special configuration. A [custom mode](#custom-modes) can choose how queues are split with `queues`.
 
 Services in `replace` mode don't use queue splitting: the deployed workload is scaled down, so your local process consumes every message from its queues.
 
@@ -190,6 +241,10 @@ Common configuration options, applied to all defined services. Currently the fol
 
 All fields map directly to their `mirrord.json` counterparts.
 
+#### `modes`
+
+A map from mode names to custom modes, each with optional `incoming`, `queues` and `db_branching`. See [Custom modes](#custom-modes).
+
 #### `services`
 
 A map from service ids to a `ServiceConfig`. Each entry in this map defines and configures a mirrord process that will be run as part of the session.
@@ -236,7 +291,7 @@ Specifies the environment variable configuration for the given service. Maps dir
 
 ##### `services.*.default_mode`
 
-Either `split` (the default), `replace` or `mirror`. See [Service modes](#service-modes) for what each one does and when to use it.
+Either `split` (the default), `replace`, `mirror`, or the name of a mode under `modes`. See [Service modes](#service-modes) for what each one does and when to use it.
 
 The `--mode` flag overrides this for every service being launched.
 
@@ -369,7 +424,7 @@ Allows specifying a different config file, e.g. `mirrord up -f mirrord-up-custom
 
 ### `-m`, `--mode`
 
-Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split`, `replace` or `mirror` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
+Runs every service in the given mode, ignoring the `default_mode` set in the config file. Either `split`, `replace`, `mirror`, or the name of a mode under `modes` — see [Service modes](#service-modes). When omitted, each service uses its own `default_mode`.
 
 ### `--key`
 
