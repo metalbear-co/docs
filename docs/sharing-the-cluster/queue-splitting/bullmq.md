@@ -26,7 +26,7 @@ When the first mirrord BullMQ splitting session starts, the operator creates a t
 
 If a second user starts a session on the same queue, the operator creates another per-session queue and adds the second user's filter to the routing logic. If the filters defined by two users both match some job, one of the users will receive the job at random.
 
-When a session ends, the operator deletes the per-session queue's Redis keys. When all sessions end, the operator restores the workload to read from the original queue and deletes the main queue's Redis keys.
+When a session ends, the operator deletes the per-session queue's Redis keys. When all sessions end, the operator restores the workload to read from the original queue and deletes the main queue's Redis keys. If the main queue still holds jobs that the workload hasn't finished, such as jobs that wait, are delayed, or that a worker holds, the operator keeps the main queue rather than delete those jobs, and deletes it once no job in it is unfinished. When the queue's `MirrordPropertyList` is gone, for example because the target's namespace was deleted, nothing could delete the queue later, so the operator deletes it with its jobs. The `Drained` condition in the status of the `MirrordSplitConfig` names each queue that was kept this way.
 
 ## Enabling BullMQ Splitting in Your Cluster
 
@@ -132,17 +132,32 @@ The mirrord operator can only read consumer's environment variables if they are 
 
 ## Drain timeout
 
-After the last session against a target ends, the operator keeps the split's temporary resources alive for the drain timeout so a new session can reuse them, then tears them down. It does not wait for unread jobs to be consumed first.
+After the last session against a target ends, the operator waits for the deployed workload to finish the jobs in the main queue, then restores the workload and deletes the temporary queues. It waits for jobs that wait, that are delayed or prioritized, that wait for their children, and that a live worker holds. A job whose worker died without finishing it doesn't hold the drain: no worker reads the main queue once the workload is restored, so the operator keeps the main queue with that job instead (see [How it works](#how-it-works)). The drain timeout caps the wait:
 
 | Setting                                         | Unit    | Scope     | Effect                              |
 | ----------------------------------------------- | ------- | --------- | ----------------------------------- |
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
 
-| `drainTimeout` | Behavior                                                  |
-| -------------- | --------------------------------------------------------- |
-| unset (both)   | Tear down as soon as the last session ends (same as `0`). |
-| `0`            | Tear down immediately. Unread jobs may be lost.           |
-| `N`            | Keep resources for up to `N` seconds, then tear down.     |
+| `drainTimeout` | Behavior                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| unset (both)   | Wait until no job in the main queue is unfinished.                                                      |
+| `0`            | Tear down immediately. The operator keeps the main queue if jobs in it are unfinished.                  |
+| `N`            | Wait up to `N` seconds, then tear down. The operator keeps the main queue if jobs in it are unfinished. |
+
+## Temporary queue names
+
+By default, temporary queues are named `mirrord-tmp-<random>-<original>` for user queues and `mirrord-tmp-<random>-main-<original>` for the queue the patched workload reads. To use a different format, set `spec.tmpNameTemplate` in the `MirrordSplitConfig`:
+
+```yaml
+spec:
+  tmpNameTemplate: "dev-mirrord-{{RANDOM}}{{FALLBACK}}{{ORIGINAL}}"
+```
+
+The template can use these placeholders:
+
+* `{{RANDOM}}` (required) - random alphabetic characters, so that every split and session gets queues of its own. A template without it is rejected, because two splits of the same queue would get the same queue names, and cleaning up one split would delete the other's queue.
+* `{{FALLBACK}}` - resolves to `-main-` for the queue the patched workload reads or `-` for user queues.
+* `{{ORIGINAL}}` - name of the original queue being split.
 
 ## Setting a filter
 

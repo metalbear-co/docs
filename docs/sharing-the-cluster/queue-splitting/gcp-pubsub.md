@@ -126,8 +126,8 @@ Whichever method you choose, the IAM service account needs the following Pub/Sub
 
 | Pub/Sub Permission                 | Needed for original resources | Needed for temporary resources |
 | ---------------------------------- | :---------------------------: | :----------------------------: |
-| `pubsub.subscriptions.consume`     |               ✓               |                                |
-| `pubsub.subscriptions.get`         |               ✓               |                                |
+| `pubsub.subscriptions.consume`     |               ✓               |                ✓               |
+| `pubsub.subscriptions.get`         |               ✓               |                ✓               |
 | `pubsub.topics.attachSubscription` |                               |                ✓               |
 | `pubsub.topics.create`             |                               |                ✓               |
 | `pubsub.topics.delete`             |                               |                ✓               |
@@ -136,6 +136,8 @@ Whichever method you choose, the IAM service account needs the following Pub/Sub
 | `pubsub.subscriptions.delete`      |                               |                ✓               |
 
 A good starting point is to assign the `roles/pubsub.editor` role to the operator's service account, scoped to the relevant project.
+
+The operator reads the temporary subscription that the deployed workload consumes before it deletes it, to check that no message in it is left unread. When messages are left, it keeps the subscription rather than lose them, and deletes it once it is empty. When the subscription's `MirrordPropertyList` is gone, for example because the target's namespace was deleted, nothing could delete the subscription later, so the operator deletes it with its messages. Without `pubsub.subscriptions.get` and `pubsub.subscriptions.consume` on the temporary resources, the operator can't check, and deletes the subscription together with any messages still in it.
 
 If you enable [`gcs_event`](gcp-pubsub.md#filtering-cloud-storage-notifications) for a subscription whose notifications use the `NONE` payload format, the operator also reads object metadata from Cloud Storage with the credentials of that queue's client config property list. In that case, grant `storage.objects.get` on the relevant buckets, for example with the `roles/storage.objectViewer` role, to that identity: the service account in `credentials_json` when the list sets one (Option B), otherwise the operator's own identity (Option A).
 {% endstep %}
@@ -404,11 +406,11 @@ After the last splitting session against a target ends, the operator keeps the s
 
 Whichever value applies is then interpreted as:
 
-| Value        | Behavior                                                                                      |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| unset (both) | Drain indefinitely - the temporary subscription is kept until fallback messages are drained.  |
-| `0`          | Skip draining; delete the temporary subscription immediately. Undrained messages may be lost. |
-| `N`          | Wait up to `N` to drain, then delete the temporary subscription.                              |
+| Value        | Behavior                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| unset (both) | Drain indefinitely - the temporary subscription is kept until fallback messages are drained.                        |
+| `0`          | Skip draining. The temporary subscription is deleted, or kept until it is empty if messages are left in it.         |
+| `N`          | Wait up to `N` to drain, then delete the temporary subscription, or keep it until it is empty if messages are left. |
 
 ## Setting a filter
 
