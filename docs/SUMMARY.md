@@ -6,8 +6,10 @@
 
 * [What is mirrord?](getting-started/what-is-mirrord.md)
 * [Quick Start](getting-started/quick-start.md)
-  * [Install the Operator](getting-started/install-the-operator.md)
+  * [Install mirrord](getting-started/install-mirrord.md)
   * [Onboarding Wizard](getting-started/onboarding-wizard.md)
+  * [Starting your first session](getting-started/first-session.md)
+  * [Install the Operator](getting-started/install-the-operator.md)
 * [Installing mirrord](installing-mirrord/README.md)
   * [CLI](installing-mirrord/cli.md)
     * [Global Configuration](installing-mirrord/global-configuration.md)
