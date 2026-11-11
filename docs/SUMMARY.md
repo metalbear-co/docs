@@ -22,7 +22,7 @@
 * [CI/CD Integration](use-cases/mirrord-for-ci.md)
 * [Preview Environments](use-cases/preview-environments.md)
   * [Preview Environments in CI](use-cases/preview-environments-in-ci.md)
-  * [Syncing Local Code into a Preview](use-cases/preview-environments-code-sync.md)
+  * [Sync Your Local Code to a Preview Environment](use-cases/preview-environments-code-sync.md)
 * [Chaos Testing](use-cases/chaos-testing.md)
 * [Using mirrord with AI](using-mirrord-with-ai/README.md)
   * [mirrord MCP Server](using-mirrord-with-ai/mcp-server.md)

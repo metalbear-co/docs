@@ -1,12 +1,12 @@
 ---
-title: Syncing Local Code into a Preview
+title: Sync Your Local Code to a Preview Environment
 description: Preview a service without building an image, by syncing your local code into a preview pod with `mirrord preview sync`.
 tags:
   - beta
   - enterprise
 ---
 
-# Syncing Local Code into a Preview
+# Sync Your Local Code to a Preview Environment
 
 `mirrord preview sync` previews your local code without building an image. It starts a preview pod from the target's image, or from an image that you choose, and syncs your local directories into it. With `--watch`, every change that you save is synced to the pod, and the app restarts when it needs to.
 

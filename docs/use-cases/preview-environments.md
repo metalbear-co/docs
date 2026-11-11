@@ -175,7 +175,7 @@ Each PR gets an isolated preview keyed by its number. The `{{ key }}` template i
 
 ## Previewing Several Services
 
-`mirrord preview up` starts a preview for every service in a [`mirrord-up.yaml`](../using-mirrord/multiple-concurrent-sessions.md) that has an image, all under one key. It reads the same file as `mirrord up`, so services already defined there need no separate `mirrord.json`. `mirrord preview down` stops them again. To preview your local code without building images, see [Syncing Local Code into a Preview](preview-environments-code-sync.md).
+`mirrord preview up` starts a preview for every service in a [`mirrord-up.yaml`](../using-mirrord/multiple-concurrent-sessions.md) that has an image, all under one key. It reads the same file as `mirrord up`, so services already defined there need no separate `mirrord.json`. `mirrord preview down` stops them again. To preview your local code without building images, see [Sync Your Local Code to a Preview Environment](preview-environments-code-sync.md).
 
 {% hint style="info" %}
 `mirrord preview up` and `mirrord preview down` require mirrord `3.279.0` or later.

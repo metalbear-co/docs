@@ -298,7 +298,7 @@ run:
 
 ##### `services.*.sync`
 
-Syncs your local code into the service's preview with `mirrord preview sync`. See [Syncing Local Code into a Preview](../use-cases/preview-environments-code-sync.md) for how it works. `mirrord up` and `mirrord preview up` ignore it. Requires mirrord `3.286.0` or later. Has the following fields:
+Syncs your local code into the service's preview with `mirrord preview sync`. See [Sync Your Local Code to a Preview Environment](../use-cases/preview-environments-code-sync.md) for how it works. `mirrord up` and `mirrord preview up` ignore it. Requires mirrord `3.286.0` or later. Has the following fields:
 
 - `files`: The local directories to sync. Each entry has these fields:
   - `local`: The local directory. Relative paths are resolved against the directory that contains `mirrord-up.yaml`.
