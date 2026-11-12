@@ -143,6 +143,10 @@ These images are only pulled when the corresponding feature is enabled:
 | Flyway                  | `flyway/flyway`                             | `12`             | Flyway migration runner for DB branching.                                                     | Per-branch `migrations.image`, or `dbPod.migrationImages.flyway.registry` |
 | Liquibase               | `liquibase/liquibase`                       | `4.33`           | Liquibase migration runner for DB branching.                                                  | Per-branch `migrations.image`, or `dbPod.migrationImages.liquibase.registry` |
 
+### Code sync
+
+A preview pod with [code sync](../use-cases/preview-environments-code-sync.md) runs the operator's image in an init container, and pulls it with the target pod's pull secrets. So when the operator image comes from a private registry, the target's pods must list a pull secret for that registry.
+
 ### DB branching default database images
 
 DB branch pods pull a database image matching the engine. These are the defaults when no custom image is specified in the branch config:
