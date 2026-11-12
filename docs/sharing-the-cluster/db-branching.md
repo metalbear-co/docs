@@ -100,6 +100,8 @@ Developers define branches in their `mirrord.json`:
 }
 ```
 
+MySQL `8.4` is the default from operator `3.232.0`. On an older operator, a branch pinned to `8.4` can leave the source user without its login - see the MySQL page's [Limits](db-branching/mysql.md#limits).
+
 ### Key Fields
 
 | Field | Description |
