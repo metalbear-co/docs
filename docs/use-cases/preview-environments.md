@@ -514,6 +514,8 @@ Database branch parameters with a `value_pattern` need a running target pod to r
 runtime value from, which a CronJob does not have, so they are rejected as well; plain
 variable parameters work.
 
+[Code sync](preview-environments-code-sync.md) doesn't support CronJob targets.
+
 Requires operator 3.205.0 or later and CLI 3.256.0 or later, plus `create`, `delete`, and
 `patch` on `batch/cronjobs` and `create` on `batch/jobs` for the operator, which the Helm chart
 grants when `operator.previewEnv` is enabled.

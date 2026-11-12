@@ -331,7 +331,7 @@ sync:
 
 ##### `services.*.skip`
 
-Don't launch this service unless it's named on the `mirrord up` command line. `mirrord preview sync` also leaves it out, unless you pass an image for it with `--image` or `MIRRORD_<SERVICE>_IMAGE`. `mirrord preview up` ignores `skip`, because it previews exactly the services that have an image. Defaults to `false`.
+Don't launch this service unless it's named on the `mirrord up` command line. `mirrord preview sync` also leaves it out. If the service has `sync`, an image passed with `--image` or `MIRRORD_<SERVICE>_IMAGE` previews it anyway. `mirrord preview up` ignores `skip`, because it previews exactly the services that have an image. Defaults to `false`.
 
 ##### `services.*.context`
 The name of the Kubernetes context to run this service in. See [Context](#context) for precedence rules when used with `common.context`.

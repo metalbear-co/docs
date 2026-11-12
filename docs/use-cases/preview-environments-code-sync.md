@@ -10,7 +10,7 @@ tags:
 
 `mirrord preview sync` previews your local code without building an image. It starts a preview pod from the target's image, or from an image that you choose, and syncs your local directories into it. With `--watch`, every change that you save is synced to the pod, and the app restarts when it needs to.
 
-Code sync is part of [Preview Environments](preview-environments.md), so it works with the same keys, TTLs, traffic filters, queue splitting, and database branches. You set it up per service, in the `sync` section of [`mirrord-up.yaml`](../using-mirrord/multiple-concurrent-sessions.md#config-file-mirrord-up-yaml).
+Code sync is part of [Preview Environments](preview-environments.md), so it works with the same keys, TTLs, traffic filters, queue splitting, and database branches. You set it up per service, in the `sync` section of [`mirrord-up.yaml`](../using-mirrord/multiple-concurrent-sessions.md#config-file-mirrord-up.yaml).
 
 {% hint style="info" %}
 This feature is available to users on the Enterprise pricing plan.
@@ -23,6 +23,9 @@ This feature is available to users on the Enterprise pricing plan.
 * A StorageClass for the code volume. On a cluster without a default StorageClass, your administrator sets one in the Helm values, or stores the code on an `emptyDir` instead (see [Operator Setup](#operator-setup)).
 * Linux or macOS for the CLI.
 * An image that can run your code. By default, the preview runs the image of the target's container, so that image needs the tools that your `prepare` and `run` commands use, such as `node` and `npm`.
+* One preview pod. Leave `feature.preview.replicas` at `1`, the default.
+* A target other than a CronJob.
+* A single-cluster setup. Code sync doesn't run on a [multi-cluster](../using-mirrord/multi-cluster-setup.md) operator.
 
 ## Examples
 
@@ -48,7 +51,7 @@ services:
         directory: /app
         triggered_by: ["web/package-lock.json"]
       run:
-        command: ["npm", "run", "dev", "-H", "0.0.0.0", "-p", 3000]
+        command: ["npm", "run", "dev", "-H", "0.0.0.0", "-p", "3000"]
         directory: /app
 ```
 
@@ -63,7 +66,7 @@ This command:
 3. Runs `npm ci` in `/app`, and then starts `npm run dev`.
 4. Keeps running, and syncs each change that you save. A change to `package-lock.json` runs `npm ci` again and restarts the app. Any other change only updates the files, and the dev server reloads them.
 
-The top-level `run` is how `mirrord up` runs the service on your machine, and `sync.run` is how the preview pod runs it.
+The top-level `run` is how `mirrord up` runs the service on your machine, and `sync.run` is how the preview pod runs it. Every service needs the top-level `run`, even one that you only preview with `mirrord preview sync`.
 
 ### Go Service
 
@@ -103,7 +106,7 @@ It takes the same options as `mirrord preview up` (`-f`, `--key`, `--ttl`, `--ti
 
 A service with `sync` needs no image: by default, its preview runs the image of the target. To run another image, pass it the same way as for `mirrord preview up`, with `--image <service>=<image ref>` or `MIRRORD_<SERVICE>_IMAGE`. Your local directories are then synced into that image.
 
-Passing an image for a service with `skip: true` previews that service too.
+Passing an image for a service with `sync` and `skip: true` previews that service too.
 
 When there is nothing to preview, the command fails before it changes the cluster. That happens when no service has `sync`, or when every service with `sync` has `skip: true` and no image.
 
@@ -123,7 +126,7 @@ A sync copies your `sync.files` directories to the preview pod. Each run of `mir
 For each entry in `sync.files`, the CLI syncs everything in `local`, except:
 
 * `.git` and `.jj`.
-* The paths that git ignores. The CLI reads every `.gitignore` from the root of the repository down to the synced directory, `.git/info/exclude`, and your global excludes file (git's `core.excludesFile`).
+* The paths that git ignores. The CLI reads the same files as git: the `.gitignore` files of the repository, `.git/info/exclude`, and your global excludes file.
 * The paths in the entry's `ignore` list, written as lines of a `.gitignore`, such as `coverage/`.
 
 The `ignore` list takes precedence over git's rules. For example, `!.env.preview` in `ignore` syncs a file that a `.gitignore` excludes.
@@ -152,7 +155,7 @@ A sync is applied completely or not at all. If it fails partway, the pod keeps t
 
 The preview pod is a copy of the target's pod, with the same volumes. A volume that the target mounts inside a `remote` directory hides the synced files at that path. For example, with `remote: /app` and a Secret mounted at `/app/.env`, the app reads the Secret's file, not your local `.env`.
 
-The operator rejects a target that mounts a volume at a `remote` directory, or at a directory above one.
+The operator rejects a target that mounts a volume at a `remote` or `prepare.persist` directory, or at a directory above one.
 
 ## Running the App
 
@@ -170,6 +173,10 @@ The container runs its own command, with its own working directory and probes, a
 
 Without `sync.run`, the pod can't run `prepare`, so `sync.prepare` requires `sync.run`.
 
+### What Happens After a Sync
+
+![After each sync, the pod runs prepare if a triggered_by file changed, on first start, or after a failed prepare. A successful prepare restarts the app. A failed first prepare stops mirrord preview sync, and a later failure leaves the app running. Without prepare, the app restarts only with restart: on_sync.](../.gitbook/assets/preview-sync-flow.svg)
+
 ### Preparing the Code
 
 `sync.prepare.command` prepares your code for the app, for example by installing dependencies. The pod runs it:
@@ -181,12 +188,7 @@ The pod compares the contents of those files, so a sync that rewrites a file wit
 
 `prepare` runs in `sync.prepare.directory`, or in the container's working directory if it isn't set.
 
-After a successful `prepare`, the app restarts. If `prepare` fails:
-
-* The first time, the app doesn't start.
-* Later, the app keeps running the code of the last successful `prepare`.
-
-Either way, the next sync runs `prepare` again, even when it reverts the `triggered_by` files. The CLI and `mirrord preview status` show the output of the failed `prepare`.
+After a failed `prepare`, the next sync runs it again, even when it reverts the `triggered_by` files. The CLI and `mirrord preview status` show the output of the failed `prepare`.
 
 {% hint style="warning" %}
 Everything that `prepare` writes must be on the code volume, because the pod skips `prepare` after a restart when nothing changed. Files under a `remote` directory, such as `/app/node_modules`, are already on the volume. List every other path that `prepare` writes to in `sync.prepare.persist`, such as `/usr/local/lib/python3.12/site-packages`, or its files are lost when the pod restarts.
@@ -205,8 +207,6 @@ Keep the `triggered_by` globs narrow, such as `web/package-lock.json`. The pod c
 | `on_prepare` (default) | After `prepare` runs | A dev server that reloads changed files on its own |
 | `on_sync` | After every sync | An app that only reads its code when it starts, such as a compiled service |
 
-With either value, a successful `prepare` restarts the app, so that the app picks up what `prepare` wrote.
-
 {% hint style="info" %}
 A restart only restarts the app's process in the running container, not the container or the pod, so it's quick.
 {% endhint %}
@@ -219,8 +219,9 @@ With `--watch`, the CLI keeps running and syncs each change:
 
 * It waits a moment, so that changes made together go in one sync.
 * It only syncs the paths that changed.
-* It skips changes in `.git` and in ignored paths, and doesn't watch ignored directories such as `node_modules`.
-* A change to a `.gitignore` or another source of ignore rules triggers a sync of all your files, so that the new rules apply everywhere.
+* It skips changes in `.git` and in ignored paths.
+* A change to a `.gitignore`, `.git/info/exclude`, or your global excludes file triggers a sync of all your files, so that the new rules apply everywhere.
+* A change to `mirrord-up.yaml`, such as to `ignore`, applies the next time you run `mirrord preview sync`.
 
 ## Idle Mode
 
