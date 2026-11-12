@@ -9,30 +9,7 @@ The mirrord CLI is the core tool for running mirrord from the command line.
 
 ## Installation
 
-{% tabs %}
-{% tab title="MacOS/Linux" %}
-
-To install the CLI, run:
-
-```bash
-brew install metalbear-co/mirrord/mirrord
-```
-
-or
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
-```
-{% endtab %}
-
-{% tab title="Windows" %}
-To install the CLI, run:
-
-```powershell
-choco install mirrord
-```
-{% endtab %}
-{% endtabs %}
+To install the CLI, see [Install mirrord](../getting-started/install-mirrord.md).
 
 ## Usage
 
