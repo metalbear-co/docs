@@ -114,7 +114,7 @@ Each config that applies to a workload shows the workload's split phase and sess
 ## Queue Names in Mounted Config Files
 
 {% hint style="info" %}
-Mounted config file sources require mirrord operator `3.198.0` or later; Secret-backed volumes require `3.231.0` or later.
+Mounted config file sources require mirrord operator `3.198.0` or later; Secret-backed volumes require `3.232.0` or later.
 {% endhint %}
 
 A queue name can also be read from a file mounted from a ConfigMap or Secret volume, instead of an environment variable. This is useful when your application keeps its queue names in a config file - for example a Spring-style `application.yaml` in a centrally managed ConfigMap, or next to credentials in a Secret - and duplicating the names into the pod's environment is not an option.
@@ -156,7 +156,7 @@ The `volume` source fields:
 * `valueSelector` - a selector run over the parsed file (JSON or YAML). It supports nested keys (`.kafka.consumer.group`) and `.[]` to iterate arrays or object values (`.topics.[]`); pipes, functions, and other jq operators are not supported.
 * `valuePattern` - a regex whose capture group marks the name inside the raw file text. With neither `valueSelector` nor `valuePattern`, the whole file content is the queue name.
 
-A source entry whose `volume` names a `secret` volume must set `valueSelector` or `valuePattern` next to it, and a session against a target whose split config leaves both out fails to start. Whatever the selector or pattern matches becomes a queue name, so keep it narrow: `.[]` over an object that also holds a password makes the password a queue name. A matched value that spans several lines or is longer than 260 bytes (the largest queue name limit a supported broker enforces) is refused as not a queue name, and the session fails to start with an error that names the file but not the value.
+A source entry whose `volume` names a `secret` volume must set `valueSelector` or `valuePattern` next to it, and a session against a target whose split config leaves both out fails to start. Whatever the selector matches, or the capture group of the pattern, becomes a queue name, so keep it narrow: `.[]` over an object that also holds a password makes the password a queue name. A value that spans several lines or is longer than 260 bytes is refused as not a queue name, whatever the broker, and the session fails to start with an error that names the file but not the value. A longer Redis Pub/Sub, BullMQ or Temporal name has to come from a `configMap` volume or an env var.
 
 If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containerNames` list is not needed either - the file is shared by every container that mounts the volume.
 
@@ -238,7 +238,7 @@ The rewrite is content-based, not path-based: a mount can sit anywhere, and a mo
 ## Queue Names Injected by Vault or CSI Drivers
 
 {% hint style="info" %}
-Injected file sources require mirrord operator `3.201.0` or later. From `3.231.0`, the session's version of the file is kept in a Secret instead of the split session's status.
+Injected file sources require mirrord operator `3.201.0` or later. From `3.232.0`, the session's version of the file is kept in a Secret instead of the split session's status.
 {% endhint %}
 
 A queue name can also be read from a file that exists only inside the running pods, with no ConfigMap or Secret behind it. This is useful when vault-agent-injector renders the names into `/vault/secrets/`, or a secrets-store CSI driver projects them at mount time, and moving them into the pod's environment is not an option.
@@ -263,7 +263,7 @@ The operator never touches Vault or the injector. When a split starts, it:
 
 1. Creates a Secret with the file's content and the temporary fallback names substituted. The Secret is labeled and managed by the operator, holds only the referenced file, and also caches the original content so later resolutions never depend on the pods again.
 2. Mounts that Secret over the file's exact path in the target's application containers. This restarts the workload, the same way environment variable injection does. The injector's own sidecar keeps its original view of the file, so it can keep rendering it underneath.
-3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session, exactly as for `volume` sources. While the session runs, the operator keeps that version in a Secret owned by the split session, in the target's namespace, with the label `operator.metalbear.co/queue-split-session-files` (before `3.231.0`, in the status of the `MirrordClusterSplitSession` object).
+3. Serves your local application a version of the file carrying its own session queue names, in-flight over the mirrord session, exactly as for `volume` sources. While the session runs, the operator keeps that version in a Secret owned by the split session, in the target's namespace, with the label `operator.metalbear.co/queue-split-session-files` (before `3.232.0`, in the status of the `MirrordClusterSplitSession` object).
 
 When the last session ends, the pods are restored to the injected file and the Secret is deleted.
 
