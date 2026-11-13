@@ -40,11 +40,22 @@ A seat represents one active user. The number of available seats is set by your 
 
 ### What counts as a seat?
 
-By default, seats are tracked per **client machine** — specifically, by the public key of the TLS client certificate that the mirrord CLI presents to the Operator. Each distinct developer machine consumes one seat.
+By default, seats are tracked per **client machine** — specifically, by the public key of the TLS client certificate that the mirrord CLI presents to the Operator (`~/.mirrord/credentials`). Each distinct certificate consumes one seat.
 
-Optionally, seat tracking can be switched to **Kubernetes user** — the username from the kubeconfig used to authenticate to the cluster. In this mode, a single developer using multiple machines still counts as one seat.
+Optionally, seat tracking can be switched to **Kubernetes user** — the username from the kubeconfig used to authenticate to the cluster. In this mode, a single developer using multiple machines or short-lived environments still counts as one seat, as long as they authenticate as the same Kubernetes user.
 
-The active tracking mode is configured by MetalBear when the license is issued and is visible in `mirrord operator status`.
+The active tracking mode is configured by MetalBear when the license is issued and is visible in `mirrord operator status`. The mode applies to the whole license; a session cannot pick a different mode.
+
+A seat can run as many sessions at the same time as that user needs. Seats are people, not a count of sessions running now.
+
+### What counts as a machine session?
+
+These sessions do not take a seat. They count against the concurrent machine-session limit of your [plan](https://metalbear.com/mirrord/pricing/):
+
+- Sessions started with `MIRRORD_CI_API_KEY` or `mirrord ci`
+- Callers that authenticate as a Kubernetes ServiceAccount (`system:serviceaccount:…`), even when `MIRRORD_CI_API_KEY` is unset
+
+Unsetting `MIRRORD_CI_API_KEY` on a [cloud agent](../using-mirrord-with-ai/cloud-agents.md) does not attach the session to the developer who started it. Counting still follows the Kubernetes user or ServiceAccount the agent uses, or a new client certificate if tracking is by certificate.
 
 ### What happens when all seats are taken?
 
