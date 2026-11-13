@@ -24,7 +24,7 @@ Unsetting `MIRRORD_CI_API_KEY` does not make the session the developer who start
 | Cloud agent, `MIRRORD_CI_API_KEY` is set | Machine session (concurrent limit, not a seat) |
 | Cloud agent, `MIRRORD_CI_API_KEY` is unset | **Not automatically** that developer's seat. Follows the identity below. |
 | Kubernetes [ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/) (`system:serviceaccount:…`) | Machine session, even without a CI API key |
-| Shared kube user for every agent (for example `mirrord-agent`) | That shared identity, not the person who started the agent |
+| Shared kube user for every agent (for example `mirrord-agent`), [Kubernetes-user](../managing-mirrord/licensing.md#what-counts-as-a-seat) tracking | That shared identity, not the person who started the agent. Default (client certificate) tracking still counts each new certificate as a seat. |
 | The developer's Kubernetes user, no CI API key, [Kubernetes-user](../managing-mirrord/licensing.md#what-counts-as-a-seat) tracking | That developer's seat |
 | That developer's `~/.mirrord/credentials`, no CI API key, default (client certificate) tracking | That developer's seat |
 | New environment, no CI API key, default tracking, new certificate | A new seat |
