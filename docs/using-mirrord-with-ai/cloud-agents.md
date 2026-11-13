@@ -18,16 +18,20 @@ Unsetting `MIRRORD_CI_API_KEY` does not make the session the developer who start
 
 ## How sessions are counted
 
-| How the agent runs | Counts as |
+| How it runs | Counts as |
 | --- | --- |
-| `MIRRORD_CI_API_KEY` is set | Machine session (concurrent limit, not a seat) |
+| Local `mirrord` CLI (developer laptop) | That developer's seat |
+| Cloud agent, `MIRRORD_CI_API_KEY` is set | Machine session (concurrent limit, not a seat) |
+| Cloud agent, `MIRRORD_CI_API_KEY` is unset | **Not automatically** that developer's seat. Follows the identity below. |
 | Kubernetes [ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/) (`system:serviceaccount:…`) | Machine session, even without a CI API key |
+| Shared kube user for every agent (for example `mirrord-agent`) | That shared identity, not the person who started the agent |
 | The developer's Kubernetes user, no CI API key, [Kubernetes-user](../managing-mirrord/licensing.md#what-counts-as-a-seat) tracking | That developer's seat |
-| New environment, no CI API key, default (client certificate) tracking | A new seat (`~/.mirrord/credentials` is created per environment) |
+| That developer's `~/.mirrord/credentials`, no CI API key, default (client certificate) tracking | That developer's seat |
+| New environment, no CI API key, default tracking, new certificate | A new seat |
 
-A seat is a person, not a running session. One developer can run several local sessions at once on one seat. The concurrent limit applies to machine sessions. See [Licensing](../managing-mirrord/licensing.md).
+A seat is a person, not a running session. One developer can run several local or cloud sessions at once on one seat. The concurrent limit applies to **machine sessions**, not only to sessions with `MIRRORD_CI_API_KEY`: a ServiceAccount caller is a machine session too. See [Licensing](../managing-mirrord/licensing.md).
 
-`~/.mirrord/credentials` is the Operator client certificate the CLI presents. It is not the kubeconfig and not the IAM or Kubernetes user. Copying that file into a cloud agent can share a seat when tracking is by client certificate. A new laptop or reinstall creates a new certificate. To count the agent as the developer, authenticate it as that developer's Kubernetes user instead; see [Count the agent as the developer](#count-the-agent-as-the-developer).
+`~/.mirrord/credentials` is the Operator client certificate the CLI presents. It is not the kubeconfig and not the IAM or Kubernetes user. Reusing **that engineer's** file on their cloud agent, with `MIRRORD_CI_API_KEY` unset, can share their seat when tracking is by client certificate. A new laptop or reinstall creates a new certificate. Two people must not use the same file: that is one seat for two users and goes against the [license terms](../managing-mirrord/licensing.md). To count the agent as the developer without copying the certificate, authenticate it as that developer's Kubernetes user; see [Count the agent as the developer](#count-the-agent-as-the-developer).
 
 ## What you need
 
@@ -94,10 +98,12 @@ If the agent runs several services together, use [`mirrord up`](../using-mirrord
 
 ## Count the agent as the developer
 
-If a person starts the cloud agent and you want that session on their seat instead of the concurrent machine-session limit:
+If a person starts the cloud agent and you want that session on their seat instead of the concurrent machine-session limit, prefer this path:
 
 1. Do not set `MIRRORD_CI_API_KEY`.
 2. Authenticate the agent as that developer's Kubernetes user, the same username their laptop uses. Do not use a shared ServiceAccount or a shared kube user for every agent.
 3. Use [Kubernetes-user](../managing-mirrord/licensing.md#what-counts-as-a-seat) seat tracking. MetalBear sets the mode when the license is issued.
 
 How the agent assumes that user's IAM role or kubeconfig depends on the agent platform. Copying `~/.mirrord/credentials` does not change the Kubernetes user the API server authenticates.
+
+Reusing that engineer's `~/.mirrord/credentials` on their agent also shares the seat when tracking is by client certificate. Each engineer must use **their own** file. Do not share one certificate across people.

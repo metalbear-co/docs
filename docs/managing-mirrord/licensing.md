@@ -55,7 +55,11 @@ These sessions do not take a seat. They count against the concurrent machine-ses
 - Sessions started with `MIRRORD_CI_API_KEY` or `mirrord ci`
 - Callers that authenticate as a Kubernetes ServiceAccount (`system:serviceaccount:…`), even when `MIRRORD_CI_API_KEY` is unset
 
-Unsetting `MIRRORD_CI_API_KEY` on a [cloud agent](../using-mirrord-with-ai/cloud-agents.md) does not attach the session to the developer who started it. Counting still follows the Kubernetes user or ServiceAccount the agent uses, or a new client certificate if tracking is by certificate.
+Unsetting `MIRRORD_CI_API_KEY` on a [cloud agent](../using-mirrord-with-ai/cloud-agents.md) does not attach the session to the developer who started it. Counting still follows the Kubernetes user or ServiceAccount the agent uses, or the client certificate if tracking is by certificate.
+
+The concurrent machine-session limit is not only for `MIRRORD_CI_API_KEY`. A ServiceAccount caller counts as a machine session with the key unset.
+
+Copying one engineer's `~/.mirrord/credentials` onto **that** engineer's cloud agent can share their seat when tracking is by client certificate. Copying the same file onto another person's sessions counts as one seat for two users and goes against the license. Each certificate is one user.
 
 ### What happens when all seats are taken?
 
