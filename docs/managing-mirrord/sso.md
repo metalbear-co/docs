@@ -52,8 +52,6 @@ sso:
   groupsPrefix: "oidc:"
   ingress:
     className: nginx
-    annotations:
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tlsSecret: mirrord-example-com-tls
 ```
 
@@ -65,19 +63,19 @@ sso:
 | `clientSecretRef` | | Name and key of the Secret holding the client secret. Required. |
 | `usernameClaim` | `--oidc-username-claim` | Claim that becomes the Kubernetes username. Default `sub`. |
 | `usernamePrefix` | `--oidc-username-prefix` | Prefix put in front of the username. See [Usernames and groups](#usernames-and-groups). |
-| `groupsClaim` | `--oidc-groups-claim` | Claim that holds the user's groups. Without it, SSO users have no groups. |
+| `groupsClaim` | `--oidc-groups-claim` | Claim that holds the user's groups. Without it, SSO users have no groups beyond `system:authenticated`. |
 | `groupsPrefix` | `--oidc-groups-prefix` | Prefix put in front of every group. |
-| `ingress` | | The Ingress for the host in `url`. Set `enabled: false` to route the host yourself. |
+| `ingress` | | The Ingress for the host in `url`. `tlsSecret` is required while it is enabled. Set `enabled: false` to route the host yourself. |
 
 `helm install` and `helm upgrade` fail when `sso.enabled` is `true` and a required value is empty, naming the value to set.
 
 ### Exposing the URL
 
-The chart's Ingress sends the host in `sso.url` to the Operator Service on the Operator's own HTTPS port, the one the API server also uses. The Operator keeps terminating TLS with the certificate in `tls.secret`, so the Ingress controller has to speak HTTPS to the backend. For ingress-nginx that is the `nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"` annotation in the example above; other controllers have an equivalent. `tlsSecret` names the certificate the Ingress serves the host with. Point the host's DNS record at the Ingress.
+The chart's Ingress sends the `/apis/operator.metalbear.co/` path of the host in `sso.url` to the Operator Service on the Operator's own HTTPS port, the one the API server also uses. Only that path is forwarded: the Operator's admission webhook and health endpoint stay inside the cluster. The Operator keeps terminating TLS with the certificate in `tls.secret`, so the Ingress controller has to speak HTTPS to the backend. The chart sets the ingress-nginx annotation for that, `nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"`, by default in `sso.ingress.annotations`; replace it with your controller's equivalent if you use another one. `tlsSecret` names the certificate the Ingress serves the host with and is required while the Ingress is enabled, so the login never travels over plain HTTP. Point the host's DNS record at the Ingress.
 
-If you use the Gateway API, a cloud load balancer or a service mesh instead, set `sso.ingress.enabled: false` and route the host to the `mirrord-operator` Service on port `443` (the `operator.port` value) over HTTPS yourself.
+If you use the Gateway API, a cloud load balancer or a service mesh instead, set `sso.ingress.enabled: false` and route the host to the `mirrord-operator` Service on port `443` (the `operator.port` value) over HTTPS yourself. Forward the `/apis/operator.metalbear.co/` path only.
 
-The Operator tells the two paths apart by the client certificate the API server presents, not by the route. A request arriving through the SSO URL is accepted only with a valid ID token from your provider; any `X-Remote-User` or `X-Remote-Group` header it carries is dropped.
+The Operator tells the two paths apart by the client certificate the API server presents, not by the route. A request arriving through the SSO URL is accepted only with a valid ID token from your provider; any `X-Remote-User` or `X-Remote-Group` header it carries is dropped. The Operator then asks the cluster's RBAC, with a `SubjectAccessReview`, whether that user may perform the request, the same check the API server does before it forwards a kubectl call to the Operator. A user without a matching RoleBinding gets a `403`.
 
 ## Usernames and groups
 
@@ -91,6 +89,8 @@ The Operator builds the Kubernetes username and groups exactly as the API server
 | any claim with `usernamePrefix: "-"` | the claim value as is |
 | `groupsClaim: groups`, no `groupsPrefix` | each group as is, for example `platform-team` |
 | `groupsClaim: groups`, `groupsPrefix: "oidc:"` | `oidc:platform-team` |
+
+Every SSO user is also in the `system:authenticated` group, as every logged-in Kubernetes user is.
 
 If your clusters already authenticate kubectl users against the same provider, copy the API server's `--oidc-*` flag values into the matching `sso` values and the RoleBindings you have match SSO users without changes.
 
@@ -145,4 +145,4 @@ Until the CLI login ships, you can check the setup with an ID token obtained fro
 curl -H "Authorization: Bearer $ID_TOKEN" https://mirrord.example.com/apis/operator.metalbear.co/v1/mirrordoperators/operator
 ```
 
-A valid token returns the Operator status. A refused one returns a `401` with a message that starts with `SSO login refused:` and names the reason, for example an expired token, an issuer or audience that does not match the values, a missing username claim, or a name in the reserved `system:` space. A `503` means the Operator could not reach the provider's discovery document or signing keys from inside the cluster; check egress from the Operator pod to the issuer URL. The Operator's log has the same reasons at `debug` level.
+A valid token for a user with the RBAC above returns the Operator status. A refused one returns a `401` with a message that starts with `SSO login refused:` and names the reason, for example an expired token, an issuer or audience that does not match the values, a missing username claim, or a name in the reserved `system:` space. A `403` names the user, verb and resource that RBAC denied; check the RoleBindings against the username and groups the token maps to. A `503` means the Operator could not reach the provider's discovery document or signing keys from inside the cluster; check egress from the Operator pod to the issuer URL. The Operator's log has the same reasons at `debug` level.
