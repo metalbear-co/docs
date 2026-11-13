@@ -116,7 +116,7 @@ Developers define branches in their `mirrord.json`:
 | `connection` | Describes how to locate the source database connection details. Supports a full connection URL or individual connection parameters. See [Connection Modes](db-branching/connection.md) for details. For DynamoDB, `connection` is optional and, since there is no user or password, is only used to point the source client at a custom/VPC endpoint URL (for example `AWS_ENDPOINT_URL_DYNAMODB`); if omitted, the standard regional AWS endpoint is used. |
 | `copy.mode` | Allows developers to control how the database is cloned when creating a branch. Available modes and filtering options differ per engine - see the Copy Modes section on your [database's page](#choose-your-database). |
 | `copy.dump_args` | (MySQL, MariaDB & PostgreSQL only) Customize the arguments passed to `mysqldump`, `mariadb-dump`, or `pg_dump`. See [MySQL](db-branching/mysql.md#custom-dump-arguments), [MariaDB](db-branching/mariadb.md#custom-dump-arguments), or [PostgreSQL](db-branching/postgresql.md#custom-dump-arguments) for details. |
-| `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. Unrecoverable pod failures (for example a bad image reference stuck in `ImagePullBackOff`) fail the branch immediately with the underlying error instead of waiting for this timeout. |
+| `creation_timeout_secs` | Override for branch creation timeout, in seconds. If the branch isn't ready within this time, the mirrord session fails and returns a timeout error, except while a [copy-on-write](#copy-on-write-branches) branch waits for its snapshot to be built or pulled: the CLI keeps waiting meanwhile, and once that wait ends, the timeout starts over for the rest of the start. Use this field to avoid hanging operations when branch creation takes too long or fails. The default is 60 seconds. Unrecoverable pod failures (for example a bad image reference stuck in `ImagePullBackOff`) fail the branch immediately with the underlying error instead of waiting for this timeout. |
 | `iam_auth` | Optional IAM authentication for AWS RDS or GCP Cloud SQL. See [IAM Authentication](db-branching/iam-authentication.md) for details. For DynamoDB, `iam_auth` is **required** when using copy mode `all`, since DynamoDB has no password-based auth. |
 | `local.port` | Currently only for Local Redis. Sessions that use the same port share a single local Redis database. When a new session starts on that port, it creates a new database instance that replaces the existing one. |
 | `migrations` | (MySQL, MariaDB, CockroachDB, PostgreSQL & MSSQL only) Automatically run schema migrations on the branch so it comes up with the schema your code expects. See [Schema Migrations](db-branching/migrations.md) for details. |
@@ -161,7 +161,7 @@ operator:
         - "docker.io/library/postgres:*"
 ```
 
-A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
+A branch whose `image` matches no pattern is rejected and the session fails with an error. When `allowedImages` is **absent**, all images are allowed - restricting is an explicit, opt-in choice per cluster and engine. A [copy-on-write](#copy-on-write-branches) branch is the exception: one with its own `image` fails unless `allowedImages` is set and lists it. Each engine has its own `<engine>BranchConfig` block (`pgBranchConfig`, `mysqlBranchConfig`, `genericBranchConfig`, and so on); the list only affects branches that supply a custom `image`, so branches that rely on the default image are always allowed.
 
 To block branching for specific databases or copy modes, use the [db branching policy](policies.md#db-branching-policy).
 
@@ -268,7 +268,7 @@ On clusters without a default StorageClass, branches automatically fall back to 
 
 ### Pod replacement
 
-A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
+A branch pod can be deleted out from under a branch: a Karpenter consolidation, a node drain, an eviction under memory pressure. When the branch's data lives on its PersistentVolumeClaim (the default), the operator starts a new pod on that claim, so a PostgreSQL, MySQL, MariaDB, ClickHouse or MongoDB branch keeps everything written to it and comes back `Ready` on a new pod; only the copy from the source is redone during the restart. A [copy-on-write](#copy-on-write-branches) branch is the exception: its clone lives on one node, so it survives a pod deletion but not losing that node: a branch whose node is removed (consolidation, scale-down) fails, and one whose node is drained fails unless the node is uncordoned within an hour. A branch on node-local `emptyDir` storage (a cluster without a default StorageClass, or an explicit `emptyDir` opt-out) loses its data with the pod and is marked `Failed` instead.
 
 Sessions reach such a branch through a per-branch Service rather than the pod's address, so a session attached before the replacement stays attached and finds the branch at the same address once it is `Ready`. Branches that cannot be rebuilt (below) keep the pod's address, which reaches every port the image serves. Open database connections do not survive the pod: the application has to reconnect or retry, as it would after any database restart.
 
@@ -350,6 +350,74 @@ Setting `storageClassName` to a class that does not exist fails the branch with 
 
 Copying a large database also needs memory: the branch container's default memory limit is 2Gi, and admins can raise it per engine with `<engine>BranchConfig.dbPod.resources`.
 
+### Copy-on-write branches
+
+Copying a large source into every branch takes as long as the copy does, each time, and every branch stores its own full copy. With copy-on-write branching, the first branch of a configuration copies the source into a snapshot instead, and every later branch with the same configuration starts on a copy-on-write clone of it within seconds. A clone shares the snapshot's data and only stores what the branch changes; migrations still run on each branch.
+
+Branches in one namespace share a snapshot when everything that decides what they copy is the same: the engine and its version or image, the copy settings (`mode`, `items`, dump arguments), the source and its credentials, roles, the branch pod's settings that reach its containers (such as `dbServerArgs`), the contents of the Secrets and ConfigMaps it mounts (such as source TLS files), the service account, and the operator version. A different copy filter, source or credential gets a snapshot of its own. mirrord policies are not part of that: every branch is checked against the policies that apply to it, with the sources its snapshot was copied from, and a branch they block fails without a snapshot of its own. The namespace that counts is the target's, where the branch is created: branches of different targets' namespaces never share a snapshot, while branches that run in their own [namespace per key](#a-namespace-per-key) share one when they target the same namespace. Copy-on-write branching supports PostgreSQL, MySQL, MariaDB, MongoDB and ClickHouse. For MySQL, MariaDB, MongoDB and ClickHouse, the branch image must start through the official image's entrypoint (`docker-entrypoint.sh`, or `/entrypoint.sh` for ClickHouse): a snapshot build runs it to seed the data and stops it before the server starts serving. A branch image that starts another way works without `cow`, and fails its snapshot build with it. With `cow`, the branch container runs that entrypoint with the official image's default command (`mysqld` or `mariadbd`, `mongod`), so flags that a custom image sets in its own `CMD` are not applied: pass them in `dbServerArgs`.
+
+It needs:
+
+* Kubernetes 1.34 or newer.
+* Nodes with the `dm_thin_pool` kernel module and a raw block device the operator can own entirely, such as a local NVMe disk, labelled for the operator to use.
+* An S3 bucket, or an S3-compatible one, that holds the snapshots. The operator writes and deletes there through its own AWS credentials (for example an IRSA role on the operator's service account), or through an access key in the Secret `cowDbBranching.store.operatorCredentialsSecret` names (keys `accessKeyId` and `secretAccessKey`). The nodes only read, through the `mirrord-cow-csi` service account, which `cowDbBranching.serviceAccount.annotations` gives an identity, such as a read-only IRSA role, or through a read-only key passed in `cowDbBranching.store.driverEnv`. Set an S3-compatible store's endpoint in `cowDbBranching.store.endpoint`, and the bucket's region in `cowDbBranching.store.region`; neither affects the operator's other AWS clients. On a bucket with versioning, deleting an object keeps it as a noncurrent version, so add a lifecycle rule that expires noncurrent versions, or deleted snapshots keep taking space.
+* Operator 3.232.0 and operator Helm chart 3.232.0 or newer, and mirrord 3.287.0 or newer on developer machines: older CLIs stop waiting for the first branch of a configuration after `creation_timeout_secs`, while its snapshot is still building.
+* Branching turned on for at least one of those engines (`operator.pgBranching`, `operator.mysqlBranching`, `operator.mariadbBranching`, `operator.mongodbBranching` or `operator.clickhouseBranching`): the chart refuses `cowDbBranching` without one. `cow` is set per engine, in its `<db>BranchConfig.dbPod`, and other engines ignore it.
+* A cluster-wide install: the chart refuses `cowDbBranching` with `namespaced: true`, since the snapshot driver's provisioner needs access to claims in every namespace.
+
+```yaml
+cowDbBranching:
+  enabled: true
+  # Nodes carrying this label keep snapshots and run copy-on-write branches.
+  nodeSelector:
+    mirrord.metalbear.co/cow-db-branching: "true"
+  storage:
+    device: /dev/nvme1n1
+  store:
+    bucket: my-branch-snapshots
+    region: eu-west-1
+operator:
+  pgBranching: true
+  pgBranchConfig:
+    dbPod:
+      cow: true
+```
+
+{% hint style="warning" %}
+The snapshot driver runs as a privileged DaemonSet on the labelled nodes: it manages device-mapper devices and mounts volumes into branch pods.
+{% endhint %}
+
+Snapshots are built by a Job in the operator's namespace, which reads copies of the Secrets and ConfigMaps the branch would read, deleted once the build ends. Its volumes follow `dbPod.storage` as a branch's do, as claims that go with the build's pod. Its database and snapshot containers take `dbPod.resources`; the init containers that copy the source set none, as in a branch's pod, since the memory they need follows the size of the source. If a ResourceQuota in the operator's namespace requires every container to set requests or limits, add a LimitRange there, or the build fails after 10 minutes without a pod. Its default memory limit then caps those init containers, so set it with room for your largest source's dump. At most `cowDbBranching.maxConcurrentBuilds` builds (2) run at once, and a build running longer than `cowDbBranching.buildTimeoutSeconds` (6 hours) fails. Because the build runs outside the branch's namespace, it cannot use the target's cloud identity: a source read with IAM authentication or from a secret manager cannot be snapshotted, and its branches fail with a message saying to turn `cow` off for that database. A pod volume configured as a PersistentVolumeClaim (`dbPod.volume` or `dbPod.initVolume`) belongs to the branch's namespace as well, and fails its branches the same way. For the same reason, a branch that sets its own `image` fails unless `dbPod.allowedImages` is set and lists that image. A source with so many databases that the build's report of them runs past a few kilobytes cannot be snapshotted either: the build fails, saying to turn `cow` off for it, where a branch copying the source itself still works.
+
+The build connects to the source from the operator's namespace, so the source has to accept connections from there, and the build pod needs to reach the bucket, as do the labelled nodes. Network policies of the branch's namespace do not apply to the build, and what it copies becomes the branch's data, so the chart limits builds with a NetworkPolicy of their own: they reach DNS, the bucket (HTTPS anywhere by default) and the sources you list, nothing else. List each database builds may copy from as an egress rule:
+
+```yaml
+cowDbBranching:
+  buildNetworkPolicy:
+    sources:
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: databases
+        ports:
+          - port: 5432
+            protocol: TCP
+    # For an S3-compatible store on another port, or to narrow the bucket's addresses:
+    # store:
+    #   - to: [{ ipBlock: { cidr: 10.0.0.0/8 } }]
+    #     ports: [{ port: 9000, protocol: TCP }]
+```
+
+A build whose source is not listed fails to connect. NetworkPolicies add up, so another policy in the operator's namespace that allows broad egress to all its pods lets builds out too. The policy takes effect only on clusters whose network plugin enforces NetworkPolicies; `cowDbBranching.buildNetworkPolicy.enabled: false` leaves it out. A short source host (`postgres`) resolves in the target's namespace, as it does for a branch. The first branch of a configuration waits while its snapshot is built, which takes as long as copying the source, settling the copy (so that clones do not each rewrite their tables later: PostgreSQL vacuums it, MySQL and MariaDB shut down slowly, ClickHouse merges the parts of each partition, where the volume has room to) and uploading it, and while its node pulls the snapshot; the mirrord CLI keeps waiting past `creation_timeout_secs` meanwhile. Later branches start with the source's data as it was when the snapshot was built, not as it is now. A snapshot no branch used for `cowDbBranching.snapshotIdleTtlSeconds` (a week by default) is deleted with its objects in the bucket, and a snapshot older than `cowDbBranching.snapshotMaxAgeSeconds` (30 days) is rebuilt for the next branch, without touching the branches already running on it.
+
+Each snapshot is a cluster-scoped `BranchDatabaseSnapshot` resource: `kubectl get branchdatabasesnapshots` shows each build's phase, and with `-o wide`, why a build failed. Deleting one deletes its objects in the bucket, and the next branch of its configuration builds it again with the source's current data; branches already running on it keep their clones.
+
+A clone has the snapshot's size: the copied data times `cowDbBranching.headroomRatio` (1.5) plus `cowDbBranching.headroom` (2Gi), plus a few percent for the filesystem itself. A branch can write about the part added on top of the data. `headroomRatio` cannot be below 1. The size is fixed when the snapshot is built, so changing either reaches existing snapshots only once they are rebuilt. A clone lives on one node, so a branch whose node goes away is marked `Failed` rather than started again elsewhere. The scheduler places a clone on a node whose pool has room for it, counting the snapshot itself on a node that has not pulled it yet; for that the operator keeps one StorageClass per snapshot, named `cowDbBranching.storageClassPrefix` (`mirrord-cow`) followed by the snapshot's name and deleted with it. After the prefix changes, a snapshot's class under the earlier prefix stays until the snapshot is deleted. A branch whose clone no node can hold or make, because the nodes' pools are full for example, keeps waiting and gives the scheduler's or the driver's reason in its `Ready` condition, which also shows how far a node's pull of the snapshot is. A branch already on a clone stays on it if `cow` is turned off for its database; if copy-on-write branching is turned off in the operator, it fails instead of copying its source again.
+
+`helm uninstall` deletes the branches and the snapshots, whose objects in the bucket go with them, and then waits up to two minutes for the clones and the running snapshot builds to be gone before it removes the driver and the operator. A clone still mounted after that stays on its node, and a build still running may leave objects in the bucket. Turning `cowDbBranching.enabled` off keeps the snapshots, for turning it on again. Keep `cowDbBranching.store` set while any are left: the operator needs it to delete their objects when you delete them (`kubectl delete branchdatabasesnapshots --all`) or uninstall the chart. With the store unset, the objects stay in the bucket. Each node also removes clones left on it whose volume no longer exists, unless `cowDbBranching.sweepDryRun` is set, which only logs them.
+
+On OpenShift, the chart adds a SecurityContextConstraints object that admits the privileged `mirrord-cow-csi` driver.
+
 ## Branch Config Profiles
 
 A profile is a named preset of branch pod settings that a cluster admin defines for an engine. A branch picks one with `profile` and runs with those settings.
@@ -418,7 +486,7 @@ When a profile pins `image.registry`, the tag still comes from the branch's `ver
 
 ### Profiles and `allowedImages`
 
-`allowedImages` is the one field a profile inherits, because leaving it unset means "any image is allowed" - a profile added for an unrelated reason should not quietly widen which images branches may run:
+`allowedImages` is the one field a profile inherits, because leaving it unset means "any image is allowed" (except for [copy-on-write](#copy-on-write-branches) branches, which need it set) - a profile added for an unrelated reason should not quietly widen which images branches may run:
 
 | `allowedImages` in the profile | Images the branch may run |
 | --- | --- |
