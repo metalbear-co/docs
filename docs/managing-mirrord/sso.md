@@ -29,10 +29,11 @@ Make sure the ID token carries the claims you want to use for usernames and grou
 
 ## 2. Store the client secret
 
-The client secret never goes into the values file. Put it in a Secret in the Operator's namespace, and point the chart at it:
+The client secret never goes into the values file. Put it in a Secret in the Operator's namespace, and point the chart at it. Read the secret into a variable first, so characters like `$` or `&` in it reach the Secret unchanged:
 
 ```bash
-kubectl create secret generic mirrord-sso -n mirrord --from-literal=clientSecret=<client secret>
+read -rs CLIENT_SECRET
+kubectl create secret generic mirrord-sso -n mirrord --from-literal=clientSecret="$CLIENT_SECRET"
 ```
 
 ## 3. Turn SSO on in the Helm chart
