@@ -14,7 +14,7 @@ tags:
 Serverless workloads are **experimental**. They're available on request, and behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. To try them, install a [supported mirrord CLI](#required-versions).
 {% endhint %}
 
-Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
+Some services don't run in Kubernetes, but on platforms such as Amazon ECS, Fargate and Cloudflare Containers. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
 
 **When is this useful?**
 
@@ -56,13 +56,14 @@ Developers target a serverless workload the same way, with a `serverless/` targe
 | Platform | Operator-hosted | MetalBear Cloud |
 | --- | --- | --- |
 | [Amazon ECS](ecs.md) | [Supported](ecs-operator-hosted.md) | [Supported](ecs-metalbear-cloud.md) |
+| [Cloudflare Containers](cloudflare-containers.md) | Not covered | [Supported](cloudflare-containers.md) |
 
 ## Setting Up
 
 Setup is split by what it touches, so you only redo the parts that change:
 
 1. **Set up your deployment mode, once.** See [Operator-Hosted Sessions-Manager](operator-hosted.md) or [MetalBear Cloud Sessions-Manager](metalbear-cloud.md).
-2. **Add the remote bootstrap to each workload.** For ECS, see [Amazon ECS](ecs.md).
+2. **Add the remote bootstrap to each workload.** For ECS, see [Amazon ECS](ecs.md). For Cloudflare Containers, see [Cloudflare Containers](cloudflare-containers.md), which also covers the next step.
 3. **Connect each workload to your deployment mode.** For ECS, see [Connecting ECS to the Operator](ecs-operator-hosted.md) or [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md).
 
 ### Required versions
