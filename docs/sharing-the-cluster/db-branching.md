@@ -358,7 +358,7 @@ Branches in one namespace share a snapshot when everything that decides what the
 
 It needs:
 
-* Kubernetes 1.24 or newer.
+* Kubernetes 1.34 or newer.
 * Nodes with the `dm_thin_pool` kernel module and a raw block device the operator can own entirely, such as a local NVMe disk, labelled for the operator to use.
 * An S3 bucket, or an S3-compatible one, that holds the snapshots. The operator writes and deletes there through its own AWS credentials (for example an IRSA role on the operator's service account), or through an access key in the Secret `cowDbBranching.store.operatorCredentialsSecret` names (keys `accessKeyId` and `secretAccessKey`). The nodes only read, through the `mirrord-cow-csi` service account, which `cowDbBranching.serviceAccount.annotations` gives an identity, such as a read-only IRSA role, or through a read-only key passed in `cowDbBranching.store.driverEnv`. Set an S3-compatible store's endpoint in `cowDbBranching.store.endpoint`, and the bucket's region in `cowDbBranching.store.region`; neither affects the operator's other AWS clients. On a bucket with versioning, deleting an object keeps it as a noncurrent version, so add a lifecycle rule that expires noncurrent versions, or deleted snapshots keep taking space.
 * Operator 3.232.0 and operator Helm chart 3.232.0 or newer, and mirrord 3.287.0 or newer on developer machines: older CLIs stop waiting for the first branch of a configuration after `creation_timeout_secs`, while its snapshot is still building.
