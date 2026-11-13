@@ -161,7 +161,7 @@ A source entry whose `volume` names a `secret` volume has these rules:
 * It must set `valueSelector` or `valuePattern`. A session against a target whose split config leaves both out fails to start.
 * Whatever the selector matches, or the capture group of the pattern, becomes a queue name. Keep it narrow: `.[]` over an object that also holds a password makes the password a queue name.
 * A value that spans several lines or is longer than 260 bytes is refused, whatever the broker. The session fails to start with an error that names the file but not the value. Read a longer Redis Pub/Sub, BullMQ or Temporal name from a `configMap` volume, a `podFile` source or an env var.
-* In a multi-cluster setup, the split's `consumerCluster` can only be the default cluster. A session whose split config names another cluster fails to start.
+* In a multi-cluster setup, the split's `consumerCluster` can only be the default cluster. A session whose split config names another cluster fails to start. Upgrade the primary operator to `3.233.0` before the other clusters, as for `podFile` sources below.
 
 If both a `volume` source and an `env`/`envLike` source are set on the same entry, `env`/`envLike` takes precedence and `volume` is ignored. `fallback` does not apply to `volume`. A `containerNames` list is not needed either - the file is shared by every container that mounts the volume.
 
@@ -278,7 +278,7 @@ Things to know:
 * If both a `podFile` source and an `env`/`envLike` or `volume` source are set on the same entry, the other source takes precedence and `podFile` is ignored. `fallback` does not apply to `podFile`.
 * A `containerNames` list on the entry limits which containers get the overriding mount. Without one, every application container gets it.
 * The remote file system and directory file descriptor notes for `volume` sources apply here as well.
-* In a multi-cluster setup, the split's `consumerCluster` can only be the default cluster. A session whose split config names another cluster fails to start.
+* In a multi-cluster setup, the split's `consumerCluster` can only be the default cluster. A session whose split config names another cluster fails to start. The primary operator is the one that refuses it, so upgrade the primary to `3.233.0` before the other clusters: with an older primary, a split on another cluster starts and your local application reads the original queue names.
 
 ## Autoscaled Targets with KEDA
 
