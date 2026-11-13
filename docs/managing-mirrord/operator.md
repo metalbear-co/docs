@@ -57,6 +57,10 @@ The Operator runs as one pod by default. Agents run only while sessions use them
 
 Rotate and revoke the key at [app.metalbear.com](https://app.metalbear.com). When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
 
+## Single sign-on
+
+Developers can log in to the Operator with your OIDC identity provider at a public HTTPS URL instead of through a kubeconfig. See [Single Sign-On](sso.md) for registering mirrord at the provider, the `sso` Helm values and granting groups access.
+
 ## Air-gapped / offline clusters (Enterprise)
 
 Air-gapped or offline clusters can't reach the cloud to exchange an API key for a license, so Enterprise deployments in that situation use an offline **license certificate** instead. First add the Helm repository and download `values.yaml`, as in [Get the chart](../getting-started/install-the-operator.md#get-the-chart). Then, instead of a cloud API key, give the chart your certificate. If you have a `license.pem` file, set `license.file.secret.data.license.pem` in `values.yaml` using a YAML literal block:

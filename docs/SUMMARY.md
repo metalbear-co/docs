@@ -108,6 +108,7 @@
 
 ## Managing mirrord
 
+* [Single Sign-On](managing-mirrord/sso.md)
 * [Dashboard](managing-mirrord/admin-dashboard.md)
   * [License Server Setup](managing-mirrord/dashboard/license-server.md)
   * [Cloud Setup](managing-mirrord/dashboard/cloud.md)
