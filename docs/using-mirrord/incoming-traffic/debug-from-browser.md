@@ -7,7 +7,7 @@ menu:
   docs:
     parent: using-mirrord
 toc: true
-description: Use the Chrome extension to route browser traffic to your local process
+description: Use the browser extension to route browser traffic to your local process
 tags:
   - beta
   - oss
@@ -26,8 +26,8 @@ There are two ways to use it:
 
 ## Prerequisites
 
-1. Google Chrome.
-2. The [mirrord browser extension](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) installed.
+1. Google Chrome, Microsoft Edge, or Firefox.
+2. The mirrord browser extension installed, from the [Chrome Web Store](https://chromewebstore.google.com/detail/mirrord/bijejadnnfgjkfdocgocklekjhnhkhkf) (Chrome and Edge) or [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/mirrord/).
 
 For operator sessions, additionally:
 
