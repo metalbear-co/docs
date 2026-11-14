@@ -270,7 +270,6 @@ operator:
 * `fsGroup`: the group that a preview pod gets when nothing else names one, so that an app that doesn't run as root can write to the code volume.
   * When the pod has no `fsGroup`, the operator gives it the app container's `runAsGroup` or `runAsUser`, else the pod's `runAsGroup` or `runAsUser`, else this value.
   * The `fsGroup` applies to every volume of the pod, so the pod's Secret and ConfigMap files become readable by that group. An app that rejects a group-readable key file then fails in the preview.
-  * Set it to `null` on platforms that assign groups themselves, such as OpenShift.
 * `maxPushBytes`: the most bytes, unpacked, that one sync may write. A larger sync is rejected before it changes anything, with a message that names this setting.
 * `sidecarResources`: the resources of the `mirrord-sync` sidecar and its `mirrord-sync-install` init container. Set them when a namespace quota requires requests or limits on every container.
 
