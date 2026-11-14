@@ -15,6 +15,10 @@ This page covers DB branching for Microsoft SQL Server (MSSQL). For the general 
 MSSQL branching requires operator `3.150.0`, mirrord CLI `3.195.0`, and operator Helm chart `1.57.0` with the `operator.mssqlBranching` value set to `true`.
 {% endhint %}
 
+{% hint style="warning" %}
+SQL Server images refuse to start until their license is accepted, so the operator starts every MSSQL branch database with `ACCEPT_EULA=Y`. Setting `operator.mssqlBranching` to `true` means you accept Microsoft's license terms for the SQL Server edition the branch image runs. This holds for any image a branch uses: the default `mcr.microsoft.com/mssql/server`, a registry set in `mssqlBranchConfig.dbPod.image`, a [profile](../db-branching.md#branch-config-profiles), or a [per-branch `image`](../db-branching.md#custom-branch-image). The default image runs SQL Server Developer, which is licensed for non-production use only. Read the [SQL Server Developer license terms](https://go.microsoft.com/fwlink/?linkid=857698) before you enable it.
+{% endhint %}
+
 ## Basic Configuration
 
 ```json
