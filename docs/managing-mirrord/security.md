@@ -42,8 +42,8 @@ You can also visit our [Trust Center](https://trust.metalbear.com) for an overvi
 * The operator requires exclusions from the following gatekeeper policies:
   * `runAsNonRoot` - to access target pod's filesystem
   * `HostPath volume`/`Sharing the host namespace` - to access target pod's file system and networking
-* With the experimental [MetalBear Cloud sessions-manager](../using-mirrord/serverless/metalbear-cloud.md), serverless workloads authenticate with a MetalBear API key exchanged for short-lived tokens, developers with their MetalBear account through `mirrord login`, and every session is scoped to your organization. See [How do serverless workloads authenticate to MetalBear Cloud?](#how-do-serverless-workloads-authenticate-to-metalbear-cloud).
-* With the experimental [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
+* With the alpha [MetalBear Cloud sessions-manager](../using-mirrord/serverless/metalbear-cloud.md), serverless workloads authenticate with a MetalBear API key exchanged for short-lived tokens, developers with their MetalBear account through `mirrord login`, and every session is scoped to your organization. See [How do serverless workloads authenticate to MetalBear Cloud?](#how-do-serverless-workloads-authenticate-to-metalbear-cloud).
+* On the Enterprise plan, with the alpha [Operator-hosted sessions-manager](../using-mirrord/serverless/operator-hosted.md), workloads outside Kubernetes, such as Amazon ECS tasks, reach the Operator through your EKS API server as Kubernetes identities mapped from their IAM roles, with no shared secrets. See [How do ECS workloads authenticate to the Operator?](#how-do-ecs-workloads-authenticate-to-the-operator).
 * The Operator's own permissions are listed in [What can the Operator access in my cluster?](#what-can-the-operator-access-in-my-cluster), with how to limit it to some namespaces.
 * Operator activity is logged per session, including the Kubernetes user, the target, and the traffic filter in use. See [Auditing mirrord usage](#how-do-i-audit-mirrord-usage).
 * mirrord can run fully air-gapped, with no outbound communication to MetalBear. See [Air-gapped operation](#can-mirrord-run-air-gapped).
@@ -168,7 +168,7 @@ Yes, MetalBear is SOC2 Type II and ISO27001 certified.
 
 mirrord for Teams works on top of Kubernetes' built-in RBAC with the following resources, `mirrordoperators`, `mirrordoperators/certificate`, `targets`, and `targets/port-locks` under the `operator.metalbear.co` apiGroup. The first two resources are required at a cluster level, and the last two can be allowed at a namespace level.
 
-With the experimental `operator.sessionsManager` enabled, which lets developers target [serverless workloads](../using-mirrord/serverless/README.md) such as Amazon ECS tasks, the Operator also serves three cluster-scoped resources in the same apiGroup: `serverlessclientassignments` and `serverlessagentassignments`, with the `proxy` verb, and `serverlessdataplanes`, with the `get` verb. The developer's local mirrord registers on `serverlessclientassignments` (the **client** side) and the workload on `serverlessagentassignments` (the **agent** side), so RBAC decides which side of a session an identity may act as; both sides then connect to their session through `serverlessdataplanes`.
+On the Enterprise plan, with the alpha `operator.sessionsManager` enabled, which lets developers target [serverless workloads](../using-mirrord/serverless/README.md) such as Amazon ECS tasks, the Operator also serves three cluster-scoped resources in the same apiGroup: `serverlessclientassignments` and `serverlessagentassignments`, with the `proxy` verb, and `serverlessdataplanes`, with the `get` verb. The developer's local mirrord registers on `serverlessclientassignments` (the **client** side) and the workload on `serverlessagentassignments` (the **agent** side), so RBAC decides which side of a session an identity may act as; both sides then connect to their session through `serverlessdataplanes`.
 
 You can limit a user's ability to use mirrord on specific targets by limiting their access to the `target` resource. The specific verbs for rules to our resources can be copied from the examples below.
 
@@ -239,7 +239,7 @@ To revoke access, delete the access entry or the ClusterRoleBinding. For the ful
 
 ## How do serverless workloads authenticate to MetalBear Cloud?
 
-When developers target a [serverless workload](../using-mirrord/serverless/README.md) without the Operator, in the experimental MetalBear Cloud deployment mode, both the workload and the developer's local mirrord connect to a sessions-manager hosted by MetalBear:
+When developers target a [serverless workload](../using-mirrord/serverless/README.md) without the Operator, in the alpha MetalBear Cloud deployment mode, both the workload and the developer's local mirrord connect to a sessions-manager hosted by MetalBear:
 
 * The workload holds a MetalBear API key issued for serverless workloads. Other MetalBear credentials, such as the Operator's license key, are refused.
 * Before registering, the workload exchanges the key at `app.metalbear.com` for a short-lived token over HTTPS, and presents only the token to sessions-manager. Neither the key nor the tokens are logged.
