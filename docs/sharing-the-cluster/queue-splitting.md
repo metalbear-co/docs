@@ -100,7 +100,7 @@ A config has either `targetRef` or `targetSelector`, not both; the `Accepted` co
 Every config that applies to a workload is merged for its sessions, so a shared selector config and a per-workload `targetRef` config can be used together:
 
 * A queue id or a `dbBranches` entry id defined identically by several configs is one queue or one entry.
-* A queue id, a `dbBranches` entry, or one of `ttl`, `drainTimeout` and `tmpNameTemplate` that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
+* A queue id, a `dbBranches` entry, or one of `ttl`, `drainTimeout`, `tmpNameTemplate` and [`consumerCluster`](../using-mirrord/multi-cluster.md#splitting-from-one-cluster) (multi-cluster only) that two configs set differently is a conflict. Both configs get `Accepted: False` with reason `ConflictingConfigs`, naming the other config and the field, and sessions for that workload fail until one of them changes.
 * `restart` and `clientConfigs` merge field by field: one config can set `restart.timeout` and another `restart.strategy`, or each can name its own broker's client config. Only the same field set to two values (`restart.timeout`, `clientConfigs.sqs`) is a conflict.
 
 The older `MirrordWorkloadQueueRegistry` and `MirrordKafkaTopicsConsumer` objects of a workload stay in effect under selector configs: their queues are added to the merge, and their settings fill in what the configs leave unset. A config that names the workload with `targetRef` replaces them, as it always has.
