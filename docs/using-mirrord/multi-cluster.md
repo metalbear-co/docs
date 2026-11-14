@@ -187,7 +187,7 @@ The name is one of the keys of the Primary's `operator.multiCluster.clusters`, o
 
 If the workload's queues still come from a `MirrordWorkloadQueueRegistry` or a `MirrordKafkaTopicsConsumer`, use a `targetSelector` config that sets only `consumerCluster`. A config with `targetRef` replaces both, so the session would lose their queues.
 
-Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.232.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older, or whose license does not include the feature.
+Leave `consumerCluster` unset to keep splitting on every workload cluster. `consumerCluster` needs operator `3.233.0` or later on every cluster; the Primary refuses the session and names the cluster whose operator is older, or whose license does not include the feature.
 
 ### Per-Service Details
 
