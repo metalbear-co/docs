@@ -45,7 +45,7 @@ Throughout this guide, replace:
 | `<YOUR_ENVIRONMENT>` | A name for the environment the ECS service runs in, e.g. `staging` |
 | `<YOUR_APPLICATION_IMAGE>` | Your application container's existing image |
 
-`<YOUR_SERVICE_NAME>` and `<YOUR_ENVIRONMENT>` are free-form: they're how a developer names the ECS task they want. They must be identical on the ECS task and in developers' `mirrord.json`.
+`<YOUR_SERVICE_NAME>` and `<YOUR_ENVIRONMENT>` are free-form: they're how a developer names the ECS task they want. They must be identical on the ECS task and in developers' `mirrord-up.yaml`.
 
 ---
 
@@ -146,6 +146,6 @@ These apply in every deployment mode. For connection and authentication problems
 | Symptom | Likely cause |
 | --- | --- |
 | The application starts without mirrord | The setup container failed or its `dependsOn` condition isn't wired up; check its logs and exit code. |
-| The task registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord.json`. |
+| The task registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord-up.yaml`. |
 | `Read-only file system` or `Permission denied` under `/tmp` | The application container has no writable `/tmp` ([Prerequisites](#prerequisites)). |
 | The application container stops at startup: version `GLIBC_2.30` not found, required by `libmirrord_remote_bootstrap.so` | The application image's glibc is older than 2.30 ([Prerequisites](#prerequisites)). |
