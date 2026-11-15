@@ -1,5 +1,5 @@
 ---
-title: Serverless Workloads
+title: Beyond Kubernetes
 description: >-
   Run a service locally while it takes over the network and environment of a
   workload running outside Kubernetes, such as an Amazon ECS task.
@@ -9,13 +9,13 @@ tags:
   - enterprise
 ---
 
-# Serverless Workloads
+# Beyond Kubernetes
 
 {% hint style="warning" %}
-Serverless workloads are in **alpha**: behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. The MetalBear Cloud mode is available on every plan, including Free, while it's in alpha; the Operator-hosted mode requires the Enterprise plan. To try them, install a [supported mirrord CLI](#required-versions).
+Support for workloads outside Kubernetes is in **alpha**: behavior, configuration and resource names may change without notice. Don't rely on them for anything beyond development environments. The MetalBear Cloud mode is available on every plan, including Free, while it's in alpha; the Operator-hosted mode requires the Enterprise plan. To try them, install a [supported mirrord CLI](#required-versions).
 {% endhint %}
 
-Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. mirrord calls these **serverless workloads**. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
+Some services don't run in Kubernetes, but on platforms such as Amazon ECS and Fargate. In this section, they're called **workloads outside Kubernetes**. The CLI and the dashboard call them serverless workloads, and developers target them with a `serverless/` target. You run such a service **locally** while it takes over the network and environment of the deployed one. There's no image to build or push, and nothing to redeploy.
 
 **When is this useful?**
 
@@ -24,7 +24,7 @@ Some services don't run in Kubernetes, but on platforms such as Amazon ECS and F
     Part of your system runs on ECS and part on Kubernetes. You already use mirrord for the Kubernetes services, and want the same workflow for the others.
 2.  **Resources only reachable from the workload**
 
-    Your service talks to databases, queues or internal APIs that are only reachable from its network. Running it locally through mirrord sends its outgoing connections through the serverless workload, so the local process reaches them too.
+    Your service talks to databases, queues or internal APIs that are only reachable from its network. Running it locally through mirrord sends its outgoing connections through the workload, so the local process reaches them too.
 3.  **Shared staging environments**
 
     Several developers work on the same service in one environment. Each developer steals only the requests that carry their own session key, so regular traffic and other developers are unaffected.
@@ -33,7 +33,7 @@ Some services don't run in Kubernetes, but on platforms such as Amazon ECS and F
 
 ## Components
 
-A serverless workload session has three parts:
+A session with a workload outside Kubernetes has three parts:
 
 * **Your local mirrord**, started with [`mirrord up`](../multiple-concurrent-sessions.md).
 * **The mirrord remote bootstrap**, a library loaded into the workload's existing application container. It starts a mirrord agent beside your application and registers it, under a service and environment name, with sessions-manager.
@@ -48,7 +48,7 @@ Where sessions-manager runs is the [deployment mode](#deployment-modes).
 | **MetalBear Cloud** | Hosted by MetalBear, so there's nothing for you to install or operate, and no Kubernetes cluster or Operator is needed. | Workloads use a MetalBear API key; developers sign in with `mirrord login`. | All plans, including Free, while in alpha | Alpha |
 | **Operator-hosted** | Inside the [mirrord Operator](../../managing-mirrord/operator.md) on your Kubernetes cluster, enabled with a Helm value. Both sides reach it through your cluster's API server. | Kubernetes identities and RBAC: developers use their kubeconfig, workloads a platform identity mapped into the cluster. | Enterprise | Alpha |
 
-Developers target a serverless workload the same way, with a `serverless/` target, in every mode. The mode changes how sessions-manager is installed, and how each side connects and authenticates to it.
+Developers target a workload outside Kubernetes the same way, with a `serverless/` target, in every mode. The mode changes how sessions-manager is installed, and how each side connects and authenticates to it.
 
 Start with MetalBear Cloud. On the Enterprise plan, if you already run the Operator and your workloads can reach your cluster's API server, you can use the Operator-hosted mode instead: access is then managed with Kubernetes RBAC, with no API key to distribute.
 
@@ -76,7 +76,7 @@ Bootstraps earlier than 3.229.0 don't connect to the MetalBear Cloud sessions-ma
 
 ### API key
 
-In the MetalBear Cloud mode, workloads authenticate with a MetalBear API key for serverless workloads, which you can generate at [app.metalbear.com](https://app.metalbear.com). The setup guides refer to it as `<API_KEY>`. It begins with `metalbear_key_`. Developers don't need it: they sign in with `mirrord login`. The Operator-hosted mode needs nothing from us beyond your Enterprise Operator license.
+In the MetalBear Cloud mode, workloads authenticate with a MetalBear serverless agent API key, which you can generate at [app.metalbear.com](https://app.metalbear.com). The setup guides refer to it as `<API_KEY>`. It begins with `metalbear_key_`. Developers don't need it: they sign in with `mirrord login`. The Operator-hosted mode needs nothing from us beyond your Enterprise Operator license.
 
 ### Application container requirements
 
@@ -92,7 +92,7 @@ To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_
 
 ***
 
-## Using mirrord with a Serverless Workload
+## Using mirrord with a Workload Outside Kubernetes
 
 Install a [supported mirrord CLI](#required-versions), then create a `mirrord-up.yaml` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
 
@@ -112,9 +112,9 @@ services:
 * [`target.path`](../multiple-concurrent-sessions.md#services) is `serverless/` followed by the service name, and `target.namespace` is the environment the service runs in. These are the names your platform team gave the workload when setting it up, not Kubernetes resources or namespaces. Ask them for the values. When `namespace` isn't set, `default` is used.
 * `run.command` is the command that starts your service locally.
 
-`mirrord up` fills in the rest. The service runs in [`split` mode](../multiple-concurrent-sessions.md#split): only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process, and regular traffic and other developers' requests keep going to the serverless workload. Your local process gets the serverless workload's environment variables, and its outgoing connections leave through the serverless workload, so they reach whatever the workload can reach. To change the filter, set [`http_filter`](../multiple-concurrent-sessions.md#services) on the service.
+`mirrord up` fills in the rest. The service runs in [`split` mode](../multiple-concurrent-sessions.md#split): only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process, and regular traffic and other developers' requests keep going to the workload outside Kubernetes. Your local process gets its environment variables, and its outgoing connections leave through it, so they reach whatever the workload can reach. To change the filter, set [`http_filter`](../multiple-concurrent-sessions.md#services) on the service.
 
-Serverless services run in `split` or `mirror` mode only, without queue splitting or DB branching. You can list them in the same `mirrord-up.yaml` as services that target Kubernetes workloads. See [Serverless targets](../multiple-concurrent-sessions.md#serverless-targets) for the details.
+Services outside Kubernetes run in `split` or `mirror` mode only, without queue splitting or DB branching. You can list them in the same `mirrord-up.yaml` as services that target Kubernetes workloads. See [Serverless targets](../multiple-concurrent-sessions.md#serverless-targets) for the details.
 
 ### With MetalBear Cloud
 
@@ -152,7 +152,7 @@ For every option, see [mirrord up](../multiple-concurrent-sessions.md#config-fil
 
 ### From your IDE
 
-The [VS Code](../../installing-mirrord/vscode.md) and [IntelliJ](../../installing-mirrord/intellij.md) extensions don't run `mirrord up`. They run your service with a `mirrord.json`, so to debug a serverless service from your IDE, use this one as the extension's [active config](../../installing-mirrord/vscode.md#active-config):
+The [VS Code](../../installing-mirrord/vscode.md) and [IntelliJ](../../installing-mirrord/intellij.md) extensions don't run `mirrord up`. They run your service with a `mirrord.json`, so to debug a service outside Kubernetes from your IDE, use this one as the extension's [active config](../../installing-mirrord/vscode.md#active-config):
 
 ```json
 {
@@ -184,7 +184,7 @@ It's the same session `mirrord up` starts in `split` mode: only requests carryin
 1. **The workload registers.** When the workload starts, the remote bootstrap connects to sessions-manager and registers the workload under its service and environment names.
 2. **You start mirrord.** `mirrord up` connects to sessions-manager and asks for a session with the service and environment in your `mirrord-up.yaml`.
 3. **Sessions-manager pairs them.** It assigns both sides to the same session and gives each a single-use credential for it.
-4. **Both sides open the session's data plane.** Sessions-manager relays mirrord traffic between them. From here, mirrord behaves as it does with a Kubernetes target: incoming requests matching your filter go to your local process, and its outgoing traffic leaves from the serverless workload.
+4. **Both sides open the session's data plane.** Sessions-manager relays mirrord traffic between them. From here, mirrord behaves as it does with a Kubernetes target: incoming requests matching your filter go to your local process, and its outgoing traffic leaves from the workload outside Kubernetes.
 
 In the Operator-hosted mode, every connection goes through your cluster's API server to the Operator; see [Operator-Hosted Sessions-Manager](operator-hosted.md#how-it-works). In the MetalBear Cloud mode, both sides connect to the MetalBear-hosted sessions-manager over HTTPS: the workload authenticates with your API key, and you with the credentials `mirrord login` stored; see [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#how-it-works).
 
@@ -194,7 +194,7 @@ In the Operator-hosted mode, every connection goes through your cluster's API se
 
 * **No `replace` mode.** A serverless target can't be copied, so services run in `split` or `mirror` mode only. See [Serverless targets](../multiple-concurrent-sessions.md#serverless-targets).
 * **One replica per session.** Your session is served by one registered replica of the service, such as one ECS task. If the service runs several, only requests that land on that replica can be stolen or mirrored. For testing, scale the service to one replica or route your test traffic to a specific one.
-* **No queue splitting, DB branching, or copied targets.** [`feature.split_queues`](../../sharing-the-cluster/queue-splitting.md), [`feature.kafka_branch`](../../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching), [`feature.db_branches`](../../sharing-the-cluster/db-branching.md), and [`feature.copy_target`](../copy-target.md) aren't supported with a `serverless/` target. `mirrord up` runs a serverless service without them and prints a warning, even when its mode asks for queue splitting or DB branching. If a service's `config_patch` sets any of them, mirrord refuses to start the session, for example with `` `feature.db_branches` is not supported with serverless targets.`` Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data.
+* **No queue splitting, DB branching, or copied targets.** [`feature.split_queues`](../../sharing-the-cluster/queue-splitting.md), [`feature.kafka_branch`](../../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching), [`feature.db_branches`](../../sharing-the-cluster/db-branching.md), and [`feature.copy_target`](../copy-target.md) aren't supported with a `serverless/` target. `mirrord up` runs the service without them and prints a warning, even when its mode asks for queue splitting or DB branching. If a service's `config_patch` sets any of them, mirrord refuses to start the session, for example with `` `feature.db_branches` is not supported with serverless targets.`` Your local process uses the same databases and queues as the workload outside Kubernetes, so its writes reach the shared data.
 * **Operator-hosted mode:**
   * **Development traffic only.** Session traffic flows through your cluster's API server. That's fine for development, but don't use a mirrord session for load testing.
   * **Operator restarts end sessions.** Restarting or upgrading the Operator ends active sessions. The workload registers again on its own; rerun `mirrord up`.

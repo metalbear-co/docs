@@ -255,7 +255,7 @@ Register the new task definition revision and update the service to use it.
    ```
 
    With [EKS control plane audit logging](https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html) enabled, requests from the task appear in the audit log with user `mirrord-ecs-<YOUR_SERVICE_NAME>` on resource `serverlessagentassignments`.
-2. **Developer session**: with the `mirrord-up.yaml` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), `mirrord up` connects, and a request with the `baggage` header reaches the local process.
+2. **Developer session**: with the `mirrord-up.yaml` from [Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes), `mirrord up` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code
 

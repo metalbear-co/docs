@@ -13,7 +13,7 @@ tags:
 Targeting Amazon ECS tasks is in **alpha**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
-This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
+This guide makes an Amazon ECS service targetable as a [workload outside Kubernetes](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
 
 The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazon EC2**. Windows containers aren't covered by this setup. At a glance, the setup is:
 

@@ -54,7 +54,7 @@
 * [Local Containers](using-mirrord/local-container.md)
 * [Seamless Multi-Cluster Development](using-mirrord/multi-cluster.md)
   * [Multi-Cluster Setup](using-mirrord/multi-cluster-setup.md)
-* [Serverless Workloads](using-mirrord/serverless/README.md)
+* [Beyond Kubernetes](using-mirrord/serverless/README.md)
   * [Operator-Hosted Sessions-Manager](using-mirrord/serverless/operator-hosted.md)
   * [MetalBear Cloud Sessions-Manager](using-mirrord/serverless/metalbear-cloud.md)
   * [Amazon ECS](using-mirrord/serverless/ecs.md)

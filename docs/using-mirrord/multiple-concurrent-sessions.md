@@ -151,7 +151,7 @@ Only messages containing the session key (`checkout-debug` in this case) are rou
 This feature requires at least mirrord version 3.288.0.
 {% endhint %}
 
-A service can target a [serverless workload](serverless/README.md), such as an Amazon ECS service, alongside services that target Kubernetes workloads. Set `target.path` to `serverless/` followed by the service name, and `target.namespace` to the environment it runs in:
+A service can target a [workload outside Kubernetes](serverless/README.md), such as an Amazon ECS service, alongside services that target Kubernetes workloads. Set `target.path` to `serverless/` followed by the service name, and `target.namespace` to the environment it runs in:
 
 ```yaml
 services:
@@ -169,7 +169,7 @@ services:
       command: ["python", "-m", "http.server"]
 ```
 
-For a serverless target, `target.namespace` is the environment the service is registered under in sessions-manager, not a Kubernetes namespace. When it's not set, `default` is used. Set up the workload and your deployment mode first, as described in [Serverless Workloads](serverless/README.md#setting-up).
+For a serverless target, `target.namespace` is the environment the service is registered under in sessions-manager, not a Kubernetes namespace. When it's not set, `default` is used. Set up the workload and your deployment mode first, as described in [Beyond Kubernetes](serverless/README.md#setting-up).
 
 Serverless targets work with these limitations:
 
@@ -178,7 +178,7 @@ Serverless targets work with these limitations:
 * **No `split_queues`, `kafka_branch`, `db_branches` or `copy_target` in `config_patch`.** A service whose `config_patch` sets any of them fails before any session starts, with an error naming the setting, for example `` `feature.db_branches` is not supported with serverless targets.``
 * **Set the target explicitly.** `mirrord up init` and target inference only find Kubernetes workloads, so write the `serverless/` path into `mirrord-up.yaml` yourself.
 
-All the [serverless workload limitations](serverless/README.md#limitations) also apply.
+All the [limitations of workloads outside Kubernetes](serverless/README.md#limitations) also apply.
 
 ### Context
 

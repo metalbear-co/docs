@@ -1,6 +1,6 @@
 ---
 title: "Operator-Hosted Sessions-Manager"
-description: "Run sessions-manager inside the mirrord Operator, so developers can target serverless workloads such as Amazon ECS tasks through your cluster's API server."
+description: "Run sessions-manager inside the mirrord Operator, so developers can target workloads outside Kubernetes such as Amazon ECS tasks through your cluster's API server."
 tags:
   - alpha
   - enterprise
@@ -105,7 +105,7 @@ Enabling sessions-manager grants `proxy` on `serverlessclientassignments` (the *
 aws eks update-kubeconfig --name <CLUSTER_NAME> --region <REGION>
 ```
 
-If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord-up.yaml`, see [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload).
+If you grant Operator access with your own roles instead, add the two rules above to them. For the developer's `mirrord-up.yaml`, see [Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes).
 
 A developer can check their access with their own kubeconfig:
 
@@ -194,7 +194,7 @@ Any firewall or proxy between a workload and the API server needs an idle timeou
 | `403 Forbidden` on `serverlessagentassignments` for a workload bound to a custom role | The role's `resourceNames` doesn't list the workload's `<environment>.<service>`, in its lowercased form ([Limiting a workload to specific services](#limiting-a-workload-to-specific-services)). |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets more than one of them ([Connection variables](#connection-variables)). |
 | A workload is refused with `HTTP control plane returned 401 Unauthorized`, and never reaches the Operator | None of the [connection variables](#connection-variables) are set on the workload, so it registers with the MetalBear Cloud sessions-manager instead. |
-| mirrord prints `connecting through the MetalBear Cloud sessions-manager` | `mirrord-up.yaml` doesn't set `common.operator: true` ([Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload)). |
+| mirrord prints `connecting through the MetalBear Cloud sessions-manager` | `mirrord-up.yaml` doesn't set `common.operator: true` ([Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes)). |
 | `Failed to load kubeconfig context` | `KUBECONFIG` doesn't point at the mounted kubeconfig, or it has no context named `MIRRORD_OPERATOR_KUBE_CONTEXT`. |
 | The workload registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord-up.yaml`. |
 
