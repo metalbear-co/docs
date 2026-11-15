@@ -1,5 +1,5 @@
 ---
-title: "ECS Quickstart"
+title: "Try It with a Sample App"
 description: "Deploy a sample service to Amazon ECS with Terraform, then run it on your laptop with mirrord through MetalBear Cloud: steal requests by header and reach a private RDS database."
 tags:
   - alpha
@@ -7,16 +7,16 @@ tags:
   - enterprise
 ---
 
-This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
+This tutorial deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
 
 * **Real requests reach your laptop:** requests to the public load balancer that carry your session header reach the process on your laptop. All other requests still go to the ECS task.
 * **Your laptop reads the real database:** your local process reads and writes the orders in the RDS database, which has no public endpoint. mirrord sends the database connection through the ECS task, inside the VPC. It also gives the local process the task's environment variables, so the process gets the database settings from the task.
 
-The ECS task and your laptop connect to each other through MetalBear Cloud. The code and the Terraform configuration are in the [mirrord-ecs-quickstart](https://github.com/metalbear-co/mirrord-ecs-quickstart) repository.
+The ECS task and your laptop connect to each other through MetalBear Cloud. The code and the Terraform configuration are in the [mirrord-ecs-sample](https://github.com/metalbear-co/mirrord-ecs-sample) repository.
 
 ## How it works
 
-![The client sends requests to the load balancer and the ECS task. The mirrord agent in the task sends requests with your header through the MetalBear sessions-manager to the app on your machine. The task connects to the private RDS database for both apps.](../../.gitbook/assets/ecs-quickstart.svg)
+![The client sends requests to the load balancer and the ECS task. The mirrord agent in the task sends requests with your header through the MetalBear sessions-manager to the app on your machine. The task connects to the private RDS database for both apps.](../../.gitbook/assets/ecs-sample-app.svg)
 
 The ECS task and your laptop both make only outbound HTTPS connections to the MetalBear sessions-manager, which pairs them. mirrord needs no inbound access to your VPC. The public load balancer is part of the sample app, so that you can send requests to it.
 
@@ -29,7 +29,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 5. A MetalBear account. To generate the API key, you must be an admin of your MetalBear organization.
 
 {% hint style="info" %}
-This quickstart creates billable AWS resources: a NAT gateway, an Application Load Balancer, a `db.t4g.micro` RDS instance and one Fargate task. Run `terraform destroy` when you finish; see [Clean up](#clean-up).
+This tutorial creates billable AWS resources: a NAT gateway, an Application Load Balancer, a `db.t4g.micro` RDS instance and one Fargate task. Run `terraform destroy` when you finish; see [Clean up](#clean-up).
 {% endhint %}
 
 ---
@@ -49,8 +49,8 @@ This guide calls the key `<API_KEY>`.
 Clone the repository and put your API key in the Terraform variables file:
 
 ```bash
-git clone https://github.com/metalbear-co/mirrord-ecs-quickstart.git
-cd mirrord-ecs-quickstart/terraform
+git clone https://github.com/metalbear-co/mirrord-ecs-sample.git
+cd mirrord-ecs-sample/terraform
 cp terraform.tfvars.example terraform.tfvars
 ```
 
@@ -126,7 +126,7 @@ export URL=$(terraform output -raw url)
 
 mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=<your username>`. This is your session header. Your username is the session key, which you gave to `--key` as `$USER`. Each developer uses a different session key, so each one gets only their own requests.
 
-![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-quickstart-requests.svg)
+![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-sample-app-requests.svg)
 
 Send a request with your session header:
 
@@ -188,7 +188,7 @@ The service uses the default `split` mode of `mirrord up`. In this mode, mirrord
 
 ## The task definition
 
-The task definition in [`terraform/ecs.tf`](https://github.com/metalbear-co/mirrord-ecs-quickstart/blob/main/terraform/ecs.tf) has the changes from [Amazon ECS](ecs.md) and [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md):
+The task definition in [`terraform/ecs.tf`](https://github.com/metalbear-co/mirrord-ecs-sample/blob/main/terraform/ecs.tf) has the changes from [Amazon ECS](ecs.md) and [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md):
 
 1. A setup container copies the [remote bootstrap](ecs.md) into a shared volume before the app starts.
 2. The app container loads the bootstrap with `LD_PRELOAD`. The app image does not change.
@@ -197,7 +197,7 @@ The task definition in [`terraform/ecs.tf`](https://github.com/metalbear-co/mirr
 
 The service runs one task, because one replica serves a mirrord session. The app image is based on `python:3.12-slim-bookworm`, because the bootstrap needs glibc 2.30 or later. For all the requirements, see [Application container requirements](README.md#application-container-requirements).
 
-To use the same setup with the mirrord Operator on EKS, see [Operator-hosted mode](https://github.com/metalbear-co/mirrord-ecs-quickstart#operator-hosted-mode) in the repository.
+To use the same setup with the mirrord Operator on EKS, see [Operator-hosted mode](https://github.com/metalbear-co/mirrord-ecs-sample#operator-hosted-mode) in the repository.
 
 ## Clean up
 
