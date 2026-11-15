@@ -108,7 +108,7 @@ services:
       command: ["<YOUR_COMMAND>", "<ARG>"]
 ```
 
-* [`common.operator: true`](../multiple-concurrent-sessions.md#common) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator. For MetalBear Cloud, set it to `false` instead; see [Which sessions-manager mirrord connects through](#which-sessions-manager-mirrord-connects-through).
+* [`common.operator: true`](../multiple-concurrent-sessions.md#common) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using the service's kube [context](../multiple-concurrent-sessions.md#context), which falls back to your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator. For MetalBear Cloud, set it to `false` instead; see [Which sessions-manager mirrord connects through](#which-sessions-manager-mirrord-connects-through).
 * [`target.path`](../multiple-concurrent-sessions.md#services) is `serverless/` followed by the service name, and `target.namespace` is the environment the service runs in. These are the names your platform team gave the workload when setting it up, not Kubernetes resources or namespaces. Ask them for the values. When `namespace` isn't set, `default` is used.
 * `run.command` is the command that starts your service locally.
 
@@ -130,7 +130,7 @@ Then set `common.operator: false` in `mirrord-up.yaml`, and keep the rest as abo
 
 mirrord picks the sessions-manager from your configuration, in this order:
 
-1. [`common.operator: true`](../multiple-concurrent-sessions.md#common), or `operator: true` in the global config `~/.mirrord/mirrord.json` when `common.operator` isn't set: the sessions-manager hosted by the Operator, reached through your kubeconfig's current context. `sessions_manager.url` and `MIRRORD_SESSIONS_MANAGER_URL` are then ignored.
+1. [`common.operator: true`](../multiple-concurrent-sessions.md#common), or `operator: true` in the global config `~/.mirrord/mirrord.json` when `common.operator` isn't set: the sessions-manager hosted by the Operator, reached through the service's kube [context](../multiple-concurrent-sessions.md#context). `sessions_manager.url` and `MIRRORD_SESSIONS_MANAGER_URL` are then ignored.
 2. A URL in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url), set through the service's [`config_patch`](../multiple-concurrent-sessions.md#services), or in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable. When both are set, the `config_patch` URL is used, since `mirrord up` applies the patch after reading the environment: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
 3. Otherwise, the MetalBear Cloud sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`.
 
