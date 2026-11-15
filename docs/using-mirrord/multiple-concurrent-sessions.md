@@ -175,7 +175,7 @@ Serverless targets work with these limitations:
 
 * **`split` and `mirror` only.** A serverless target can't be copied, so a service in `replace` mode, or any mode with `incoming: replace`, fails before any session starts with ``incompatible mode and target: `orders` is `replace` mode with a serverless target``.
 * **No queue splitting or DB branching.** In `split` and `mirror` mode the service runs without either, and `mirrord up` prints a warning for it. A mode that asks for queue splitting or DB branching gets the same warning instead of an error, so one mode can still cover both serverless and Kubernetes services.
-* **No `split_queues` or `db_branches` in `config_patch`.** A service whose `config_patch` sets either fails before any session starts with `` `feature.split_queues` is not supported with serverless targets``.
+* **No `split_queues` or `db_branches` in `config_patch`.** A service whose `config_patch` sets either fails before any session starts, with `` `feature.split_queues` is not supported with serverless targets.`` or `` `feature.db_branches` is not supported with serverless targets.``
 * **Set the target explicitly.** `mirrord up init` and target inference only find Kubernetes workloads, so write the `serverless/` path into `mirrord-up.yaml` yourself.
 
 All the [serverless workload limitations](serverless/README.md#limitations) also apply.
