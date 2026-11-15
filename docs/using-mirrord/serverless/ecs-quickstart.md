@@ -109,7 +109,7 @@ Run the app with mirrord, from the root of the repository:
 
 ```bash
 cd ..
-mirrord exec -f mirrord.json -- uvicorn main:app --app-dir app --port 8080
+mirrord exec -f mirrord.json -- python app/main.py
 ```
 
 When the app starts, it creates the `orders` table in RDS if the table does not exist. So the log line `Application startup complete` also shows that your local process reached the private database.
