@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">Which process serves each request</title>
-  <desc id="d">Two requests go to the load balancer, one with the header baggage: mirrord-session=quickstart and one without it. The load balancer sends both to the ECS task, where the mirrord remote bootstrap checks the baggage header. A request with the header goes through MetalBear Cloud to the orders app on your machine, which answers with version v2. A request without the header goes to the orders app in the task, which answers with version v1.</desc>
+  <desc id="d">Two requests go to the load balancer, one with the header baggage: mirrord-session=quickstart and one without it. The load balancer sends both to the ECS task, where the mirrord agent, started by the remote bootstrap, checks the baggage header. A request with the header goes through MetalBear Cloud to the orders app on your machine, which answers with version v2. A request without the header goes to the orders app in the task, which answers with version v1.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -27,8 +27,9 @@
   <rect x="570" y="50" width="290" height="330" rx="12" fill="#E4E3FD" stroke="#232141" stroke-width="2"/>
   <text x="715" y="80" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">ECS task</text>
   <rect x="590" y="105" width="250" height="90" rx="8" fill="#756DF3" stroke="#232141" stroke-width="2"/>
-  <text x="715" y="143" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord remote bootstrap</text>
-  <text x="715" y="166" font-size="12.5" fill="#ffffff" text-anchor="middle">checks the baggage header</text>
+  <text x="715" y="136" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">mirrord agent</text>
+  <text x="715" y="158" font-size="12.5" fill="#ffffff" text-anchor="middle">started by the remote bootstrap</text>
+  <text x="715" y="178" font-size="12.5" fill="#ffffff" text-anchor="middle">checks the baggage header</text>
   <rect x="590" y="275" width="250" height="85" rx="8" fill="#ffffff" stroke="#232141" stroke-width="2"/>
   <text x="715" y="311" font-size="16" font-weight="700" fill="#232141" text-anchor="middle">orders app</text>
   <text x="715" y="335" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#333344" text-anchor="middle">"version": "v1"</text>

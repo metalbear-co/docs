@@ -12,11 +12,11 @@ This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a p
 * **Real requests reach your laptop:** requests to the public load balancer that carry your session header reach the process on your laptop. All other requests still go to the ECS task.
 * **Your laptop reads the real database:** your local process reads and writes the orders in the RDS database, which has no public endpoint. mirrord sends the database connection through the ECS task, inside the VPC. It also gives the local process the task's environment variables, so the process gets the database settings from the task.
 
-The ECS task connects to mirrord through MetalBear Cloud. The code and the Terraform configuration are in the [mirrord-ecs-quickstart](https://github.com/metalbear-co/mirrord-ecs-quickstart) repository.
+The ECS task and your laptop connect to each other through MetalBear Cloud. The code and the Terraform configuration are in the [mirrord-ecs-quickstart](https://github.com/metalbear-co/mirrord-ecs-quickstart) repository.
 
 ## How it works
 
-![The client sends requests to the load balancer and the ECS task. The mirrord remote bootstrap in the task sends requests with your header through the MetalBear sessions-manager to the app on your machine. The task connects to the private RDS database for both apps.](../../.gitbook/assets/ecs-quickstart.svg)
+![The client sends requests to the load balancer and the ECS task. The mirrord agent in the task sends requests with your header through the MetalBear sessions-manager to the app on your machine. The task connects to the private RDS database for both apps.](../../.gitbook/assets/ecs-quickstart.svg)
 
 The ECS task and your laptop both make only outbound HTTPS connections to the MetalBear sessions-manager, which pairs them. mirrord needs no inbound access to your VPC. The public load balancer is part of the sample app, so that you can send requests to it.
 
@@ -98,7 +98,7 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Open `app/main.py` and change the code. For example:
+Open `main.py` and change the code. For example:
 
 ```python
 GREETING = "Hello from my laptop"
@@ -204,16 +204,15 @@ The task definition in [`terraform/ecs.tf`](https://github.com/metalbear-co/mirr
 3. `MIRRORD_REMOTE_SERVICE` and `MIRRORD_REMOTE_ENVIRONMENT` name the workload.
 4. ECS injects the API key from Secrets Manager as `MIRRORD_SESSIONS_MANAGER_API_KEY`.
 
-The service runs one task, because one replica serves a mirrord session. The app image is based on `python:3.12-slim-bookworm`, because the bootstrap needs glibc. For all the requirements, see [Application container requirements](README.md#application-container-requirements).
+The service runs one task, because one replica serves a mirrord session. The app image is based on `python:3.12-slim-bookworm`, because the bootstrap needs glibc 2.30 or later. For all the requirements, see [Application container requirements](README.md#application-container-requirements).
 
 To use the same setup with the mirrord Operator on EKS, see [Operator-hosted mode](https://github.com/metalbear-co/mirrord-ecs-quickstart#operator-hosted-mode) in the repository.
 
 ## Clean up
 
-Delete all the resources:
+From the `terraform` directory of the repository, delete all the resources:
 
 ```bash
-cd terraform
 terraform destroy
 ```
 
@@ -221,7 +220,7 @@ terraform destroy
 
 | Symptom | Likely cause |
 | --- | --- |
-| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator. |
+| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator. Add `"operator": false`. |
 | `Feature target.path requires a mirrord Enterprise plan` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator with a Free or Team license. Add `"operator": false`. |
 | `mirrord exec` cannot find the target | `target.path` or `target.namespace` does not match the task's `MIRRORD_REMOTE_SERVICE` or `MIRRORD_REMOTE_ENVIRONMENT`, or the task is not running. |
 | A request with the header gets `"version": "v1"` | The header does not match the filter. Send `baggage: mirrord-session=<key>`, with the `key` from `mirrord.json`. |
