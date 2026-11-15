@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 520" width="1160" height="520" font-family="Inter, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
   <title id="t">The ECS quickstart with MetalBear Cloud</title>
-  <desc id="d">A client sends HTTP requests to a public load balancer in an AWS VPC, which sends them to the ECS task. The task runs the orders app and the mirrord agent, which the mirrord remote bootstrap starts in the app container. The orders app in the task serves requests without the session header. The agent sends requests with your session header to the MetalBear sessions-manager, which forwards them to the orders app that runs on your machine under mirrord exec. The task and your machine both connect out to the sessions-manager over HTTPS. The task connects to the private RDS database, for its own app and for your local process.</desc>
+  <desc id="d">A client sends HTTP requests to a public load balancer in an AWS VPC, which sends them to the ECS task. The task runs the orders app and the mirrord agent, which the mirrord remote bootstrap starts in the app container. The orders app in the task serves requests without the session header. The agent sends requests with your session header to the MetalBear sessions-manager, which forwards them to the orders app that runs on your machine under mirrord up. The task and your machine both connect out to the sessions-manager over HTTPS. The task connects to the private RDS database, for its own app and for your local process.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#232141"/>
@@ -65,7 +65,7 @@
   <text x="876" y="346" font-size="15" font-weight="700" fill="#4a44b8">Your machine</text>
   <rect x="885" y="370" width="250" height="110" rx="10" fill="#756DF3" stroke="#232141" stroke-width="2"/>
   <text x="1010" y="408" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">orders app (v2)</text>
-  <text x="1010" y="431" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#ffffff" text-anchor="middle">mirrord exec</text>
+  <text x="1010" y="431" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#ffffff" text-anchor="middle">mirrord up</text>
   <text x="1010" y="454" font-size="12.5" fill="#ffffff" text-anchor="middle">your changed code</text>
 
   <!-- Arrows that cross a boundary, drawn last so the boundary fill does not cover them -->

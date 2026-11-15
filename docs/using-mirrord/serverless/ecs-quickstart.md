@@ -25,7 +25,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 1. An AWS account, and the AWS CLI signed in to it.
 2. Terraform 1.6 or later.
 3. Python 3.10 or later.
-4. The mirrord CLI, version 3.282.0 or later.
+4. The mirrord CLI, version 3.288.0 or later.
 5. A MetalBear account. To generate the API key, you must be an admin of your MetalBear organization.
 
 {% hint style="info" %}
@@ -109,20 +109,22 @@ Run the app with mirrord, from the root of the repository:
 
 ```bash
 cd ..
-mirrord exec -f mirrord.json -- python app/main.py
+mirrord up --key quickstart
 ```
+
+`mirrord up` reads `mirrord-up.yaml` and starts the app with `python app/main.py`. For the full configuration, see [The mirrord configuration](#the-mirrord-configuration).
 
 When the app starts, it creates the `orders` table in RDS if the table does not exist. So the log line `Application startup complete` also shows that your local process reached the private database.
 
 ## Send requests
 
-`mirrord exec` keeps its terminal busy. Open a second terminal, go to the `terraform` directory of the repository, and set the service URL again:
+`mirrord up` keeps its terminal busy. Open a second terminal, go to the `terraform` directory of the repository, and set the service URL again:
 
 ```bash
 export URL=$(terraform output -raw url)
 ```
 
-The repository's `mirrord.json` tells mirrord which requests to send to your laptop: only HTTP requests whose `baggage` header contains `mirrord-session=quickstart`. This is your session header. Each developer uses a different session key, so each one gets only their own requests. For the full configuration, see [The mirrord configuration](#the-mirrord-configuration).
+mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=quickstart`. This is your session header, and `quickstart` is the session key that you gave to `--key`. Each developer uses a different session key, so each one gets only their own requests.
 
 ![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-quickstart-requests.svg)
 
@@ -153,47 +155,36 @@ curl $URL/orders
 
 The ECS task returns the new order, because both processes use the same database.
 
-To try more changes, change the code, stop `mirrord exec`, and start it again. You do not build an image or deploy between changes.
+To try more changes, change the code, stop `mirrord up`, and start it again. You do not build an image or deploy between changes.
 
 ---
 
 ## The mirrord configuration
 
-The repository's `mirrord.json` is:
+The repository's `mirrord-up.yaml` is:
 
-```json
-{
-  "target": {
-    "path": "serverless/orders",
-    "namespace": "quickstart"
-  },
-  "operator": false,
-  "key": "quickstart",
-  "feature": {
-    "env": true,
-    "network": {
-      "outgoing": true,
-      "dns": true,
-      "incoming": {
-        "mode": "steal",
-        "http_filter": {
-          "header_filter": "^baggage: .*mirrord-session={{ key }}.*$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: false
+services:
+  orders:
+    target:
+      path: serverless/orders
+      namespace: quickstart
+    run:
+      command: ["python", "app/main.py"]
 ```
 
 | Setting | Value | What it does |
 | --- | --- | --- |
-| `target.path` | `serverless/orders` | Selects the service. It matches `MIRRORD_REMOTE_SERVICE` on the task. |
-| `target.namespace` | `quickstart` | Selects the environment. It matches `MIRRORD_REMOTE_ENVIRONMENT` on the task. |
-| `operator` | `false` | Connects through MetalBear Cloud. Without it, mirrord looks for an Operator in your current kubeconfig context, and uses it if it finds one. |
-| `key` | `quickstart` | The session key. The header filter uses it. |
-| `feature.network.incoming` | `steal` with `header_filter` | Steals only HTTP requests whose `baggage` header carries the session key. |
+| `common.operator` | `false` | Connects through MetalBear Cloud. Without it, mirrord looks for an Operator in your current kubeconfig context, and uses it if it finds one. |
+| `services.orders.target.path` | `serverless/orders` | Selects the service. It matches `MIRRORD_REMOTE_SERVICE` on the task. |
+| `services.orders.target.namespace` | `quickstart` | Selects the environment. It matches `MIRRORD_REMOTE_ENVIRONMENT` on the task. |
+| `services.orders.run.command` | `python app/main.py` | The local process that mirrord runs. |
 
-To use a different session key, change `key`, or set the `MIRRORD_KEY` environment variable. Then send that key in the header.
+The service uses the default `split` mode of `mirrord up`. In this mode, mirrord steals only the HTTP requests whose `baggage` header contains `mirrord-session=<key>`. All other requests stay with the ECS task. For more, see [mirrord up](../multiple-concurrent-sessions.md).
+
+`--key quickstart` sets the session key. To use a different key, change `--key`, or set the `MIRRORD_KEY` environment variable. Without either, `mirrord up` makes a key from your username. Send the same key in the header.
 
 ## The task definition
 
@@ -220,10 +211,11 @@ terraform destroy
 
 | Symptom | Likely cause |
 | --- | --- |
-| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator. Add `"operator": false`. |
-| `Feature target.path requires a mirrord Enterprise plan` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator with a Free or Team license. Add `"operator": false`. |
-| `mirrord exec` cannot find the target | `target.path` or `target.namespace` does not match the task's `MIRRORD_REMOTE_SERVICE` or `MIRRORD_REMOTE_ENVIRONMENT`, or the task is not running. |
-| A request with the header gets `"version": "v1"` | The header does not match the filter. Send `baggage: mirrord-session=<key>`, with the `key` from `mirrord.json`. |
-| `mirrord exec` asks you to sign in, or refuses the session | Your sign-in expired, or it is to a different organization from the API key's. Run `mirrord login` again. |
+| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord-up.yaml` has no `operator: false` under `common`, and your current kubeconfig context has an Operator. Add `operator: false` under `common`. |
+| `Feature target.path requires a mirrord Enterprise plan` | `mirrord-up.yaml` has no `operator: false` under `common`, and your current kubeconfig context has an Operator with a Free or Team license. Add `operator: false` under `common`. |
+| `mirrord up` cannot find the target | `target.path` or `target.namespace` in `mirrord-up.yaml` does not match the task's `MIRRORD_REMOTE_SERVICE` or `MIRRORD_REMOTE_ENVIRONMENT`, or the task is not running. |
+| A request with the header gets `"version": "v1"` | The header does not match the filter. Send `baggage: mirrord-session=<key>`, with the key that you gave to `--key`. |
+| `mirrord up` asks you to sign in, or refuses the session | Your sign-in expired, or it is to a different organization from the API key's. Run `mirrord login` again. |
+| `` `orders` is `split` mode with a serverless target `` | Your mirrord CLI is earlier than 3.288.0. Update the CLI. |
 
 For other problems, see [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md#troubleshooting) and [Amazon ECS](ecs.md#troubleshooting).
