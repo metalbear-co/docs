@@ -2,14 +2,15 @@
 title: "MetalBear Cloud Sessions-Manager"
 description: "Target serverless workloads such as Amazon ECS tasks without the mirrord Operator, through a sessions-manager hosted by MetalBear, with workloads authenticated by a MetalBear API key and developers by `mirrord login`."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
 # MetalBear Cloud Sessions-Manager
 
 {% hint style="warning" %}
-The MetalBear Cloud sessions-manager is **experimental**, and may change without notice.
+The MetalBear Cloud sessions-manager is in **alpha**, and may change without notice. While it's in alpha, it's available on every plan, including Free.
 {% endhint %}
 
 In the MetalBear Cloud [deployment mode](README.md#deployment-modes), sessions-manager is hosted by MetalBear. There's nothing to install in your infrastructure, and you don't need a Kubernetes cluster or the mirrord Operator. Workloads and developers connect to it directly over HTTPS. Workloads authenticate with a MetalBear API key, and developers with their MetalBear account, through `mirrord login`. At a glance, the setup is:
@@ -111,7 +112,7 @@ Developers need no Kubernetes access and no API key. They sign in to their Metal
 mirrord login
 ```
 
-mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) without `"operator": true`. With `"operator": true`, mirrord connects through the Operator instead. When the session starts, mirrord prints `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
+mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) with `"operator": false`. Without it, mirrord connects through the Operator if it's used one on this machine before: after a successful Operator session, mirrord sets `"operator": true` in the global config, `~/.mirrord/mirrord.json`, which applies whenever the project's `mirrord.json` doesn't set `operator`. When the session starts, mirrord prints `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
 
 * **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
 * **Expiry:** the sign-in isn't renewed automatically. Once it expires, mirrord warns when a session starts, and new sessions are refused until the developer runs `mirrord login` again. A session that's already running keeps working, and picks up a new sign-in when it reconnects, without a restart.
@@ -127,6 +128,7 @@ The workload's messages appear in the application container's logs, and the deve
 | --- | --- |
 | `MIRRORD_SESSIONS_MANAGER_API_KEY must hold a MetalBear API key, which begins with metalbear_key_` | The variable holds something else, such as the secret's ARN instead of its value, or has extra whitespace or quotes. |
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
+| ``Feature `target.path` requires a mirrord Enterprise plan.`` | mirrord connected through the Operator instead of MetalBear Cloud. Set `"operator": false` in `mirrord.json` ([Developer setup](#developer-setup)). |
 | `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | `the proxy in front of sessions-manager refused this session with 403 Forbidden` in mirrord's output | A proxy or firewall on the path refused the request ([Network access](#network-access)), or `sessions_manager.url` or `MIRRORD_SESSIONS_MANAGER_URL` points at something other than sessions-manager. Unset both to use MetalBear Cloud. |
@@ -137,6 +139,6 @@ The workload's messages appear in the application container's logs, and the deve
 | `HTTP control plane returned 401 Unauthorized` in mirrord's output on a developer's machine | The developer isn't signed in, their sign-in expired, or `~/.mirrord/auth.json` can't be read. One of the warnings above appears first. Run `mirrord login`. |
 | `sessions-manager refused your mirrord login, which has expired, been revoked, or is for another organization` | The sign-in was sent but refused, for example because it was revoked. Run `mirrord login`. |
 | `MIRRORD_SESSIONS_MANAGER_URL, MIRRORD_OPERATOR_API_URL and MIRRORD_OPERATOR_KUBE_CONTEXT are mutually exclusive` | The workload sets variables of both modes; keep only those of [Connecting workloads](#connecting-workloads). |
-| mirrord prints `connecting through the sessions-manager hosted by the mirrord operator` | `mirrord.json` sets `"operator": true`. Remove it ([Developer setup](#developer-setup)). |
+| mirrord prints `connecting through the sessions-manager hosted by the mirrord operator` | `operator` is `true`, in `mirrord.json` or in `~/.mirrord/mirrord.json`. Set `"operator": false` in `mirrord.json` ([Developer setup](#developer-setup)). |
 | mirrord prints `connecting through the sessions-manager at <URL>` | `sessions_manager.url` is set in `mirrord.json`, or `MIRRORD_SESSIONS_MANAGER_URL` in the developer's shell or IDE run configuration. Unset both. |
 | `the sessions-manager URL is invalid` | `sessions_manager.url` or `MIRRORD_SESSIONS_MANAGER_URL` holds something other than a URL. Unset both to use MetalBear Cloud. |

@@ -2,14 +2,15 @@
 title: "Amazon ECS"
 description: "Add the mirrord remote bootstrap to an Amazon ECS task definition, so developers can target the service's tasks with mirrord."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
 # Amazon ECS
 
 {% hint style="warning" %}
-Targeting Amazon ECS tasks is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
+Targeting Amazon ECS tasks is in **alpha**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
 This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.

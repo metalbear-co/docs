@@ -2,14 +2,14 @@
 title: "Connecting ECS to the Operator"
 description: "Connect an Amazon ECS task to the Operator-hosted sessions-manager: map the task role into the EKS cluster, make the API server reachable from ECS, and add the connection variables to the task."
 tags:
-  - experimental
+  - alpha
   - enterprise
 ---
 
 # Connecting ECS to the Operator
 
 {% hint style="warning" %}
-Connecting ECS to the Operator is **experimental**, and may change without notice. Set up the [Operator-hosted sessions-manager](operator-hosted.md) and [remote bootstrap](ecs.md) before following this guide.
+Connecting ECS to the Operator is in **alpha**, and may change without notice. Set up the [Operator-hosted sessions-manager](operator-hosted.md) and [remote bootstrap](ecs.md) before following this guide.
 {% endhint %}
 
 This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md) to the [Operator-hosted sessions-manager](operator-hosted.md) on your EKS cluster. The task authenticates as its IAM task role, mapped to a Kubernetes identity. At a glance, the setup is:
