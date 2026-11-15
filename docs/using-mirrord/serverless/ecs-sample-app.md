@@ -124,7 +124,7 @@ When the app starts, it creates the `orders` table in RDS if the table does not 
 export URL=$(terraform output -raw url)
 ```
 
-mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=<your username>`. This is your session header. Your username is the session key, which you gave to `--key` as `$USER`. Each developer uses a different session key, so each one gets only their own requests.
+mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=<your username>`. This is your session header. Your username is the session key, which you gave to `--key` as `$USER`. Each developer uses a different session key, so each one gets only their own requests. If several developers have the same username, for example `root` in dev containers, give each one a different `--key`.
 
 ![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-sample-app-requests.svg)
 
