@@ -1,5 +1,5 @@
 ---
-title: "Try It with a Sample App"
+title: "ECS Sample App"
 description: "Deploy a sample service to Amazon ECS with Terraform, then run it on your laptop with mirrord through MetalBear Cloud: steal requests by header and reach a private RDS database."
 tags:
   - alpha
