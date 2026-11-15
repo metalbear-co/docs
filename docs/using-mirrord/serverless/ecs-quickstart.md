@@ -25,7 +25,7 @@ The ECS task and your laptop both make only outbound HTTPS connections to the Me
 1. An AWS account, and the AWS CLI signed in to it.
 2. Terraform 1.6 or later.
 3. Python 3.10 or later.
-4. The mirrord CLI.
+4. The mirrord CLI, version 3.282.0 or later.
 5. A MetalBear account. To generate the API key, you must be an admin of your MetalBear organization.
 
 {% hint style="info" %}
@@ -69,7 +69,7 @@ terraform init
 terraform apply
 ```
 
-The apply takes about 6 minutes, mostly for RDS. Terraform stores the API key in AWS Secrets Manager, and ECS gives it to the task as `MIRRORD_SESSIONS_MANAGER_API_KEY`.
+The apply takes several minutes, mostly for the RDS database. Terraform stores the API key in AWS Secrets Manager, and ECS gives it to the task as `MIRRORD_SESSIONS_MANAGER_API_KEY`.
 
 When the apply finishes, keep the service URL, and send a request to it:
 
