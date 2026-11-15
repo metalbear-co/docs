@@ -35,7 +35,7 @@ Some services don't run in Kubernetes, but on platforms such as Amazon ECS and F
 
 A serverless workload session has three parts:
 
-* **Your local mirrord**, started with `mirrord exec` as usual.
+* **Your local mirrord**, started with [`mirrord up`](../multiple-concurrent-sessions.md).
 * **The mirrord remote bootstrap**, a library loaded into the workload's existing application container. It starts a mirrord agent beside your application and registers it, under a service and environment name, with sessions-manager.
 * **Sessions-manager**, which pairs your local mirrord with a registered workload and relays mirrord traffic between them. Both sides only make outbound connections to sessions-manager, so neither needs a network path to the other.
 
@@ -94,36 +94,31 @@ To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_
 
 ## Using mirrord with a Serverless Workload
 
-Install a [supported mirrord CLI](#required-versions), then create a `mirrord.json` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
+{% hint style="info" %}
+Running serverless workloads with `mirrord up` requires at least mirrord version 3.288.0.
+{% endhint %}
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "serverless/<YOUR_SERVICE_NAME>",
-    "namespace": "<YOUR_ENVIRONMENT>"
-  },
-  "key": "<YOUR_SESSION_KEY>",
-  "feature": {
-    "env": true,
-    "network": {
-      "outgoing": true,
-      "incoming": {
-        "mode": "steal",
-        "http_filter": {
-          "header_filter": "^baggage: .*mirrord-session={{ key }}.*$"
-        }
-      }
-    }
-  }
-}
+Install a [supported mirrord CLI](#required-versions), then create a `mirrord-up.yaml` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
+
+```yaml
+common:
+  operator: true
+services:
+  <YOUR_SERVICE_NAME>:
+    target:
+      path: serverless/<YOUR_SERVICE_NAME>
+      namespace: <YOUR_ENVIRONMENT>
+    run:
+      command: ["<YOUR_COMMAND>", "<ARG>"]
 ```
 
-* [`operator: true`](https://metalbear.com/mirrord/docs/config/options#root-operator) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator. Without it, mirrord connects to MetalBear Cloud instead; see [Which sessions-manager mirrord connects through](#which-sessions-manager-mirrord-connects-through).
-* [`target.path`](https://metalbear.com/mirrord/docs/config/options#target-path) is `serverless/` followed by the service name, and [`target.namespace`](https://metalbear.com/mirrord/docs/config/options#target-namespace) is the environment the service runs in. These are the names your platform team gave the workload when setting it up, not Kubernetes resources or namespaces. Ask them for the values.
-* [`key`](https://metalbear.com/mirrord/docs/config/options#root-key) identifies your session. It's substituted into `{{ key }}` in the HTTP filter, so only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process. Regular traffic and other developers' requests keep going to the serverless workload. See [Filtering Incoming Traffic](../incoming-traffic/filter-incoming-traffic.md) for other filters.
-* `feature.network.outgoing` sends your local process's outgoing connections through the serverless workload, so they reach whatever the workload can reach.
-* `feature.env` gives your local process the serverless workload's environment variables.
+* [`common.operator: true`](../multiple-concurrent-sessions.md#common) together with a `serverless/` target makes mirrord reach sessions-manager through the Operator, using your kubeconfig's current context. This is the Operator-hosted mode: you need nothing else beyond a kubeconfig for the cluster that runs the Operator. For MetalBear Cloud, set it to `false` instead; see [Which sessions-manager mirrord connects through](#which-sessions-manager-mirrord-connects-through).
+* [`target.path`](../multiple-concurrent-sessions.md#services) is `serverless/` followed by the service name, and `target.namespace` is the environment the service runs in. These are the names your platform team gave the workload when setting it up, not Kubernetes resources or namespaces. Ask them for the values. When `namespace` isn't set, `default` is used.
+* `run.command` is the command that starts your service locally.
+
+`mirrord up` fills in the rest. The service runs in [`split` mode](../multiple-concurrent-sessions.md#split): only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process, and regular traffic and other developers' requests keep going to the serverless workload. Your local process gets the serverless workload's environment variables, and its outgoing connections leave through the serverless workload, so they reach whatever the workload can reach. To change the filter, set [`http_filter`](../multiple-concurrent-sessions.md#services) on the service.
+
+Serverless services run in `split` or `mirror` mode only, without queue splitting or DB branching. You can list them in the same `mirrord-up.yaml` as services that target Kubernetes workloads. See [Serverless targets](../multiple-concurrent-sessions.md#serverless-targets) for the details.
 
 ### With MetalBear Cloud
 
@@ -133,38 +128,38 @@ In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rathe
 mirrord login
 ```
 
-Then set `"operator": false` in `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
+Then set `common.operator: false` in `mirrord-up.yaml`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
 
 ### Which sessions-manager mirrord connects through
 
 mirrord picks the sessions-manager from your configuration, in this order:
 
-1. [`operator: true`](https://metalbear.com/mirrord/docs/config/options#root-operator): the sessions-manager hosted by the Operator, reached through your kubeconfig's current context. `sessions_manager.url` and `MIRRORD_SESSIONS_MANAGER_URL` are then ignored.
-2. A URL in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url), or in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable, which overrides it: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
+1. [`common.operator: true`](../multiple-concurrent-sessions.md#common), or `operator: true` in the global config `~/.mirrord/mirrord.json` when `common.operator` isn't set: the sessions-manager hosted by the Operator, reached through your kubeconfig's current context. `sessions_manager.url` and `MIRRORD_SESSIONS_MANAGER_URL` are then ignored.
+2. A URL in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable, or in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url) set through the service's [`config_patch`](../multiple-concurrent-sessions.md#services), which the variable overrides: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
 3. Otherwise, the MetalBear Cloud sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`.
 
-When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json` and in `~/.mirrord/mirrord.json`, where mirrord sets it to `true` after a successful Operator session, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
+When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `common.operator` in `mirrord-up.yaml` and `operator` in `~/.mirrord/mirrord.json`, where mirrord sets it to `true` after a successful Operator session, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
 
 The workload picks its sessions-manager the same way, from its own variables: `MIRRORD_OPERATOR_API_URL` selects the Operator, `MIRRORD_SESSIONS_MANAGER_URL` a sessions-manager at that URL, and with neither set, it registers with MetalBear Cloud. Your deployment mode's connection guide lists which to set.
 
 ### Running your service
 
-Run your service:
+In the directory of `mirrord-up.yaml`, run:
 
 ```bash
-mirrord exec -f mirrord.json -- <YOUR_COMMANDLINE>
+mirrord up --key <YOUR_SESSION_KEY>
 ```
 
-To send a request to your local process, add the header to it, for example with `curl -H "baggage: mirrord-session=<YOUR_SESSION_KEY>" ...`. While browsing, the [mirrord browser extension](../incoming-traffic/debug-from-browser.md) can inject the header for you.
+Without `--key`, your OS username is the session key. To send a request to your local process, add the header to it, for example with `curl -H "baggage: mirrord-session=<YOUR_SESSION_KEY>" ...`. While browsing, the [mirrord browser extension](../incoming-traffic/debug-from-browser.md) can inject the header for you.
 
-For every option, see the [configuration reference](https://metalbear.com/mirrord/docs/config/options).
+For every option, see [mirrord up](../multiple-concurrent-sessions.md#config-file-mirrord-up.yaml).
 
 ***
 
 ## How It Works
 
 1. **The workload registers.** When the workload starts, the remote bootstrap connects to sessions-manager and registers the workload under its service and environment names.
-2. **You start mirrord.** `mirrord exec` connects to sessions-manager and asks for a session with the service and environment in your `mirrord.json`.
+2. **You start mirrord.** `mirrord up` connects to sessions-manager and asks for a session with the service and environment in your `mirrord-up.yaml`.
 3. **Sessions-manager pairs them.** It assigns both sides to the same session and gives each a single-use credential for it.
 4. **Both sides open the session's data plane.** Sessions-manager relays mirrord traffic between them. From here, mirrord behaves as it does with a Kubernetes target: incoming requests matching your filter go to your local process, and its outgoing traffic leaves from the serverless workload.
 
@@ -174,14 +169,15 @@ In the Operator-hosted mode, every connection goes through your cluster's API se
 
 ## Limitations
 
+* **`split` and `mirror` modes only.** `replace` mode isn't supported, and serverless services run without queue splitting or DB branching. See [Serverless targets](../multiple-concurrent-sessions.md#serverless-targets).
 * **One replica per session.** Your session is served by one registered replica of the service, such as one ECS task. If the service runs several, only requests that land on that replica can be stolen or mirrored. For testing, scale the service to one replica or route your test traffic to a specific one.
 * **No queue splitting, DB branching, or copied targets.** [`feature.split_queues`](../../sharing-the-cluster/queue-splitting.md), [`feature.kafka_branch`](../../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching), [`feature.db_branches`](../../sharing-the-cluster/db-branching.md), and [`feature.copy_target`](../copy-target.md) aren't supported with a `serverless/` target, in any mirrord version. mirrord 3.287.0 and later refuse to start the session when any of them is set, for example with `` `feature.db_branches` is not supported with serverless targets.`` mirrord 3.282.0 through 3.286.x start the session without an error or a warning, but nothing is split, branched, or copied. Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data.
 * **Operator-hosted mode:**
   * **Development traffic only.** Session traffic flows through your cluster's API server. That's fine for development, but don't use a mirrord session for load testing.
-  * **Operator restarts end sessions.** Restarting or upgrading the Operator ends active sessions. The workload registers again on its own; rerun `mirrord exec`.
+  * **Operator restarts end sessions.** Restarting or upgrading the Operator ends active sessions. The workload registers again on its own; rerun `mirrord up`.
   * **Long-lived connections.** Any proxy or firewall between the workload and the API server must not buffer responses and needs an idle timeout of at least 300 seconds.
 * **MetalBear Cloud mode:**
   * **Development traffic only.** Session traffic is relayed through the MetalBear-hosted sessions-manager. Don't use a mirrord session for load testing.
   * **One region.** The MetalBear-hosted sessions-manager runs in AWS `us-east-1`.
-  * **Sessions-manager restarts end sessions.** When MetalBear restarts or upgrades the hosted sessions-manager, active sessions end. The workload registers again on its own; rerun `mirrord exec`.
+  * **Sessions-manager restarts end sessions.** When MetalBear restarts or upgrades the hosted sessions-manager, active sessions end. The workload registers again on its own; rerun `mirrord up`.
   * **Long-lived connections.** Any proxy or firewall between either side and sessions-manager must not buffer responses and needs an idle timeout of at least 300 seconds.
