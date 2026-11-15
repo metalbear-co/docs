@@ -133,7 +133,7 @@ In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rathe
 mirrord login
 ```
 
-Then set `"operator": false` in `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
+Then remove `"operator": true` from `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
 
 ### Which sessions-manager mirrord connects through
 
@@ -143,7 +143,7 @@ mirrord picks the sessions-manager from your configuration, in this order:
 2. A URL in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url), or in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable, which overrides it: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
 3. Otherwise, the MetalBear Cloud sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`.
 
-When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `Connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json`, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
+When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json`, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
 
 The workload picks its sessions-manager the same way, from its own variables: `MIRRORD_OPERATOR_API_URL` selects the Operator, `MIRRORD_SESSIONS_MANAGER_URL` a sessions-manager at that URL, and with neither set, it registers with MetalBear Cloud. Your deployment mode's connection guide lists which to set.
 
@@ -175,7 +175,7 @@ In the Operator-hosted mode, every connection goes through your cluster's API se
 ## Limitations
 
 * **One replica per session.** Your session is served by one registered replica of the service, such as one ECS task. If the service runs several, only requests that land on that replica can be stolen or mirrored. For testing, scale the service to one replica or route your test traffic to a specific one.
-* **No database branching or queue splitting.** Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data. With `feature.db_branches` or `feature.split_queues` set, mirrord doesn't start, and prints ``… is not supported with serverless targets.``
+* **No queue splitting, DB branching, or copied targets.** mirrord refuses to start a session with a `serverless/` target when [`feature.split_queues`](../../sharing-the-cluster/queue-splitting.md), [`feature.kafka_branch`](../../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching), [`feature.db_branches`](../../sharing-the-cluster/db-branching.md), or [`feature.copy_target`](../copy-target.md) is set, for example with `` `feature.db_branches` is not supported with serverless targets.`` Your local process uses the same databases and queues as the serverless workload, so its writes reach the shared data.
 * **Operator-hosted mode:**
   * **Development traffic only.** Session traffic flows through your cluster's API server. That's fine for development, but don't use a mirrord session for load testing.
   * **Operator restarts end sessions.** Restarting or upgrading the Operator ends active sessions. The workload registers again on its own; rerun `mirrord exec`.
