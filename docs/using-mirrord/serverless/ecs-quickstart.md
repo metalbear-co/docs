@@ -7,10 +7,6 @@ tags:
   - enterprise
 ---
 
-{% hint style="warning" %}
-mirrord for Amazon ECS is in [alpha release status](../../reference/release-stages.md#alpha), and may change without notice.
-{% endhint %}
-
 This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
 
 * **Real requests reach your laptop:** requests to the public load balancer that carry your session header reach the process on your laptop. All other requests still go to the ECS task.
