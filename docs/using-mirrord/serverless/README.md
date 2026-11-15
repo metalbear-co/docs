@@ -150,6 +150,33 @@ Without `--key`, your OS username is the session key. To send a request to your 
 
 For every option, see [mirrord up](../multiple-concurrent-sessions.md#config-file-mirrord-up.yaml).
 
+### From your IDE
+
+The [VS Code](../../installing-mirrord/vscode.md) and [IntelliJ](../../installing-mirrord/intellij.md) extensions don't run `mirrord up`. They run your service with a `mirrord.json`, so to debug a serverless service from your IDE, use this one as the extension's [active config](../../installing-mirrord/vscode.md#active-config):
+
+```json
+{
+  "operator": true,
+  "target": {
+    "path": "serverless/<YOUR_SERVICE_NAME>",
+    "namespace": "<YOUR_ENVIRONMENT>"
+  },
+  "key": "<YOUR_SESSION_KEY>",
+  "feature": {
+    "network": {
+      "incoming": {
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "^baggage: .*mirrord-session={{ key }}.*$"
+        }
+      }
+    }
+  }
+}
+```
+
+It's the same session `mirrord up` starts in `split` mode: only requests carrying `baggage: mirrord-session=<YOUR_SESSION_KEY>` reach your local process. For MetalBear Cloud, set `"operator": false`. The [limitations](#limitations) apply the same way: setting `feature.split_queues`, `feature.kafka_branch`, `feature.db_branches` or `feature.copy_target` makes mirrord refuse to start the session.
+
 ***
 
 ## How It Works
