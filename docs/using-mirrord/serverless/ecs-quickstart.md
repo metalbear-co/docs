@@ -109,7 +109,7 @@ Run the app with mirrord, from the root of the repository:
 
 ```bash
 cd ..
-mirrord up --key quickstart
+mirrord up --key $USER
 ```
 
 `mirrord up` reads `mirrord-up.yaml` and starts the app with `python app/main.py`. For the full configuration, see [The mirrord configuration](#the-mirrord-configuration).
@@ -124,15 +124,15 @@ When the app starts, it creates the `orders` table in RDS if the table does not 
 export URL=$(terraform output -raw url)
 ```
 
-mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=quickstart`. This is your session header, and `quickstart` is the session key that you gave to `--key`. Each developer uses a different session key, so each one gets only their own requests.
+mirrord sends only some requests to your laptop: the HTTP requests whose `baggage` header contains `mirrord-session=<your username>`. This is your session header. Your username is the session key, which you gave to `--key` as `$USER`. Each developer uses a different session key, so each one gets only their own requests.
 
 ![A request with your header goes from the load balancer to the ECS task, and then through MetalBear Cloud to the orders app on your machine, which answers with v2. A request without the header goes to the orders app in the task, which answers with v1.](../../.gitbook/assets/ecs-quickstart-requests.svg)
 
 Send a request with your session header:
 
 ```bash
-curl -H "baggage: mirrord-session=quickstart" $URL/
-curl -H "baggage: mirrord-session=quickstart" $URL/orders
+curl -H "baggage: mirrord-session=$USER" $URL/
+curl -H "baggage: mirrord-session=$USER" $URL/orders
 ```
 
 Both responses show `"version": "v2"`, so your local code served them. The `/orders` response also lists the rows from the RDS database, which your laptop has no route to.
@@ -148,7 +148,7 @@ The response shows `"version": "v1"`. The ECS task still serves all other traffi
 Add an order from your local code, and then read it from the ECS task:
 
 ```bash
-curl -X POST -H "baggage: mirrord-session=quickstart" \
+curl -X POST -H "baggage: mirrord-session=$USER" \
   -H "content-type: application/json" -d '{"item": "bagel"}' $URL/orders
 curl $URL/orders
 ```
@@ -170,7 +170,7 @@ services:
   orders:
     target:
       path: serverless/orders
-      namespace: quickstart
+      namespace: staging
     run:
       command: ["python", "app/main.py"]
 ```
@@ -179,12 +179,12 @@ services:
 | --- | --- | --- |
 | `common.operator` | `false` | Connects through MetalBear Cloud. Without it, mirrord looks for an Operator in your current kubeconfig context, and uses it if it finds one. |
 | `services.orders.target.path` | `serverless/orders` | Selects the service. It matches `MIRRORD_REMOTE_SERVICE` on the task. |
-| `services.orders.target.namespace` | `quickstart` | Selects the environment. It matches `MIRRORD_REMOTE_ENVIRONMENT` on the task. |
+| `services.orders.target.namespace` | `staging` | Selects the environment. It matches `MIRRORD_REMOTE_ENVIRONMENT` on the task. |
 | `services.orders.run.command` | `python app/main.py` | The local process that mirrord runs. |
 
 The service uses the default `split` mode of `mirrord up`. In this mode, mirrord steals only the HTTP requests whose `baggage` header contains `mirrord-session=<key>`. All other requests stay with the ECS task. For more, see [mirrord up](../multiple-concurrent-sessions.md).
 
-`--key quickstart` sets the session key. To use a different key, change `--key`, or set the `MIRRORD_KEY` environment variable. Without either, `mirrord up` makes a key from your username. Send the same key in the header.
+`--key $USER` sets the session key to your username. To use a different key, change `--key`, or set the `MIRRORD_KEY` environment variable. Without either, `mirrord up` makes a key from your username. Send the same key in the header.
 
 ## The task definition
 
