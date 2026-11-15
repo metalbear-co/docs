@@ -8,7 +8,7 @@ tags:
 ---
 
 {% hint style="warning" %}
-mirrord for Amazon ECS is **experimental**, and may change without notice.
+mirrord for Amazon ECS is in [alpha release status](../../reference/release-stages.md#alpha), and may change without notice.
 {% endhint %}
 
 This quickstart deploys a small orders API to Amazon ECS on Fargate, next to a private Postgres database on Amazon RDS. Then you run the same service on your laptop with mirrord, and see two things:
@@ -226,6 +226,7 @@ terraform destroy
 | Symptom | Likely cause |
 | --- | --- |
 | `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator. |
+| `Feature target.path requires a mirrord Enterprise plan` | `mirrord.json` has no `"operator": false`, and your current kubeconfig context has an Operator with a Free or Team license. Add `"operator": false`. |
 | `mirrord exec` cannot find the target | `target.path` or `target.namespace` does not match the task's `MIRRORD_REMOTE_SERVICE` or `MIRRORD_REMOTE_ENVIRONMENT`, or the task is not running. |
 | A request with the header gets `"version": "v1"` | The header does not match the filter. Send `baggage: mirrord-session=<key>`, with the `key` from `mirrord.json`. |
 | `mirrord exec` asks you to sign in, or refuses the session | Your sign-in expired, or it is to a different organization from the API key's. Run `mirrord login` again. |
