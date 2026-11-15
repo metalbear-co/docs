@@ -133,7 +133,7 @@ In the MetalBear Cloud mode, mirrord connects to sessions-manager directly rathe
 mirrord login
 ```
 
-Then remove `"operator": true` from `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
+Then set `"operator": false` in `mirrord.json`, and keep the rest as above. See [MetalBear Cloud Sessions-Manager](metalbear-cloud.md#developer-setup) for details.
 
 ### Which sessions-manager mirrord connects through
 
@@ -143,7 +143,7 @@ mirrord picks the sessions-manager from your configuration, in this order:
 2. A URL in [`sessions_manager.url`](https://metalbear.com/mirrord/docs/config/options#sessions_manager-url), or in the `MIRRORD_SESSIONS_MANAGER_URL` environment variable, which overrides it: the sessions-manager at that URL, including any path prefix it's served under. A value that isn't a valid URL is an error; mirrord doesn't fall back to MetalBear Cloud.
 3. Otherwise, the MetalBear Cloud sessions-manager, at `https://sm-aws-use1.app.metalbear.com/sm`.
 
-When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json`, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
+When the session starts, mirrord prints which sessions-manager it connects through, and why, for example `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`. If that isn't the one your deployment mode uses, check `operator` in `mirrord.json` and in `~/.mirrord/mirrord.json`, where mirrord sets it to `true` after a successful Operator session, and whether your shell or IDE run configuration sets `MIRRORD_SESSIONS_MANAGER_URL`.
 
 The workload picks its sessions-manager the same way, from its own variables: `MIRRORD_OPERATOR_API_URL` selects the Operator, `MIRRORD_SESSIONS_MANAGER_URL` a sessions-manager at that URL, and with neither set, it registers with MetalBear Cloud. Your deployment mode's connection guide lists which to set.
 
