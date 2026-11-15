@@ -70,9 +70,9 @@ Setup is split by what it touches, so you only redo the parts that change:
 
 * **Operator:** version **3.223.0 or later**, installed from the `metalbear/mirrord-operator` Helm chart. Follow the [Operator installation guide](../../getting-started/install-the-operator.md#custom-install-with-helm), then [enable sessions-manager](operator-hosted.md#enable-sessions-manager).
 * **Remote bootstrap:** `ghcr.io/metalbear-co/mirrord-remote-bootstrap:3.229.0` or later, used in the [ECS task definition](ecs.md#add-the-remote-bootstrap). Bootstrap tags follow Operator release versions, not mirrord CLI versions. Pin a release tag rather than `latest`.
-* **CLI:** mirrord **3.282.0 or later**, a regular release, installed as described in [Install mirrord](../../getting-started/install-mirrord.md).
+* **CLI:** mirrord **3.288.0 or later**, a regular release, installed as described in [Install mirrord](../../getting-started/install-mirrord.md).
 
-Earlier CLIs and bootstraps don't connect to the MetalBear Cloud sessions-manager by default. To use them with MetalBear Cloud, set `MIRRORD_SESSIONS_MANAGER_URL=https://sm-aws-use1.app.metalbear.com/sm` both in the developer's environment and on the workload, or upgrade.
+Bootstraps earlier than 3.229.0 don't connect to the MetalBear Cloud sessions-manager by default. To use one with MetalBear Cloud, set `MIRRORD_SESSIONS_MANAGER_URL=https://sm-aws-use1.app.metalbear.com/sm` on the workload, or upgrade.
 
 ### API key
 
@@ -93,10 +93,6 @@ To check an image that has a shell, run `docker run --rm --entrypoint ldd <YOUR_
 ***
 
 ## Using mirrord with a Serverless Workload
-
-{% hint style="info" %}
-Running serverless workloads with `mirrord up` requires at least mirrord version 3.288.0.
-{% endhint %}
 
 Install a [supported mirrord CLI](#required-versions), then create a `mirrord-up.yaml` in your project. This one is for the Operator-hosted mode; for MetalBear Cloud, see [With MetalBear Cloud](#with-metalbear-cloud) below.
 
