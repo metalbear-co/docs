@@ -641,6 +641,8 @@ starting a preview from the live spec.
 
 Pods created by Preview Environments will never be in the "Ready" state, this is intentional. mirrord inserts a [`readinessGate`](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-readiness-gate) in the created pod that will never evaluate to `"True"` to prevent the target's `Service` from routing traffic to it, since that requires the pod to be ready. This allows the preview pod to copy all the labels/annotations present in the target's pod spec without worrying about the `Service`'s selector(s).
 
+Load balancers that route to pods directly (for example GKE Gateway with NEGs) ignore readiness. For how the Operator sends the traffic they deliver to a preview pod back to the target, see [Preview pod traffic](../managing-mirrord/operator.md#preview-pod-traffic).
+
 ### Service Meshes
 
 On mesh-injected targets the preview pod gets a sidecar like any other pod, and the sidecar would normally capture the operator's incoming connections - the ones delivering the session's matched requests - and reject them (for example under `STRICT` mTLS). The operator therefore annotates the preview pod with [`traffic.sidecar.istio.io/excludeInboundPorts`](https://istio.io/latest/docs/reference/config/annotations/) (Istio) and [`config.linkerd.io/skip-inbound-ports`](https://linkerd.io/2/reference/proxy-configuration/) (Linkerd) for the session's subscribed ports. The sidecar stays in the pod, so the preview app's outgoing traffic still goes through the mesh, and ports already excluded on the target's template are preserved.

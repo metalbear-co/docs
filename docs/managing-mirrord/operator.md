@@ -53,6 +53,24 @@ Installing the Operator creates cluster-scoped objects: CRDs, ClusterRoles, an A
 
 The Operator runs as one pod by default. Agents run only while sessions use them. For the default CPU and memory values, see [Scalability](scalability.md).
 
+## Preview pod traffic
+
+Preview pods never become Ready (see [Readiness](../use-cases/preview-environments.md#readiness)), which keeps them out of the target's Service for kube-proxy. Load balancers that route to pods directly and ignore readiness, such as GKE Gateway with NEGs, can still send live traffic to them. From operator `3.233.0`, a steal-mode preview session also runs an agent on each of its preview pods. The agent sends every request that doesn't match the session's filter back to the target's ready pods, so those requests get the same answer they would get from the target.
+
+This is on by default and controlled by `operator.preview.stealOnPreviewPods` in the operator's Helm values. Turning it off saves one agent per preview session, and is the right choice when every preview target sits behind kube-proxy style routing, or in the cases below:
+
+```yaml
+operator:
+  preview:
+    stealOnPreviewPods: false
+```
+
+Keep these in mind when it's on:
+
+- **Targets that only accept the gateway or mesh members.** The requests sent back leave the Operator pod as plain connections to the target pods' own addresses, from outside any service mesh. A target behind Istio `STRICT` mTLS, or a NetworkPolicy that allows ingress from the gateway alone, refuses them, and the request fails instead of being served by the preview pod. Turn the setting off on those clusters.
+- **Probes.** The kubelet's probes stay on the preview pod, so a preview container is restarted or kept alive by its own health. A probe is recognized by the kubelet's default `User-Agent: kube-probe/<version>`, or by the port and path of an HTTP liveness, readiness or startup probe in the preview pod spec, which covers probes that set their own `User-Agent`. gRPC, TCP and exec probes are not affected. Any request to a probe path stays on the preview pod, whoever sends it.
+- **Scrapes and health checks.** Everything else that reaches a preview pod by its own address on a stolen port, without matching the session's filter, is answered by a target pod. A Prometheus scrape of `/metrics` on the app port, or a monitoring agent's check that isn't one of the pod's probes, gets a target pod's answer under the preview pod's labels. Scrape previews on a port the session doesn't steal, drop the preview pods from the scrape config, or turn the setting off.
+
 ## Rotating the cloud API key
 
 Rotate and revoke the key at [app.metalbear.com](https://app.metalbear.com). When you revoke, you can choose a grace window so the current key keeps working while you roll the Operator over to the new one.
