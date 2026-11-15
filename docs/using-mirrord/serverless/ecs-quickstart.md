@@ -2,7 +2,8 @@
 title: "ECS Quickstart"
 description: "Deploy a sample service to Amazon ECS with Terraform, then run it on your laptop with mirrord through MetalBear Cloud: steal requests by header and reach a private RDS database."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
