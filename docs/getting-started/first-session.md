@@ -41,7 +41,7 @@ To run several services together from one config file, use [`mirrord up`](../usi
 mirrord up init
 ```
 
-This walks you through an interactive wizard and writes a `mirrord-up.yaml` for you, so you don't need to write any config by hand. Once you have a `mirrord-up.yaml`, start the services by running `mirrord up`.
+This walks you through an interactive wizard and writes a `mirrord-up.yaml` for you, so you don't need to write any config by hand. To answer the same questions in your browser, run `mirrord wizard` (see [Onboarding Wizard](onboarding-wizard.md)). Once you have a `mirrord-up.yaml`, start the services by running `mirrord up`.
 
 ## IDE extensions
 
