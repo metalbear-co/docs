@@ -25,7 +25,7 @@ These identities are machine sessions. They do not take a seat:
 | CI API key (`MIRRORD_CI_API_KEY` or `mirrord ci`) | Machine session |
 | Kubernetes [ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/) (`system:serviceaccount:…`) | Machine session, even with no CI API key |
 
-If you want the session on a **person's seat** instead, skip the CI API key and give the agent that person's identity: their Kubernetes username (when the license tracks by [Kubernetes user](../managing-mirrord/licensing.md#what-counts-as-a-seat)), or **their** `~/.mirrord/credentials` under default certificate tracking. A Kubernetes user is reported as that user's seat, not as a machine session. Do not share one credentials file across people; that goes against the [license terms](../managing-mirrord/licensing.md). To have the agent session reported as a machine session, set a CI API key as below.
+If you want the session on a **person's seat** instead, skip the CI API key and give the agent that person's identity: their Kubernetes username (when the license tracks by [Kubernetes user](../managing-mirrord/licensing.md#what-counts-as-a-seat)), or **their** `~/.mirrord/credentials` under default certificate tracking. Do not share one credentials file across people; that goes against the [license terms](../managing-mirrord/licensing.md). To have the agent session reported as a machine session, set a CI API key as below.
 
 ## What you need
 
