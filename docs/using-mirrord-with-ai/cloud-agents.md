@@ -16,8 +16,6 @@ To prevent this, give your cloud agents a **CI API key**. Sessions that start wi
 
 ## How sessions are counted
 
-Counting follows the identity the Operator sees, not who clicked Start and not whether the process runs on a laptop or in the cloud.
-
 | Identity | Counts as |
 | --- | --- |
 | CI API key (`MIRRORD_CI_API_KEY` or `mirrord ci`) | Machine session |
