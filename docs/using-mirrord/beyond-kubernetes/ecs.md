@@ -106,6 +106,8 @@ The application container's `environment` loads the bootstrap and names the work
 | `MIRRORD_REMOTE_SERVICE` | `<YOUR_SERVICE_NAME>`. Developers target it as `serverless/<YOUR_SERVICE_NAME>`. |
 | `MIRRORD_REMOTE_ENVIRONMENT` | `<YOUR_ENVIRONMENT>`. Developers set it as `target.namespace`. |
 
+Load the bootstrap into the container whose files and environment variables developers need, usually the one running your application. A developer's local process reads files from that container, including the task volumes mounted into it, but not from the task's other containers.
+
 ## Connect to your deployment mode
 
 The bootstrap needs to know which sessions-manager to register with, and how to authenticate to it. Follow the guide for your deployment mode. It adds the connection variables to the same `environment` list, and finishes by deploying the new task definition revision:
