@@ -4,13 +4,12 @@ description: "Add the mirrord remote bootstrap to a Cloudflare Container and con
 tags:
   - alpha
   - team
-  - enterprise
 ---
 
 # Cloudflare Containers
 
 {% hint style="warning" %}
-Targeting Cloudflare Containers is in **alpha**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
+Targeting Cloudflare Containers is in alpha release status, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
 This guide makes a [Cloudflare Container](https://developers.cloudflare.com/containers/) targetable as a [workload outside Kubernetes](README.md). The container is connected to the [MetalBear Cloud sessions-manager](metalbear-cloud.md), so you don't need a Kubernetes cluster or the mirrord Operator. At a glance, the setup is:
