@@ -138,11 +138,11 @@ After the last session against a target ends, the operator waits for the deploye
 | ----------------------------------------------- | ------- | --------- | ----------------------------------- |
 | `spec.drainTimeout` on the `MirrordSplitConfig` | seconds | One split | Wins over the cluster-wide default. |
 
-| `drainTimeout` | Behavior                                                                                                |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| unset (both)   | Wait until no job in the main queue is unfinished.                                                      |
-| `0`            | Tear down immediately. The operator keeps the main queue if jobs in it are unfinished.                  |
-| `N`            | Wait up to `N` seconds, then tear down. The operator keeps the main queue if jobs in it are unfinished. |
+| `drainTimeout` | Behavior                                                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| unset (both)   | Wait until no job in the main queue holds the drain, as described above. The operator keeps the main queue if a job whose worker died is left in it. |
+| `0`            | Tear down immediately. The operator keeps the main queue if jobs in it are unfinished.                                                               |
+| `N`            | Wait up to `N` seconds, then tear down. The operator keeps the main queue if jobs in it are unfinished.                                              |
 
 ## Temporary queue names
 
