@@ -38,7 +38,7 @@ Default tracking is the public key in `~/.mirrord/credentials`. Renewing that ce
 
 ## 1. Give the agent environment access to the cluster
 
-The agent environment needs a [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) that points to your staging cluster. For the CI API key path, create a Kubernetes [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for your agents. Do not reuse a developer's kubeconfig on that path: a ServiceAccount caller is a machine session even when `MIRRORD_CI_API_KEY` is unset.
+The agent environment needs a [kubeconfig](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) that points to your staging cluster. We recommend that you create a Kubernetes [service account](https://kubernetes.io/docs/concepts/security/service-accounts/) for your agents, and do not use the credentials of a developer.
 
 Add the kubeconfig to the environment that the agents start from, for example as a file in the agent image.
 
