@@ -29,6 +29,8 @@ Unsetting `MIRRORD_CI_API_KEY` does not assign the session to a person.
 
 One seat can run many sessions at the same time. The concurrent limit on your [plan](https://metalbear.com/mirrord/pricing/) applies to machine sessions.
 
+If you want the session on a **person's seat** instead, skip the CI API key and give the agent that person's identity: their Kubernetes username (when the license tracks by [Kubernetes user](../managing-mirrord/licensing.md#what-counts-as-a-seat)), or **their** `~/.mirrord/credentials` under default certificate tracking. Do not share one credentials file across people. That is the exception; the rest of this page is the CI API key path.
+
 ## What you need
 
 - The mirrord Operator in the cluster, on the Enterprise plan. You need the Enterprise plan to create a CI API key.
@@ -91,13 +93,3 @@ Put the filters in a `mirrord.json` file in the repository, and refer to the ses
 ```
 
 If the agent runs several services together, use [`mirrord up`](../using-mirrord/multiple-concurrent-sessions.md) with the same session key, for example `mirrord up --key "$AGENT_TASK_ID"`. mirrord makes the HTTP filter and the queue filter of each service from the key. Give the `--key` flag every time. Without it, `mirrord up` uses the OS username as the key. Agent environments usually all have the same username, so all the agents get the same key and receive each other's traffic and messages.
-
-## Count the session as a person's seat
-
-Use this only when you want the run on a human seat instead of the machine-session limit. A cloud agent has no person unless you give it one of these identities.
-
-1. Do not set `MIRRORD_CI_API_KEY`.
-2. Authenticate as that person's Kubernetes user (the same username as their laptop), **or** copy **their** `~/.mirrord/credentials` into the agent environment.
-3. For the Kubernetes-user path, the license must use [Kubernetes-user](../managing-mirrord/licensing.md#what-counts-as-a-seat) tracking. MetalBear sets that when the license is issued.
-
-Copying `~/.mirrord/credentials` does not change the Kubernetes user the API server sees. It only matters under default (certificate) tracking. Each person must use their own file. Sharing one file across people is one seat for two users and goes against the [license terms](../managing-mirrord/licensing.md).
