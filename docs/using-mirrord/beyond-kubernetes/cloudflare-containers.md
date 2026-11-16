@@ -2,17 +2,18 @@
 title: "Cloudflare Containers"
 description: "Add the mirrord remote bootstrap to a Cloudflare Container and connect it to the MetalBear Cloud sessions-manager, so developers can target it with mirrord."
 tags:
-  - experimental
+  - alpha
+  - team
   - enterprise
 ---
 
 # Cloudflare Containers
 
 {% hint style="warning" %}
-Targeting Cloudflare Containers is **experimental**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
+Targeting Cloudflare Containers is in **alpha**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
-This guide makes a [Cloudflare Container](https://developers.cloudflare.com/containers/) targetable as a [serverless workload](README.md). The container is connected to the [MetalBear Cloud sessions-manager](metalbear-cloud.md), so you don't need a Kubernetes cluster or the mirrord Operator. At a glance, the setup is:
+This guide makes a [Cloudflare Container](https://developers.cloudflare.com/containers/) targetable as a [workload outside Kubernetes](README.md). The container is connected to the [MetalBear Cloud sessions-manager](metalbear-cloud.md), so you don't need a Kubernetes cluster or the mirrord Operator. At a glance, the setup is:
 
 1. Add the remote bootstrap to the container image ([Add the remote bootstrap](#add-the-remote-bootstrap)).
 2. Store the API key as a Worker secret ([Store the API key](#store-the-api-key)).
@@ -123,7 +124,7 @@ The bootstrap's agent registers with sessions-manager while the container starts
 ## Verify
 
 1. **Container registered**: add `MIRRORD_AGENT_RUST_LOG: "info"` to the container's `env`. The application's output then shows `Registering with the MetalBear Cloud sessions-manager`, and no sessions-manager or API key errors.
-2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord.json` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), without `"operator": true`, `mirrord exec` connects, and a request to the Worker with the `baggage` header reaches the local process:
+2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord-up.yaml` from [Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes), with `common.operator: false`, `mirrord up` connects, and a request to the Worker with the `baggage` header reaches the local process:
 
    ```bash
    curl -H "baggage: mirrord-session=<YOUR_SESSION_KEY>" https://<YOUR_WORKER>.workers.dev/
