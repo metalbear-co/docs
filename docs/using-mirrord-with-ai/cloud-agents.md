@@ -16,7 +16,7 @@ To prevent this, give your cloud agents a **CI API key**. Sessions that start wi
 
 ## How sessions are counted
 
-Your license tracks seats in one of two modes, set by MetalBear when the license is issued: the Operator client certificate (`~/.mirrord/credentials`) by default, or Kubernetes username. See [What counts as a seat?](../managing-mirrord/licensing.md#what-counts-as-a-seat).
+Your license tracks seats in one of two modes, set by MetalBear when the license is issued: the Operator client certificate (`~/.mirrord/credentials`) by default, or Kubernetes username. The mode is shown in `mirrord operator status`. If you are not sure which mode you have, contact MetalBear. See [What counts as a seat?](../managing-mirrord/licensing.md#what-counts-as-a-seat).
 
 These identities are machine sessions. They do not take a seat:
 
