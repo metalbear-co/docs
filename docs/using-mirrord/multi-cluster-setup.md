@@ -56,7 +56,7 @@ No Kubernetes Secret is needed - authentication is entirely through Entra ID.
 
 ### GKE (`authType: gke`)
 
-For Google Kubernetes Engine clusters. The Primary operator sends a Google access token for its own Google identity, the same token `kubectl` sends through the `gke-gcloud-auth-plugin`. No secrets to manage - the Google client library caches the token and refreshes it a few minutes before it expires; the operator re-reads it every few minutes.
+For Google Kubernetes Engine clusters. Needs the operator and chart `3.233.0` or later on the Primary and on each GKE downstream cluster. The Primary operator sends a Google access token for its own Google identity, the same token `kubectl` sends through the `gke-gcloud-auth-plugin`. No secrets to manage - the Google client library caches the token and refreshes it a few minutes before it expires; the operator re-reads it every few minutes.
 
 The token comes from the pod's [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials). On a GKE Primary that is Workload Identity: `sa.gcpSa` binds the operator's ServiceAccount to a Google service account and the metadata server mints the token. On an AKS or EKS Primary it is Workload Identity Federation: a credentials file, named by `GOOGLE_APPLICATION_CREDENTIALS`, that exchanges the pod's projected ServiceAccount token at Google's STS. The downstream GKE cluster validates the token with Google and maps it to the identity's email, or to its `principal://` for a federated identity. A ClusterRoleBinding on the downstream cluster grants that identity permissions.
 
@@ -517,6 +517,8 @@ gcloud container clusters describe <DOWNSTREAM_CLUSTER> --location <LOCATION> \
 sa:
   gcpSa: "mirrord-operator-envoy@<PRIMARY_PROJECT>.iam.gserviceaccount.com"
 ```
+
+The chart adds the `iam.gke.io/gcp-service-account` annotation only to a ServiceAccount it creates. With `sa.create: false`, add that annotation to your existing ServiceAccount yourself.
 
 See the [Configuring the Primary Cluster](#configuring-the-primary-cluster) section below for the full Helm values.
 
