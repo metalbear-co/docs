@@ -16,18 +16,18 @@ To prevent this, give your cloud agents a **CI API key**. Sessions that start wi
 
 ## How sessions are counted
 
+Your license tracks seats in one of two modes, set by MetalBear when the license is issued: the Operator client certificate (`~/.mirrord/credentials`) by default, or Kubernetes username. See [What counts as a seat?](../managing-mirrord/licensing.md#what-counts-as-a-seat).
+
+These identities are machine sessions. They do not take a seat:
+
 | Identity | Counts as |
 | --- | --- |
 | CI API key (`MIRRORD_CI_API_KEY` or `mirrord ci`) | Machine session |
 | Kubernetes [ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/) (`system:serviceaccount:…`) | Machine session, even with no CI API key |
-| Kubernetes username, when the license tracks by [Kubernetes user](../managing-mirrord/licensing.md#what-counts-as-a-seat) | That username's seat |
-| Operator client certificate (`~/.mirrord/credentials`), default tracking | That certificate's seat |
 
-Unsetting `MIRRORD_CI_API_KEY` does not assign the session to a person. The Operator still uses the Kubernetes identity and the client certificate: a ServiceAccount is a machine session; otherwise it is a seat, keyed by client certificate or Kubernetes username depending on the license.
+Unsetting `MIRRORD_CI_API_KEY` does not assign the session to a person.
 
-One seat can run many sessions at the same time. The concurrent limit on your [plan](https://metalbear.com/mirrord/pricing/) applies to machine sessions. See [Licensing](../managing-mirrord/licensing.md).
-
-Default tracking is the public key in `~/.mirrord/credentials`. Renewing that certificate keeps the same seat; deleting the file or starting in a fresh environment creates a new one. Kubernetes-user tracking is optional and is set on the license; a shared username such as `mirrord-agent` is then one seat for every agent that uses it.
+One seat can run many sessions at the same time. The concurrent limit on your [plan](https://metalbear.com/mirrord/pricing/) applies to machine sessions.
 
 ## What you need
 
