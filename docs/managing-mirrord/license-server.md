@@ -281,7 +281,7 @@ mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/
 ```
 
 {% hint style="info" %}
-The description is served on the license server's API port, not on the dashboard port.
+The description is served on the license server's API port, not on the dashboard port. With the default Helm values, the API port is port `80` of the `mirrord-operator-license-server` service (container port `8080`), and the dashboard port is `8050`.
 {% endhint %}
 
 To browse the description in Swagger UI:
@@ -291,3 +291,7 @@ docker run --rm -p 8080:8080 -e SWAGGER_JSON=/openapi.json -v "$PWD/openapi.json
 ```
 
 Then open <http://localhost:8080/> in your browser.
+
+{% hint style="info" %}
+This Swagger UI is for browsing the API only. Its **Try it out** button does not work, because the requests it sends from your browser do not reach the license server inside the cluster. To call the API, use `curl` with the `x-license-key` header, as shown in the report examples above.
+{% endhint %}
