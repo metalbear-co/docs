@@ -257,3 +257,37 @@ mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/
   ]
 }
 ```
+
+## Getting an OpenAPI Description of the License Server API
+
+{% hint style="info" %}
+This feature requires at least mirrord-operator-license-server Helm chart version **3.233.0**.
+{% endhint %}
+
+The license server has an endpoint that returns an OpenAPI 3.1 description of its HTTP API, for use with Swagger UI and other OpenAPI tools. Use it to browse the API or to generate a client for an integration.
+
+The description covers the report endpoints (usage, usage trends, operator errors, and topology) and the adoption and deployment endpoints.
+
+The endpoints in the description require the `x-license-key` header. The description itself is returned without it.
+
+To get the description:
+
+* Ensure that the license server is accessible - by default it is installed as a `ClusterIP` so either expose it outside the cluster or access it from inside the cluster (for example, you can use `mirrord exec -- curl`).
+
+* Run `curl` by referencing the license server service by its domain name, for example with the service name `mirrord-operator-license-server` in the namespace `mirrord` with cluster domain `cluster.local`:
+
+```bash
+mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/api/v1/openapi.json" --output openapi.json
+```
+
+{% hint style="info" %}
+The description is served on the license server's API port, not on the dashboard port.
+{% endhint %}
+
+To browse the description in Swagger UI:
+
+```bash
+docker run --rm -p 8080:8080 -e SWAGGER_JSON=/openapi.json -v "$PWD/openapi.json:/openapi.json" swaggerapi/swagger-ui
+```
+
+Then open <http://localhost:8080/> in your browser.
