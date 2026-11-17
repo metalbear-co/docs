@@ -410,7 +410,10 @@ queue splits stay active even though the preview's pods are gone. When a request
 environment's filter arrives, it is **held** while the pods start and answered by the preview
 once ready - the caller just sees a slower first response. Queue messages don't need holding at
 all: they wait in the environment's split queue/topic until the preview consumes them, so
-nothing is lost either way. With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
+nothing is lost either way. Temporal has no queue of its own per environment: the operator
+buffers up to 128 workflow and 128 activity tasks for the preview and drops the oldest past
+that, and Temporal delivers a dropped task again after its timeout (see
+[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options)). With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
 a message waiting on a branch topic the preview consumes starts the preview pods.
 
 While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
@@ -439,7 +442,10 @@ queue lag (for example with KEDA) and sit at zero replicas until messages arrive
 consumer group are read from the workload's spec, and messages flow through the queue itself.
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
 temporary queue and are consumed when the service scales back up, whose new pods start with the
-split configuration already applied.
+split configuration already applied. For Temporal, unmatched tasks wait in operator memory
+instead: once 128 of a kind are buffered and no worker has polled them for 40 seconds, the
+operator drops the oldest and Temporal delivers them again after their timeout (see
+[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options)).
 
 See [Autoscaled Targets with KEDA](../sharing-the-cluster/queue-splitting.md#autoscaled-targets-with-keda)
 to see how KEDA autoscaling works with queue splitting.
