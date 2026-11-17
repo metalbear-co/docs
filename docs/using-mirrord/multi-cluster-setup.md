@@ -445,17 +445,18 @@ GKE authentication lets the Primary operator reach downstream GKE clusters as a 
 
 1. **The pod gets Google credentials** - on a GKE Primary, `sa.gcpSa` annotates the operator's ServiceAccount with `iam.gke.io/gcp-service-account`, and the GKE metadata server mints tokens for that Google service account. On an AKS or EKS Primary, a Workload Identity Federation credentials file (`GOOGLE_APPLICATION_CREDENTIALS`) points at the pod's projected ServiceAccount token, and the Google client library exchanges it at Google's STS.
 
-2. **The pod reads a token** - the operator asks the Google client library for an access token with the `cloud-platform` and `userinfo.email` scopes. The library caches it and refreshes it in the background before it expires (Google access tokens live one hour); the operator re-reads it every few minutes and sends it as the bearer token.
+2. **The pod mints a token** - the operator asks the Google client library for an access token with the `cloud-platform` and `userinfo.email` scopes and sends it as the bearer token. Google access tokens live one hour; the operator mints a new one halfway to expiry.
 
 3. **The downstream cluster validates the token** - the GKE API server checks the token with Google and resolves it to the identity: the Google service account's email, or the `principal://` of a federated identity.
 
-4. **Kubernetes RBAC grants permissions** - the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberGcpPrincipal`) grant that identity the necessary permissions. No IAM role on the downstream project is needed; GKE allows what either IAM or Kubernetes RBAC allows.
+4. **IAM lets the identity in, Kubernetes RBAC grants permissions** - GKE checks `container.clusters.get` in IAM before it reads Kubernetes RBAC, so the identity needs `roles/container.clusterViewer` on the downstream cluster's project. Everything else comes from the ClusterRoleBindings on the downstream cluster (created by Helm with `multiClusterMemberGcpPrincipal`), which grant that identity the operator's permissions.
 
 #### What Goes Where
 
 | Component | Where | Purpose |
 |-----------|-------|---------|
-| Google service account | Google Cloud IAM | The identity the operator pod acts as. Needs no IAM roles - only used as a Kubernetes identity |
+| Google service account | Google Cloud IAM | The identity the operator pod acts as. Reuse the one `sa.gcpSa` already names if the Primary has one |
+| `roles/container.clusterViewer` | Each downstream cluster's project | Lets GKE accept the identity (`container.clusters.get`); Kubernetes RBAC decides the rest |
 | Workload Identity binding (`roles/iam.workloadIdentityUser`) | Primary GKE cluster's project | Lets the operator's ServiceAccount act as the Google service account |
 | `sa.gcpSa` in Helm | Primary cluster | Annotates the operator's ServiceAccount so the metadata server mints tokens for the Google service account |
 | Workload Identity Federation pool, provider and credentials file | Only for a Primary outside Google Cloud | Trusts the Primary cluster's OIDC issuer and exchanges the pod's token at Google's STS |
@@ -497,14 +498,22 @@ helm install mirrord-operator metalbear/mirrord-operator \
   --set operator.multiClusterMemberGcpPrincipal=mirrord-operator-envoy@<PRIMARY_PROJECT>.iam.gserviceaccount.com
 ```
 
-This creates the `mirrord-operator-envoy` and `mirrord-operator-envoy-remote` ClusterRoles and binds them to that identity as a `User`. The downstream cluster may be in any project; nothing has to be granted in IAM there.
+This creates the `mirrord-operator-envoy` and `mirrord-operator-envoy-remote` ClusterRoles and binds them to that identity as a `User`. The downstream cluster may be in any project, but GKE checks IAM before Kubernetes RBAC, so grant the identity `roles/container.clusterViewer` there:
+
+```bash
+gcloud projects add-iam-policy-binding <DOWNSTREAM_PROJECT> \
+  --member "serviceAccount:mirrord-operator-envoy@<PRIMARY_PROJECT>.iam.gserviceaccount.com" \
+  --role roles/container.clusterViewer
+```
+
+For a federated identity, the member is its `principal://` instead.
 
 {% endstep %}
 {% step %}
 
 #### Install the operator on the Primary cluster with `sa.gcpSa`
 
-On a GKE Primary, set `sa.gcpSa` so the operator's ServiceAccount is bound to the Google service account. You also need each downstream cluster's endpoint and CA certificate (`caData`), since GKE clusters use per-cluster CAs:
+On a GKE Primary, set `sa.gcpSa` so the operator's ServiceAccount is bound to the Google service account. `sa.gcpSa` is the operator's one Google identity: if the Primary already sets it, for license secrets in Google Secret Manager, `cloud.apiKey.gsmRef` or Pub/Sub splitting, keep that account and use it in the steps above instead of creating a new one, or those features lose their roles. You also need each downstream cluster's endpoint and CA certificate (`caData`), since GKE clusters use per-cluster CAs:
 
 ```bash
 gcloud container clusters describe <DOWNSTREAM_CLUSTER> --location <LOCATION> \
@@ -611,7 +620,7 @@ The cluster key names in the `clusters` map should match the real cluster names.
 
 When you provide cluster configuration in the Helm values, the chart splits it into two places. Non-sensitive configuration (`server`, `caData`, `authType`, `region`, `namespace`) goes into the ConfigMap (`clusters-config.yaml`). `namespace` is the namespace where the mirrord operator runs on that cluster (default `mirrord`), not a workload namespace. The Default cluster is set only by `defaultCluster`. The per-cluster `isDefault` field is deprecated and ignored. Use `defaultCluster`. Sensitive credentials (`bearerToken`, `tls.crt`, `tls.key`) go into a Secret (`mirrord-cluster-<name>`).
 
-For EKS IAM and AKS Workload Identity clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM/Entra ID, not stored credentials.
+For EKS IAM, AKS Workload Identity and GKE clusters, no Secret is created - everything is in the ConfigMap since authentication is through IAM, Entra ID or the operator's Google identity, not stored credentials.
 
 ### Manual Secret Creation
 
@@ -649,7 +658,7 @@ stringData:
 ```
 
 {% hint style="info" %}
-EKS IAM and AKS Workload Identity clusters do not need a Secret at all. They authenticate using the operator's IAM role or Azure identity and only need the cluster configuration in the ConfigMap.
+EKS IAM, AKS Workload Identity and GKE clusters do not need a Secret at all. They authenticate using the operator's IAM role, Azure identity or Google identity and only need the cluster configuration in the ConfigMap.
 {% endhint %}
 
 ---
@@ -748,6 +757,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 | Bearer Token | Automatic via TokenRequest API | Refreshed at the halfway point of remaining lifetime. Only the initial token is manual. |
 | EKS IAM | Automatic every 10 minutes | Tokens are presigned STS URLs, valid for 15 minutes. No Secrets involved. |
 | AKS Workload Identity | Automatic every ~30 minutes | Tokens from Entra ID, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
+| GKE | Automatic every ~30 minutes | Google access tokens, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
 | mTLS | **Not auto-refreshed** | You must rotate certificates manually before they expire. |
 
 ---
