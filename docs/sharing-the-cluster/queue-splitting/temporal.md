@@ -194,7 +194,7 @@ Each entry in the `spec.queues` list describes a Temporal task queue consumed by
 
 Temporal-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`:
 
-* `max_buffered_tasks` - the maximum number of tasks the operator buffers per virtual task queue, 128 when omitted. When a session queue is full, its tasks go to the main queue, where the deployed worker runs them. When the main queue is full, the operator stops polling the original task queue until a worker drains it, so a backlog waits in Temporal instead of in operator memory. Set a positive integer to raise or lower the cap, or `0` to turn it off.
+* `max_buffered_tasks` - the maximum number of workflow tasks and, separately, activity tasks the operator buffers per virtual task queue. Operator `3.234.0` or later buffers 128 of each when the key is omitted; earlier operators buffer without a limit. When a session queue is full and its worker polls it, further tasks go to the main queue. When the main queue is full and the deployed worker polls it, the operator stops polling the original task queue until the worker drains it. A full queue that no worker polls drops its oldest task, which Temporal delivers again after the task's timeout. Set a positive integer to raise or lower the cap, or `0` to turn it off.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
