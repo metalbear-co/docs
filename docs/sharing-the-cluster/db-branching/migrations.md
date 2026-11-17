@@ -193,20 +193,24 @@ With `search_path`, nothing is uploaded: the changelogs are already baked into a
 
 `search_path` accepts multiple entries, joined into `LIQUIBASE_SEARCH_PATH`; Liquibase looks for `changelog_file` under each in turn.
 
-### Patching the default image
+## Patching the default migration images
 
-Image scanners flag `liquibase/liquibase:4.33`: its bundled Temurin JRE and the jackson-databind inside `liquibase-commercial.jar` have critical CVEs, and upstream publishes no fixed 4.x image (5.x is a different product: no bundled JDBC drivers and a new license). The operator keeps 4.33 as the default. To run a patched build instead, publish your own image under the tag `4.33` (for example Liquibase 4.33 on a current `eclipse-temurin:21-jre` base, with the drivers your dialects need) and point the chart at its registry; the operator pulls `<registry>:4.33`:
+Image scanners flag both default migration runners: `flyway/flyway:13` bundles `databricks-jdbc` and Couchbase `core-io` with a vulnerable jackson-databind, and `liquibase/liquibase:4.33` bundles a Temurin JRE and, inside `liquibase-commercial.jar`, a jackson-databind with critical CVEs. Upstream publishes no tag or variant without them: Flyway 13 is the latest line, Liquibase 4.x ended at 4.33 and 5.x is a different product (no bundled JDBC drivers and a new license). The operator keeps these defaults.
+
+To run patched builds instead, publish your own images under the same tags (`13` for Flyway, `4.33` for Liquibase, for example rebuilt on a current `eclipse-temurin:21-jre` base with the drivers your dialects need) and point the chart at their registries. The operator pulls `<registry>:<tag>`:
 
 ```yaml
 operator:
   pgBranchConfig:
     dbPod:
       migrationImages:
+        flyway:
+          registry: registry.example.com/flyway
         liquibase:
           registry: registry.example.com/liquibase
 ```
 
-The same `migrationImages.liquibase.registry` exists under `mysqlBranchConfig`, `mariadbBranchConfig` and `mssqlBranchConfig`. A single branch can also name the full image itself with `migrations.image`, which wins over the chart:
+The same `migrationImages` block exists under `mysqlBranchConfig`, `mariadbBranchConfig` and `mssqlBranchConfig`. A single branch can also name the full image itself with `migrations.image`, which wins over the chart:
 
 ```json
 {
