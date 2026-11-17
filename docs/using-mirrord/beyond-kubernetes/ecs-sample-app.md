@@ -180,7 +180,7 @@ services:
 
 | Setting | Value | What it does |
 | --- | --- | --- |
-| `common.operator` | `false` | Connects through MetalBear Cloud. Without it, mirrord looks for an Operator in your current kubeconfig context, and uses it if it finds one. |
+| `common.operator` | `false` | Connects through MetalBear Cloud. Without it, mirrord connects through the Operator if you've used one on this machine before: after a successful Operator session, mirrord sets `"operator": true` in `~/.mirrord/mirrord.json`, which applies whenever your config doesn't set `operator`. |
 | `services.orders.target.path` | `serverless/orders` | Selects the service. It matches `MIRRORD_REMOTE_SERVICE` on the task. |
 | `services.orders.target.namespace` | `staging` | Selects the environment. It matches `MIRRORD_REMOTE_ENVIRONMENT` on the task. |
 | `services.orders.run.command` | `python app/main.py` | The local process that mirrord runs. |
@@ -214,8 +214,8 @@ terraform destroy
 
 | Symptom | Likely cause |
 | --- | --- |
-| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord-up.yaml` has no `operator: false` under `common`, and your current kubeconfig context has an Operator. Add `operator: false` under `common`. |
-| `Feature target.path requires a mirrord Enterprise plan` | `mirrord-up.yaml` has no `operator: false` under `common`, and your current kubeconfig context has an Operator with a Free or Team license. Add `operator: false` under `common`. |
+| `mirrord operator does not serve the operator-hosted sessions-manager` | `mirrord-up.yaml` has no `operator: false` under `common`, and you've used an Operator on this machine before. Add `operator: false` under `common`. |
+| ``Feature `target.path` requires a mirrord Enterprise plan.`` | `mirrord-up.yaml` has no `operator: false` under `common`, and you've used an Operator with a Free or Team license on this machine before. Add `operator: false` under `common`. |
 | `mirrord up` cannot find the target | `target.path` or `target.namespace` in `mirrord-up.yaml` does not match the task's `MIRRORD_REMOTE_SERVICE` or `MIRRORD_REMOTE_ENVIRONMENT`, or the task is not running. |
 | A request with the header gets `"version": "v1"` | The header does not match the filter. Send `baggage: mirrord-session=<key>`, with the key that you gave to `--key`. |
 | `mirrord up` asks you to sign in, or refuses the session | Your sign-in expired, or it is to a different organization from the API key's. Run `mirrord login` again. |
