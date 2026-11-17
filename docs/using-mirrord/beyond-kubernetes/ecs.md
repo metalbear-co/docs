@@ -23,7 +23,7 @@ The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazo
 
 ## Prerequisites
 
-1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md).
+1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md). MetalBear Cloud needs a MetalBear account and an [API key](metalbear-cloud.md#api-keys), both from [app.metalbear.com](https://app.metalbear.com).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
 4. An application image based on glibc 2.30 or later, and not on musl, such as Alpine. See [Application container requirements](README.md#application-container-requirements).
