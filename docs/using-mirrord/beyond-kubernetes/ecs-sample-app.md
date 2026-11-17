@@ -58,7 +58,10 @@ In `terraform.tfvars`, set:
 
 ```hcl
 mirrord_api_key = "<API_KEY>"
+name            = "mirrord-ecs-sample-<YOUR_NAME>"
 ```
+
+`name` prefixes the name of every resource the sample creates. Give it a value no one else uses in the AWS account, so your resources don't collide with another deployment of the sample.
 
 The resources go to `us-east-1`. To use a different region, also set `region`.
 
