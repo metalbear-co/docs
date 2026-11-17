@@ -64,3 +64,6 @@ redirects:
   getting-started/installing-mirrord/operator: getting-started/install-the-operator.md
   installing-mirrord/operator: getting-started/install-the-operator.md
   getting-started/installing-mirrord/wsl: installing-mirrord/wsl.md
+
+  # Serverless Workloads section renamed to Beyond Kubernetes
+  using-mirrord/serverless: using-mirrord/beyond-kubernetes/README.md
