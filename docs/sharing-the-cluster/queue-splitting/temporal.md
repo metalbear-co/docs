@@ -194,13 +194,7 @@ Each entry in the `spec.queues` list describes a Temporal task queue consumed by
 
 Temporal-specific options live in a `MirrordPropertyList` referenced by the queue's `queueConfig`:
 
-* `max_buffered_tasks` - the maximum number of workflow tasks and, separately, activity tasks the operator buffers per virtual task queue. Set a positive integer to raise or lower the cap, or `0` to turn it off. Operator `3.235.0` or later buffers 128 of each when the key is omitted and handles a full queue as follows:
-  * A full main queue stops the operator polling the original task queue. Polling resumes once the deployed worker takes a task, so the backlog waits in Temporal.
-  * A main queue that no worker has polled yet, for example when the target has no pods, holds polling for 40 seconds. After that the operator drops the queue's oldest tasks and keeps polling, so sessions keep receiving their tasks.
-  * A full session queue drops its oldest task. Tasks of a session never go to the main queue, so the deployed worker never runs a session's workflow.
-  * Temporal delivers a dropped workflow task again after its timeout, and a dropped activity task while its retry policy has attempts left.
-
-  Earlier operators buffer without a limit when the key is omitted. With a cap set, they drop new tasks at a full main queue without pausing, and send a session's tasks to the main queue when the session queue is full.
+* `max_buffered_tasks` - the maximum number of workflow tasks and, separately, activity tasks the operator buffers per virtual task queue. Set a positive integer to raise or lower the cap, or `0` to turn it off. Operator `3.235.0` or later buffers 128 of each when the key is omitted. While any virtual task queue, the main one or a session's, is full, the operator stops polling the original task queue, so no virtual queue receives tasks until that queue's worker takes a task. No task is dropped: the backlog waits in Temporal. A queue whose worker is not running, for example a target scaled to zero or a session whose local worker is paused, holds the whole split at the cap; raise the cap or set `0` for such a target. A session that ends with tasks still buffered hands them to the main queue (see above). Earlier operators buffer without a limit when the key is omitted; with a cap set, they drop new tasks at a full main queue and send a session's tasks to the main queue when the session queue is full.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1

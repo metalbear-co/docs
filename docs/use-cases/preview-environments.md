@@ -411,9 +411,12 @@ environment's filter arrives, it is **held** while the pods start and answered b
 once ready - the caller just sees a slower first response. Queue messages don't need holding at
 all: they wait in the environment's split queue/topic until the preview consumes them, so
 nothing is lost either way. Temporal has no queue of its own per environment: the operator
-buffers up to 128 workflow and 128 activity tasks for the preview and drops the oldest past
-that, and Temporal delivers a dropped task again after its timeout (see
-[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options)). With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
+buffers the preview's tasks in memory, and once the buffer is full (128 workflow and 128
+activity tasks by default on operator `3.235.0` or later, set by
+[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options),
+unlimited on earlier operators) it stops polling the task queue until the preview takes a task.
+Nothing is dropped, but no other virtual queue of the split receives tasks while the preview's
+buffer is full. With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
 a message waiting on a branch topic the preview consumes starts the preview pods.
 
 While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
@@ -443,9 +446,11 @@ consumer group are read from the workload's spec, and messages flow through the 
 Matching messages reach the preview pod right away; unmatched ones wait on the target's
 temporary queue and are consumed when the service scales back up, whose new pods start with the
 split configuration already applied. For Temporal, unmatched tasks wait in operator memory
-instead: once 128 of a kind are buffered and no worker has polled them for 40 seconds, the
-operator drops the oldest and Temporal delivers them again after their timeout (see
-[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options)).
+instead, and once 128 of a kind are buffered (operator `3.235.0` or later; see
+[`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options))
+the operator stops polling the task queue, so matching tasks stop reaching the preview too until
+the target scales up and takes a task. Raise the cap or set it to `0` for a Temporal target that
+stays at zero.
 
 See [Autoscaled Targets with KEDA](../sharing-the-cluster/queue-splitting.md#autoscaled-targets-with-keda)
 to see how KEDA autoscaling works with queue splitting.
