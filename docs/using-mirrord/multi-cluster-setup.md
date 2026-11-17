@@ -24,7 +24,7 @@ Before you start, make sure you have:
 3. `kubectl` access to all clusters.
 4. For EKS IAM authentication: AWS CLI and `eksctl` installed.
 5. For AKS Workload Identity authentication: Azure CLI (`az`) installed, and the Primary AKS cluster must have [Workload Identity enabled](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster).
-6. For GKE authentication: `gcloud` installed, and a Google service account the Primary operator can act as (through [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) when the Primary runs on GKE, or [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes) when it runs elsewhere).
+6. For GKE authentication: `gcloud` installed, and a Google identity for the Primary operator: a Google service account it acts as through [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) when the Primary runs on GKE, or a [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes) principal when it runs elsewhere.
 
 ---
 
@@ -56,7 +56,7 @@ No Kubernetes Secret is needed - authentication is entirely through Entra ID.
 
 ### GKE (`authType: gke`)
 
-For Google Kubernetes Engine clusters. Needs the operator and chart `3.233.0` or later on the Primary and on each GKE downstream cluster. The Primary operator sends a Google access token for its own Google identity, the same token `kubectl` sends through the `gke-gcloud-auth-plugin`. No secrets to manage - the Google client library caches the token and refreshes it a few minutes before it expires; the operator re-reads it every few minutes.
+For Google Kubernetes Engine clusters. Needs the operator and chart `3.234.0` or later on the Primary and on each GKE downstream cluster. The Primary operator sends a Google access token for its own Google identity, the same token `kubectl` sends through the `gke-gcloud-auth-plugin`. No secrets to manage - the operator mints a new token halfway through each one's lifetime, which it reads from Google's tokeninfo endpoint, so the Primary must reach `oauth2.googleapis.com` as well as the downstream API servers.
 
 The token comes from the pod's [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials). On a GKE Primary that is Workload Identity: `sa.gcpSa` binds the operator's ServiceAccount to a Google service account and the metadata server mints the token. On an AKS or EKS Primary it is Workload Identity Federation: a credentials file, named by `GOOGLE_APPLICATION_CREDENTIALS`, that exchanges the pod's projected ServiceAccount token at Google's STS. The downstream GKE cluster validates the token with Google and maps it to the identity's email, or to its `principal://` for a federated identity. A ClusterRoleBinding on the downstream cluster grants that identity permissions.
 
@@ -455,7 +455,7 @@ GKE authentication lets the Primary operator reach downstream GKE clusters as a 
 
 | Component | Where | Purpose |
 |-----------|-------|---------|
-| Google service account | Google Cloud IAM | The identity the operator pod acts as. Reuse the one `sa.gcpSa` already names if the Primary has one |
+| Google identity | Google Cloud IAM | What the operator pod acts as: a Google service account on a GKE Primary (reuse the one `sa.gcpSa` already names if the Primary has one), the Workload Identity Federation `principal://` elsewhere |
 | `roles/container.clusterViewer` | Each downstream cluster's project | Lets GKE accept the identity (`container.clusters.get`); Kubernetes RBAC decides the rest |
 | Workload Identity binding (`roles/iam.workloadIdentityUser`) | Primary GKE cluster's project | Lets the operator's ServiceAccount act as the Google service account |
 | `sa.gcpSa` in Helm | Primary cluster | Annotates the operator's ServiceAccount so the metadata server mints tokens for the Google service account |
@@ -467,9 +467,9 @@ GKE authentication lets the Primary operator reach downstream GKE clusters as a 
 {% stepper %}
 {% step %}
 
-#### Create the Google service account and let the Primary operator act as it
+#### Give the Primary operator a Google identity
 
-On a GKE Primary with [Workload Identity enabled](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity):
+On a GKE Primary with [Workload Identity enabled](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity), the identity is a Google service account. `sa.gcpSa` is the operator's one Google identity: if the Primary already sets it, for license secrets in Google Secret Manager, `cloud.apiKey.gsmRef` or Pub/Sub splitting, use that account in every step here instead of creating a new one, or those features lose their roles. Otherwise create one and let the operator's ServiceAccount act as it:
 
 ```bash
 gcloud iam service-accounts create mirrord-operator-envoy \
@@ -483,7 +483,43 @@ gcloud iam service-accounts add-iam-policy-binding \
 
 The member names the Primary cluster's Workload Identity pool and the operator's namespace and ServiceAccount (`mirrord/mirrord-operator` by default).
 
-On an AKS or EKS Primary, create a [Workload Identity Federation pool and provider](https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes) that trusts the Primary cluster's OIDC issuer, generate its credentials file with `gcloud iam workload-identity-pools create-cred-config`, and mount the file and the projected token in the operator pod with `GOOGLE_APPLICATION_CREDENTIALS` pointing at the file. The identity the downstream cluster sees is then `principal://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL>/subject/system:serviceaccount:mirrord:mirrord-operator`.
+On an AKS or EKS Primary there is no Google service account: the identity is the federated principal itself. Create a [Workload Identity Federation pool and provider](https://cloud.google.com/iam/docs/workload-identity-federation-with-kubernetes) that trusts the Primary cluster's OIDC issuer, then generate the credentials file without `--service-account`, so the token belongs to the principal (with that flag the token would belong to the service account, which would then need `roles/iam.workloadIdentityUser` for the principal, and GKE would refuse a token bound to the principal alone):
+
+```bash
+gcloud iam workload-identity-pools create-cred-config \
+  projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL>/providers/<PROVIDER> \
+  --credential-source-file /var/run/service-account/token \
+  --credential-source-type text \
+  --output-file credentials.json
+```
+
+Put the file in a ConfigMap and mount it with the projected token through the chart's `operator.extraEnv`, `operator.extraVolumes` and `operator.extraVolumeMounts`; the audience of the projected token is the provider's full resource name:
+
+```yaml
+operator:
+  extraEnv:
+    GOOGLE_APPLICATION_CREDENTIALS: /var/run/google/credentials.json
+  extraVolumes:
+    - name: google-credentials
+      configMap:
+        name: mirrord-operator-google-credentials
+    - name: google-token
+      projected:
+        sources:
+          - serviceAccountToken:
+              path: token
+              expirationSeconds: 3600
+              audience: //iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL>/providers/<PROVIDER>
+  extraVolumeMounts:
+    - name: google-credentials
+      mountPath: /var/run/google
+      readOnly: true
+    - name: google-token
+      mountPath: /var/run/service-account
+      readOnly: true
+```
+
+The identity the downstream cluster sees is then `principal://iam.googleapis.com/projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/<POOL>/subject/system:serviceaccount:mirrord:mirrord-operator`, and it takes the place of the service account email in the steps below.
 
 {% endstep %}
 {% step %}
@@ -513,7 +549,7 @@ For a federated identity, the member is its `principal://` instead.
 
 #### Install the operator on the Primary cluster with `sa.gcpSa`
 
-On a GKE Primary, set `sa.gcpSa` so the operator's ServiceAccount is bound to the Google service account. `sa.gcpSa` is the operator's one Google identity: if the Primary already sets it, for license secrets in Google Secret Manager, `cloud.apiKey.gsmRef` or Pub/Sub splitting, keep that account and use it in the steps above instead of creating a new one, or those features lose their roles. You also need each downstream cluster's endpoint and CA certificate (`caData`), since GKE clusters use per-cluster CAs:
+On a GKE Primary, set `sa.gcpSa` so the operator's ServiceAccount is bound to the Google service account from step 1 (an AKS or EKS Primary has the credentials file from step 1 instead and sets nothing here). You also need each downstream cluster's endpoint and CA certificate (`caData`), since GKE clusters use per-cluster CAs:
 
 ```bash
 gcloud container clusters describe <DOWNSTREAM_CLUSTER> --location <LOCATION> \
@@ -710,7 +746,7 @@ For EKS IAM, the Access Entry maps the IAM role to the `mirrord-operator-envoy` 
 
 For AKS Workload Identity, Azure RBAC or a K8s ClusterRoleBinding maps the Managed Identity to the `mirrord-operator-envoy` group. The chain is: **Managed Identity -> Entra ID token -> Kubernetes group -> ClusterRoleBinding -> ClusterRole -> permissions**.
 
-For GKE, the API server resolves the Google token to the identity itself, so the binding names it directly. The chain is: **Google service account -> Google access token -> Kubernetes user -> ClusterRoleBinding -> ClusterRole -> permissions**.
+For GKE, the API server resolves the Google token to the identity itself, so the binding names it directly. The chain is: **Google identity (service account or federated principal) -> Google access token -> Kubernetes user -> ClusterRoleBinding -> ClusterRole -> permissions**.
 
 In practice:
 
