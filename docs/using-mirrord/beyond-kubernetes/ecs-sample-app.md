@@ -38,6 +38,10 @@ This tutorial creates billable AWS resources: a NAT gateway, an Application Load
 
 The ECS task signs in to MetalBear Cloud with the serverless agent API key of your organization. Your organization has one active key at a time. If it already has a key, ask the admin who generated it for the key, and go to the next step.
 
+{% hint style="info" %}
+**Signing up now?** In the setup wizard, choose **mirrord for Amazon ECS**, and generate the key in its first step, **Get your agent key**. Skip the wizard's other two steps: Terraform does them in the next section. Leave the wizard open. It shows the task as connected once `terraform apply` finishes.
+{% endhint %}
+
 1. Open the [MetalBear dashboard](https://app.metalbear.com), and go to **Settings → Serverless agents**.
 2. Generate the key.
 3. Copy the key, and keep it. It begins with `metalbear_key_`. The dashboard shows the key only once.
