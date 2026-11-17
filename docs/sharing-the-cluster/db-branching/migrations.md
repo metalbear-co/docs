@@ -193,6 +193,32 @@ With `search_path`, nothing is uploaded: the changelogs are already baked into a
 
 `search_path` accepts multiple entries, joined into `LIQUIBASE_SEARCH_PATH`; Liquibase looks for `changelog_file` under each in turn.
 
+### Patching the default image
+
+Image scanners flag `liquibase/liquibase:4.33`: its bundled Temurin JRE and the jackson-databind inside `liquibase-commercial.jar` have critical CVEs, and upstream publishes no fixed 4.x image (5.x is a different product: no bundled JDBC drivers and a new license). The operator keeps 4.33 as the default. To run a patched build instead, publish your own image under the tag `4.33` (for example Liquibase 4.33 on a current `eclipse-temurin:21-jre` base, with the drivers your dialects need) and point the chart at its registry; the operator pulls `<registry>:4.33`:
+
+```yaml
+operator:
+  pgBranchConfig:
+    dbPod:
+      migrationImages:
+        liquibase:
+          registry: registry.example.com/liquibase
+```
+
+The same `migrationImages.liquibase.registry` exists under `mysqlBranchConfig`, `mariadbBranchConfig` and `mssqlBranchConfig`. A single branch can also name the full image itself with `migrations.image`, which wins over the chart:
+
+```json
+{
+  "migrations": {
+    "flavor": "liquibase",
+    "image": "registry.example.com/liquibase:4.33-patched",
+    "path": "./changelog",
+    "changelog_file": "db.changelog-master.xml"
+  }
+}
+```
+
 ## Container migrations
 
 Set `"flavor": "container"` to run your own image as the migration Job. This is the fit when migrations aren't standalone SQL files but part of your application's own tooling - for example an app image whose setup script runs the framework's migration command:
