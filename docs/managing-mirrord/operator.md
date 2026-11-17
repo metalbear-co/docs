@@ -44,6 +44,15 @@ For clusters that reach the mirrord cloud, the license key is being replaced by 
 
 Using an internal registry reduces startup time, ingress costs, and removes dependency on GitHub's registry.
 
+### Operator and agent images
+
+These two images are always required. The Operator pulls its own image on install, and the agent image is pulled whenever a session starts. Copy both to your registry first (see [Copying images](#copying-images)), then add the feature-specific images below for the features you use.
+
+| Image    | Default                          | Tag                                                                                         | Description                                          | Override               |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------- |
+| Operator | `ghcr.io/metalbear-co/operator`  | Chart `appVersion`                                                                          | The Operator itself.                                 | `operator.image`       |
+| Agent    | `ghcr.io/metalbear-co/mirrord`   | Version in the Operator image's `metalbear.mirrord.version` label (changes with the Operator) | Agent the Operator starts for each mirrord session. | `agent.image.registry` |
+
 ### Feature-specific images
 
 These images are only pulled when the corresponding feature is enabled:
@@ -51,9 +60,13 @@ These images are only pulled when the corresponding feature is enabled:
 | Image                   | Default                                     | Tag              | Description                                                                                   | Override                                                                  |
 | ----------------------- | ------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Kafka splitting sidecar | `ghcr.io/metalbear-co/operator-kafka-proxy` | Same as operator | JVM sidecar for Kafka splitting (only when `operator.kafkaSplittingSidecar.enabled` is true). | `operator.kafkaSplittingSidecar.image`                                    |
-| MSSQL tools             | `ghcr.io/metalbear-co/mssql-tools`          | `latest`         | Sidecar for MSSQL DB branching (provides `sqlcmd`, `sqlpackage`, `bcp`).                      | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv`                           |
-| Flyway                  | `flyway/flyway`                             | `12`             | Flyway migration runner for DB branching.                                                     | Per-branch `migrations.image`, or `dbPod.migrationImages.flyway.registry` |
+| MSSQL tools             | `ghcr.io/metalbear-co/mssql-tools`          | Same as operator | Init container and sidecar for MSSQL DB branching (provides `sqlpackage` and `sqlcmd`). Table data is exported with the `bcp` in the branch's SQL Server image. | Env `MSSQL_TOOLS_IMAGE` via `operator.extraEnv`                           |
+| Flyway                  | `flyway/flyway`                             | `13` from operator `3.232.0`; `12` on `3.182.0` through `3.231.0` | Flyway migration runner for DB branching.                                                     | Per-branch `migrations.image`, or `dbPod.migrationImages.flyway.registry` |
 | Liquibase               | `liquibase/liquibase`                       | `4.33`           | Liquibase migration runner for DB branching.                                                  | Per-branch `migrations.image`, or `dbPod.migrationImages.liquibase.registry` |
+
+### Code sync
+
+A preview pod with [code sync](../use-cases/preview-environments-code-sync.md) runs the operator's image in an init container, and pulls it with the target pod's pull secrets. So when the operator image comes from a private registry, the target's pods must list a pull secret for that registry.
 
 ### DB branching default database images
 
