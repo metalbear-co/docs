@@ -148,7 +148,7 @@ These apply in every deployment mode. For connection and authentication problems
 | Symptom | Likely cause |
 | --- | --- |
 | The application starts without mirrord | The setup container failed or its `dependsOn` condition isn't wired up; check its logs and exit code. |
-| The task runs, but mirrord hangs for a few seconds while connecting to it, then fails without a clear reason | The task couldn't register with sessions-manager, for example because of a wrong API key or URL, or no outbound access. The task still starts, and the reason appears only in the application container's logs, mixed in with your application's output. Find the bootstrap's connection error there, then see your deployment mode's guide. |
+| mirrord hangs while connecting, then fails | The task couldn't register with sessions-manager, for example because of a wrong API key or URL. Check the application container's logs. |
 | The task registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord-up.yaml`. |
 | `Read-only file system` or `Permission denied` under `/tmp` | The application container has no writable `/tmp` ([Prerequisites](#prerequisites)). |
 | The application container stops at startup: version `GLIBC_2.30` not found, required by `libmirrord_remote_bootstrap.so` | The application image's glibc is older than 2.30 ([Prerequisites](#prerequisites)). |
