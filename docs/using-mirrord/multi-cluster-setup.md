@@ -793,7 +793,7 @@ Each connected cluster should show `license_fingerprint` and `operator_version`.
 | Bearer Token | Automatic via TokenRequest API | Refreshed at the halfway point of remaining lifetime. Only the initial token is manual. |
 | EKS IAM | Automatic every 10 minutes | Tokens are presigned STS URLs, valid for 15 minutes. No Secrets involved. |
 | AKS Workload Identity | Automatic every ~30 minutes | Tokens from Entra ID, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
-| GKE | Automatic every ~30 minutes | Google access tokens, valid for ~1 hour. Refreshed at the halfway point. No Secrets involved. |
+| GKE | Automatic at the halfway point of the remaining lifetime | Google access tokens, valid for ~1 hour. On a GKE Primary the metadata server serves a cached token until about 5 minutes before it expires, so a mint can return a token with part of its hour used, and the next mints follow at about 30, 15, 7.5 and 4 minutes. An AKS or EKS Primary gets a fresh hour from STS each time, so there mints come every ~30 minutes. No Secrets involved. |
 | mTLS | **Not auto-refreshed** | You must rotate certificates manually before they expire. |
 
 ---
