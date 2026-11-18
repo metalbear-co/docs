@@ -415,8 +415,8 @@ buffers the preview's tasks in memory, and once the buffer is full (128 workflow
 activity tasks by default on operator `3.235.0` or later, set by
 [`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options),
 unlimited on earlier operators) it stops polling the task queue until the preview takes a task.
-Nothing is dropped, but no other virtual queue of the split receives tasks while the preview's
-buffer is full. With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
+Nothing is dropped, but no other virtual queue of the split receives tasks of that kind while the
+preview's buffer is full. With [Kafka branching](../sharing-the-cluster/queue-splitting/kafka.md#kafka-branching),
 a message waiting on a branch topic the preview consumes starts the preview pods.
 
 While idle, `mirrord preview status` shows the environment as `idle (waiting for traffic)`,
@@ -448,9 +448,9 @@ temporary queue and are consumed when the service scales back up, whose new pods
 split configuration already applied. For Temporal, unmatched tasks wait in operator memory
 instead, and once 128 of a kind are buffered (operator `3.235.0` or later; see
 [`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options))
-the operator stops polling the task queue, so matching tasks stop reaching the preview too until
-the target scales up and takes a task. Raise the cap or set it to `0` for a Temporal target that
-stays at zero.
+the operator stops polling the task queue for that kind, so matching tasks stop reaching the
+preview too until the target scales up and takes a task. Raise the cap or set it to `0` for a
+Temporal target that stays at zero; the change applies when the split next starts.
 
 See [Autoscaled Targets with KEDA](../sharing-the-cluster/queue-splitting.md#autoscaled-targets-with-keda)
 to see how KEDA autoscaling works with queue splitting.
