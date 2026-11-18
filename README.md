@@ -1,6 +1,6 @@
 # mirrord docs
 
-This repo contains the source for the [mirrord docs site](https://metalbear.com/mirrord/docs) Documentation tab. It uses [GitBook](https://gitbook.com/) to generate documentation from markdown.
+This repo contains the source for the [mirrord docs site](https://metalbear.com/mirrord/docs) Documentation tab. It uses [GitBook](https://gitbook.com/) to generate documentation from Markdown.
 
 > **NOTE** that the mirrord docs' Configuration tab is not governed by this repo, but by [the mirrord repo docs branch](https://github.com/metalbear-co/mirrord/tree/docs) and is updated automatically by mirrord's release workflow.
 
