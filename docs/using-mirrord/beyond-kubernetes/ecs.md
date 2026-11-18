@@ -13,7 +13,7 @@ tags:
 Targeting Amazon ECS tasks is in **alpha**, and may change without notice. See [Required versions](README.md#required-versions) for the bootstrap image and CLI versions.
 {% endhint %}
 
-This guide makes an Amazon ECS service targetable as a [serverless workload](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
+This guide makes an Amazon ECS service targetable as a [workload outside Kubernetes](README.md). The mirrord remote bootstrap is loaded into your existing application container with `LD_PRELOAD`; it doesn't need to be baked into your image, and your application image is unchanged.
 
 The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazon EC2**. Windows containers aren't covered by this setup. At a glance, the setup is:
 
@@ -23,7 +23,7 @@ The task-definition changes apply to **Linux tasks on both AWS Fargate and Amazo
 
 ## Prerequisites
 
-1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md).
+1. A [deployment mode](README.md#deployment-modes) that's set up: the [Operator-hosted sessions-manager](operator-hosted.md) or [MetalBear Cloud](metalbear-cloud.md). MetalBear Cloud needs a MetalBear account and an [API key](metalbear-cloud.md#api-keys), both from [app.metalbear.com](https://app.metalbear.com).
 2. Permission to register ECS task definitions and update the ECS service.
 3. A writable `/tmp` in the application container. If the task definition sets `readonlyRootFilesystem`, mount a task volume at `/tmp`.
 4. An application image based on glibc 2.30 or later, and not on musl, such as Alpine. See [Application container requirements](README.md#application-container-requirements).
@@ -106,6 +106,8 @@ The application container's `environment` loads the bootstrap and names the work
 | `MIRRORD_REMOTE_SERVICE` | `<YOUR_SERVICE_NAME>`. Developers target it as `serverless/<YOUR_SERVICE_NAME>`. |
 | `MIRRORD_REMOTE_ENVIRONMENT` | `<YOUR_ENVIRONMENT>`. Developers set it as `target.namespace`. |
 
+Load the bootstrap into the container whose files and environment variables developers need, usually the one running your application. A developer's local process reads files from that container, including the task volumes mounted into it, but not from the task's other containers.
+
 ## Connect to your deployment mode
 
 The bootstrap needs to know which sessions-manager to register with, and how to authenticate to it. Follow the guide for your deployment mode. It adds the connection variables to the same `environment` list, and finishes by deploying the new task definition revision:
@@ -146,6 +148,7 @@ These apply in every deployment mode. For connection and authentication problems
 | Symptom | Likely cause |
 | --- | --- |
 | The application starts without mirrord | The setup container failed or its `dependsOn` condition isn't wired up; check its logs and exit code. |
+| The task runs, but mirrord hangs while connecting, then fails | The task couldn't register with sessions-manager, for example because of a wrong API key or URL. Check the application container's logs. |
 | The task registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | `MIRRORD_REMOTE_SERVICE`/`MIRRORD_REMOTE_ENVIRONMENT` on the task don't match `target.path`/`target.namespace` in `mirrord-up.yaml`. |
 | `Read-only file system` or `Permission denied` under `/tmp` | The application container has no writable `/tmp` ([Prerequisites](#prerequisites)). |
 | The application container stops at startup: version `GLIBC_2.30` not found, required by `libmirrord_remote_bootstrap.so` | The application image's glibc is older than 2.30 ([Prerequisites](#prerequisites)). |

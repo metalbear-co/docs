@@ -23,7 +23,7 @@ This guide connects an ECS task that runs the [mirrord remote bootstrap](ecs.md)
 ## Prerequisites
 
 1. The ECS task definition set up with the [remote bootstrap](ecs.md), up to [Connect to your deployment mode](ecs.md#connect-to-your-deployment-mode).
-2. An [API key](README.md#api-key), `<API_KEY>`.
+2. An [API key](README.md#api-key), `<API_KEY>`, generated at [app.metalbear.com](https://app.metalbear.com). Sign up there first if you don't have a MetalBear account.
 3. An IAM **execution role** on the ECS service (`executionRoleArn` in the task definition). This is not the task role.
 4. The AWS CLI, with permission to manage Secrets Manager secrets, IAM role policies and the ECS task definition.
 
@@ -109,7 +109,7 @@ Register the new task definition revision and update the service to use it. Task
 ## Verify
 
 1. **ECS task registered**: after the new task starts, the application container's logs show no sessions-manager or API key errors. With `MIRRORD_AGENT_RUST_LOG=info` in the container's `environment`, they also show `Registering with the MetalBear Cloud sessions-manager`.
-2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord-up.yaml` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload), with `common.operator: false`, `mirrord up` connects, and a request with the `baggage` header reaches the local process.
+2. **Developer session**: with the [developer setup](metalbear-cloud.md#developer-setup) and the `mirrord-up.yaml` from [Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes), with `common.operator: false`, `mirrord up` connects, and a request with the `baggage` header reaches the local process.
 
 ## Infrastructure as code
 

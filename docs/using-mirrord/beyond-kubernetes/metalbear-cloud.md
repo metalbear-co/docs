@@ -1,6 +1,6 @@
 ---
 title: "MetalBear Cloud Sessions-Manager"
-description: "Target serverless workloads such as Amazon ECS tasks without the mirrord Operator, through a sessions-manager hosted by MetalBear, with workloads authenticated by a MetalBear API key and developers by `mirrord login`."
+description: "Target workloads outside Kubernetes such as Amazon ECS tasks without the mirrord Operator, through a sessions-manager hosted by MetalBear, with workloads authenticated by a MetalBear API key and developers by `mirrord login`."
 tags:
   - alpha
   - team
@@ -59,7 +59,7 @@ Each credential is accepted only for its own side of a session: the token exchan
 
 Each data-plane connection is bound to its session by a single-use credential delivered with the session assignment, so a caller can't attach to another caller's session.
 
-Only API keys issued for serverless workloads are accepted. Other MetalBear credentials, such as the Operator's license key, are refused by sessions-manager.
+Only serverless agent API keys are accepted. Other MetalBear credentials, such as the Operator's license key, are refused by sessions-manager.
 
 Both sides only make outbound HTTPS connections. Neither needs a network path to the other, and nothing in your infrastructure accepts inbound connections.
 
@@ -103,6 +103,7 @@ The bootstrap connects to MetalBear's sessions-manager, at `https://sm-aws-use1.
 How to set them depends on the platform:
 
 * [Connecting ECS to MetalBear Cloud](ecs-metalbear-cloud.md)
+* [Cloudflare Containers](cloudflare-containers.md)
 
 ## Developer setup
 
@@ -112,7 +113,7 @@ Developers need no Kubernetes access and no API key. They sign in to their Metal
 mirrord login
 ```
 
-mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord-up.yaml` from [Using mirrord with a Serverless Workload](README.md#using-mirrord-with-a-serverless-workload) with `common.operator: false`. Without it, mirrord connects through the Operator if it's used one on this machine before: after a successful Operator session, mirrord sets `"operator": true` in the global config, `~/.mirrord/mirrord.json`, which applies whenever `mirrord-up.yaml` doesn't set `common.operator`. When the session starts, mirrord prints `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
+mirrord stores the credentials on their machine, in `~/.mirrord/auth.json`, and uses them for every MetalBear Cloud session. Then they use the `mirrord-up.yaml` from [Using mirrord with a Workload Outside Kubernetes](README.md#using-mirrord-with-a-workload-outside-kubernetes) with `common.operator: false`. Without it, mirrord connects through the Operator if it's used one on this machine before: after a successful Operator session, mirrord sets `"operator": true` in the global config, `~/.mirrord/mirrord.json`, which applies whenever `mirrord-up.yaml` doesn't set `common.operator`. When the session starts, mirrord prints `connecting through the MetalBear Cloud sessions-manager at https://sm-aws-use1.app.metalbear.com/sm`; if it names another sessions-manager, see [Which sessions-manager mirrord connects through](README.md#which-sessions-manager-mirrord-connects-through).
 
 * **Several organizations:** a developer who belongs to more than one organization must sign in to the one that owns the workload's API key. When they've signed in to several, mirrord uses the most recent `mirrord login`. To switch, run `mirrord login` again and pick the other organization.
 * **Expiry:** the sign-in isn't renewed automatically. Once it expires, mirrord warns when a session starts, and new sessions are refused until the developer runs `mirrord login` again. A session that's already running keeps working, and picks up a new sign-in when it reconnects, without a restart.
@@ -129,7 +130,7 @@ The workload's messages appear in the application container's logs, and the deve
 | `MIRRORD_SESSIONS_MANAGER_API_KEY must hold a MetalBear API key, which begins with metalbear_key_` | The variable holds something else, such as the secret's ARN instead of its value, or has extra whitespace or quotes. |
 | `the MetalBear API key was rejected` | The key is mistyped or revoked. |
 | ``Feature `target.path` requires a mirrord Enterprise plan.`` | mirrord connected through the Operator instead of MetalBear Cloud. Set `common.operator: false` in `mirrord-up.yaml` ([Developer setup](#developer-setup)). |
-| `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless workload key, for example an Operator license key. |
+| `HTTP control plane returned 401 Unauthorized` in the workload's logs | `MIRRORD_SESSIONS_MANAGER_API_KEY` isn't set, or the key isn't a serverless agent API key, for example an Operator license key. |
 | A connection timeout to sessions-manager or `app.metalbear.com` | Outbound HTTPS is blocked ([Network access](#network-access)). |
 | `the proxy in front of sessions-manager refused this session with 403 Forbidden` in mirrord's output | A proxy or firewall on the path refused the request ([Network access](#network-access)), or `sessions_manager.url` or `MIRRORD_SESSIONS_MANAGER_URL` points at something other than sessions-manager. Unset both to use MetalBear Cloud. |
 | The workload registers, but mirrord fails with `timed out connecting to the serverless target's agent through sessions-manager` | The workload's service and environment names don't match `target.path` and `target.namespace` in `mirrord-up.yaml`, or the developer's latest `mirrord login` is to a different organization than the workload's API key belongs to ([Developer setup](#developer-setup)). |

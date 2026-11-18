@@ -32,7 +32,7 @@ The fastest way to get a valid `mirrord-up.yaml` is the interactive wizard:
 mirrord up init
 ```
 
-It prompts for common settings and walks you through one or more services, then writes the file (default: `./mirrord-up.yaml`). The generated file contains only the values you set; everything left at its default is omitted. See [`mirrord up init`](#mirrord-up-init) below for details.
+It walks you through one or more services, picking each one's target from your cluster, then writes the file (default: `./mirrord-up.yaml`). The generated file contains only the values you set; everything left at its default is omitted. To answer the same questions in your browser, run `mirrord wizard`. See [`mirrord up init`](#mirrord-up-init) below for details.
 
 To write the file by hand instead, start with:
 
@@ -151,7 +151,7 @@ Only messages containing the session key (`checkout-debug` in this case) are rou
 This feature requires at least mirrord version 3.288.0.
 {% endhint %}
 
-A service can target a [serverless workload](serverless/README.md), such as an Amazon ECS service, alongside services that target Kubernetes workloads. Set `target.path` to `serverless/` followed by the service name, and `target.namespace` to the environment it runs in:
+A service can target a [workload outside Kubernetes](beyond-kubernetes/README.md), such as an Amazon ECS service, alongside services that target Kubernetes workloads. Set `target.path` to `serverless/` followed by the service name, and `target.namespace` to the environment it runs in:
 
 ```yaml
 services:
@@ -169,7 +169,7 @@ services:
       command: ["python", "-m", "http.server"]
 ```
 
-For a serverless target, `target.namespace` is the environment the service is registered under in sessions-manager, not a Kubernetes namespace. When it's not set, `default` is used. Set up the workload and your deployment mode first, as described in [Serverless Workloads](serverless/README.md#setting-up).
+For a serverless target, `target.namespace` is the environment the service is registered under in sessions-manager, not a Kubernetes namespace. When it's not set, `default` is used. Set up the workload and your deployment mode first, as described in [Beyond Kubernetes](beyond-kubernetes/README.md#setting-up).
 
 Serverless targets work with these limitations:
 
@@ -178,7 +178,7 @@ Serverless targets work with these limitations:
 * **No `split_queues`, `kafka_branch`, `db_branches` or `copy_target` in `config_patch`.** A service whose `config_patch` sets any of them fails before any session starts, with an error naming the setting, for example `` `feature.db_branches` is not supported with serverless targets.``
 * **Set the target explicitly.** `mirrord up init` and target inference only find Kubernetes workloads, so write the `serverless/` path into `mirrord-up.yaml` yourself.
 
-All the [serverless workload limitations](serverless/README.md#limitations) also apply.
+All the [limitations of workloads outside Kubernetes](beyond-kubernetes/README.md#limitations) also apply.
 
 ### Context
 
@@ -455,14 +455,10 @@ Runs every service in the specified context, ignoring the `context` field(s) set
 
 ## `mirrord up init`
 
-Interactive wizard that generates a skeleton `mirrord-up.yaml`. It does not query the cluster; workload inference and prompting happen later, when you run `mirrord up`.
+Interactive wizard that generates a skeleton `mirrord-up.yaml`, picking each service's target from your cluster. `-o` sets the file it offers to write (default: `./mirrord-up.yaml`).
 
 ```sh
 mirrord up init [-o path/to/mirrord-up.yaml]
 ```
 
-Flow:
-
-1. **Common settings** — prompts for `operator`, `accept_invalid_certificates`, and `telemetry`. Only values you change from the default are written.
-2. **Services** — loops one service at a time, prompting for name, mode, target, HTTP filter, ignore ports (with presets for Istio/Linkerd sidecars), env overrides, run type (`exec`/`container`), and the local command. For the target you choose to infer it from the service name (looked up when you run `mirrord up`), specify one explicitly, or run without a target. Choosing `replace` mode skips the HTTP filter prompt and drops the targetless option, since neither applies to it. Repeats until you answer "no" to *Add another service?*.
-3. **Preview and save** — prints the generated YAML, asks whether to save, then for a filename (re-asking if you decline to overwrite an existing file).
+It asks the same questions as `mirrord wizard`, which `mirrord wizard --tui` runs too. See the [Onboarding Wizard](../getting-started/onboarding-wizard.md) for the questions.
