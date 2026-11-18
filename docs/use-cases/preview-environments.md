@@ -453,7 +453,7 @@ split configuration already applied. For Temporal, unmatched tasks wait in opera
 instead, and once 128 of a kind are buffered (operator `3.235.0` or later; see
 [`max_buffered_tasks`](../sharing-the-cluster/queue-splitting/temporal.md#per-queue-options))
 the operator stops polling that task queue for that kind, so matching tasks stop reaching the
-preview too until the target scales up and takes a task. A Temporal target that stays at zero
+preview too until the target scales up and brings its buffer below the cap. A Temporal target that stays at zero
 holds its task queue for good: a raised cap only delays that, and `0` lets the buffer grow in
 operator memory without bound, so give such a target a worker or leave Temporal out of its split.
 
