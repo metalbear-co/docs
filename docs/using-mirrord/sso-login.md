@@ -46,7 +46,7 @@ Session ID  Target               Namespace  User                  Auth  Ports  S
 8f1c...     deployment/payments  payments   dev@corp.example.com  sso          5m
 ```
 
-Sessions opened through a kubeconfig show `kube` there, so an admin can tell the two apart.
+Sessions opened through a kubeconfig show `kube` there, so an admin can tell the two apart. The local `mirrord ui` daemon is the exception to the rule above: it still watches the Operator through your kubeconfig.
 
 A config that names a kubeconfig or a context is still accepted: mirrord warns that the setting is ignored while you are logged in and runs against the Operator. A config with `operator: false` cannot run, because without the Operator there is nothing to log in to:
 
@@ -58,13 +58,17 @@ kube_context is ignored while logged in to mirrord.corp.example.com
 operator: false can't be used while logged in to mirrord.corp.example.com. Run mirrord logout --url https://mirrord.corp.example.com first.
 ```
 
+A [MetalBear Cloud](beyond-kubernetes/metalbear-cloud.md) config selects Cloud with that same `operator: false`, so log out of the Operator before running one.
+
 Profiles work as before: the Operator reads the `MirrordClusterProfile` or `MirrordProfile` your config names on your behalf, because only the Operator's own API is reachable through its URL. That needs an Operator of version `3.236.0` or later; with an older one, a profile fails with `does not support feature mirrord profiles served by the operator API`.
 
 If the Operator's license drops below Enterprise while you are logged in, the next command fails with the same message every paid feature gives, naming SSO and the Enterprise plan. Log out, or wait for the admin to restore the license.
 
 Because only the Operator's API is reachable, mirrord does not read the target workload itself: the Operator resolves it, the way it does for a multi-cluster session. Two things follow from that. The `auto_mount` option is skipped with a warning, since it reads the pod spec locally, and Kafka branching is not available while logged in. A config without a namespace runs in the `default` namespace, not in the kubeconfig's.
 
-A running session keeps its connection when the login expires, but it cannot reconnect after a network cut once the login has expired: it stops with the expiry message, and you log in again before the next run. Commands that read database branches straight from the cluster still need a kubeconfig.
+A running session keeps its connection when the login expires, but it cannot reconnect after a network cut once the login has expired: it stops with the expiry message, and you log in again before the next run.
+
+`mirrord db-branches` and `mirrord vpn` are not served through the Operator's URL yet. While you are logged in they fail with a not-found error from the Operator, whether or not you have a kubeconfig: log out first, then run them with your kubeconfig.
 
 ## Seeing your logins
 
