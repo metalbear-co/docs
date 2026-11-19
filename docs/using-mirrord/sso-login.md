@@ -62,6 +62,8 @@ Profiles work as before: the Operator reads the `MirrordClusterProfile` or `Mirr
 
 If the Operator's license drops below Enterprise while you are logged in, the next command fails with the same message every paid feature gives, naming SSO and the Enterprise plan. Log out, or wait for the admin to restore the license.
 
+Because only the Operator's API is reachable, mirrord does not read the target workload itself: the Operator resolves it, the way it does for a multi-cluster session. Two things follow from that. The `auto_mount` option is skipped with a warning, since it reads the pod spec locally, and Kafka branching is not available while logged in. A config without a namespace runs in the `default` namespace, not in the kubeconfig's.
+
 A running session keeps its connection when the login expires, but it cannot reconnect after a network cut once the login has expired: it stops with the expiry message, and you log in again before the next run. Commands that read database branches straight from the cluster still need a kubeconfig.
 
 ## Seeing your logins
