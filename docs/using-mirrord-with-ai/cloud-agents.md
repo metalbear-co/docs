@@ -14,6 +14,19 @@ A cloud agent needs a different identity from a developer. By default, mirrord a
 
 To prevent this, give your cloud agents a **CI API key**. Sessions that start with a CI API key don't take up seats. They are machine sessions, and they count towards the concurrent machine sessions of your [plan](https://metalbear.com/mirrord/pricing/).
 
+## How sessions are counted
+
+Your license tracks seats in one of two modes, set by MetalBear when the license is issued: the Operator client certificate (`~/.mirrord/credentials`) by default, or Kubernetes username. If you are not sure which mode you have, contact MetalBear. See [What counts as a seat?](../managing-mirrord/licensing.md#what-counts-as-a-seat).
+
+If the agent uses one of these identities, the session is a machine session and does not take a seat:
+
+| Identity | Counts as |
+| --- | --- |
+| CI API key (`MIRRORD_CI_API_KEY` or `mirrord ci`) | Machine session |
+| Kubernetes [ServiceAccount](https://kubernetes.io/docs/concepts/security/service-accounts/) (`system:serviceaccount:…`) | Machine session, even with no CI API key |
+
+If you want the session on a **person's seat** instead, skip the CI API key and give the agent that person's identity: their Kubernetes username (when the license tracks by [Kubernetes user](../managing-mirrord/licensing.md#what-counts-as-a-seat)), or **their** `~/.mirrord/credentials` under default certificate tracking. Do not share one credentials file across people; that goes against the [license terms](../managing-mirrord/licensing.md). To have the agent session reported as a machine session **instead**, set a CI API key as below.
+
 ## What you need
 
 - The mirrord Operator in the cluster, on the Enterprise plan. You need the Enterprise plan to create a CI API key.
