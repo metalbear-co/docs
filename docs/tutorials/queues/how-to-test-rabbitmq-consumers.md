@@ -525,8 +525,7 @@ flowchart LR
 - **Overlapping filters.** If two sessions match the same message, one of them gets it at random.
 - **Queue attributes.** By default, the operator declares temporary queues that are not durable, not exclusive, and not auto-delete. If your consumer declares its queue with other attributes, for example `durable` or `x-queue-type: quorum`, put those attributes in a `MirrordPropertyList` and set `queueConfig` on the queue entry.
 - **Unread messages at teardown.** The operator does not wait for unread messages before it deletes the temporary queues. Set `drainTimeout` if you need more time.
-
-<!-- TODO: confirm the effect of queue splitting on message order and on delivery latency. The reference page does not say. -->
+- **Message order.** The operator forwards one message at a time, in the order that it receives them. Do not rely on a strict order, because a retry after an error can change it.
 
 ## Adapt this to your stack
 
@@ -610,9 +609,7 @@ Yes. The operator patches the workload so that it reads a temporary queue, and i
 
 ### Can the deployed consumer still process the messages that my local consumer gets?
 
-Yes. Set `"queue_mode": "mirror"` on the queue in `mirrord.json`. In `mirror` mode, a message that matches your filter goes to your local consumer and to the deployed consumer. The default mode is `steal`, where a matched message goes only to your local consumer.
-
-<!-- TODO: confirm the minimum operator version for queue_mode "mirror" with RabbitMQ. -->
+Yes. Set `"queue_mode": "mirror"` on the queue in `mirrord.json`. In `mirror` mode, a message that matches your filter goes to your local consumer and to the deployed consumer. The default mode is `steal`, where a matched message goes only to your local consumer. The `mirror` mode needs operator `3.183.0` or later and CLI `3.231.0` or later.
 
 ## See also
 

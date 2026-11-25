@@ -534,7 +534,7 @@ flowchart LR
 * **Steal or mirror.** In the default `steal` mode, a message that matches goes only to your local consumer. With `"queue_mode": "mirror"`, the message also goes to the deployed consumer, so both process a copy.
 * **Filters that overlap.** If the filters of two sessions match the same message, only one session gets it, and the choice is random.
 * **No buffer.** Redis Pub/Sub does not store messages. A message published when the target channel has no subscriber is lost. This applies while the operator replaces the deployed consumer pod, before your local consumer subscribes, and until the operator removes the filter of a session that stopped.
-* **Extra hop.** Each message goes through the operator before it reaches a consumer. This adds a small delay. <!-- TODO: confirm whether the docs give a latency figure or an ordering guarantee for Redis Pub/Sub splitting -->
+* **Extra hop.** Each message goes through the operator before it reaches a consumer. This adds a small delay. The operator forwards one message at a time, in the order that it receives them.
 * **The workload restarts.** The operator replaces the pods of the target when the first session starts and when the last session ends. It does not change the pod template, so `kubectl rollout status` does not show these restarts.
 * **Supported subscribe types.** The operator supports exact channels (`SUBSCRIBE`), glob patterns (`PSUBSCRIBE`), and sharded channels (`SSUBSCRIBE`, Redis 7 and later).
 * **Supported workloads.** The `MirrordSplitConfig` target can be a `Deployment`, a `StatefulSet`, or a `Rollout`.

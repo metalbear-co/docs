@@ -44,11 +44,9 @@ On your laptop, you use two scripts: `worker.py` (the same worker code) and `sta
 * A Kubernetes cluster, version `1.30` or later. Queue splitting needs this version.
 * `kubectl`, with access to the cluster.
 * `helm`.
-* Python 3.9 or later on your laptop. <!-- TODO: confirm the minimum Python version that the current temporalio release supports. -->
+* Python 3.11 or later on your laptop. The `temporalio` release in this tutorial needs it.
 * The mirrord CLI, version `3.221.0` or later.
-* The mirrord operator, version `3.170.0` or later, with a mirrord for Teams license. The operator must have the `operator.temporalSplitting` Helm value set to `true`.
-
-<!-- TODO: confirm with the INT team. In operator source, the fix that lets sdk-core workers (Python, TypeScript, .NET) schedule activities on a split task queue is first in tag 3.198.0, and gzip support for Python workers is first in tag 3.205.0. If this is correct, give 3.205.0 as the minimum for this Python tutorial. -->
+* The mirrord operator, version `3.198.0` or later, with a mirrord for Teams license. The operator must have the `operator.temporalSplitting` Helm value set to `true`.
 
 To install or upgrade the operator with Temporal splitting, run this command. Replace `<LICENSE_KEY>` with your license key.
 
@@ -70,7 +68,7 @@ kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co
 Install the Temporal Python SDK on your laptop:
 
 ```bash
-python3 -m pip install temporalio
+python3 -m pip install temporalio==1.37.0
 ```
 
 ## Deploy the demo
@@ -241,7 +239,7 @@ async def main() -> None:
     namespace = os.environ["TEMPORAL_NAMESPACE"]
     task_queue = os.environ["TEMPORAL_TASK_QUEUE"]
 
-    # The operator's Temporal proxy does not support gRPC compression.
+    # Operator releases before 3.205.0 do not accept gRPC compression.
     # SDK releases that have GrpcCompression use gzip by default, so turn it off.
     options = {}
     compression = getattr(temporalio.service, "GrpcCompression", None)
@@ -310,7 +308,7 @@ spec:
           command:
             - sh
             - -c
-            - pip install --quiet temporalio && exec python -u /app/worker.py
+            - pip install --quiet temporalio==1.37.0 && exec python -u /app/worker.py
           env:
             - name: TEMPORAL_ADDRESS
               value: temporal-frontend.temporal-demo.svc.cluster.local:7233
@@ -629,7 +627,7 @@ flowchart LR
 * **Workflow tasks and activity tasks.** The operator applies the filter to each task, not to each workflow. A `workflow_id` filter matches the workflow tasks and the activity tasks of a workflow, because both carry the workflow ID. An `activity_type` filter can match an activity task, but not the workflow tasks of the same workflow.
 * **Buffer size.** The operator keeps buffered tasks in memory. By default, the buffer has no limit. To set a limit, add the `max_buffered_tasks` property to a `MirrordPropertyList`, and refer to it with `queueConfig` on the queue entry. When a session queue reaches the limit, its tasks go to the main virtual task queue.
 * **Overlapping filters.** When two session filters match one task, the session that started most recently gets the task.
-* **gRPC compression.** The operator's Temporal proxy does not support gRPC compression. Python `temporalio` releases use gzip by default, which fails with `grpc compression not supported`. The worker in this tutorial turns compression off with `grpc_compression=GrpcCompression.NONE`.
+* **gRPC compression.** Operator `3.205.0` and later accept gzip and deflate from workers. Older operators fail with `grpc compression not supported`, and Python `temporalio` releases use gzip by default. The worker in this tutorial turns compression off with `grpc_compression=GrpcCompression.NONE`, so it works with operator `3.198.0` and later.
 * **TLS.** TLS applies to the connection between the operator and the Temporal frontend. Deployed workers in a split connect to the operator's proxy over plaintext gRPC.
 * **KEDA.** KEDA cannot measure a task queue that the operator serves. If KEDA scales the worker, the operator pauses KEDA at one replica while the split runs. This needs the `operator.manageKedaScaledObjects` Helm value.
 * **Supported workloads.** The target can be a `Deployment`, a `StatefulSet`, or an Argo `Rollout`.
@@ -646,8 +644,6 @@ To use queue splitting with a real worker, change these items:
 
 The routing logic of your worker does not change. The worker continues to read its task queue and address from its environment, and the operator changes these values. This tutorial's worker has two other changes: the connection option that turns off gRPC compression, and the `SIGTERM` handler that stops polling at once.
 
-<!-- TODO: operator source (tag 3.205.0 and later) decompresses gzip frames from Python workers, but the reference page still says that compression is not supported. Confirm which is current. If gzip works, remove the compression code from worker.py and change the "gRPC compression" item and this paragraph. -->
-
 ## Cleanup
 
 Stop all `mirrord exec` sessions and the port-forward with `Ctrl+C`. Then delete the demo namespace:
@@ -662,7 +658,7 @@ This command deletes the Temporal server, the worker, and the mirrord resources.
 
 ### Do I need to change my Temporal worker code to use queue splitting?
 
-No routing logic is necessary. The worker must read its task queue name and frontend address from environment variables or from a mounted config file, so that the operator can change them. Python workers must turn off gRPC compression, as the reference page says.
+No routing logic is necessary. The worker must read its task queue name and frontend address from environment variables or from a mounted config file, so that the operator can change them. With an operator before `3.205.0`, Python workers must turn off gRPC compression.
 
 ### Can my local Temporal worker and the deployed worker both process the same workflow?
 

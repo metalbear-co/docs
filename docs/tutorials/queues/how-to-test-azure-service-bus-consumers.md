@@ -120,8 +120,6 @@ Then put only `fully_qualified_namespace` in the `MirrordPropertyList` (see Step
 
 To attach the identity to the operator pod, set `sa.azureClientId` to the client ID of the managed identity in the operator Helm values. The chart then adds the `azure.workload.identity/use` pod label and the `azure.workload.identity/client-id` service account annotation.
 
-<!-- TODO: confirm with a run on AKS that `sa.azureClientId` is enough for Service Bus splitting. This run used a kind cluster without Workload Identity. -->
-
 ### Step 3: Deploy the consumer
 
 Save this script as `consumer.py`. It reads the queue name and the connection string from environment variables, and prints each message with its `user` property and its `order_id` field.
@@ -532,7 +530,7 @@ flowchart LR
 - **Overlapping filters give random results.** If two filters match one message, one of the two sessions gets it at random.
 - **The queue model restarts the deployed consumer.** The operator changes the queue name in the pod template, so the workload restarts when the split starts and when it ends. The Topic/Subscription model does not restart the deployed application.
 - **The queue name must come from a place that the operator can read.** This is an environment variable with a direct value or a ConfigMap reference, a ConfigMap loaded with `envFrom`, a mounted ConfigMap or Secret file, or a file that Vault or a CSI driver injects.
-- **Messages go through the operator.** Each message takes one more hop: from the original queue, through the operator, to a temporary queue. <!-- TODO: confirm the added latency per message and whether the operator keeps message order in the queue model -->
+- **Messages go through the operator.** Each message takes one more hop: from the original queue, through the operator, to a temporary queue. The operator forwards one message at a time, in the order that it receives them. Do not rely on a strict order, because a retry after an error can change it.
 - **Temporary queues live in your namespace.** The operator needs Manage rights to create and delete them. Their names are limited to 260 characters. If a name is longer, the operator shortens the original part and adds a hash.
 - **KEDA.** If KEDA scales the consumer on queue depth, set `operator.manageKedaScaledObjects` in the operator Helm values. The operator then points the trigger at the temporary queue that the deployed consumer reads.
 

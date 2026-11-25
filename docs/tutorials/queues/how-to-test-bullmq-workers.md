@@ -414,11 +414,11 @@ The job IDs start again at 1, because each temporary queue has its own ID counte
 
 A job can take up to 5 seconds to arrive, because the operator does not wake the worker. The operator adds the job to the temporary queue, but it does not write the BullMQ marker key. A BullMQ v5 worker with no jobs waits for the marker key for its `drainDelay` (default 5 seconds), and then it reads the queue again. In a test run, the delay from `queue.add()` to the start of the job was between 0.6 and 5.0 seconds, for the local worker and for the deployed worker. Without a split, the delay was less than 0.1 seconds.
 
-<!-- TODO: product issue. The operator does not write the bull:<queue>:marker key when it adds a job to a temporary queue, so workers see each job up to drainDelay (5 s) late. Remove the paragraph above when the operator writes the marker key. -->
+<!-- NOTE: product issue. The operator does not write the bull:<queue>:marker key when it adds a job to a temporary queue, so workers see each job up to drainDelay (5 s) late. Remove the paragraph above when the operator writes the marker key. -->
 
 When more than one job waits in a temporary queue, the worker takes the newest job first. In the output above, job 2 starts before job 1. The order of the job IDs is the order of the original queue.
 
-<!-- TODO: product issue. BullMQ takes jobs from the right end of the wait list and producers add to the left end (FIFO). The operator adds the job IDs at the end that the worker reads first, so a batch of waiting jobs runs newest-first (LIFO). Observed with operator 3.237.0 and BullMQ 5.81.6: five jobs sent together ran as 13, 12, 11, 10, 9. Change this paragraph when the operator keeps FIFO order. -->
+<!-- NOTE: product issue. BullMQ takes jobs from the right end of the wait list and producers add to the left end (FIFO). The operator adds the job IDs at the end that the worker reads first, so a batch of waiting jobs runs newest-first (LIFO). Observed with operator 3.237.0 and BullMQ 5.81.6: five jobs sent together ran as 13, 12, 11, 10, 9. Change this paragraph when the operator keeps FIFO order. -->
 
 ### 5. Add a second developer
 
@@ -545,7 +545,7 @@ flowchart LR
 
 - **Delayed and prioritized jobs do not split.** The forwarder reads only the wait list of `orders`. A job that a producer adds with a `delay` or `priority` option during a split stays in `orders`, and no worker processes it. After the last session ends, the restored deployed worker processes it, also when its data matches your filter.
 
-<!-- TODO: product issue. Delayed and prioritized jobs that a producer adds to the original queue during a split stay in bull:orders:delayed and bull:orders:prioritized until the split ends (observed with operator 3.237.0). Update this item if the forwarder starts to route them. -->
+<!-- NOTE: product issue. Delayed and prioritized jobs that a producer adds to the original queue during a split stay in bull:orders:delayed and bull:orders:prioritized until the split ends (observed with operator 3.237.0). Update this item if the forwarder starts to route them. -->
 
 ## Adapt this to your stack
 

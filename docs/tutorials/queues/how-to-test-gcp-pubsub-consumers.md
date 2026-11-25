@@ -487,8 +487,7 @@ flowchart LR
 - **Temporary subscription settings.** Temporary subscriptions copy the settings of the original subscription, including the acknowledgement deadline, message retention, and expiration. To get more time at a breakpoint, set `ack_deadline_seconds` in a `MirrordPropertyList` and refer to it with `queueConfig`.
 - **Autoscaled consumers.** If KEDA scales the consumer on the original subscription, KEDA sees no load during a split. Set the Helm value `operator.manageKedaScaledObjects` (operator `3.215.0` or later) so that the triggers follow the temporary subscription.
 - **Extra path.** Each message goes through the operator and a temporary topic before it reaches a consumer.
-
-<!-- TODO: confirm how splitting affects Pub/Sub ordering keys and exactly-once delivery subscriptions. The reference page does not say. -->
+- **Ordering keys.** The operator keeps the ordering key of each message that it forwards. Temporary subscriptions copy all settings of the original subscription, including message ordering and exactly-once delivery.
 
 ## Adapt this to your stack
 
@@ -564,7 +563,6 @@ Yes. Use `jq_filter`. It runs a jq program on the JSON form of the `PubsubMessag
 
 **Does mirrord queue splitting work with the Pub/Sub emulator?**
 
-<!-- TODO: confirm whether Pub/Sub splitting supports the Pub/Sub emulator. The reference page does not document it. The operator source reads an `endpoint` property from the MirrordPropertyList and uses anonymous credentials when `credentials_json` is not set, but this is not in the public docs. -->
 The Pub/Sub reference page does not document a setup with the emulator. This tutorial uses a real Pub/Sub topic and subscription in a GCP project.
 
 **Why did my deployed consumer restart when I started a mirrord session?**

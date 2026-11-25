@@ -43,9 +43,9 @@ Before you start, make sure that you have these items:
 
 1. A Kubernetes cluster for development or staging, version `1.30` or later. Queue splitting needs this version. Do not use a production cluster.
 2. `kubectl`, configured for that cluster.
-3. Python 3.9 or later on your machine. <!-- TODO: confirm the minimum Python version that nats-py 2.12.0 supports -->
-4. The mirrord CLI. <!-- TODO: confirm the minimum mirrord CLI version for NATS JetStream splitting. The reference page gives no version. The mirrord CHANGELOG adds the NATS queue type in 3.254.0. -->
-5. The mirrord operator, installed with a license. <!-- TODO: confirm the minimum operator version for NATS JetStream splitting. The reference page gives no version. The operator CHANGELOG adds JetStream splitting in 3.203.0. -->
+3. Python 3.9 or later on your machine.
+4. The mirrord CLI, version `3.254.0` or later.
+5. The mirrord operator, version `3.203.0` or later, installed with a license.
 
 The cluster pods must have access to PyPI, because the pods install `nats-py` when they start.
 
@@ -508,7 +508,7 @@ mirrord exec -f mirrord-bob.json -- python consumer.py
 
 Send the same three batches of orders again. Now the `alice` session gets `alice-1` and `alice-2`, the `bob` session gets `bob-1` and `bob-2`, and the deployed consumer gets only `none-1`. The second session does not restart the deployed pods again, because the deployment already reads the main-output stream.
 
-Make your filters specific. When the filters of two sessions match the same message, the operator sends the message to one session only. The documentation does not say which session gets it. <!-- TODO: confirm and document which session gets a message that matches two filters. The operator source uses the first filter that matches, in an order that is not defined. -->
+Make your filters specific. When the filters of two sessions match the same message, the operator sends the message to one session only. The operator does not define which session gets it.
 
 ### Step 5: Stop the sessions
 
