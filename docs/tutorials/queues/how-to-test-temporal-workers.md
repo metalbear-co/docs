@@ -206,11 +206,12 @@ The first start can take some minutes, because the cluster pulls the Postgres an
 
 ### Step 2: Write the worker
 
-Save this script as `worker.py`. The worker reads its Temporal address, Temporal namespace, and task queue from environment variables. The activity prints the workflow ID and the customer field, so you can see which worker gets each workflow.
+Save this script as `worker.py`. The worker reads its Temporal address, Temporal namespace, and task queue from environment variables. The activity prints the workflow ID and the customer field, so you can see which worker gets each workflow. The worker stops polling at once when it gets `SIGTERM`.
 
 ```python
 import asyncio
 import os
+import signal
 from datetime import timedelta
 
 import temporalio.service
@@ -248,19 +249,30 @@ async def main() -> None:
         options["grpc_compression"] = compression.NONE
 
     client = await Client.connect(address, namespace=namespace, **options)
+    # Stop polling at once on SIGTERM or SIGINT. As PID 1 in a container,
+    # Python ignores SIGTERM unless it has a handler.
+    stop = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(sig, stop.set)
+
     print(f"polling task_queue={task_queue} address={address}", flush=True)
-    worker = Worker(
+    async with Worker(
         client,
         task_queue=task_queue,
         workflows=[OrderWorkflow],
         activities=[process_order],
-    )
-    await worker.run()
+    ):
+        await stop.wait()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+{% hint style="warning" %}
+When a split starts, the operator restarts the deployed worker. The old pod must stop polling the real task queue at once. Otherwise, it can take tasks that match your filter until Kubernetes kills it, 30 seconds later by default. A Python process that runs as PID 1 ignores `SIGTERM` if it has no handler. Thus, this worker has a `SIGTERM` handler, and the Deployment starts it with `exec`.
+{% endhint %}
 
 {% hint style="warning" %}
 The worker must read the task queue name from an environment variable or from a mounted config file. The operator changes this value to point the worker at a virtual task queue. A task queue name that is fixed in the code cannot be split.
@@ -298,7 +310,7 @@ spec:
           command:
             - sh
             - -c
-            - pip install --quiet temporalio && python -u /app/worker.py
+            - pip install --quiet temporalio && exec python -u /app/worker.py
           env:
             - name: TEMPORAL_ADDRESS
               value: temporal-frontend.temporal-demo.svc.cluster.local:7233
@@ -485,7 +497,11 @@ mirrord exec -f mirrord-alice.json -- python3 worker.py
 
 You do not set any environment variables on your laptop. mirrord gives the local worker the environment of the target. The operator replaces the task queue with the session virtual task queue, and the address with its Temporal proxy.
 
-When the session starts, the operator patches the deployed worker to poll the main virtual task queue through the proxy. The deployed worker pod restarts. Wait until the local worker prints a `polling` line.
+When the session starts, the operator patches the deployed worker to poll the main virtual task queue through the proxy. The deployed worker pod restarts. Wait until the local worker prints a `polling` line:
+
+```
+polling task_queue=mirrord-session-<random>-orders address=mirrord-operator.mirrord.svc.cluster.local:7233
+```
 
 ### Step 3: Start matching and non-matching workflows
 
@@ -564,15 +580,21 @@ If the filters of two sessions match the same task, only one session gets it. Th
 
 ### Step 5: Stop a session
 
-Press `Ctrl+C` in the terminal of Bob's local worker. The `bob-` workflows that you start after this go to the deployed worker again, because no session filter matches them.
+Press `Ctrl+C` in the terminal of Bob's local worker. The operator ends the session about 30 seconds after the local worker stops. After that, the `bob-` workflows go to the deployed worker again, because no session filter matches them.
 
 If a session ends while the operator holds buffered tasks for it, these tasks go to the main virtual task queue. The deployed worker processes them, so the operator does not lose them.
 
 Press `Ctrl+C` in the terminal of Alice's local worker. After the last session ends, the operator keeps the split resources for the drain timeout, and then removes them. The drain timeout is `0` by default, so the operator removes them immediately. The operator does not wait for in-flight work to finish. To keep the split resources for a time, set `spec.drainTimeout` (in seconds) on the `MirrordSplitConfig`. A new session in that time uses the same resources.
 
-When the operator removes the split resources, the deployed worker pod restarts again. The new pod has the original `TEMPORAL_ADDRESS` and `TEMPORAL_TASK_QUEUE` values, and polls the real task queue `orders`.
+When the operator removes the split resources, the deployed worker pod restarts again. The new pod has the original `TEMPORAL_ADDRESS` and `TEMPORAL_TASK_QUEUE` values, and polls the real task queue `orders`:
 
-<!-- TODO: the session steps (Create sessions and test, Steps 2 to 5) were not verified end to end. The test cluster was CPU-saturated and the session could not start. The restore behavior above was observed after the operator tore down a split when a session failed to start. Run Steps 2 to 5 again on a healthy cluster and replace the expected output with the real output. -->
+```bash
+kubectl -n temporal-demo logs deployment/orders-worker --tail=1
+```
+
+```
+polling task_queue=orders address=temporal-frontend.temporal-demo.svc.cluster.local:7233
+```
 
 ## How it works
 
@@ -622,7 +644,7 @@ To use queue splitting with a real worker, change these items:
 4. **Filter field.** Use a field that your workflows already carry. A workflow ID prefix is the easiest choice, because the code that starts the workflow sets it. To filter on a value that moves through many services, use a Temporal header such as `header.baggage`. See [Header Propagation](../../sharing-the-cluster/header-propagation.md).
 5. **Queue ID.** Use the same `id` in the `MirrordSplitConfig` and as the key under `feature.split_queues`.
 
-The routing logic of your worker does not change. The worker continues to read its task queue and address from its environment, and the operator changes these values. The only change in this tutorial's worker is the connection option that turns off gRPC compression.
+The routing logic of your worker does not change. The worker continues to read its task queue and address from its environment, and the operator changes these values. This tutorial's worker has two other changes: the connection option that turns off gRPC compression, and the `SIGTERM` handler that stops polling at once.
 
 <!-- TODO: operator source (tag 3.205.0 and later) decompresses gzip frames from Python workers, but the reference page still says that compression is not supported. Confirm which is current. If gzip works, remove the compression code from worker.py and change the "gRPC compression" item and this paragraph. -->
 
