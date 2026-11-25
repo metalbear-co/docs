@@ -4,6 +4,7 @@ description: Test a changed RabbitMQ consumer against a shared queue in Kubernet
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test RabbitMQ Consumers in Kubernetes with Queue Splitting
@@ -41,10 +42,18 @@ Before you start, make sure that you have these items:
 
 1. A Kubernetes cluster, version `1.30` or later. Queue splitting needs this version.
 2. `kubectl`, with access to the cluster.
-3. Python 3 on your machine, with the `pika` package version `1.5.0` or later: `pip install pika==1.5.0`. Under mirrord, `pika` 1.3.2 does not connect and waits forever.
+3. Python 3 on your machine, with the `pika` package version `1.5.0` or later. Under mirrord, `pika` 1.3.2 does not connect and waits forever.
 4. The mirrord CLI, version `3.221.0` or later.
 5. The mirrord operator, version `3.170.0` or later, on a mirrord Team or Enterprise plan.
 6. RabbitMQ splitting turned on in the operator Helm chart.
+
+Create a virtual environment in your working directory and install `pika` in it:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install pika==1.5.0
+```
 
 To turn on RabbitMQ splitting, set the `operator.rmqSplitting` Helm value. Run this command in the namespace and kubecontext where you installed the Helm release:
 
@@ -390,7 +399,7 @@ The key `orders` is the queue ID from the `MirrordSplitConfig`. The `message_fil
 Start the local consumer with mirrord:
 
 ```bash
-mirrord exec -f mirrord.json -- python consumer.py alice
+mirrord exec -f mirrord.json -- python3 consumer.py alice
 ```
 
 mirrord gives the local process the environment of the target pod. The operator changes `QUEUE_NAME` to the name of your temporary queue, so the code does not change. Connections to `rabbitmq.rmq-demo.svc.cluster.local` go through the cluster.
@@ -456,10 +465,11 @@ Keep the `alice` session open. In a new terminal, save this file as `mirrord-bob
 }
 ```
 
-Start a second local consumer:
+Start a second local consumer. Activate the virtual environment first, because this is a new terminal:
 
 ```bash
-mirrord exec -f mirrord-bob.json -- python consumer.py bob
+source .venv/bin/activate
+mirrord exec -f mirrord-bob.json -- python3 consumer.py bob
 ```
 
 The split is already active, so the deployed pod does not restart for the second session.
@@ -484,15 +494,17 @@ Stop the `bob` consumer with `Ctrl+C`. Then stop the `alice` consumer with `Ctrl
 
 When you stop the `bob` session, the `alice` session continues. New messages for `bob` go to the deployed consumer again, because no filter matches them. About 30 seconds after the session ends, the operator deletes the temporary queue of `bob`. Unread messages in that queue are lost. The operator does not send them to the deployed consumer.
 
-When the last session ends, the operator removes the split. In this demo, the operator started to remove the split about 30 seconds after `Ctrl+C`. The deployed pod then restarts. It deletes the temporary queues, and the deployed consumer reads `orders` again. The `spec.drainTimeout` field of the `MirrordSplitConfig` controls when this happens:
+When the last session ends, the operator removes the split. In this demo, the operator started to remove the split about 30 seconds after `Ctrl+C`. The deployed pod then restarts. The operator deletes the temporary queues, and the deployed consumer reads `orders` again.
+
+Before the operator removes the split, it drains the temporary queue of the deployed consumer. The `spec.drainTimeout` field of the `MirrordSplitConfig` sets the limit on this drain:
 
 | `drainTimeout` | Behavior |
 | -------------- | -------- |
-| Not set | The operator removes the split when the last session ends (the same as `0`). |
+| Not set | The operator waits until the deployed consumer reads all messages in its temporary queue. There is no time limit. |
 | `0` | The operator removes the split immediately. Unread messages can be lost. |
-| `N` | The operator keeps the temporary resources for up to `N` seconds, then removes them. |
+| `N` | The operator waits up to `N` seconds for the deployed consumer to read its temporary queue, then removes the split. |
 
-The operator does not wait for consumers to read the unread messages before it removes the split. During the drain timeout, a new session can use the same temporary resources again. To keep the split for 60 seconds in the demo, add `drainTimeout: 60` under `spec` in the `MirrordSplitConfig`.
+To keep the split for a new session after the last session ends, set `spec.ttl` (in seconds) on the `MirrordSplitConfig`. A new session in that time uses the same temporary resources. The `ttl` period runs before the drain. To keep the split for 60 seconds in the demo, add `ttl: 60` under `spec` in the `MirrordSplitConfig`.
 
 {% hint style="warning" %}
 Do not stop a session while your local consumer has unread messages that you need. The operator deletes your temporary queue and the messages in it.
@@ -524,7 +536,7 @@ flowchart LR
 - **Body filters need newer versions.** `jq_filter` matches on the whole message, including the body. It needs operator `3.201.0` or later and CLI `3.253.0` or later.
 - **Overlapping filters.** If two sessions match the same message, one of them gets it at random.
 - **Queue attributes.** By default, the operator declares temporary queues that are not durable, not exclusive, and not auto-delete. If your consumer declares its queue with other attributes, for example `durable` or `x-queue-type: quorum`, put those attributes in a `MirrordPropertyList` and set `queueConfig` on the queue entry.
-- **Unread messages at teardown.** The operator does not wait for unread messages before it deletes the temporary queues. Set `drainTimeout` if you need more time.
+- **Unread messages at teardown.** When the last session ends, the operator waits until the deployed consumer reads its temporary queue. Set `drainTimeout` to limit this wait. Unread messages in a session's temporary queue are lost when that session ends.
 - **Message order.** The operator forwards one message at a time, in the order that it receives them. Do not rely on a strict order, because a retry after an error can change it.
 
 ## Adapt this to your stack
@@ -583,6 +595,7 @@ Delete the local files:
 
 ```bash
 rm consumer.py mirrord.json mirrord-bob.json
+rm -rf .venv
 ```
 
 ## Frequently asked questions
@@ -601,7 +614,7 @@ Yes. Use `jq_filter`. The jq program sees the headers, the basic properties, and
 
 ### What happens to RabbitMQ messages when I stop my mirrord session?
 
-If other sessions continue, new messages that matched your filter go to the deployed consumer again. The operator deletes your temporary queue, and unread messages in it are lost. When the last session ends, the operator removes the split after the `drainTimeout` of the `MirrordSplitConfig`. It does not wait for unread messages, so set `drainTimeout` if you need time to read them.
+If other sessions continue, new messages that matched your filter go to the deployed consumer again. The operator deletes your temporary queue, and unread messages in it are lost. When the last session ends, the operator waits until the deployed consumer reads all messages in its temporary queue, then removes the split. The `drainTimeout` of the `MirrordSplitConfig` sets a limit on this wait. To keep the split for a new session, set `ttl` on the `MirrordSplitConfig`.
 
 ### Does the deployed RabbitMQ consumer restart when I start a session?
 

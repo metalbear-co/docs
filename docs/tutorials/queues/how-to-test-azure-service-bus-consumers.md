@@ -4,6 +4,7 @@ description: Test a changed Azure Service Bus consumer against a shared queue in
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test Azure Service Bus Consumers in Kubernetes with Queue Splitting
@@ -53,12 +54,12 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
   --set operator.azureServiceBusSplitting=true
 ```
 
-Install the Service Bus SDK on your machine:
+Create a virtual environment in your working directory, and install the Service Bus SDK in it:
 
 ```shell
 python3 -m venv .venv
 source .venv/bin/activate
-pip install azure-servicebus
+pip install azure-servicebus==7.15.0
 ```
 
 ## Deploy the demo
@@ -106,7 +107,17 @@ export SB_CONN=$(az servicebus namespace authorization-rule keys list \
 ```
 
 {% hint style="info" %}
-**Workload Identity instead of a key.** On AKS with Workload Identity, the operator can use its managed identity, and you store no key. Give the identity the **Azure Service Bus Data Owner** role on the namespace:
+**Workload Identity instead of a key.** On AKS with Workload Identity, the operator can use its managed identity, and you store no key. Get the client ID of the managed identity:
+
+```shell
+export OPERATOR_IDENTITY_CLIENT_ID=$(az identity show \
+  --resource-group <identity-resource-group> \
+  --name <identity-name> \
+  --query clientId \
+  --output tsv)
+```
+
+Give the identity the **Azure Service Bus Data Owner** role on the namespace:
 
 ```shell
 az role assignment create \
@@ -116,9 +127,9 @@ az role assignment create \
 ```
 
 Then put only `fully_qualified_namespace` in the `MirrordPropertyList` (see Step 4). The operator uses `DefaultAzureCredential`. A service principal with a client secret is a third option. The [Azure Service Bus reference page](../../sharing-the-cluster/queue-splitting/azure-service-bus.md) shows all three forms.
-{% endhint %}
 
-To attach the identity to the operator pod, set `sa.azureClientId` to the client ID of the managed identity in the operator Helm values. The chart then adds the `azure.workload.identity/use` pod label and the `azure.workload.identity/client-id` service account annotation.
+To attach the identity to the operator pod, set `sa.azureClientId` to `$OPERATOR_IDENTITY_CLIENT_ID` in the operator Helm values. The chart then adds the `azure.workload.identity/use` pod label and the `azure.workload.identity/client-id` service account annotation.
+{% endhint %}
 
 ### Step 3: Deploy the consumer
 
@@ -207,7 +218,7 @@ spec:
           image: python:3.12-slim
           command: ["sh", "-c"]
           args:
-            - pip install --quiet --root-user-action=ignore --disable-pip-version-check azure-servicebus && exec python -u /app/consumer.py deployed
+            - pip install --quiet --root-user-action=ignore --disable-pip-version-check azure-servicebus==7.15.0 && exec python -u /app/consumer.py deployed
           env:
             - name: SERVICE_BUS_QUEUE_NAME
               value: orders
@@ -314,11 +325,25 @@ Before you start a mirrord session, confirm that the deployed consumer gets all 
 kubectl logs --follow deployment/orders-consumer --namespace sb-demo
 ```
 
-In a second terminal, send three messages for `alice` and three messages with no property:
+Open a second terminal for the producer. In this terminal, activate the virtual environment and set `SB_CONN` again with the command from Step 2:
 
 ```shell
-python producer.py alice 3 1
-python producer.py none 3 4
+source .venv/bin/activate
+export SB_CONN=$(az servicebus namespace authorization-rule keys list \
+  --resource-group "$RG" \
+  --namespace-name "$SB_NAMESPACE" \
+  --name RootManageSharedAccessKey \
+  --query primaryConnectionString \
+  --output tsv)
+```
+
+The command also needs `RG` and `SB_NAMESPACE` from Step 1. If this terminal does not have them, export them again with the same values.
+
+Send three messages for `alice` and three messages with no property:
+
+```shell
+python3 producer.py alice 3 1
+python3 producer.py none 3 4
 ```
 
 The deployed consumer prints all six messages:
@@ -363,10 +388,11 @@ The key `orders-queue` is the queue ID from the `MirrordSplitConfig`. The value 
 
 ### Step 2: Start the local consumer
 
-Run the same `consumer.py` on your machine with mirrord:
+Open a new terminal. Activate the virtual environment, and run the same `consumer.py` on your machine with mirrord:
 
 ```shell
-mirrord exec -f mirrord-alice.json -- python consumer.py alice
+source .venv/bin/activate
+mirrord exec -f mirrord-alice.json -- python3 consumer.py alice
 ```
 
 mirrord gives the local process the environment of the deployed pod, so the script gets the connection string from the cluster. The operator changes `SERVICE_BUS_QUEUE_NAME` for your process to the name of a temporary queue that only your session reads. The local consumer prints a name like this:
@@ -375,7 +401,7 @@ mirrord gives the local process the environment of the deployed pod, so the scri
 [alice] reading queue mirrord-tmp-<random>-orders
 ```
 
-When the first session starts, the operator also changes `SERVICE_BUS_QUEUE_NAME` in the deployed consumer, and the Deployment restarts. Watch the `kubectl logs` terminal. When the log stops, run the `kubectl logs --follow` command again to see the new pod. The new pod reads its own temporary queue:
+When the first session starts, the operator also restarts the pods of the deployed consumer with a new value in `SERVICE_BUS_QUEUE_NAME`. Watch the `kubectl logs` terminal. When the log stops, run the `kubectl logs --follow` command again to see the new pod. The new pod reads its own temporary queue:
 
 ```
 [deployed] reading queue mirrord-tmp-<random>-main-orders
@@ -390,8 +416,8 @@ Wait until the old pod is gone before you send messages. Until it stops, the old
 In the producer terminal, send messages for `alice` and messages with no property:
 
 ```shell
-python producer.py alice 3 10
-python producer.py none 3 20
+python3 producer.py alice 3 10
+python3 producer.py none 3 20
 ```
 
 Your local consumer gets only the `alice` messages:
@@ -438,18 +464,19 @@ Save a copy of the configuration as `mirrord-bob.json` with a different filter:
 }
 ```
 
-Keep the `alice` session open. In a new terminal, start a second session:
+Keep the `alice` session open. In a new terminal, activate the virtual environment and start a second session:
 
 ```shell
-mirrord exec -f mirrord-bob.json -- python consumer.py bob
+source .venv/bin/activate
+mirrord exec -f mirrord-bob.json -- python3 consumer.py bob
 ```
 
 Send one message for each user and one with no property:
 
 ```shell
-python producer.py alice 1 30
-python producer.py bob 1 40
-python producer.py none 1 50
+python3 producer.py alice 1 30
+python3 producer.py bob 1 40
+python3 producer.py none 1 50
 ```
 
 Each consumer gets only its messages:
@@ -487,7 +514,7 @@ orders
 Messages with `user=bob` now match no filter, so they go to the deployed consumer:
 
 ```shell
-python producer.py bob 1 60
+python3 producer.py bob 1 60
 ```
 
 ```
@@ -496,7 +523,7 @@ python producer.py bob 1 60
 
 Press `Ctrl+C` in the `alice` terminal. This is the last session on the queue. The operator then waits for the deployed consumer to read all messages in its temporary queue. It waits up to `drainTimeout` (60 seconds in this demo). After that, it deletes the temporary queues and puts the deployed consumer back on the `orders` queue.
 
-The Deployment restarts again. Run the `kubectl logs --follow` command again. The new pod reads the original queue:
+The operator restarts the pods of the Deployment again. Run the `kubectl logs --follow` command again. The new pod reads the original queue:
 
 ```
 [deployed] reading queue orders
@@ -528,7 +555,7 @@ flowchart LR
 - **You can filter on the body.** A `jq_filter` runs on a JSON object with the fields `body`, `application_properties`, `message_id`, `content_type`, and `subject`. For example, `.body | fromjson | .priority == "high"`. If you set `message_filter` and `jq_filter` together, a message must match both.
 - **The producer must set the property.** If the producers do not put the property on the message, no filter matches and the message goes to the deployed consumer. To carry a value such as `baggage` across services, see [Header Propagation](../../sharing-the-cluster/header-propagation.md).
 - **Overlapping filters give random results.** If two filters match one message, one of the two sessions gets it at random.
-- **The queue model restarts the deployed consumer.** The operator changes the queue name in the pod template, so the workload restarts when the split starts and when it ends. The Topic/Subscription model does not restart the deployed application.
+- **The queue model restarts the deployed consumer.** The operator restarts the pods of the workload with a new queue name when the split starts and when it ends. The Topic/Subscription model does not restart the deployed application.
 - **The queue name must come from a place that the operator can read.** This is an environment variable with a direct value or a ConfigMap reference, a ConfigMap loaded with `envFrom`, a mounted ConfigMap or Secret file, or a file that Vault or a CSI driver injects.
 - **Messages go through the operator.** Each message takes one more hop: from the original queue, through the operator, to a temporary queue. The operator forwards one message at a time, in the order that it receives them. Do not rely on a strict order, because a retry after an error can change it.
 - **Temporary queues live in your namespace.** The operator needs Manage rights to create and delete them. Their names are limited to 260 characters. If a name is longer, the operator shortens the original part and adds a hash.
@@ -555,6 +582,12 @@ Stop all `mirrord exec` sessions and wait for the drain to end. Then delete the 
 kubectl delete -f mirrord-split.yaml
 kubectl delete namespace sb-demo
 az group delete --name "$RG" --yes --no-wait
+```
+
+Delete the local virtual environment:
+
+```shell
+rm -rf .venv
 ```
 
 To turn off Azure Service Bus splitting in the operator:

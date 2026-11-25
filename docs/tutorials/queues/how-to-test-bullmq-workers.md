@@ -4,6 +4,7 @@ description: Test a changed BullMQ worker in Kubernetes against a shared Redis q
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test BullMQ Workers in Kubernetes with Queue Splitting
@@ -412,13 +413,9 @@ job 1 name=process-order tenant=carol order=carol-1795610936474-1
 
 The job IDs start again at 1, because each temporary queue has its own ID counter. The operator copies the job name and the job data. It also adds a `mirrord-key` field to the data of each job that goes to your session. Your worker sees this field in `job.data`.
 
-A job can take up to 5 seconds to arrive, because the operator does not wake the worker. The operator adds the job to the temporary queue, but it does not write the BullMQ marker key. A BullMQ v5 worker with no jobs waits for the marker key for its `drainDelay` (default 5 seconds), and then it reads the queue again. In a test run, the delay from `queue.add()` to the start of the job was between 0.6 and 5.0 seconds, for the local worker and for the deployed worker. Without a split, the delay was less than 0.1 seconds.
-
-<!-- NOTE: product issue. The operator does not write the bull:<queue>:marker key when it adds a job to a temporary queue, so workers see each job up to drainDelay (5 s) late. Remove the paragraph above when the operator writes the marker key. -->
+A job can take up to 5 seconds to arrive, because the operator does not wake the worker. A BullMQ v5 worker with no jobs reads the queue again after its `drainDelay` (default 5 seconds). This applies to the local worker and to the deployed worker.
 
 When more than one job waits in a temporary queue, the worker takes the newest job first. In the output above, job 2 starts before job 1. The order of the job IDs is the order of the original queue.
-
-<!-- NOTE: product issue. BullMQ takes jobs from the right end of the wait list and producers add to the left end (FIFO). The operator adds the job IDs at the end that the worker reads first, so a batch of waiting jobs runs newest-first (LIFO). Observed with operator 3.237.0 and BullMQ 5.81.6: five jobs sent together ran as 13, 12, 11, 10, 9. Change this paragraph when the operator keeps FIFO order. -->
 
 ### 5. Add a second developer
 
@@ -540,12 +537,9 @@ flowchart LR
 - **Steal is the default.** A matched job goes only to your local worker. With `"queue_mode": "mirror"`, a matched job goes to your local worker, and a copy goes to the deployed worker.
 - **The workload restarts twice.** The operator restarts the pods when the first session starts, and again after the last session ends. The Deployment spec does not change, so `kubectl rollout status` does not show these restarts.
 - **Jobs can arrive up to 5 seconds late, and a batch runs newest-first.** See step 4 of the session.
-- **The queue name must come from the pod spec.** The operator reads `BULLMQ_QUEUE` only when the value is in the pod template (`value`, or `valueFrom` with a ConfigMap reference) or comes from a ConfigMap with `envFrom`. A mounted config file is also supported. See the queue splitting overview.
+- **The queue name must come from the pod spec.** The operator reads `BULLMQ_QUEUE` only when the value is in the pod template (`value`, or `valueFrom` with a ConfigMap reference) or comes from a ConfigMap with `envFrom`. A mounted config file is also supported. See the [queue splitting overview](../../sharing-the-cluster/queue-splitting.md#queue-names-in-mounted-config-files).
 - **The forwarder has tuning values.** With a `queueConfig` property list on the queue entry, you can set `dequeue_timeout` (seconds that the forwarder waits for a new job before it tries again, default `5`) and `jq_time_limit` (milliseconds for each jq evaluation, default `200`). A jq filter that goes over its time limit stops the session.
-
 - **Delayed and prioritized jobs do not split.** The forwarder reads only the wait list of `orders`. A job that a producer adds with a `delay` or `priority` option during a split stays in `orders`, and no worker processes it. After the last session ends, the restored deployed worker processes it, also when its data matches your filter.
-
-<!-- NOTE: product issue. Delayed and prioritized jobs that a producer adds to the original queue during a split stay in bull:orders:delayed and bull:orders:prioritized until the split ends (observed with operator 3.237.0). Update this item if the forwarder starts to route them. -->
 
 ## Adapt this to your stack
 

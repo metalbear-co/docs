@@ -4,6 +4,7 @@ description: Tutorials that test queue consumers and workflow workers in Kuberne
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # Queue and Workflow Tutorials

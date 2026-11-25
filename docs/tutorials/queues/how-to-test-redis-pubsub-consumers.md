@@ -4,6 +4,7 @@ description: Test a changed Redis Pub/Sub consumer in Kubernetes against a share
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test Redis Pub/Sub Consumers in Kubernetes with Queue Splitting
@@ -47,8 +48,16 @@ Make sure that you have these items before you start:
 * `kubectl`, configured for the cluster.
 * Helm, to install or upgrade the mirrord operator.
 * The mirrord CLI, version `3.221.0` or later.
-* The mirrord operator, version `3.170.0` or later, with a mirrord Team or Enterprise license. Queue splitting is not available in the free tier.
-* Python 3 on your machine, with the `redis` package. Install it with `pip install redis==5.0.8`.
+* The mirrord operator, version `3.170.0` or later, with a mirrord Team or Enterprise license. Queue splitting is not available in the free tier. `SSUBSCRIBE` (sharded channels, `appConfig.shardChannel`) needs operator `3.234.0` or later.
+* Python 3 on your machine, with the `redis` package version `5.0.8`.
+
+Create a virtual environment in your working directory and install `redis` in it:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install redis==5.0.8
+```
 
 {% hint style="warning" %}
 Use a staging or development cluster. Do not use a production cluster for this tutorial.
@@ -353,7 +362,7 @@ The config has these parts:
 ### Step 2: Start the local consumer
 
 ```bash
-mirrord exec -f alice.json -- python consumer.py local-alice
+mirrord exec -f alice.json -- python3 consumer.py local-alice
 ```
 
 mirrord starts a queue splitting session. First, the operator replaces the `redis-consumer` pod with a new pod. In the new pod, `REDIS_CHANNEL` is a temporary "main" channel. The operator does not change the Deployment, so `kubectl rollout status` does not show this restart. mirrord waits until the new pod is ready. Then your local process starts.
@@ -458,10 +467,11 @@ Save this file as `bob.json`:
 }
 ```
 
-Keep the `alice` session open. In a new terminal, start a second local consumer:
+Keep the `alice` session open. In a new terminal, activate the virtual environment and start a second local consumer:
 
 ```bash
-mirrord exec -f bob.json -- python consumer.py local-bob
+source .venv/bin/activate
+mirrord exec -f bob.json -- python3 consumer.py local-bob
 ```
 
 Wait for the `[local-bob] subscribed` line. Then send three messages:
@@ -508,7 +518,7 @@ The deployed consumer subscribes to the original channel again:
 [deployed] subscribed to channel=notifications
 ```
 
-Redis does not keep messages, so there are no buffered messages to move. A message that the operator publishes to a session channel after the local consumer stops is lost. By default, the operator removes the split as soon as the last session ends. To keep the split for a short time so that a new session can use it again, set `spec.drainTimeout` in seconds on the `MirrordSplitConfig`. The operator does not wait for unread messages before it removes the split.
+Redis does not keep messages, so there are no buffered messages to move. A message that the operator publishes to a session channel after the local consumer stops is lost. After the last session ends, the operator removes the split resources. To keep the split for a short time so that a new session can use it again, set `spec.ttl` in seconds on the `MirrordSplitConfig`.
 
 ## How it works
 
@@ -536,7 +546,7 @@ flowchart LR
 * **No buffer.** Redis Pub/Sub does not store messages. A message published when the target channel has no subscriber is lost. This applies while the operator replaces the deployed consumer pod, before your local consumer subscribes, and until the operator removes the filter of a session that stopped.
 * **Extra hop.** Each message goes through the operator before it reaches a consumer. This adds a small delay. The operator forwards one message at a time, in the order that it receives them.
 * **The workload restarts.** The operator replaces the pods of the target when the first session starts and when the last session ends. It does not change the pod template, so `kubectl rollout status` does not show these restarts.
-* **Supported subscribe types.** The operator supports exact channels (`SUBSCRIBE`), glob patterns (`PSUBSCRIBE`), and sharded channels (`SSUBSCRIBE`, Redis 7 and later).
+* **Supported subscribe types.** The operator supports exact channels (`SUBSCRIBE`), glob patterns (`PSUBSCRIBE`), and sharded channels (`SSUBSCRIBE`, Redis 7 and later). `SSUBSCRIBE` needs operator `3.234.0` or later.
 * **Supported workloads.** The `MirrordSplitConfig` target can be a `Deployment`, a `StatefulSet`, or a `Rollout`.
 
 ## Adapt this to your stack
@@ -547,7 +557,7 @@ To use queue splitting on a real service, change these items. The consumer code 
 2. **Channel source.** Set `appConfig` to the way your application subscribes:
    * `channel` for an exact channel (`SUBSCRIBE`).
    * `channelPattern` for a glob pattern (`PSUBSCRIBE`).
-   * `shardChannel` for a sharded channel (`SSUBSCRIBE`).
+   * `shardChannel` for a sharded channel (`SSUBSCRIBE`). This needs operator `3.234.0` or later.
 
    Each one takes an `env` reference, or another source such as a mounted config file. See the [reference page](../../sharing-the-cluster/queue-splitting/redis-pubsub.md).
 3. **Redis connection.** Put your connection in the `MirrordPropertyList`. Use `url`, or use `host` with `port`, `password`, `tls`, and `db`. To share one property list between namespaces, create it in the operator namespace (operator `3.191.0` or later).
@@ -582,6 +592,12 @@ kubectl delete -f mirrord-split.yaml
 kubectl delete namespace redis-demo
 ```
 
+Delete the local virtual environment:
+
+```bash
+rm -rf .venv
+```
+
 To turn off Redis Pub/Sub splitting in the operator, upgrade the chart again:
 
 ```bash
@@ -610,7 +626,7 @@ Yes. Each session gets its own temporary channel and its own filter. Use filters
 
 ### Does queue splitting work with PSUBSCRIBE and sharded channels?
 
-Yes. Use `channelPattern` in the `MirrordSplitConfig` for `PSUBSCRIBE`, and `shardChannel` for `SSUBSCRIBE` on Redis 7 and later. Use `channel` for a plain `SUBSCRIBE`.
+Yes. Use `channelPattern` in the `MirrordSplitConfig` for `PSUBSCRIBE`, and `shardChannel` for `SSUBSCRIBE` on Redis 7 and later. `SSUBSCRIBE` needs operator `3.234.0` or later. Use `channel` for a plain `SUBSCRIBE`.
 
 ### Does this work with Redis Streams or BullMQ?
 

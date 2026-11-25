@@ -4,6 +4,7 @@ description: Test a changed Temporal worker in Kubernetes against a shared task 
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test Temporal Workers in Kubernetes with Queue Splitting
@@ -65,10 +66,12 @@ Make sure that the `MirrordSplitConfig` CRD is in the cluster:
 kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co
 ```
 
-Install the Temporal Python SDK on your laptop:
+Create a virtual environment in your working directory, and install the Temporal Python SDK in it:
 
 ```bash
-python3 -m pip install temporalio==1.37.0
+python3 -m venv .venv
+source .venv/bin/activate
+pip install temporalio==1.37.0
 ```
 
 ## Deploy the demo
@@ -437,9 +440,10 @@ kubectl -n temporal-demo port-forward svc/temporal-frontend 7233:7233
 
 ## Confirm the baseline
 
-Before you start a mirrord session, make sure that the deployed worker gets all workflows. In a new terminal, start three workflows:
+Before you start a mirrord session, make sure that the deployed worker gets all workflows. In a new terminal, activate the virtual environment and start three workflows:
 
 ```bash
+source .venv/bin/activate
 python3 starter.py alice-order-1 bob-order-1 carol-order-1
 ```
 
@@ -487,9 +491,10 @@ The key under `split_queues` (`orders`) is the queue ID from the `MirrordSplitCo
 
 ### Step 2: Run the worker locally
 
-Open a new terminal. Run the same `worker.py` with mirrord:
+Open a new terminal. Activate the virtual environment, and run the same `worker.py` with mirrord:
 
 ```bash
+source .venv/bin/activate
 mirrord exec -f mirrord-alice.json -- python3 worker.py
 ```
 
@@ -554,9 +559,10 @@ Many developers can split the same task queue at the same time. Each session get
 }
 ```
 
-Keep the session for Alice open. In a new terminal, start a session for Bob:
+Keep the session for Alice open. In a new terminal, activate the virtual environment and start a session for Bob:
 
 ```bash
+source .venv/bin/activate
 mirrord exec -f mirrord-bob.json -- python3 worker.py
 ```
 
@@ -582,7 +588,7 @@ Press `Ctrl+C` in the terminal of Bob's local worker. The operator ends the sess
 
 If a session ends while the operator holds buffered tasks for it, these tasks go to the main virtual task queue. The deployed worker processes them, so the operator does not lose them.
 
-Press `Ctrl+C` in the terminal of Alice's local worker. After the last session ends, the operator keeps the split resources for the drain timeout, and then removes them. The drain timeout is `0` by default, so the operator removes them immediately. The operator does not wait for in-flight work to finish. To keep the split resources for a time, set `spec.drainTimeout` (in seconds) on the `MirrordSplitConfig`. A new session in that time uses the same resources.
+Press `Ctrl+C` in the terminal of Alice's local worker. After the last session ends, the operator removes the split resources. The operator does not wait for in-flight work to finish. To keep the split resources for a time, set `spec.ttl` (in seconds) on the `MirrordSplitConfig`. A new session in that time uses the same resources.
 
 When the operator removes the split resources, the deployed worker pod restarts again. The new pod has the original `TEMPORAL_ADDRESS` and `TEMPORAL_TASK_QUEUE` values, and polls the real task queue `orders`:
 
@@ -614,7 +620,7 @@ flowchart LR
 
 ## Behavior and tradeoffs
 
-* **Steal only.** Temporal gives each task to exactly one worker poll. Temporal queue splitting supports `steal` only. If you set `queue_mode: mirror` on a Temporal queue, or use `mirrord up` in mirror mode, the session runs as `steal`. mirrord prints a warning for each Temporal queue when this occurs.
+* **Steal only.** Temporal gives each task to exactly one worker poll. Temporal queue splitting supports `steal` only. If you set `queue_mode: mirror` on a Temporal queue, or use `mirrord up` in mirror mode, the session runs as `steal`. mirrord prints a warning for each Temporal queue when this occurs. This needs operator `3.221.0` or later. The warning needs mirrord CLI `3.274.0` or later.
 * **What the filter can match.** `message_filter` applies regexes to task metadata. The supported keys are:
   * `workflow_id`: the workflow ID.
   * `workflow_type`: the workflow type name.
@@ -654,6 +660,12 @@ kubectl delete namespace temporal-demo
 
 This command deletes the Temporal server, the worker, and the mirrord resources. To turn off Temporal splitting in the operator, run the Helm upgrade again with `operator.temporalSplitting=false`.
 
+Delete the local virtual environment:
+
+```bash
+rm -rf .venv
+```
+
 ## Frequently asked questions
 
 ### Do I need to change my Temporal worker code to use queue splitting?
@@ -674,7 +686,7 @@ Yes. Each session gets its own session virtual task queue. Give each developer a
 
 ### What happens to Temporal tasks when I stop my mirrord session?
 
-Tasks that the operator buffered for your session go to the main virtual task queue, and the deployed worker processes them. After the last session ends, the operator removes the split resources after the drain timeout. The operator does not wait for in-flight work.
+Tasks that the operator buffered for your session go to the main virtual task queue, and the deployed worker processes them. After the last session ends, the operator removes the split resources. The operator does not wait for in-flight work. To keep the split resources for a new session, set `spec.ttl` (in seconds) on the `MirrordSplitConfig`.
 
 ### Does Temporal queue splitting work with Temporal Cloud?
 

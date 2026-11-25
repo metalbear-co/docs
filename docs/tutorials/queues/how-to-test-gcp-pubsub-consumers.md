@@ -4,6 +4,7 @@ description: Test a changed Google Cloud Pub/Sub consumer in Kubernetes with mir
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test GCP Pub/Sub Consumers in Kubernetes with Queue Splitting
@@ -141,9 +142,14 @@ Save this script as `consumer.py`. It reads the project and the subscription fro
 ```python
 import json
 import os
+import signal
 import sys
 
 from google.cloud import pubsub_v1
+
+# Python runs as PID 1 in the pod and ignores SIGTERM without a handler.
+# This handler lets the old pod stop at once when the operator restarts it.
+signal.signal(signal.SIGTERM, lambda *_: os._exit(0))
 
 # The name that this consumer prints in front of each line.
 NAME = sys.argv[1] if len(sys.argv) > 1 else "local"
@@ -209,12 +215,13 @@ spec:
         app: order-consumer
     spec:
       serviceAccountName: order-consumer
+      terminationGracePeriodSeconds: 5
       containers:
         - name: consumer
           image: python:3.12-slim
           command: ["sh", "-c"]
           args:
-            - pip install --quiet google-cloud-pubsub && python /app/consumer.py deployed
+            - pip install --quiet google-cloud-pubsub==2.44.0 && exec python /app/consumer.py deployed
           env:
             - name: GCP_PROJECT_ID
               value: my-gcp-project
@@ -306,10 +313,12 @@ The pod installs the Pub/Sub client when it starts. Thus, the first line can com
 
 ### Step 1: Prepare your machine
 
-Install the Pub/Sub client, and log in with your own Google account. Your local consumer uses these credentials to read its temporary subscription.
+Create a virtual environment in the directory of `consumer.py`, and install the Pub/Sub client in it. Then log in with your own Google account. Your local consumer uses these credentials to read its temporary subscription.
 
 ```bash
-pip install google-cloud-pubsub
+python3 -m venv .venv
+source .venv/bin/activate
+pip install google-cloud-pubsub==2.44.0
 gcloud auth application-default login
 ```
 
@@ -357,7 +366,7 @@ When the first split session starts, the operator patches the subscription varia
 Run the consumer with mirrord:
 
 ```bash
-mirrord exec -f mirrord.json -- python consumer.py
+mirrord exec -f mirrord.json -- python3 consumer.py
 ```
 
 The local consumer reads from a temporary subscription, not from `orders-sub`:
@@ -372,7 +381,19 @@ The deployed consumer restarts, and it also reads from a temporary subscription.
 [deployed] reading from projects/my-gcp-project/subscriptions/mirrord-tmp-<random>-main-orders-sub-sub
 ```
 
-### Step 4: Send messages with and without the attribute
+### Step 4: Wait for the old pod to stop
+
+{% hint style="warning" %}
+Wait until the old pod is gone before you send messages. Until it stops, the old pod still reads `orders-sub` and can take messages for your session.
+{% endhint %}
+
+Make sure that this command shows only one `order-consumer` pod:
+
+```bash
+kubectl get pods --namespace pubsub-demo
+```
+
+### Step 5: Send messages with and without the attribute
 
 Publish the same three messages again:
 
@@ -397,7 +418,7 @@ The deployed consumer gets the other messages:
 
 You can now change `consumer.py` and run it again with the same command. The deployed consumer continues to process all traffic that does not match your filter.
 
-### Step 5: Add a second developer
+### Step 6: Add a second developer
 
 More than one developer can split the same subscription at the same time. The operator creates one more temporary topic and subscription for each new session, and adds the new filter to the filters that it checks.
 
@@ -424,10 +445,11 @@ Save this file as `mirrord-bob.json`:
 }
 ```
 
-Keep the first session open. In a new terminal, start a second session:
+Keep the first session open. In a new terminal, activate the virtual environment and start a second session:
 
 ```bash
-mirrord exec -f mirrord-bob.json -- python consumer.py bob
+source .venv/bin/activate
+mirrord exec -f mirrord-bob.json -- python3 consumer.py bob
 ```
 
 The deployed consumer does not restart for the second session.
@@ -444,7 +466,7 @@ Publish the three messages again (`order_id` 7, 8, and 9, with `alice`, `bob`, a
 If the filters of two sessions both match a message, the operator sends the message to one of the two sessions at random. Use filters that do not overlap, for example one user name for each developer.
 {% endhint %}
 
-### Step 6: Stop the sessions
+### Step 7: Stop the sessions
 
 Press `Ctrl+C` in each terminal that runs `mirrord exec`.
 
@@ -543,29 +565,31 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
   --set sa.gcpSa=null
 ```
 
+Delete the local virtual environment:
+
+```bash
+rm -rf .venv
+```
+
 ## Frequently asked questions
 
-**Do I need to change my Pub/Sub consumer code to use queue splitting?**
+### Do I need to change my Pub/Sub consumer code to use queue splitting?
 
 No. The consumer reads its subscription name from an environment variable or a mounted file, as it does now. The operator changes that value for the deployed consumer and for your local process. You do not add a library or a filter check to the consumer.
 
-**Can I test a Pub/Sub consumer locally against a shared staging subscription without taking messages from other developers?**
+### Can I test a Pub/Sub consumer locally against a shared staging subscription without taking messages from other developers?
 
 Yes. Each developer runs `mirrord exec` with a filter on a message attribute or on the body. The operator sends each developer only the messages that match that developer's filter. Messages that match no filter go to the deployed consumer.
 
-**What happens if two developers' filters match the same Pub/Sub message?**
+### What happens if two developers' filters match the same Pub/Sub message?
 
 The operator sends the message to one of the two sessions at random. Neither session gets a copy of the other session's message. Use filters that do not overlap, such as a different user name for each developer.
 
-**Can I filter Pub/Sub messages on the message body instead of attributes?**
+### Can I filter Pub/Sub messages on the message body instead of attributes?
 
 Yes. Use `jq_filter`. It runs a jq program on the JSON form of the `PubsubMessage`, so decode the body first, for example `.data | @base64d | fromjson | .user_id == "test-user"`. If you also set `message_filter`, a message must match both filters.
 
-**Does mirrord queue splitting work with the Pub/Sub emulator?**
-
-The Pub/Sub reference page does not document a setup with the emulator. This tutorial uses a real Pub/Sub topic and subscription in a GCP project.
-
-**Why did my deployed consumer restart when I started a mirrord session?**
+### Why did my deployed consumer restart when I started a mirrord session?
 
 The operator changes the subscription environment variable of the deployed consumer to point at a temporary subscription. The Deployment spec does not change: the operator restarts the pods and sets the new value in the new pods. The pods restart again when the last session ends and the operator puts back the original value.
 

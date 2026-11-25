@@ -4,6 +4,7 @@ description: Test a changed NATS JetStream consumer against a shared stream in K
 tags:
   - team
   - enterprise
+  - alpha
 ---
 
 # How to Test NATS Consumers in Kubernetes with Queue Splitting
@@ -417,10 +418,11 @@ The key `orders` is the queue ID from the `MirrordSplitConfig`. `queue_type` is 
 
 ### Step 2: Start the local consumer
 
-Run the same `consumer.py` on your machine with mirrord:
+Run the same `consumer.py` on your machine with mirrord. If you use a new terminal, activate the virtual environment first:
 
 ```shell
-mirrord exec -f mirrord-alice.json -- python consumer.py
+source .venv/bin/activate
+mirrord exec -f mirrord-alice.json -- python3 consumer.py
 ```
 
 mirrord gives your local process the environment of the target pod, and the operator changes `NATS_STREAM` and `NATS_CONSUMER` to the names of your session stream and consumer. The output is similar to this:
@@ -500,10 +502,11 @@ Many developers can split the same stream at the same time. Each session gets it
 }
 ```
 
-Keep the first session open. In a new terminal, start a second session:
+Keep the first session open. In a new terminal, activate the virtual environment and start a second session:
 
 ```shell
-mirrord exec -f mirrord-bob.json -- python consumer.py
+source .venv/bin/activate
+mirrord exec -f mirrord-bob.json -- python3 consumer.py
 ```
 
 Send the same three batches of orders again. Now the `alice` session gets `alice-1` and `alice-2`, the `bob` session gets `bob-1` and `bob-2`, and the deployed consumer gets only `none-1`. The second session does not restart the deployed pods again, because the deployment already reads the main-output stream.
