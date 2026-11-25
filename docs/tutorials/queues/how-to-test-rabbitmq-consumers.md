@@ -41,7 +41,7 @@ Before you start, make sure that you have these items:
 
 1. A Kubernetes cluster, version `1.30` or later. Queue splitting needs this version.
 2. `kubectl`, with access to the cluster.
-3. Python 3 on your machine, with the `pika` package: `pip install pika`.
+3. Python 3 on your machine, with the `pika` package version `1.5.0` or later: `pip install pika==1.5.0`. Under mirrord, `pika` 1.3.2 does not connect and waits forever.
 4. The mirrord CLI, version `3.221.0` or later.
 5. The mirrord operator, version `3.170.0` or later, on a mirrord Team or Enterprise plan.
 6. RabbitMQ splitting turned on in the operator Helm chart.
@@ -139,10 +139,15 @@ data:
   consumer.py: |
     import json
     import os
+    import signal
     import sys
     import time
 
     import pika
+
+    # Python runs as PID 1 in the pod and ignores SIGTERM without a handler.
+    # This handler lets the old pod stop at once when the operator restarts it.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 
     LABEL = sys.argv[1] if len(sys.argv) > 1 else "deployed"
     QUEUE = os.environ["QUEUE_NAME"]
@@ -220,7 +225,7 @@ spec:
       containers:
         - name: main
           image: python:3.12-slim
-          command: ["sh", "-c", "pip install --quiet pika && python -u /app/consumer.py"]
+          command: ["sh", "-c", "pip install --quiet --root-user-action=ignore pika==1.5.0 && exec python -u /app/consumer.py"]
           env:
             - name: QUEUE_NAME
               value: orders
@@ -344,6 +349,8 @@ The deployed consumer prints all five messages:
 [deployed] x-user=None order=none-1
 ```
 
+The log also shows `waiting for RabbitMQ...` lines, a `pip` notice, and a `DeprecationWarning` from `pika`. You can ignore them.
+
 ## Run your consumer with a filter
 
 Now run the same consumer on your machine. Your local consumer will get only the messages for `alice`.
@@ -407,7 +414,7 @@ kubectl -n rmq-demo exec deployment/orders-consumer -- python /app/producer.py n
 Your local consumer prints only the messages for `alice`:
 
 ```
-[alice] consuming from <temporary queue>
+[alice] consuming from mirrord-<random>-orders
 [alice] x-user=alice order=alice-1
 [alice] x-user=alice order=alice-2
 ```
@@ -415,7 +422,7 @@ Your local consumer prints only the messages for `alice`:
 The deployed consumer prints all the other messages:
 
 ```
-[deployed] consuming from <temporary queue>
+[deployed] consuming from mirrord-main-<random>-orders
 [deployed] x-user=bob order=bob-1
 [deployed] x-user=bob order=bob-2
 [deployed] x-user=None order=none-1
@@ -455,6 +462,8 @@ Start a second local consumer:
 mirrord exec -f mirrord-bob.json -- python consumer.py bob
 ```
 
+The split is already active, so the deployed pod does not restart for the second session.
+
 Send the five messages again. Each message now goes to exactly one consumer:
 
 | Message | Consumer |
@@ -473,9 +482,9 @@ To prevent overlaps, use a filter that is specific to one developer, for example
 
 Stop the `bob` consumer with `Ctrl+C`. Then stop the `alice` consumer with `Ctrl+C`.
 
-When you stop the `bob` session, the `alice` session continues. Messages for `bob` go to the deployed consumer again, because no filter matches them.
+When you stop the `bob` session, the `alice` session continues. New messages for `bob` go to the deployed consumer again, because no filter matches them. About 30 seconds after the session ends, the operator deletes the temporary queue of `bob`. Unread messages in that queue are lost. The operator does not send them to the deployed consumer.
 
-When the last session ends, the operator removes the split. It deletes the temporary queues, and the deployed consumer reads `orders` again. The `spec.drainTimeout` field of the `MirrordSplitConfig` controls when this happens:
+When the last session ends, the operator removes the split. In this demo, the operator started to remove the split about 30 seconds after `Ctrl+C`. The deployed pod then restarts. It deletes the temporary queues, and the deployed consumer reads `orders` again. The `spec.drainTimeout` field of the `MirrordSplitConfig` controls when this happens:
 
 | `drainTimeout` | Behavior |
 | -------------- | -------- |
@@ -485,10 +494,8 @@ When the last session ends, the operator removes the split. It deletes the tempo
 
 The operator does not wait for consumers to read the unread messages before it removes the split. During the drain timeout, a new session can use the same temporary resources again. To keep the split for 60 seconds in the demo, add `drainTimeout: 60` under `spec` in the `MirrordSplitConfig`.
 
-<!-- TODO: confirm what happens to unread messages in a developer's temporary queue when that session ends while other sessions continue. The reference page does not say. -->
-
 {% hint style="warning" %}
-Do not stop a session while your local consumer has unread messages that you need. With no drain timeout, the operator can delete them.
+Do not stop a session while your local consumer has unread messages that you need. The operator deletes your temporary queue and the messages in it.
 {% endhint %}
 
 ## How it works
@@ -595,7 +602,7 @@ Yes. Use `jq_filter`. The jq program sees the headers, the basic properties, and
 
 ### What happens to RabbitMQ messages when I stop my mirrord session?
 
-If other sessions continue, messages that matched your filter go to the deployed consumer again. When the last session ends, the operator removes the split after the `drainTimeout` of the `MirrordSplitConfig`. It does not wait for unread messages, so set `drainTimeout` if you need time to read them.
+If other sessions continue, new messages that matched your filter go to the deployed consumer again. The operator deletes your temporary queue, and unread messages in it are lost. When the last session ends, the operator removes the split after the `drainTimeout` of the `MirrordSplitConfig`. It does not wait for unread messages, so set `drainTimeout` if you need time to read them.
 
 ### Does the deployed RabbitMQ consumer restart when I start a session?
 

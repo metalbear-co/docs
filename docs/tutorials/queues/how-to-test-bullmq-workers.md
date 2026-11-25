@@ -306,11 +306,13 @@ The deployed worker prints all four jobs. The IDs and order numbers on your clus
 
 ```text
 worker reads queue "orders"
-job 1 name=process-order tenant=alice order=alice-1764064800000-1
-job 2 name=process-order tenant=alice order=alice-1764064800010-2
-job 3 name=process-order tenant=carol order=carol-1764064801000-1
-job 4 name=process-order tenant=carol order=carol-1764064801010-2
+job 1 name=process-order tenant=alice order=alice-1795610589033-1
+job 2 name=process-order tenant=alice order=alice-1795610589212-2
+job 3 name=process-order tenant=carol order=carol-1795610590023-1
+job 4 name=process-order tenant=carol order=carol-1795610590056-2
 ```
+
+The deployed worker processes the jobs in the order that the producer adds them.
 
 ## Create sessions and test
 
@@ -361,13 +363,27 @@ Start the local worker with mirrord:
 mirrord exec -f mirrord.json -- node worker.js
 ```
 
-When the first session starts, the operator patches the `bullmq-worker` Deployment, and Kubernetes restarts its pod. Wait until the new pod is ready before you send jobs:
+When the first session starts, the operator restarts the `bullmq-worker` pod with a different value of `BULLMQ_QUEUE`. The operator does not change the Deployment spec, so `kubectl rollout status` does not wait for this restart. `mirrord exec` starts the local worker after the operator restarts the pod. This can take one minute or more.
 
-```bash
-kubectl -n bullmq-demo rollout status deploy/bullmq-worker
+Wait until the local worker prints its queue name:
+
+```text
+worker reads queue "mirrord-tmp-<random>-orders"
 ```
 
-The two workers now read different temporary queues. The local worker prints a queue name such as `mirrord-tmp-<random>-orders`. The logs of the new pod show a queue name such as `mirrord-tmp-<random>-main-orders`. Restart the `kubectl logs -f` command, because the old pod is gone.
+The old pod is gone, so stop the `kubectl logs -f` command and start it again:
+
+```bash
+kubectl -n bullmq-demo logs -f deploy/bullmq-worker
+```
+
+The new pod installs `bullmq` again before it starts the worker. Then it prints its queue name:
+
+```text
+worker reads queue "mirrord-tmp-<random>-main-orders"
+```
+
+The two workers now read different temporary queues. The two random parts are different.
 
 ### 4. Send jobs with and without a match
 
@@ -381,28 +397,41 @@ kubectl -n bullmq-demo exec deploy/bullmq-worker -c worker -- node /app/producer
 The local worker prints only the jobs for `alice`:
 
 ```text
-worker reads queue "mirrord-tmp-xkqzpw-orders"
-job 1 name=process-order tenant=alice order=alice-1764065000000-1
-job 2 name=process-order tenant=alice order=alice-1764065000010-2
+worker reads queue "mirrord-tmp-<random>-orders"
+job 2 name=process-order tenant=alice order=alice-1795610935899-2
+job 1 name=process-order tenant=alice order=alice-1795610935843-1
 ```
 
 The deployed worker prints only the jobs for `carol`:
 
 ```text
-worker reads queue "mirrord-tmp-xkqzpw-main-orders"
-job 1 name=process-order tenant=carol order=carol-1764065001000-1
-job 2 name=process-order tenant=carol order=carol-1764065001010-2
+worker reads queue "mirrord-tmp-<random>-main-orders"
+job 2 name=process-order tenant=carol order=carol-1795610936551-2
+job 1 name=process-order tenant=carol order=carol-1795610936474-1
 ```
 
-The job IDs start again at 1, because each temporary queue has its own ID counter. The operator copies the job name and the job data without changes.
+The job IDs start again at 1, because each temporary queue has its own ID counter. The operator copies the job name and the job data. It also adds a `mirrord-key` field to the data of each job that goes to your session. Your worker sees this field in `job.data`.
 
-<!-- TODO: confirm the delay before a BullMQ v5 worker takes a job from a temporary queue. The operator pushes the job ID to the wait list without a BullMQ marker key, so the worker can wait up to its drainDelay (default 5 seconds) before it takes the job. -->
+A job can take up to 5 seconds to arrive, because the operator does not wake the worker. The operator adds the job to the temporary queue, but it does not write the BullMQ marker key. A BullMQ v5 worker with no jobs waits for the marker key for its `drainDelay` (default 5 seconds), and then it reads the queue again. In a test run, the delay from `queue.add()` to the start of the job was between 0.6 and 5.0 seconds, for the local worker and for the deployed worker. Without a split, the delay was less than 0.1 seconds.
+
+<!-- TODO: product issue. The operator does not write the bull:<queue>:marker key when it adds a job to a temporary queue, so workers see each job up to drainDelay (5 s) late. Remove the paragraph above when the operator writes the marker key. -->
+
+When more than one job waits in a temporary queue, the worker takes the newest job first. In the output above, job 2 starts before job 1. The order of the job IDs is the order of the original queue.
+
+<!-- TODO: product issue. BullMQ takes jobs from the right end of the wait list and producers add to the left end (FIFO). The operator adds the job IDs at the end that the worker reads first, so a batch of waiting jobs runs newest-first (LIFO). Observed with operator 3.237.0 and BullMQ 5.81.6: five jobs sent together ran as 13, 12, 11, 10, 9. Change this paragraph when the operator keeps FIFO order. -->
 
 ### 5. Add a second developer
 
 Many sessions can split the same queue at the same time. Each session gets its own temporary queue.
 
-Open a new terminal. Make a copy of the local directory, and change the filter to `^bob$` in its `mirrord.json`:
+Open a new terminal. Go to the directory that contains `bullmq-local`, and make a copy of it:
+
+```bash
+cp -r bullmq-local bullmq-local-bob
+cd bullmq-local-bob
+```
+
+Change the filter to `^bob$` in the `mirrord.json` of the copy:
 
 ```json
 {
@@ -444,7 +473,7 @@ The result is:
 - The second local worker prints the job for `bob`.
 - The deployed worker prints the job for `carol`.
 
-The second session does not restart the deployed worker. The operator adds the second filter to the routing that runs already.
+The second session does not restart the deployed worker. The operator adds the second filter to the routing that runs already. The second local worker starts after a few seconds and prints its own queue name, such as `mirrord-tmp-<random>-orders`.
 
 {% hint style="warning" %}
 Make sure that the filters of different developers do not match the same jobs. When two filters match a job, the operator sends the job to one of the two sessions at random.
@@ -461,7 +490,7 @@ Press `Ctrl+C` in each terminal that runs `mirrord exec`.
 After the last session ends, the operator does these steps:
 
 1. It waits for the deployed worker to finish the jobs in the main temporary queue. This includes jobs that wait, jobs that are delayed or prioritized, and jobs that a live worker holds.
-2. It restores the `bullmq-worker` Deployment to read the original queue `orders`. Kubernetes restarts the pod again.
+2. It restarts the `bullmq-worker` pod with the original queue `orders`.
 3. It deletes the Redis keys of the main temporary queue.
 
 To limit the wait in step 1, set `spec.drainTimeout` in seconds on the `MirrordSplitConfig`. When the wait ends with unfinished jobs in the main queue, the operator does not delete that queue. It deletes the queue later, when no job in it is unfinished. The `Drained` condition in the status of the `MirrordSplitConfig` names each queue that the operator keeps:
@@ -470,16 +499,25 @@ To limit the wait in step 1, set `spec.drainTimeout` in seconds on the `MirrordS
 kubectl -n bullmq-demo get mirrordsplitconfig worker-split -o yaml
 ```
 
+The `phase` field in the status is `active` while a session runs, `draining` during the steps above, and `inactive` at the end. Wait for the `inactive` phase:
+
+```bash
+kubectl -n bullmq-demo wait mirrordsplitconfig/worker-split \
+  --for=jsonpath='{.status.phase}'=inactive --timeout=600s
+```
+
 Send one more job. The restored deployed worker gets it from `orders`:
 
 ```bash
-kubectl -n bullmq-demo rollout status deploy/bullmq-worker
 kubectl -n bullmq-demo exec deploy/bullmq-worker -c worker -- node /app/producer.js alice 1
+kubectl -n bullmq-demo logs deploy/bullmq-worker
 ```
+
+The restored pod reads `orders` again. When the pod is still in the `npm install` step, the job waits in `orders` until the worker starts.
 
 ## How it works
 
-When the first session starts, the operator creates a temporary main queue for the deployed worker and patches `BULLMQ_QUEUE` in the workload to point to it. It also creates one temporary queue for each session and gives that name to the local worker. A forwarder in the operator takes each job ID from the wait list of the original queue (`bull:orders:wait`). It reads the `data` field of the job hash as JSON, applies the filters of the sessions, and adds the job to the queue of the matching session. A job that no filter matches goes to the main queue. Producers do not change, and they continue to write to `orders`.
+When the first session starts, the operator creates a temporary main queue for the deployed worker. It restarts the pods of the workload with `BULLMQ_QUEUE` set to this queue. It also creates one temporary queue for each session and gives that name to the local worker. A forwarder in the operator takes each job ID from the wait list of the original queue (`bull:orders:wait`). It reads the `data` field of the job hash as JSON, applies the filters of the sessions, and adds the job to the queue of the matching session. A job that no filter matches goes to the main queue. Producers do not change, and they continue to write to `orders`.
 
 ```mermaid
 flowchart LR
@@ -500,12 +538,14 @@ flowchart LR
 - **Jobs with data that is not JSON go to the deployed worker.** They never match `message_filter` or `jq_filter`.
 - **When you set both filters, both must match.** A job goes to your session only when the `message_filter` and the `jq_filter` both match it.
 - **Steal is the default.** A matched job goes only to your local worker. With `"queue_mode": "mirror"`, a matched job goes to your local worker, and a copy goes to the deployed worker.
-- **The workload restarts twice.** The operator patches the Deployment when the first session starts, and it restores the Deployment after the last session ends.
+- **The workload restarts twice.** The operator restarts the pods when the first session starts, and again after the last session ends. The Deployment spec does not change, so `kubectl rollout status` does not show these restarts.
+- **Jobs can arrive up to 5 seconds late, and a batch runs newest-first.** See step 4 of the session.
 - **The queue name must come from the pod spec.** The operator reads `BULLMQ_QUEUE` only when the value is in the pod template (`value`, or `valueFrom` with a ConfigMap reference) or comes from a ConfigMap with `envFrom`. A mounted config file is also supported. See the queue splitting overview.
 - **The forwarder has tuning values.** With a `queueConfig` property list on the queue entry, you can set `dequeue_timeout` (seconds that the forwarder waits for a new job before it tries again, default `5`) and `jq_time_limit` (milliseconds for each jq evaluation, default `200`). A jq filter that goes over its time limit stops the session.
 
-<!-- TODO: confirm job order. The reference page does not say if the forwarder keeps the FIFO order of the original queue. -->
-<!-- TODO: confirm what happens to delayed and prioritized jobs that a producer adds to the original queue while a split runs. The reference page says that the forwarder reads the wait list. -->
+- **Delayed and prioritized jobs do not split.** The forwarder reads only the wait list of `orders`. A job that a producer adds with a `delay` or `priority` option during a split stays in `orders`, and no worker processes it. After the last session ends, the restored deployed worker processes it, also when its data matches your filter.
+
+<!-- TODO: product issue. Delayed and prioritized jobs that a producer adds to the original queue during a split stay in bull:orders:delayed and bull:orders:prioritized until the split ends (observed with operator 3.237.0). Update this item if the forwarder starts to route them. -->
 
 ## Adapt this to your stack
 
@@ -534,7 +574,7 @@ kubectl delete namespace bullmq-demo
 Delete the local directories:
 
 ```bash
-rm -rf bullmq-local
+rm -rf bullmq-local bullmq-local-bob
 ```
 
 If you used queue splitting on a Redis instance that you keep, look for temporary keys that remain:
@@ -567,7 +607,7 @@ Yes. Each session gets its own temporary queue, and the operator applies all fil
 
 ### How does my local worker know which session a job belongs to?
 
-When the operator setting `operator.injectSessionKeyHeader` is on, the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. A job whose data is not a JSON object goes to your session without the field.
+When the operator setting `operator.injectSessionKeyHeader` is on (the default), the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. A job whose data is not a JSON object goes to your session without the field.
 
 ## See also
 

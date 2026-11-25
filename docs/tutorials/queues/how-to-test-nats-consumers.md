@@ -49,11 +49,10 @@ Before you start, make sure that you have these items:
 
 The cluster pods must have access to PyPI, because the pods install `nats-py` when they start.
 
-Enable NATS JetStream splitting in the operator Helm chart:
+Enable NATS JetStream splitting in the operator Helm chart. Run this command in the kube context and namespace where you installed the operator release:
 
 ```shell
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord \
   --reuse-values \
   --set operator.natsSplitting=true
 ```
@@ -275,6 +274,8 @@ kubectl wait -n nats-demo --for=condition=complete job/orders-setup --timeout=18
 
 Save this manifest as `consumer.yaml`. The stream and consumer names are in the environment variables `NATS_STREAM` and `NATS_CONSUMER`, with values set directly in the pod template. The operator can read and change these variables.
 
+The value `terminationGracePeriodSeconds: 5` makes an old pod stop quickly when the operator restarts the pods. The consumer runs as PID 1 and does not stop on `SIGTERM`. Without this value, an old pod reads the original consumer for 30 seconds after a session starts.
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -291,6 +292,7 @@ spec:
       labels:
         app: order-processor
     spec:
+      terminationGracePeriodSeconds: 5
       containers:
         - name: consumer
           image: python:3.12-slim
@@ -427,7 +429,15 @@ mirrord gives your local process the environment of the target pod, and the oper
 reading stream=mirrord-tmp-<random>-order-processor consumer=mirrord-tmp-<random>-order-processor-consumer
 ```
 
-When the first session starts, the operator also changes the environment variables of the deployment to the main-output stream and consumer. This restarts the deployed pods. Stop the `kubectl logs` command and start it again for the new pod:
+When the first session starts, the operator also restarts the deployed pods with the names of the main-output stream and consumer. The operator sets these values in the new pods. The Deployment manifest does not change.
+
+Make sure that only one `order-processor` pod is in the list before you send messages. An old pod that stops reads the original consumer until it terminates:
+
+```shell
+kubectl get pods -n nats-demo -l app=order-processor
+```
+
+Stop the `kubectl logs` command and start it again for the new pod:
 
 ```shell
 kubectl logs -n nats-demo deployment/order-processor -f
@@ -506,7 +516,13 @@ Press Ctrl+C in each mirrord terminal. When a session ends, the operator deletes
 
 When the last session ends, the deployed consumer continues to read the main-output stream until that stream is empty. Then the operator restores the original `NATS_STREAM` and `NATS_CONSUMER` values, and the deployed pods restart. The operator deletes the main-output stream. Messages that producers publish in this period stay in the original stream, and the deployed consumer reads them after the restart.
 
-Send one more order to confirm the result:
+The restart takes about 30 seconds. Make sure that only one `order-processor` pod is in the list:
+
+```shell
+kubectl get pods -n nats-demo -l app=order-processor
+```
+
+Start the `kubectl logs` command again for the new pod. Then send one more order to confirm the result:
 
 ```shell
 kubectl exec -n nats-demo deployment/order-processor -- python /app/producer.py alice 1
@@ -521,7 +537,7 @@ order=alice-1 x-user=alice subject=orders.created
 
 ## How it works
 
-When the first session starts, the operator makes a main-output stream and a durable consumer that copy the settings of the originals. It changes the stream and consumer environment variables of the workload to these copies. For each session, the operator makes one more temporary stream and consumer. Then it reads each message through the original durable consumer and republishes the message to `<temporary stream>.<original subject>`. A message that matches a session filter goes to that session stream. A message that matches no filter goes to the main-output stream. The operator acknowledges a message on the original consumer only after JetStream acknowledges the republish.
+When the first session starts, the operator makes a main-output stream and a durable consumer that copy the settings of the originals. It restarts the workload pods with stream and consumer environment variables that point to these copies. For each session, the operator makes one more temporary stream and consumer. Then it reads each message through the original durable consumer and republishes the message to `<temporary stream>.<original subject>`. A message that matches a session filter goes to that session stream. A message that matches no filter goes to the main-output stream. The operator acknowledges a message on the original consumer only after JetStream acknowledges the republish.
 
 ```mermaid
 flowchart LR
@@ -545,7 +561,7 @@ The operator records each temporary resource in a `MirrordClusterExternalResourc
 - **Steal is the default mode.** In `steal` mode, a message that matches goes only to your session. Set `"queue_mode": "mirror"` in the queue entry to also send a copy to the deployed consumer.
 - **What the filter can match.** `message_filter` matches header values with regexes, and all entries must match. `jq_filter` runs a jq program on a JSON object with the fields `subject`, `headers`, and `payload`. `payload` is the parsed message body when the body is valid JSON, and a string when it is not. For example, `"jq_filter": ".payload.id | startswith(\"alice\")"` matches the orders of `alice` by the body.
 - **Durable pull consumers only.** Each queue entry in the `MirrordSplitConfig` describes one stream and one durable pull consumer. The operator does not split a push consumer. If a workload reads through several consumers, add one queue entry for each consumer.
-- **The deployed pods restart.** The operator changes the environment variables of the workload when the first session starts and when the split ends. Each change restarts the pods.
+- **The deployed pods restart.** The operator restarts the workload pods with new environment variable values when the first session starts and when the split ends. The workload manifest does not change.
 - **The names must be in environment variables or files.** The operator reads environment variables only when they are set in the pod template (with `value`, or with `valueFrom` from a ConfigMap) or loaded from a ConfigMap with `envFrom`. Names in mounted config files are also supported.
 - **Temporary streams copy the source settings.** They copy retention, acknowledgement wait, and replicas from the source stream and consumer. To change these values, see [Configuring temporary streams](../../sharing-the-cluster/queue-splitting/nats.md#configuring-temporary-streams). A higher `ack_wait_seconds` gives you more time on a breakpoint before JetStream sends the message again.
 
@@ -586,7 +602,6 @@ To turn off NATS splitting in the operator:
 
 ```shell
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord \
   --reuse-values \
   --set operator.natsSplitting=false
 ```

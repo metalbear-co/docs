@@ -44,11 +44,9 @@ You need these items before you start:
 - A GKE cluster with Workload Identity enabled. Queue splitting needs Kubernetes `1.30` or later.
 - A GCP project with the Pub/Sub API enabled, and permission to create service accounts and IAM bindings in it.
 - `gcloud`, `kubectl`, and `helm` on your machine.
-- Python 3.9 or later on your machine.
+- Python 3.10 or later on your machine. The `google-cloud-pubsub` client needs Python 3.10 or later.
 - mirrord CLI `3.221.0` or later.
 - The mirrord operator `3.170.0` or later, installed with Helm, with a Team or Enterprise license.
-
-<!-- TODO: confirm the minimum Python version that the google-cloud-pubsub client supports today. -->
 
 Set these shell variables. The commands in this tutorial use them.
 
@@ -92,14 +90,13 @@ gcloud iam service-accounts add-iam-policy-binding \
 
 ### Step 3: Enable Pub/Sub splitting in the operator
 
-Set two Helm values on your operator release:
+Set two Helm values on your operator release. The commands use the default install: the release `mirrord-operator` is in the namespace of your kube context, usually `default`. If your release is in a different namespace, add `--namespace` with that namespace.
 
 - `operator.gcpPubsubSplitting=true` enables Pub/Sub splitting and installs the `MirrordSplitConfig` CRD.
 - `sa.gcpSa` adds the `iam.gke.io/gcp-service-account` annotation to the operator's service account.
 
 ```bash
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord \
   --reuse-values \
   --set operator.gcpPubsubSplitting=true \
   --set sa.gcpSa="mirrord-operator@$PROJECT_ID.iam.gserviceaccount.com"
@@ -115,6 +112,8 @@ kubectl get crd mirrordsplitconfigs.queues.mirrord.metalbear.co
 
 {% hint style="info" %}
 If your cluster does not use Workload Identity, give the operator a service account JSON key instead. Put the key in a Secret, and add a `credentials_json` property that refers to it in the `MirrordPropertyList` of step 6. See [Option B in the reference page](../../sharing-the-cluster/queue-splitting/gcp-pubsub.md#enabling-gcp-pub-sub-splitting-in-your-cluster).
+
+The deployed consumer then also needs a key. Mount it from a Secret, and set `GOOGLE_APPLICATION_CREDENTIALS` to the path of the file. Your local process gets this variable from the target, but the file is not on your machine. Thus, add `"env": {"exclude": "GOOGLE_APPLICATION_CREDENTIALS"}` under `feature` in `mirrord.json`, so that the local process uses your own credentials.
 {% endhint %}
 
 ### Step 4: Give the deployed consumer access to Pub/Sub
@@ -183,7 +182,7 @@ kubectl create configmap consumer-code -n "$NAMESPACE" --from-file=consumer.py
 
 ### Step 6: Deploy the consumer and the mirrord resources
 
-Save this file as `demo.yaml`. Replace `my-gcp-project` with your project ID in all four places.
+Save this file as `demo.yaml`. Replace `my-gcp-project` with your project ID in all three places.
 
 ```yaml
 apiVersion: v1
@@ -294,13 +293,13 @@ gcloud pubsub topics publish orders --project "$PROJECT_ID" --message '{"order_i
 gcloud pubsub topics publish orders --project "$PROJECT_ID" --message '{"order_id": 3}'
 ```
 
-The deployed consumer gets all three messages. Pub/Sub does not guarantee the order of delivery, so the lines can come in a different order:
+The pod installs the Pub/Sub client when it starts. Thus, the first line can come about one minute after the rollout completes, after some `pip` warnings. The deployed consumer gets all three messages. Pub/Sub does not guarantee the order of delivery, so the lines can come in a different order:
 
 ```text
 [deployed] reading from projects/my-gcp-project/subscriptions/orders-sub
 [deployed] order_id=1 user=alice
-[deployed] order_id=2 user=bob
 [deployed] order_id=3 user=-
+[deployed] order_id=2 user=bob
 ```
 
 ## Create sessions and test
@@ -314,7 +313,7 @@ pip install google-cloud-pubsub
 gcloud auth application-default login
 ```
 
-<!-- TODO: confirm which Google identity the local process must use during a split session, and which Pub/Sub permissions it needs on the `mirrord-tmp-` subscriptions. The reference page does not say. -->
+The local process uses your Application Default Credentials, not the identity of the deployed consumer. Your identity needs permission to consume from the `mirrord-tmp-` subscriptions. The `roles/pubsub.subscriber` role on the project is enough.
 
 ### Step 2: Write the mirrord config
 
@@ -364,10 +363,14 @@ mirrord exec -f mirrord.json -- python consumer.py
 The local consumer reads from a temporary subscription, not from `orders-sub`:
 
 ```text
-[local] reading from projects/my-gcp-project/subscriptions/mirrord-tmp-...
+[local] reading from projects/my-gcp-project/subscriptions/mirrord-tmp-<random>-orders-sub-sub
 ```
 
-The deployed consumer restarts, and it also reads from a temporary subscription. Run `kubectl logs -f` again to follow the new pod.
+The deployed consumer restarts, and it also reads from a temporary subscription. Run `kubectl logs -f` again to follow the new pod:
+
+```text
+[deployed] reading from projects/my-gcp-project/subscriptions/mirrord-tmp-<random>-main-orders-sub-sub
+```
 
 ### Step 4: Send messages with and without the attribute
 
@@ -427,6 +430,8 @@ Keep the first session open. In a new terminal, start a second session:
 mirrord exec -f mirrord-bob.json -- python consumer.py bob
 ```
 
+The deployed consumer does not restart for the second session.
+
 Publish the three messages again (`order_id` 7, 8, and 9, with `alice`, `bob`, and no attribute). Each consumer gets its part:
 
 ```text
@@ -443,9 +448,9 @@ If the filters of two sessions both match a message, the operator sends the mess
 
 Press `Ctrl+C` in each terminal that runs `mirrord exec`.
 
-When the last session ends, the operator puts back the original subscription name in the deployed consumer, so the deployed consumer reads from `orders-sub` again. The pods restart for this change. Before the operator deletes the temporary subscription of the deployed consumer, it reads it, to make sure that no message in it is left unread. If messages are left, the operator keeps the subscription until it is empty. The `spec.drainTimeout` field of the `MirrordSplitConfig` sets a limit, in seconds, for this wait. Without it, the operator waits until all messages are drained.
+When a session ends and other sessions continue, the operator deletes the temporary topic and subscription of that session in a few seconds. Messages that are still unread in that subscription are deleted with it. They do not go to the deployed consumer.
 
-<!-- TODO: confirm what happens to messages that are still in a local session's temporary subscription when that session ends. The reference page does not say. -->
+When the last session ends, the operator puts back the original subscription name in the deployed consumer, so the deployed consumer reads from `orders-sub` again. The pods restart for this change. This can take about one minute. Before the operator deletes the temporary subscription of the deployed consumer, it reads it, to make sure that no message in it is left unread. If messages are left, the operator keeps the subscription until it is empty. The `spec.drainTimeout` field of the `MirrordSplitConfig` sets a limit, in seconds, for this wait. Without it, the operator waits until all messages are drained.
 
 Publish one more message. The deployed consumer gets it from `orders-sub`:
 
@@ -534,7 +539,7 @@ gcloud projects remove-iam-policy-binding "$PROJECT_ID" \
 gcloud iam service-accounts delete "mirrord-operator@$PROJECT_ID.iam.gserviceaccount.com" --project "$PROJECT_ID"
 
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord --reuse-values \
+  --reuse-values \
   --set operator.gcpPubsubSplitting=false \
   --set sa.gcpSa=null
 ```
@@ -564,7 +569,7 @@ The Pub/Sub reference page does not document a setup with the emulator. This tut
 
 **Why did my deployed consumer restart when I started a mirrord session?**
 
-The operator changes the subscription environment variable of the deployed consumer to point at a temporary subscription. A change to the pod template restarts the pods. The pods restart again when the last session ends and the operator puts back the original value.
+The operator changes the subscription environment variable of the deployed consumer to point at a temporary subscription. The Deployment spec does not change: the operator restarts the pods and sets the new value in the new pods. The pods restart again when the last session ends and the operator puts back the original value.
 
 ## See also
 

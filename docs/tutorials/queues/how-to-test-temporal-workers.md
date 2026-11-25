@@ -199,8 +199,10 @@ Apply the manifest and wait for the server:
 
 ```bash
 kubectl apply -f temporal.yaml
-kubectl -n temporal-demo rollout status deployment/temporal --timeout=5m
+kubectl -n temporal-demo rollout status deployment/temporal --timeout=10m
 ```
+
+The first start can take some minutes, because the cluster pulls the Postgres and Temporal images.
 
 ### Step 2: Write the worker
 
@@ -322,6 +324,18 @@ kubectl -n temporal-demo rollout status deployment/orders-worker
 
 If the worker starts before the server creates the `default` Temporal namespace, the pod can restart one time. This is normal.
 
+The rollout finishes before `pip` installs the SDK. Look at the logs of the worker:
+
+```bash
+kubectl -n temporal-demo logs deployment/orders-worker --tail=1
+```
+
+Wait until the worker prints the `polling` line:
+
+```
+polling task_queue=orders address=temporal-frontend.temporal-demo.svc.cluster.local:7233
+```
+
 ### Step 4: Create the mirrord resources
 
 Save this manifest as `split.yaml`:
@@ -425,12 +439,12 @@ Look at the logs of the deployed worker:
 kubectl -n temporal-demo logs deployment/orders-worker --tail=5
 ```
 
-The deployed worker processes all three workflows:
+The deployed worker processes all three workflows. The order of the lines can change:
 
 ```
 processed workflow_id=alice-order-1 customer=alice
-processed workflow_id=bob-order-1 customer=bob
 processed workflow_id=carol-order-1 customer=carol
+processed workflow_id=bob-order-1 customer=bob
 ```
 
 ## Create sessions and test
@@ -556,7 +570,9 @@ If a session ends while the operator holds buffered tasks for it, these tasks go
 
 Press `Ctrl+C` in the terminal of Alice's local worker. After the last session ends, the operator keeps the split resources for the drain timeout, and then removes them. The drain timeout is `0` by default, so the operator removes them immediately. The operator does not wait for in-flight work to finish. To keep the split resources for a time, set `spec.drainTimeout` (in seconds) on the `MirrordSplitConfig`. A new session in that time uses the same resources.
 
-<!-- TODO: confirm that the deployed worker pod restarts again with the original TEMPORAL_ADDRESS and TEMPORAL_TASK_QUEUE values when the split is torn down. The reference page does not say this directly. -->
+When the operator removes the split resources, the deployed worker pod restarts again. The new pod has the original `TEMPORAL_ADDRESS` and `TEMPORAL_TASK_QUEUE` values, and polls the real task queue `orders`.
+
+<!-- TODO: the session steps (Create sessions and test, Steps 2 to 5) were not verified end to end. The test cluster was CPU-saturated and the session could not start. The restore behavior above was observed after the operator tore down a split when a session failed to start. Run Steps 2 to 5 again on a healthy cluster and replace the expected output with the real output. -->
 
 ## How it works
 

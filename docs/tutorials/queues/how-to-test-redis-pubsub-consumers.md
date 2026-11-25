@@ -183,17 +183,29 @@ spec:
       labels:
         app: redis-consumer
     spec:
+      # The consumer does not handle SIGTERM. A short grace period stops an old pod quickly.
+      terminationGracePeriodSeconds: 1
       containers:
         - name: consumer
           image: python:3.12-slim
           command: ["sh", "-c"]
           args:
-            - pip install --quiet redis==5.0.8 && python -u /app/consumer.py
+            - pip install --quiet --root-user-action=ignore --disable-pip-version-check redis==5.0.8 && python -u /app/consumer.py
           env:
             - name: REDIS_URL
               value: redis://redis.redis-demo.svc.cluster.local:6379
             - name: REDIS_CHANNEL
               value: notifications
+          # The pod becomes ready when a client subscribes to the channel in REDIS_CHANNEL.
+          startupProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - import os, redis; c = redis.Redis.from_url(os.environ["REDIS_URL"]); exit(0 if c.pubsub_numsub(os.environ["REDIS_CHANNEL"])[0][1] > 0 else 1)
+            periodSeconds: 2
+            timeoutSeconds: 10
+            failureThreshold: 90
           volumeMounts:
             - name: code
               mountPath: /app
@@ -204,6 +216,8 @@ spec:
 ```
 
 The consumer uses a public Python image and gets the script from a ConfigMap, so you do not build an image. The container installs the `redis` package when it starts, so the cluster must have network access to PyPI.
+
+The startup probe asks Redis if a client subscribes to the channel. Thus `kubectl rollout status` and the mirrord operator wait until the consumer can get messages. Do not use a readiness probe for this check. If a readiness probe fails one time during a session, the operator stops the mirrord agent and your session ends. Without the probe, the pod is ready while `pip` runs, and Redis drops the first messages. The short `terminationGracePeriodSeconds` stops the old pod quickly when the operator starts a new pod. Without it, the old pod reads the original channel for 30 more seconds and prints duplicate messages.
 
 {% hint style="info" %}
 The `REDIS_CHANNEL` value is in the pod template with `value`. The operator can read environment variables that are set with `value`, with `valueFrom` from a ConfigMap, or with `envFrom` from a ConfigMap.
@@ -342,20 +356,27 @@ The config has these parts:
 mirrord exec -f alice.json -- python consumer.py local-alice
 ```
 
-mirrord starts a queue splitting session. The local consumer gets the environment of the deployed pod. The operator sets `REDIS_CHANNEL` to a temporary channel for your session. The local consumer prints a line similar to this one:
+mirrord starts a queue splitting session. First, the operator replaces the `redis-consumer` pod with a new pod. In the new pod, `REDIS_CHANNEL` is a temporary "main" channel. The operator does not change the Deployment, so `kubectl rollout status` does not show this restart. mirrord waits until the new pod is ready. Then your local process starts.
+
+The local consumer gets the environment of the deployed pod. The operator sets `REDIS_CHANNEL` to a temporary channel for your session. The local consumer prints a line similar to this one:
 
 ```
 [local-alice] subscribed to channel=mirrord-tmp-<random>-notifications
 ```
 
-At the same time, the operator changes `REDIS_CHANNEL` in the `redis-consumer` Deployment to a temporary "main" channel. This change of the pod template starts a new pod. Wait for the new pod:
+In the second terminal, make sure that only one consumer pod runs:
 
 ```bash
-kubectl -n redis-demo rollout status deployment/redis-consumer
+kubectl -n redis-demo get pods -l app=redis-consumer
+```
+
+```
+NAME                             READY   STATUS    RESTARTS   AGE
+redis-consumer-<random>          1/1     Running   0          30s
 ```
 
 {% hint style="warning" %}
-Redis drops a message when the channel has no subscriber. Wait until the local consumer prints its `subscribed` line and the rollout is complete. Then send test messages. If you send messages before that time, some of them can be lost or can go to the old pod.
+Redis drops a message when the channel has no subscriber. Wait until the local consumer prints its `subscribed` line and only one consumer pod runs. Then send test messages. If you send messages before that time, some of them can be lost or can go to the old pod.
 {% endhint %}
 
 Follow the logs of the new deployed pod again:
@@ -383,8 +404,10 @@ send '{"user": "carol", "order_id": 6}'
 The local consumer prints only the message for `alice`:
 
 ```
-[local-alice] user=alice payload={"user": "alice", "order_id": 4}
+[local-alice] user=alice payload={"user":"alice","order_id":4,"mirrord-key":"<random>"}
 ```
+
+The operator adds a `mirrord-key` field with your session key to the payload. The operator also writes the JSON again without spaces.
 
 The deployed consumer prints the other two messages:
 
@@ -406,7 +429,7 @@ The filter cannot match a payload that is not JSON. The message goes to the depl
 ```
 
 {% hint style="info" %}
-If the operator has session key injection on (Helm value `operator.injectSessionKeyHeader`), the copy that reaches your local consumer has an extra `mirrord-key` field in its JSON payload. The message that the deployed consumer gets does not change.
+The Helm value `operator.injectSessionKeyHeader` controls the `mirrord-key` field. The default is `true`. If you set it to `false`, the operator does not add the field. The message that the deployed consumer gets does not change.
 {% endhint %}
 
 ### Step 4: Add a second developer
@@ -452,10 +475,12 @@ send '{"user": "carol", "order_id": 9}'
 Each copy prints one message:
 
 ```
-[local-alice] user=alice payload={"user": "alice", "order_id": 7}
-[local-bob] user=bob payload={"user": "bob", "order_id": 8}
+[local-alice] user=alice payload={"user":"alice","order_id":7,"mirrord-key":"<random>"}
+[local-bob] user=bob payload={"user":"bob","order_id":8,"mirrord-key":"<random>"}
 [deployed] user=carol payload={"user": "carol", "order_id": 9}
 ```
+
+The second session does not restart the deployed consumer. Only the first session does.
 
 {% hint style="warning" %}
 Make sure that the filters of two sessions do not match the same messages. If two filters match one message, the operator gives the message to only one of the two sessions, and you cannot know which one.
@@ -463,12 +488,17 @@ Make sure that the filters of two sessions do not match the same messages. If tw
 
 ### Step 5: Stop the sessions
 
-Stop the `bob` session with `Ctrl+C`. The operator removes the `bob` filter. Messages for `bob` go to the deployed consumer again. The `alice` session continues.
+Stop the `bob` session with `Ctrl+C`. The `alice` session continues. The operator removes the `bob` filter when the session expires, about 30 seconds later. Then messages for `bob` go to the deployed consumer again. Before that time, the operator sends `bob` messages to the old `bob` channel, and Redis drops them.
 
-Stop the `alice` session with `Ctrl+C`. This is the last session on the target. The operator changes `REDIS_CHANNEL` in the Deployment back to `notifications`, and Kubernetes starts a new pod. Check the rollout:
+Stop the `alice` session with `Ctrl+C`. This is the last session on the target. The operator replaces the consumer pod with a pod that reads `notifications` again. This can take some minutes. Check the phase of the split:
 
 ```bash
-kubectl -n redis-demo rollout status deployment/redis-consumer
+kubectl -n redis-demo get mirrordsplitconfig redis-consumer-split
+```
+
+The phase goes from `active` to `draining` to `inactive`. When the phase is `inactive`, read the logs of the new pod:
+
+```bash
 kubectl -n redis-demo logs deployment/redis-consumer
 ```
 
@@ -482,7 +512,7 @@ Redis does not keep messages, so there are no buffered messages to move. A messa
 
 ## How it works
 
-When the first session starts, the operator creates a temporary main channel for the deployed workload and changes the channel environment variable of the workload to that channel. The operator then subscribes to the original channel with the same command as the application (`SUBSCRIBE`, `PSUBSCRIBE`, or `SSUBSCRIBE`). For each message, the operator checks the session filters. A message that matches a filter goes to the temporary channel of that session. All other messages go to the main channel. Redis creates channels when a message is published, so there are no Redis objects to delete after the sessions end.
+When the first session starts, the operator creates a temporary main channel for the deployed workload. It replaces the pods of the workload with pods whose channel environment variable is that channel. The operator then subscribes to the original channel with the same command as the application (`SUBSCRIBE`, `PSUBSCRIBE`, or `SSUBSCRIBE`). For each message, the operator checks the session filters. A message that matches a filter goes to the temporary channel of that session. All other messages go to the main channel. Redis creates channels when a message is published, so there are no Redis objects to delete after the sessions end.
 
 ```mermaid
 flowchart LR
@@ -503,9 +533,9 @@ flowchart LR
 * **All entries in `message_filter` must match.** The local consumer gets a message only if each field in the map matches its regex.
 * **Steal or mirror.** In the default `steal` mode, a message that matches goes only to your local consumer. With `"queue_mode": "mirror"`, the message also goes to the deployed consumer, so both process a copy.
 * **Filters that overlap.** If the filters of two sessions match the same message, only one session gets it, and the choice is random.
-* **No buffer.** Redis Pub/Sub does not store messages. A message published when the target channel has no subscriber is lost. This applies during a rollout of the deployed consumer and before your local consumer subscribes.
+* **No buffer.** Redis Pub/Sub does not store messages. A message published when the target channel has no subscriber is lost. This applies while the operator replaces the deployed consumer pod, before your local consumer subscribes, and until the operator removes the filter of a session that stopped.
 * **Extra hop.** Each message goes through the operator before it reaches a consumer. This adds a small delay. <!-- TODO: confirm whether the docs give a latency figure or an ordering guarantee for Redis Pub/Sub splitting -->
-* **The workload restarts.** The operator changes the pod template of the target when the first session starts and when the last session ends. Each change starts new pods.
+* **The workload restarts.** The operator replaces the pods of the target when the first session starts and when the last session ends. It does not change the pod template, so `kubectl rollout status` does not show these restarts.
 * **Supported subscribe types.** The operator supports exact channels (`SUBSCRIBE`), glob patterns (`PSUBSCRIBE`), and sharded channels (`SSUBSCRIBE`, Redis 7 and later).
 * **Supported workloads.** The `MirrordSplitConfig` target can be a `Deployment`, a `StatefulSet`, or a `Rollout`.
 

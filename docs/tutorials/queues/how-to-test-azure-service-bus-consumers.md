@@ -41,13 +41,14 @@ Before you start, make sure that you have these items:
 3. The Azure CLI (`az`), logged in to a subscription where you can create resources.
 4. Python 3.9 or later on your machine.
 5. The mirrord CLI, version `3.221.0` or later.
-6. The mirrord operator, version `3.170.0` or later, installed with a license. <!-- TODO: confirm the minimum Python version that the current azure-servicebus SDK supports -->
+6. The mirrord operator, version `3.170.0` or later, installed with a license.
 
-Enable Azure Service Bus splitting in the operator Helm chart:
+The `azure-servicebus` SDK (version 7.15) needs Python 3.9 or later.
+
+Enable Azure Service Bus splitting in the operator Helm chart. Run the command in the namespace where you installed the operator release (usually `default`):
 
 ```shell
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord \
   --reuse-values \
   --set operator.azureServiceBusSplitting=true
 ```
@@ -117,7 +118,9 @@ az role assignment create \
 Then put only `fully_qualified_namespace` in the `MirrordPropertyList` (see Step 4). The operator uses `DefaultAzureCredential`. A service principal with a client secret is a third option. The [Azure Service Bus reference page](../../sharing-the-cluster/queue-splitting/azure-service-bus.md) shows all three forms.
 {% endhint %}
 
-<!-- TODO: confirm the operator Helm values (service account annotation, pod label) that attach an AKS Workload Identity to the operator pod for Service Bus. The reference page does not give them. -->
+To attach the identity to the operator pod, set `sa.azureClientId` to the client ID of the managed identity in the operator Helm values. The chart then adds the `azure.workload.identity/use` pod label and the `azure.workload.identity/client-id` service account annotation.
+
+<!-- TODO: confirm with a run on AKS that `sa.azureClientId` is enough for Service Bus splitting. This run used a kind cluster without Workload Identity. -->
 
 ### Step 3: Deploy the consumer
 
@@ -126,9 +129,13 @@ Save this script as `consumer.py`. It reads the queue name and the connection st
 ```python
 import json
 import os
+import signal
 import sys
 
 from azure.servicebus import ServiceBusClient
+
+# Stop at once when Kubernetes stops the pod. As PID 1, Python ignores SIGTERM by default.
+signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
 
 NAME = sys.argv[1] if len(sys.argv) > 1 else "consumer"
 CONN = os.environ["SERVICE_BUS_CONNECTION_STRING"]
@@ -155,7 +162,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
 ```
 
 Create the Kubernetes namespace, the Secret, and the ConfigMap:
@@ -172,7 +182,7 @@ kubectl create configmap consumer-script \
   --from-file=consumer.py
 ```
 
-Save this manifest as `consumer.yaml`. The container installs the SDK when it starts, then runs the script.
+Save this manifest as `consumer.yaml`. The container installs the SDK when it starts, then runs the script. The `exec` makes Python the main process of the container. Python then gets the stop signal, so the consumer stops immediately when Kubernetes stops the pod.
 
 {% hint style="warning" %}
 The operator can read the queue name only from an environment variable in the pod template, with the value in `value` or in a ConfigMap reference, or from a ConfigMap loaded with `envFrom`. Do not move `SERVICE_BUS_QUEUE_NAME` into a Secret.
@@ -199,7 +209,7 @@ spec:
           image: python:3.12-slim
           command: ["sh", "-c"]
           args:
-            - pip install --quiet azure-servicebus && python -u /app/consumer.py deployed
+            - pip install --quiet --root-user-action=ignore --disable-pip-version-check azure-servicebus && exec python -u /app/consumer.py deployed
           env:
             - name: SERVICE_BUS_QUEUE_NAME
               value: orders
@@ -364,10 +374,18 @@ mirrord exec -f mirrord-alice.json -- python consumer.py alice
 mirrord gives the local process the environment of the deployed pod, so the script gets the connection string from the cluster. The operator changes `SERVICE_BUS_QUEUE_NAME` for your process to the name of a temporary queue that only your session reads. The local consumer prints a name like this:
 
 ```
-[alice] reading queue <temporary queue name>
+[alice] reading queue mirrord-tmp-<random>-orders
 ```
 
-When the first session starts, the operator also changes `SERVICE_BUS_QUEUE_NAME` in the deployed consumer, and the Deployment restarts. Watch the `kubectl logs` terminal. When the log stops, run the `kubectl logs --follow` command again to see the new pod.
+When the first session starts, the operator also changes `SERVICE_BUS_QUEUE_NAME` in the deployed consumer, and the Deployment restarts. Watch the `kubectl logs` terminal. When the log stops, run the `kubectl logs --follow` command again to see the new pod. The new pod reads its own temporary queue:
+
+```
+[deployed] reading queue mirrord-tmp-<random>-main-orders
+```
+
+{% hint style="warning" %}
+Wait until the old pod is gone before you send messages. Until it stops, the old pod still reads the `orders` queue and can take messages for your session. Make sure that `kubectl get pods --namespace sb-demo` shows only one pod.
+{% endhint %}
 
 ### Step 3: Send messages with and without the property
 
@@ -450,7 +468,25 @@ If the filters of two sessions both match a message, the operator gives the mess
 
 ### Step 5: Stop the sessions
 
-Press `Ctrl+C` in the `bob` terminal. The operator stops the routing to bob's temporary queue and deletes that queue. Messages that are still in that queue are lost. After that, messages with `user=bob` match no filter, so they go to the deployed consumer:
+Press `Ctrl+C` in the `bob` terminal. The operator does not stop the routing immediately. About 30 seconds after you stop the session, the operator ends it. About one minute after that, it deletes bob's temporary queue. The messages that are still in that queue are lost. This includes the `bob` messages that you send before the operator deletes the queue.
+
+Wait until bob's temporary queue is gone. This command must show only `orders` and the two temporary queues of the `alice` session:
+
+```shell
+az servicebus queue list \
+  --resource-group "$RG" \
+  --namespace-name "$SB_NAMESPACE" \
+  --query "[].name" \
+  --output tsv
+```
+
+```
+mirrord-tmp-<random>-main-orders
+mirrord-tmp-<random>-orders
+orders
+```
+
+Messages with `user=bob` now match no filter, so they go to the deployed consumer:
 
 ```shell
 python producer.py bob 1 60
@@ -461,6 +497,14 @@ python producer.py bob 1 60
 ```
 
 Press `Ctrl+C` in the `alice` terminal. This is the last session on the queue. The operator then waits for the deployed consumer to read all messages in its temporary queue. It waits up to `drainTimeout` (60 seconds in this demo). After that, it deletes the temporary queues and puts the deployed consumer back on the `orders` queue.
+
+The Deployment restarts again. Run the `kubectl logs --follow` command again. The new pod reads the original queue:
+
+```
+[deployed] reading queue orders
+```
+
+The `az servicebus queue list` command from above now shows only `orders`.
 
 If you do not set `drainTimeout`, the operator waits until the temporary queue of the deployed consumer is empty. If you set `drainTimeout: 0`, the operator deletes the temporary queues immediately, and unread messages can be lost. Scheduled messages keep the drain open until they are due and the deployed consumer reads them. Deferred messages do not keep the drain open.
 
@@ -519,7 +563,6 @@ To turn off Azure Service Bus splitting in the operator:
 
 ```shell
 helm upgrade mirrord-operator metalbear/mirrord-operator \
-  --namespace mirrord \
   --reuse-values \
   --set operator.azureServiceBusSplitting=false
 ```
@@ -540,7 +583,7 @@ Yes. In the Topic/Subscription model, the operator adds temporary subscriptions 
 
 ### What happens to my messages when I stop mirrord?
 
-The operator deletes your session queue, and messages that are still in it are lost. New messages that match your filter go to the deployed consumer. After the last session ends, the operator drains the temporary queue of the deployed consumer before it deletes the temporary queues.
+About 30 seconds after you stop mirrord, the operator ends the session. It deletes your session queue about one minute later, and messages that are still in it are lost. New messages that match your filter go to the deployed consumer. After the last session ends, the operator drains the temporary queue of the deployed consumer before it deletes the temporary queues.
 
 ### Can the operator use Workload Identity instead of a connection string?
 
