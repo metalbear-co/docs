@@ -107,7 +107,7 @@ export SB_CONN=$(az servicebus namespace authorization-rule keys list \
 ```
 
 {% hint style="info" %}
-**Workload Identity instead of a key.** On AKS with Workload Identity, the operator can use its managed identity, and you store no key. Get the client ID of the managed identity:
+**Workload Identity instead of a key.** On AKS with Workload Identity, the operator can use its managed identity, and you store no key for the operator. Workload Identity applies only to the operator. The demo consumer in this tutorial still uses the connection string from Step 2. Get the client ID of the managed identity:
 
 ```shell
 export OPERATOR_IDENTITY_CLIENT_ID=$(az identity show \

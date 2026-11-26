@@ -49,12 +49,20 @@ On your laptop, you use two scripts: `worker.py` (the same worker code) and `sta
 * The mirrord CLI, version `3.221.0` or later.
 * The mirrord operator, version `3.198.0` or later, with a mirrord for Teams license. The operator must have the `operator.temporalSplitting` Helm value set to `true`.
 
-To install or upgrade the operator with Temporal splitting, run this command. Replace `<LICENSE_KEY>` with your license key.
+If the operator is not installed, install it with Temporal splitting. Replace `<LICENSE_KEY>` with your license key.
 
 ```bash
 helm repo add metalbear https://metalbear-co.github.io/charts
-helm upgrade --install mirrord-operator metalbear/mirrord-operator \
+helm install mirrord-operator metalbear/mirrord-operator \
   --set license.key=<LICENSE_KEY> \
+  --set operator.temporalSplitting=true
+```
+
+If the operator is already installed, keep its current values and turn on Temporal splitting:
+
+```bash
+helm upgrade mirrord-operator metalbear/mirrord-operator \
+  --reuse-values \
   --set operator.temporalSplitting=true
 ```
 

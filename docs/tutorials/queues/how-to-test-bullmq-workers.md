@@ -57,7 +57,13 @@ helm install mirrord-operator metalbear/mirrord-operator \
   --set operator.bullmqSplitting=true
 ```
 
-If the operator is already installed, add `--set operator.bullmqSplitting=true` to your `helm upgrade` command.
+If the operator is already installed, keep its current values and turn on BullMQ splitting:
+
+```bash
+helm upgrade mirrord-operator metalbear/mirrord-operator \
+  --reuse-values \
+  --set operator.bullmqSplitting=true
+```
 
 Make sure that the `MirrordSplitConfig` CRD is in the cluster:
 
@@ -601,7 +607,7 @@ Yes. Each session gets its own temporary queue, and the operator applies all fil
 
 ### How does my local worker know which session a job belongs to?
 
-When the operator setting `operator.injectSessionKeyHeader` is on (the default), the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. A job whose data is not a JSON object goes to your session without the field.
+When the operator setting `operator.injectSessionKeyHeader` is on (the default), the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. The operator adds the field only when the data is a JSON object. A filter on a top-level field, such as `tenant` in this tutorial, does not match data that is not a JSON object. Such a job goes to the deployed worker.
 
 ## See also
 
