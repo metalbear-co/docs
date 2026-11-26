@@ -12,8 +12,6 @@ The word "queue" on this page refers to a Temporal task queue.
 
 {% hint style="info" %}
 Queue splitting for Temporal requires mirrord operator `3.170.0` or later and mirrord CLI `3.221.0` or later.
-
-Workers built on sdk-core (Python, TypeScript, and .NET) need operator `3.198.0` or later to schedule activities on a split task queue.
 {% endhint %}
 
 ## How It Works
