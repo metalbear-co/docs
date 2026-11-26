@@ -235,10 +235,6 @@ When the split ends, the operator does not delete a temporary queue that still h
 When one session ends and other sessions continue, the operator deletes the temporary queue of that session. Messages that the local consumer did not read are lost. They do not go back to the deployed consumer.
 {% endhint %}
 
-{% hint style="info" %}
-`spec.ttl` requires mirrord operator `3.194.0` or later. Keeping a temporary queue that still holds messages requires operator `3.213.0` or later.
-{% endhint %}
-
 ## Temporary queue names
 
 By default, temporary queues are named `mirrord-<random>-<original>` for user queues and `mirrord-main-<random>-<original>` for the queue the patched workload reads, where `<original>` is the name of the original queue. To use a different format, set `spec.tmpNameTemplate` in the `MirrordSplitConfig`:
