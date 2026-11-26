@@ -242,8 +242,6 @@ Temporal supports `steal` only. Temporal hands each task to exactly one worker p
 
 A `mirror` request - `queue_mode: mirror` on a Temporal queue, or `mirrord up` in mirror mode - runs as `steal`: matching tasks go to your local worker and the deployed worker does not see them. When the session starts, mirrord prints a warning naming each Temporal queue it does this for.
 
-This behavior requires mirrord operator `3.221.0` or later. The warning requires mirrord CLI `3.274.0` or later.
-
 ## Setting a filter
 
 For the full filter reference (`queue_type`, `message_filter`, `jq_filter`), see the [overview](../queue-splitting.md#setting-a-filter-for-a-mirrord-run). Temporal uses `queue_type: Temporal`.
