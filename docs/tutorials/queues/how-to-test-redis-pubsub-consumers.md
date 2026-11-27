@@ -11,7 +11,7 @@ tags:
 
 A Redis Pub/Sub consumer in a shared staging cluster is hard to test. If you run a second copy of the consumer on your machine, it subscribes to the same channel as the deployed consumer. Redis sends every message to every subscriber, so both copies process all messages, and the messages of your teammates reach your local code too.
 
-This tutorial shows how to use mirrord queue splitting to fix this. Your local consumer gets only the messages whose JSON payload matches your filter. The deployed consumer gets all the other messages. You do not change the consumer code: there is no SDK, no client wrapper, and no filter logic in the application. The mirrord operator does the split outside the application.
+This tutorial shows how to use mirrord queue splitting with `mirrord up` to fix this. Your local consumer gets only the messages whose JSON payload contains your session key. The deployed consumer gets all the other messages. You do not change the consumer code: there is no SDK, no client wrapper, and no filter logic in the application. The mirrord operator does the split outside the application.
 
 You deploy a small sample app: one Redis server, one Python consumer, and the mirrord resources for queue splitting. All the code is in this page.
 
@@ -38,7 +38,7 @@ mirrord queue splitting puts the mirrord operator between the original channel a
 | `redis-config` | `MirrordPropertyList` | The Redis connection that the operator uses. |
 | `redis-consumer-split` | `MirrordSplitConfig` | Tells the operator which workload and which channel to split. |
 
-All resources go in the namespace `redis-demo`. The channel name is `notifications`. Each test message is a JSON object with a top-level `user` field, for example `{"user": "alice", "order_id": 1}`. The filters in this tutorial use the `user` field.
+All resources go in the namespace `redis-demo`. The channel name is `notifications`. Each test message is a JSON object, for example `{"user": "alice", "order_id": 1, "baggage": "mirrord-session=alice"}`. The `baggage` field holds the session key. `mirrord up` makes a filter that matches this value.
 
 ## Prerequisites
 
@@ -47,8 +47,8 @@ Make sure that you have these items before you start:
 * A Kubernetes cluster, version `1.30` or later. Queue splitting needs this version.
 * `kubectl`, configured for the cluster.
 * Helm, to install or upgrade the mirrord operator.
-* The mirrord CLI, version `3.221.0` or later.
-* The mirrord operator, version `3.170.0` or later, with a mirrord Team or Enterprise license. Queue splitting is not available in the free tier. `SSUBSCRIBE` (sharded channels, `appConfig.shardChannel`) needs operator `3.234.0` or later.
+* The mirrord CLI, version `3.243.0` or later. From this version, `mirrord up` tells the operator to skip the queue types that it does not split.
+* The mirrord operator, version `3.183.0` or later, with a mirrord Team or Enterprise license. Queue splitting with `mirrord up` needs this version. Queue splitting is not available in the free tier. `SSUBSCRIBE` (sharded channels, `appConfig.shardChannel`) needs operator `3.234.0` or later.
 * Python 3 on your machine, with the `redis` package version `5.0.8`.
 
 Create a virtual environment in your working directory and install `redis` in it:
@@ -272,7 +272,7 @@ These resources tell the operator four things:
 1. The operator connects to Redis with the URL in the `redis-config` property list.
 2. The split applies to the Deployment `redis-consumer`.
 3. The consumer subscribes with `SUBSCRIBE` to the channel in `REDIS_CHANNEL`.
-4. A mirrord config refers to this channel with the queue ID `notifications`.
+4. A custom filter in a mirrord config refers to this channel with the queue ID `notifications`.
 
 ### Step 4: Apply everything
 
@@ -313,16 +313,16 @@ send() {
 Send three messages:
 
 ```bash
-send '{"user": "alice", "order_id": 1}'
-send '{"user": "bob", "order_id": 2}'
+send '{"user": "alice", "order_id": 1, "baggage": "mirrord-session=alice"}'
+send '{"user": "bob", "order_id": 2, "baggage": "mirrord-session=bob"}'
 send '{"user": "carol", "order_id": 3}'
 ```
 
 `redis-cli` prints the number of subscribers that got each message. The deployed consumer prints all three messages:
 
 ```
-[deployed] user=alice payload={"user": "alice", "order_id": 1}
-[deployed] user=bob payload={"user": "bob", "order_id": 2}
+[deployed] user=alice payload={"user": "alice", "order_id": 1, "baggage": "mirrord-session=alice"}
+[deployed] user=bob payload={"user": "bob", "order_id": 2, "baggage": "mirrord-session=bob"}
 [deployed] user=carol payload={"user": "carol", "order_id": 3}
 ```
 
@@ -330,47 +330,44 @@ send '{"user": "carol", "order_id": 3}'
 
 ### Step 1: Write the mirrord config
 
-On your machine, save this file as `alice.json`, in the same directory as `consumer.py`:
+On your machine, save this file as `mirrord-up.yaml`, in the same directory as `consumer.py`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/redis-consumer/container/consumer",
-    "namespace": "redis-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "notifications": {
-        "queue_type": "RedisPubSub",
-        "message_filter": {
-          "user": "^alice$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  redis-consumer:
+    target:
+      path: deployment/redis-consumer/container/consumer
+      namespace: redis-demo
+    run:
+      command: ["python3", "consumer.py", "local-{{ key }}"]
 ```
 
 The config has these parts:
 
+* `services.redis-consumer` is one service. `mirrord up` runs `run.command` for it.
 * `target` is the deployed consumer container.
-* `notifications` is the queue ID from the `MirrordSplitConfig`.
-* `queue_type` is `RedisPubSub`.
-* `message_filter` maps a top-level JSON field name to a regex for its value. Your local consumer gets only the messages whose `user` field matches `^alice$`.
+* `{{ key }}` is the session key. The consumer prints `local-<key>` in front of each line.
+
+The config has no queue configuration. `mirrord up` splits the channels of the target automatically. Your local consumer gets only the messages with a string value in the JSON payload that contains `mirrord-session=<key>`.
 
 ### Step 2: Start the local consumer
 
+Start the local consumer with `mirrord up` and the session key `alice`:
+
 ```bash
-mirrord exec -f alice.json -- python3 consumer.py local-alice
+mirrord up --key alice
 ```
 
 mirrord starts a queue splitting session. First, the operator replaces the `redis-consumer` pod with a new pod. In the new pod, `REDIS_CHANNEL` is a temporary "main" channel. The operator does not change the Deployment, so `kubectl rollout status` does not show this restart. mirrord waits until the new pod is ready. Then your local process starts.
 
-The local consumer gets the environment of the deployed pod. The operator sets `REDIS_CHANNEL` to a temporary channel for your session. The local consumer prints a line similar to this one:
+The local consumer gets the environment of the deployed pod. The operator sets `REDIS_CHANNEL` to a temporary channel for your session. The local consumer prints a line similar to this one. `mirrord up` puts the service name in front of each line of the consumer:
+
+<!-- TODO: confirm on a cluster -->
 
 ```
-[local-alice] subscribed to channel=mirrord-tmp-<random>-notifications
+redis-consumer: [local-alice] subscribed to channel=mirrord-tmp-<random>-notifications
 ```
 
 In the second terminal, make sure that only one consumer pod runs:
@@ -400,20 +397,22 @@ The deployed consumer now reads the main temporary channel:
 [deployed] subscribed to channel=mirrord-tmp-<random>-main-notifications
 ```
 
-### Step 3: Send messages with and without the filter value
+### Step 3: Send messages with and without the session key
 
 Send the same three messages again:
 
 ```bash
-send '{"user": "alice", "order_id": 4}'
-send '{"user": "bob", "order_id": 5}'
+send '{"user": "alice", "order_id": 4, "baggage": "mirrord-session=alice"}'
+send '{"user": "bob", "order_id": 5, "baggage": "mirrord-session=bob"}'
 send '{"user": "carol", "order_id": 6}'
 ```
 
 The local consumer prints only the message for `alice`:
 
+<!-- TODO: confirm on a cluster -->
+
 ```
-[local-alice] user=alice payload={"user":"alice","order_id":4,"mirrord-key":"<random>"}
+redis-consumer: [local-alice] user=alice payload={"user":"alice","order_id":4,"baggage":"mirrord-session=alice","mirrord-key":"alice"}
 ```
 
 The operator adds a `mirrord-key` field with your session key to the payload. The operator also writes the JSON again without spaces.
@@ -421,11 +420,11 @@ The operator adds a `mirrord-key` field with your session key to the payload. Th
 The deployed consumer prints the other two messages:
 
 ```
-[deployed] user=bob payload={"user": "bob", "order_id": 5}
+[deployed] user=bob payload={"user": "bob", "order_id": 5, "baggage": "mirrord-session=bob"}
 [deployed] user=carol payload={"user": "carol", "order_id": 6}
 ```
 
-The default `queue_mode` is `steal`, so the `alice` message does not reach the deployed consumer. Send a message that is not JSON:
+The default mode of `mirrord up` is `split`, so the `alice` message does not reach the deployed consumer. Send a message that is not JSON:
 
 ```bash
 send 'plain text'
@@ -445,55 +444,33 @@ The Helm value `operator.injectSessionKeyHeader` controls the `mirrord-key` fiel
 
 Redis Pub/Sub splitting supports more than one session on the same channel. Each session gets its own temporary channel, and the operator adds its filter to the list of filters that it checks.
 
-Save this file as `bob.json`:
-
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/redis-consumer/container/consumer",
-    "namespace": "redis-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "notifications": {
-        "queue_type": "RedisPubSub",
-        "message_filter": {
-          "user": "^bob$"
-        }
-      }
-    }
-  }
-}
-```
-
-Keep the `alice` session open. In a new terminal, activate the virtual environment and start a second local consumer:
+Keep the `alice` session open. Open a new terminal in the same directory. Activate the virtual environment and start a second local consumer with the same `mirrord-up.yaml` and the key `bob`:
 
 ```bash
 source .venv/bin/activate
-mirrord exec -f bob.json -- python3 consumer.py local-bob
+mirrord up --key bob
 ```
 
 Wait for the `[local-bob] subscribed` line. Then send three messages:
 
 ```bash
-send '{"user": "alice", "order_id": 7}'
-send '{"user": "bob", "order_id": 8}'
+send '{"user": "alice", "order_id": 7, "baggage": "mirrord-session=alice"}'
+send '{"user": "bob", "order_id": 8, "baggage": "mirrord-session=bob"}'
 send '{"user": "carol", "order_id": 9}'
 ```
 
 Each copy prints one message:
 
 ```
-[local-alice] user=alice payload={"user":"alice","order_id":7,"mirrord-key":"<random>"}
-[local-bob] user=bob payload={"user":"bob","order_id":8,"mirrord-key":"<random>"}
+redis-consumer: [local-alice] user=alice payload={"user":"alice","order_id":7,"baggage":"mirrord-session=alice","mirrord-key":"alice"}
+redis-consumer: [local-bob] user=bob payload={"user":"bob","order_id":8,"baggage":"mirrord-session=bob","mirrord-key":"bob"}
 [deployed] user=carol payload={"user": "carol", "order_id": 9}
 ```
 
 The second session does not restart the deployed consumer. Only the first session does.
 
 {% hint style="warning" %}
-Make sure that the filters of two sessions do not match the same messages. If two filters match one message, the operator gives the message to only one of the two sessions, and you cannot know which one.
+Make sure that the filters of two sessions do not match the same messages. Use a different session key for each developer, and do not use a key that is the start of a different key, for example `ali` and `alice`. If two filters match one message, the operator gives the message to only one of the two sessions, and you cannot know which one.
 {% endhint %}
 
 ### Step 5: Stop the sessions
@@ -528,8 +505,8 @@ When the first session starts, the operator creates a temporary main channel for
 flowchart LR
     P[Producer] -->|PUBLISH notifications| O[(Redis channel<br/>notifications)]
     O -->|SUBSCRIBE| OP[mirrord operator<br/>filters on JSON payload]
-    OP -->|user = alice| A[(mirrord-tmp-...-notifications<br/>alice session)]
-    OP -->|user = bob| B[(mirrord-tmp-...-notifications<br/>bob session)]
+    OP -->|mirrord-session=alice| A[(mirrord-tmp-...-notifications<br/>alice session)]
+    OP -->|mirrord-session=bob| B[(mirrord-tmp-...-notifications<br/>bob session)]
     OP -->|no filter matches| M[(mirrord-tmp-...-main-notifications)]
     A --> LA[Local consumer: alice]
     B --> LB[Local consumer: bob]
@@ -538,11 +515,10 @@ flowchart LR
 
 ## Behavior and tradeoffs
 
-* **The filter sees only the JSON payload.** Redis Pub/Sub messages have no headers or attributes. `message_filter` matches regexes against top-level JSON fields. `jq_filter` runs a jq program against the parsed JSON payload. A payload that is not valid JSON never matches, and goes to the deployed consumer.
-* **`message_filter` uses top-level scalar fields.** The operator uses top-level string, number, and boolean fields as attributes. To filter on a nested field, use `jq_filter`. If you set `message_filter` and `jq_filter` together, a message must match both.
-* **All entries in `message_filter` must match.** The local consumer gets a message only if each field in the map matches its regex.
-* **Steal or mirror.** In the default `steal` mode, a message that matches goes only to your local consumer. With `"queue_mode": "mirror"`, the message also goes to the deployed consumer, so both process a copy.
-* **Filters that overlap.** If the filters of two sessions match the same message, only one session gets it, and the choice is random.
+* **The filter sees only the JSON payload.** Redis Pub/Sub messages have no headers or attributes. The filter of `mirrord up` is a `jq_filter` that matches a message when a string value anywhere in the parsed JSON payload contains `mirrord-session=<key>`. The field name does not matter. A payload that is not valid JSON never matches, and goes to the deployed consumer.
+* **Custom filters.** In a `config_patch`, `message_filter` matches regexes against top-level string, number, and boolean fields, and all entries must match. `jq_filter` runs a jq program against the parsed JSON payload. If you set `message_filter` and `jq_filter` together, a message must match both.
+* **Split or mirror.** In the default `split` mode of `mirrord up`, a message that matches goes only to your local consumer. With `mirrord up --mode mirror` (CLI `3.258.0` or later), the message also goes to the deployed consumer, so both process a copy.
+* **Filters that overlap.** If the filters of two sessions match the same message, only one session gets it, and the choice is random. A key that is the start of a different key, for example `ali` and `alice`, matches the messages of both keys.
 * **No buffer.** Redis Pub/Sub does not store messages. A message published when the target channel has no subscriber is lost. This applies while the operator replaces the deployed consumer pod, before your local consumer subscribes, and until the operator removes the filter of a session that stopped.
 * **Extra hop.** Each message goes through the operator before it reaches a consumer. This adds a small delay. The operator forwards one message at a time, in the order that it receives them.
 * **The workload restarts.** The operator replaces the pods of the target when the first session starts and when the last session ends. It does not change the pod template, so `kubectl rollout status` does not show these restarts.
@@ -553,7 +529,7 @@ flowchart LR
 
 To use queue splitting on a real service, change these items. The consumer code does not change.
 
-1. **Target.** Set `spec.targetRef` in the `MirrordSplitConfig` to your workload, and set `target` in `mirrord.json` to the same workload and container.
+1. **Target.** Set `spec.targetRef` in the `MirrordSplitConfig` to your workload, and set `target` in `mirrord-up.yaml` to the same workload and container.
 2. **Channel source.** Set `appConfig` to the way your application subscribes:
    * `channel` for an exact channel (`SUBSCRIBE`).
    * `channelPattern` for a glob pattern (`PSUBSCRIBE`).
@@ -561,27 +537,29 @@ To use queue splitting on a real service, change these items. The consumer code 
 
    Each one takes an `env` reference, or another source such as a mounted config file. See the [reference page](../../sharing-the-cluster/queue-splitting/redis-pubsub.md).
 3. **Redis connection.** Put your connection in the `MirrordPropertyList`. Use `url`, or use `host` with `port`, `password`, `tls`, and `db`. To share one property list between namespaces, create it in the operator namespace (operator `3.191.0` or later).
-4. **Filter field.** Choose a top-level JSON field that your producers already set, for example a tenant ID, a user ID, or a test marker. For a nested field, use `jq_filter`:
+4. **Session key in the payload.** Make your producers put `mirrord-session=<key>` in a string field of the JSON payload, for example `baggage`.
+5. **Custom filter.** To use your own filter instead of the session key, set `feature.split_queues` in the `config_patch` of the service. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for that service. This example uses `jq_filter` on a nested field:
 
-   ```json
-   {
-     "operator": true,
-     "target": {
-       "path": "deployment/redis-consumer/container/consumer",
-       "namespace": "redis-demo"
-     },
-     "feature": {
-       "split_queues": {
-         "notifications": {
-           "queue_type": "RedisPubSub",
-           "jq_filter": ".user == \"alice\" and .order.total > 100"
-         }
-       }
-     }
-   }
+   ```yaml
+   common:
+     operator: true
+   services:
+     redis-consumer:
+       target:
+         path: deployment/redis-consumer/container/consumer
+         namespace: redis-demo
+       run:
+         command: ["python3", "consumer.py", "local-{{ key }}"]
+       config_patch:
+         feature:
+           split_queues:
+             notifications:
+               queue_type: RedisPubSub
+               jq_filter: '.user == "{{ key }}" and .order.total > 100'
    ```
 
-5. **CRD names.** Use your own names for the `MirrordSplitConfig`, the property list, and the queue ID. The queue ID in `mirrord.json` must be the same as the `id` in the `MirrordSplitConfig`.
+   `config_patch` needs mirrord CLI `3.251.0` or later.
+6. **CRD names.** Use your own names for the `MirrordSplitConfig`, the property list, and the queue ID. The queue ID in a `config_patch` must be the same as the `id` in the `MirrordSplitConfig`.
 
 ## Cleanup
 
@@ -610,7 +588,7 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
 
 ### Can I filter Redis Pub/Sub messages by header?
 
-No. Redis Pub/Sub messages have no headers or attributes. mirrord filters on the JSON payload. Put the value that you want to filter on in a top-level JSON field, or use `jq_filter` for a nested field.
+No. Redis Pub/Sub messages have no headers or attributes. mirrord filters on the JSON payload. Put `mirrord-session=<key>` in a string field of the payload. For a custom filter, use `message_filter` or `jq_filter` in a `config_patch`.
 
 ### Do I need to change my Redis consumer code to use mirrord queue splitting?
 
@@ -622,7 +600,7 @@ The operator publishes them to the main temporary channel, and the deployed cons
 
 ### Can two developers test the same Redis channel at the same time?
 
-Yes. Each session gets its own temporary channel and its own filter. Use filters that do not overlap. If two filters match one message, only one session gets it, at random.
+Yes. Each session gets its own temporary channel and its own filter. Use a different session key for each developer. If two filters match one message, only one session gets it, at random.
 
 ### Does queue splitting work with PSUBSCRIBE and sharded channels?
 

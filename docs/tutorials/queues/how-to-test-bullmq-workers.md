@@ -9,9 +9,9 @@ tags:
 
 # How to Test BullMQ Workers in Kubernetes with Queue Splitting
 
-This tutorial shows how to run a BullMQ worker on your machine against the real queue in a shared staging cluster. Your local worker gets only the jobs that match your filter. The deployed worker continues to process all other jobs.
+This tutorial shows how to run a BullMQ worker on your machine against the real queue in a shared staging cluster, with `mirrord up`. Your local worker gets only the jobs that carry your session key. The deployed worker continues to process all other jobs.
 
-You deploy a small sample app: one Redis instance, one Node.js worker, and one producer script. Then you start a mirrord session with a filter on a field of the job data, and you see which jobs go to your machine and which jobs go to the cluster.
+You deploy a small sample app: one Redis instance, one Node.js worker, and one producer script. Then you start a mirrord session with a session key, and you see which jobs go to your machine and which jobs go to the cluster.
 
 mirrord queue splitting needs no changes to the worker code. You do not add an SDK, a wrapper, or a routing check to the worker. The mirrord operator moves the jobs between queues in Redis, and it removes its changes when the session ends.
 
@@ -44,8 +44,8 @@ The pods use the public `node:20-alpine` and `redis:7-alpine` images. You do not
 - A Kubernetes cluster for development or staging, version `1.30` or later. Do not use a production cluster.
 - `kubectl`, configured for that cluster.
 - Node.js and npm on your machine.
-- The mirrord CLI, version `3.223.0` or later.
-- The mirrord operator, version `3.175.0` or later, with a mirrord for Teams license. Queue splitting is a mirrord for Teams feature.
+- The mirrord CLI, version `3.243.0` or later. From this version, `mirrord up` tells the operator to skip the queue types that it does not split.
+- The mirrord operator, version `3.183.0` or later, with a mirrord for Teams license. Queue splitting with `mirrord up` needs this version. Queue splitting is a mirrord for Teams feature.
 - BullMQ splitting turned on in the operator Helm chart, with the value `operator.bullmqSplitting`.
 
 To install the operator with BullMQ splitting, run these commands:
@@ -122,7 +122,7 @@ The operator moves jobs with the Redis command `BLMOVE`, which needs Redis 6.2 o
 
 ### 2. Create the worker and the producer
 
-The worker prints the queue that it reads when it starts. For each job, it prints the job ID, the job name, and the `tenant` field of the job data. The `tenant` field is the field that the filter uses.
+The worker prints the queue that it reads when it starts. For each job, it prints the job ID, the job name, and the `tenant` and `orderId` fields of the job data.
 
 Save this file as `worker.js`:
 
@@ -160,7 +160,7 @@ process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 ```
 
-The producer adds jobs to the queue `orders`. Each job carries a `tenant` field in its data. The first argument sets the tenant, and the second argument sets the number of jobs.
+The producer adds jobs to the queue `orders`. Each job carries a `tenant` field in its data. Jobs for a tenant other than `none` also carry a `baggage` field with `mirrord-session=<tenant>`. The filter of `mirrord up` uses this field. The first argument sets the tenant, and the second argument sets the number of jobs.
 
 Save this file as `producer.js`:
 
@@ -180,7 +180,11 @@ const queue = new Queue('orders', { connection });
 (async () => {
   for (let i = 1; i <= Number(count); i++) {
     const orderId = `${tenant}-${Date.now()}-${i}`;
-    await queue.add('process-order', { tenant, orderId });
+    // mirrord up sends a job to the session whose key is in "baggage".
+    const data = tenant === 'none'
+      ? { tenant, orderId }
+      : { tenant, orderId, baggage: `mirrord-session=${tenant}` };
+    await queue.add('process-order', data);
     console.log(`sent order=${orderId} tenant=${tenant}`);
   }
   await queue.close();
@@ -251,7 +255,7 @@ kubectl -n bullmq-demo rollout status deploy/bullmq-worker
 
 ### 4. Create the mirrord resources
 
-The operator connects to Redis to move the jobs. The `MirrordPropertyList` gives the connection. The `MirrordSplitConfig` names the target workload, the queue ID that developers use in `mirrord.json`, and the environment variable that holds the queue name.
+The operator connects to Redis to move the jobs. The `MirrordPropertyList` gives the connection. The `MirrordSplitConfig` names the target workload, the queue ID that a custom filter uses, and the environment variable that holds the queue name.
 
 Save this file as `split.yaml`:
 
@@ -338,44 +342,38 @@ You can change `worker.js` here. For this tutorial, keep the same code. The loca
 
 ### 2. Write the mirrord configuration
 
-Save this file as `mirrord.json` in `bullmq-local`:
+Save this file as `mirrord-up.yaml` in `bullmq-local`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/bullmq-worker/container/worker",
-    "namespace": "bullmq-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "BullMQ",
-        "message_filter": {
-          "tenant": "^alice$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  bullmq-worker:
+    target:
+      path: deployment/bullmq-worker/container/worker
+      namespace: bullmq-demo
+    run:
+      command: ["node", "worker.js"]
 ```
 
-The key `orders` is the queue `id` from the `MirrordSplitConfig`. The `message_filter` maps a top-level field of the job data to a regular expression. This filter matches the jobs whose data has `tenant` equal to `alice`.
+The file has one service, `bullmq-worker`, that runs `worker.js` against container `worker` of the `bullmq-worker` Deployment. The file has no queue configuration. `mirrord up` splits the queues of the target automatically. Your local worker gets only the jobs with a string value in the job data that contains `mirrord-session=<key>`, where `<key>` is your session key.
 
 ### 3. Start the session
 
-Start the local worker with mirrord:
+Start the local worker with `mirrord up` and the session key `alice`:
 
 ```bash
-mirrord exec -f mirrord.json -- node worker.js
+mirrord up --key alice
 ```
 
-When the first session starts, the operator restarts the `bullmq-worker` pod with a different value of `BULLMQ_QUEUE`. The operator does not change the Deployment spec, so `kubectl rollout status` does not wait for this restart. `mirrord exec` starts the local worker after the operator restarts the pod. This can take one minute or more.
+When the first session starts, the operator restarts the `bullmq-worker` pod with a different value of `BULLMQ_QUEUE`. The operator does not change the Deployment spec, so `kubectl rollout status` does not wait for this restart. `mirrord up` starts the local worker after the operator restarts the pod. This can take one minute or more.
 
-Wait until the local worker prints its queue name:
+Wait until the local worker prints its queue name. `mirrord up` puts the service name in front of each line of the worker:
+
+<!-- TODO: confirm on a cluster -->
 
 ```text
-worker reads queue "mirrord-tmp-<random>-orders"
+bullmq-worker: worker reads queue "mirrord-tmp-<random>-orders"
 ```
 
 The old pod is gone, so stop the `kubectl logs -f` command and start it again:
@@ -404,9 +402,9 @@ kubectl -n bullmq-demo exec deploy/bullmq-worker -c worker -- node /app/producer
 The local worker prints only the jobs for `alice`:
 
 ```text
-worker reads queue "mirrord-tmp-<random>-orders"
-job 2 name=process-order tenant=alice order=alice-1795610935899-2
-job 1 name=process-order tenant=alice order=alice-1795610935843-1
+bullmq-worker: worker reads queue "mirrord-tmp-<random>-orders"
+bullmq-worker: job 2 name=process-order tenant=alice order=alice-1795610935899-2
+bullmq-worker: job 1 name=process-order tenant=alice order=alice-1795610935843-1
 ```
 
 The deployed worker prints only the jobs for `carol`:
@@ -427,39 +425,10 @@ When more than one job waits in a temporary queue, the worker takes the newest j
 
 Many sessions can split the same queue at the same time. Each session gets its own temporary queue.
 
-Open a new terminal. Go to the directory that contains `bullmq-local`, and make a copy of it:
+Open a new terminal, and go to the `bullmq-local` directory. Start the second session with the same `mirrord-up.yaml` and the key `bob`:
 
 ```bash
-cp -r bullmq-local bullmq-local-bob
-cd bullmq-local-bob
-```
-
-Change the filter to `^bob$` in the `mirrord.json` of the copy:
-
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/bullmq-worker/container/worker",
-    "namespace": "bullmq-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "BullMQ",
-        "message_filter": {
-          "tenant": "^bob$"
-        }
-      }
-    }
-  }
-}
-```
-
-Start the second session:
-
-```bash
-mirrord exec -f mirrord.json -- node worker.js
+mirrord up --key bob
 ```
 
 Send one job for each tenant:
@@ -479,7 +448,7 @@ The result is:
 The second session does not restart the deployed worker. The operator adds the second filter to the routing that runs already. The second local worker starts after a few seconds and prints its own queue name, such as `mirrord-tmp-<random>-orders`.
 
 {% hint style="warning" %}
-Make sure that the filters of different developers do not match the same jobs. When two filters match a job, the operator sends the job to one of the two sessions at random.
+Make sure that the filters of different developers do not match the same jobs. Use a different session key for each developer, and do not use a key that is the start of a different key, for example `ali` and `alice`. When two filters match a job, the operator sends the job to one of the two sessions at random.
 {% endhint %}
 
 ### 6. Stop the sessions
@@ -488,7 +457,7 @@ Make sure that the filters of different developers do not match the same jobs. W
 When a session ends, the operator deletes the Redis keys of the session queue. Let your local worker process its jobs before you stop it. Jobs that stay in your session queue are deleted.
 {% endhint %}
 
-Press `Ctrl+C` in each terminal that runs `mirrord exec`.
+Press `Ctrl+C` in each terminal that runs `mirrord up`.
 
 After the last session ends, the operator does these steps:
 
@@ -526,8 +495,8 @@ When the first session starts, the operator creates a temporary main queue for t
 flowchart LR
     P[Producers in staging] -->|queue.add| O[(bull:orders:wait)]
     O -->|take job ID| F[mirrord operator forwarder]
-    F -->|data.tenant matches ^alice$| A[(mirrord-tmp-...-orders<br/>session of alice)]
-    F -->|data.tenant matches ^bob$| B[(mirrord-tmp-...-orders<br/>session of bob)]
+    F -->|data has mirrord-session=alice| A[(mirrord-tmp-...-orders<br/>session of alice)]
+    F -->|data has mirrord-session=bob| B[(mirrord-tmp-...-orders<br/>session of bob)]
     F -->|no match| M[(mirrord-tmp-...-main-orders)]
     A --> LA[Local worker: alice]
     B --> LB[Local worker: bob]
@@ -536,11 +505,10 @@ flowchart LR
 
 ## Behavior and tradeoffs
 
-- **The filter reads only the job data.** `message_filter` matches regular expressions against the top-level fields of the parsed `data` JSON. The filter does not read the job name, the job ID, or the job options. To filter on a job name, put the same value in a data field.
-- **Only scalar fields work with `message_filter`.** String, number, and boolean fields match by their text form. A nested object or an array is not an attribute, so a `message_filter` on it never matches. Use `jq_filter` for nested values, for example `".tenant == \"alice\" and .order.priority == \"high\""`. The jq program runs on the full parsed `data` value, and a job matches when the program outputs `true`.
-- **Jobs with data that is not JSON go to the deployed worker.** They never match `message_filter` or `jq_filter`.
-- **When you set both filters, both must match.** A job goes to your session only when the `message_filter` and the `jq_filter` both match it.
-- **Steal is the default.** A matched job goes only to your local worker. With `"queue_mode": "mirror"`, a matched job goes to your local worker, and a copy goes to the deployed worker.
+- **The filter reads only the job data.** The filter of `mirrord up` is a `jq_filter` that matches a job when a string value anywhere in the parsed `data` JSON contains `mirrord-session=<key>`. The field name does not matter. The filter does not read the job name, the job ID, or the job options. A key that is the start of a different key, for example `ali` and `alice`, matches the jobs of both keys.
+- **Custom filters.** In a `config_patch`, `message_filter` matches regular expressions against the top-level string, number, and boolean fields of the job data. Use `jq_filter` for nested values, for example `".tenant == \"alice\" and .order.priority == \"high\""`. When you set both filters, both must match.
+- **Jobs with data that is not JSON go to the deployed worker.** They never match a filter.
+- **Split is the default.** In the `split` mode of `mirrord up`, a matched job goes only to your local worker. With `mirrord up --mode mirror` (CLI `3.258.0` or later), a matched job goes to your local worker, and a copy goes to the deployed worker.
 - **The workload restarts twice.** The operator restarts the pods when the first session starts, and again after the last session ends. The Deployment spec does not change, so `kubectl rollout status` does not show these restarts.
 - **Jobs can arrive up to 5 seconds late, and a batch runs newest-first.** See step 4 of the session.
 - **The queue name must come from the pod spec.** The operator reads `BULLMQ_QUEUE` only when the value is in the pod template (`value`, or `valueFrom` with a ConfigMap reference) or comes from a ConfigMap with `envFrom`. A mounted config file is also supported. See the [queue splitting overview](../../sharing-the-cluster/queue-splitting.md#queue-names-in-mounted-config-files).
@@ -551,13 +519,36 @@ flowchart LR
 
 To use queue splitting with a real BullMQ service, change these items:
 
-1. **The target.** In `targetRef`, set the kind (`Deployment`, `StatefulSet`, or `Rollout`) and the name of your worker workload. In `mirrord.json`, set `target.path` and `target.namespace` to the same workload and container.
+1. **The target.** In `targetRef`, set the kind (`Deployment`, `StatefulSet`, or `Rollout`) and the name of your worker workload. In `mirrord-up.yaml`, set `target.path` and `target.namespace` to the same workload and container.
 2. **The queue name source.** In `appConfig.queue`, name the environment variable that holds the queue name. If the name has a pattern, use `envLike`. If the workload has more than one container, use `containerNames`. Add one entry to `spec.queues` for each queue that the workload reads.
 3. **The Redis connection.** In the `MirrordPropertyList`, use `url`, or `host` with `port`. Add `password`, `tls: "true"`, and `db` as necessary. To share one property list with many namespaces, put it in the namespace of the operator.
-4. **The filter field.** Pick a top-level field of the job data that tells your jobs apart from other jobs, for example a tenant, a user ID, or a test marker. With mirrord `3.264.0` and operator `3.212.0` or later, you can also use the `filter` field with `any_of` and `all_of` lists.
+4. **The session key in the job data.** Make your producers put `mirrord-session=<key>` in a string field of the job data, for example `baggage`.
 5. **The temporary queue names.** If your Redis has naming rules, set `spec.tmpNameTemplate`. The template must contain `{{RANDOM}}`.
 
 The worker code does not change. The worker reads its queue name from the environment, as it does in production.
+
+To use your own filter instead of the session key, set `feature.split_queues` in the `config_patch` of the service. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for that service. This `mirrord-up.yaml` filters on the `tenant` field. `config_patch` needs mirrord CLI `3.251.0` or later:
+
+```yaml
+common:
+  operator: true
+services:
+  bullmq-worker:
+    target:
+      path: deployment/bullmq-worker/container/worker
+      namespace: bullmq-demo
+    run:
+      command: ["node", "worker.js"]
+    config_patch:
+      feature:
+        split_queues:
+          orders:
+            queue_type: BullMQ
+            message_filter:
+              tenant: "^{{ key }}$"
+```
+
+The key `orders` is the queue `id` from the `MirrordSplitConfig`. With mirrord `3.264.0` and operator `3.212.0` or later, you can also use the `filter` field with `any_of` and `all_of` lists.
 
 ## Cleanup
 
@@ -574,7 +565,7 @@ kubectl delete namespace bullmq-demo
 Delete the local directories:
 
 ```bash
-rm -rf bullmq-local bullmq-local-bob
+rm -rf bullmq-local
 ```
 
 If you used queue splitting on a Redis instance that you keep, look for temporary keys that remain:
@@ -587,11 +578,11 @@ redis-cli --scan --pattern 'bull:mirrord-tmp-*'
 
 ### Can I test a BullMQ worker locally against a staging Redis without stealing jobs from other developers?
 
-Yes. Start the local worker with `mirrord exec` and a `split_queues` filter. The operator sends only the jobs that match your filter to your worker. All other jobs go to the deployed worker or to the sessions of other developers.
+Yes. Start the local worker with `mirrord up` and a session key. The operator sends only the jobs with your session key in the job data to your worker. All other jobs go to the deployed worker or to the sessions of other developers.
 
 ### Can mirrord filter BullMQ jobs by job name?
 
-No. The filter reads only the `data` field of the job. The job name, the job ID, and the job options are not available to the filter. Add the value to the job data, and filter on that field.
+No. The filter reads only the `data` field of the job. The job name, the job ID, and the job options are not available to the filter. Add the value to the job data, and filter on that field in a `config_patch`.
 
 ### Do I need to change my BullMQ worker or producer code?
 
@@ -603,11 +594,11 @@ The operator deletes your session queue when the session ends. Jobs that stay in
 
 ### Can my teammate and I test the same BullMQ queue at the same time?
 
-Yes. Each session gets its own temporary queue, and the operator applies all filters. Use filters that do not overlap. When two filters match a job, the operator sends it to one of the two sessions at random.
+Yes. Each session gets its own temporary queue, and the operator applies all filters. Use a different session key for each developer. When two filters match a job, the operator sends it to one of the two sessions at random.
 
 ### How does my local worker know which session a job belongs to?
 
-When the operator setting `operator.injectSessionKeyHeader` is on (the default), the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. The operator adds the field only when the data is a JSON object. A filter on a top-level field, such as `tenant` in this tutorial, does not match data that is not a JSON object. Such a job goes to the deployed worker.
+When the operator setting `operator.injectSessionKeyHeader` is on (the default), the operator adds a `mirrord-key` field to the `data` object of each job that it sends to your session. The job that the deployed worker gets does not change. The operator adds the field only when the data is a JSON object. A filter does not match data that is not JSON. Such a job goes to the deployed worker.
 
 ## See also
 

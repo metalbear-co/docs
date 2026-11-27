@@ -9,7 +9,7 @@ tags:
 
 # How to Test RabbitMQ Consumers in Kubernetes with Queue Splitting
 
-This tutorial shows how to run a changed RabbitMQ consumer on your machine against a shared staging queue in Kubernetes. With mirrord queue splitting, your local consumer gets only the messages that match your filter. The deployed consumer keeps all the other messages.
+This tutorial shows how to run a changed RabbitMQ consumer on your machine against a shared staging queue in Kubernetes, with `mirrord up`. With mirrord queue splitting, your local consumer gets only the messages that carry your session key. The deployed consumer keeps all the other messages.
 
 Queue splitting needs no change to the consumer code. You do not add an SDK, a client wrapper, or a routing check to the consumer. The mirrord operator routes the messages, and the consumer reads its queue name from an environment variable, as it does now.
 
@@ -34,7 +34,7 @@ All resources go into the namespace `rmq-demo`:
 - A `MirrordPropertyList` that tells the operator how to connect to RabbitMQ.
 - A `MirrordSplitConfig` that tells the operator which queue the consumer reads, and from which environment variable.
 
-Each message carries an `x-user` header, for example `x-user: alice`. The filters in this tutorial match on this header.
+Each test message carries a `baggage` header with a session key, for example `baggage: mirrord-session=alice`. `mirrord up` makes a filter that matches this header. The messages also carry an `x-user` header, so that the consumer can print the user of each message.
 
 ## Prerequisites
 
@@ -43,8 +43,8 @@ Before you start, make sure that you have these items:
 1. A Kubernetes cluster, version `1.30` or later. Queue splitting needs this version.
 2. `kubectl`, with access to the cluster.
 3. Python 3 on your machine, with the `pika` package version `1.5.0` or later. Under mirrord, `pika` 1.3.2 does not connect and waits forever.
-4. The mirrord CLI, version `3.221.0` or later.
-5. The mirrord operator, version `3.170.0` or later, on a mirrord Team or Enterprise plan.
+4. The mirrord CLI, version `3.253.0` or later. From this version, `mirrord up` splits RabbitMQ queues automatically.
+5. The mirrord operator, version `3.201.0` or later, on a mirrord Team or Enterprise plan. `mirrord up` needs this version to split RabbitMQ queues. With an older operator, the session runs without RabbitMQ splitting, and mirrord prints a warning.
 6. RabbitMQ splitting turned on in the operator Helm chart.
 
 Create a virtual environment in your working directory and install `pika` in it:
@@ -206,7 +206,8 @@ data:
     channel.queue_declare(queue=QUEUE)
 
     for i in range(1, count + 1):
-        headers = {} if user == "none" else {"x-user": user}
+        # mirrord up sends a message to the session whose key is in "baggage".
+        headers = {} if user == "none" else {"x-user": user, "baggage": f"mirrord-session={user}"}
         body = json.dumps({"id": f"{user}-{i}", "user": user})
         channel.basic_publish(
             exchange="",
@@ -339,7 +340,7 @@ Open a terminal and follow the logs of the deployed consumer:
 kubectl -n rmq-demo logs -f deployment/orders-consumer
 ```
 
-In a second terminal, send two messages for `alice`, two for `bob`, and one with no `x-user` header. The producer runs inside the consumer pod, because that pod already has `pika` and the credentials:
+In a second terminal, send two messages for `alice`, two for `bob`, and one with no headers. The producer runs inside the consumer pod, because that pod already has `pika` and the credentials:
 
 ```bash
 kubectl -n rmq-demo exec deployment/orders-consumer -- python /app/producer.py alice 2
@@ -360,7 +361,7 @@ The deployed consumer prints all five messages:
 
 The log also shows `waiting for RabbitMQ...` lines, a `pip` notice, and a `DeprecationWarning` from `pika`. You can ignore them.
 
-## Run your consumer with a filter
+## Run your consumer with a session key
 
 Now run the same consumer on your machine. Your local consumer will get only the messages for `alice`.
 
@@ -372,34 +373,28 @@ kubectl -n rmq-demo get configmap orders-app -o jsonpath='{.data.consumer\.py}' 
 
 In a real project, this is your changed consumer code. You can edit `consumer.py` now, for example to print more fields.
 
-Save this file as `mirrord.json`:
+Save this file as `mirrord-up.yaml`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-consumer/container/main",
-    "namespace": "rmq-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "RMQ",
-        "message_filter": {
-          "x-user": "^alice$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  orders-consumer:
+    target:
+      path: deployment/orders-consumer/container/main
+      namespace: rmq-demo
+    run:
+      command: ["python3", "consumer.py", "{{ key }}"]
 ```
 
-The key `orders` is the queue ID from the `MirrordSplitConfig`. The `message_filter` maps a header name to a regular expression for its value. Your local consumer gets a message only if the message has an `x-user` header that matches `^alice$`.
+The file has one service, `orders-consumer`. The service runs `consumer.py` against container `main` of the `orders-consumer` Deployment. `{{ key }}` is the session key. The consumer prints it in front of each line.
 
-Start the local consumer with mirrord:
+The file has no queue configuration. `mirrord up` splits the queues of the target automatically, with a filter on your session key. Your local consumer gets a message only if a header value of the message contains `mirrord-session=<key>`.
+
+Start the local consumer with `mirrord up` and the session key `alice`:
 
 ```bash
-mirrord exec -f mirrord.json -- python3 consumer.py alice
+mirrord up --key alice
 ```
 
 mirrord gives the local process the environment of the target pod. The operator changes `QUEUE_NAME` to the name of your temporary queue, so the code does not change. Connections to `rabbitmq.rmq-demo.svc.cluster.local` go through the cluster.
@@ -420,12 +415,14 @@ kubectl -n rmq-demo exec deployment/orders-consumer -- python /app/producer.py b
 kubectl -n rmq-demo exec deployment/orders-consumer -- python /app/producer.py none 1
 ```
 
-Your local consumer prints only the messages for `alice`:
+Your local consumer prints only the messages for `alice`. `mirrord up` puts the service name in front of each line of the consumer:
+
+<!-- TODO: confirm on a cluster -->
 
 ```
-[alice] consuming from mirrord-<random>-orders
-[alice] x-user=alice order=alice-1
-[alice] x-user=alice order=alice-2
+orders-consumer: [alice] consuming from mirrord-<random>-orders
+orders-consumer: [alice] x-user=alice order=alice-1
+orders-consumer: [alice] x-user=alice order=alice-2
 ```
 
 The deployed consumer prints all the other messages:
@@ -443,33 +440,13 @@ Both consumers now print a temporary queue name, not `orders`. The operator read
 
 More than one developer can split the same queue at the same time. Each session gets its own temporary queue.
 
-Keep the `alice` session open. In a new terminal, save this file as `mirrord-bob.json`:
-
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-consumer/container/main",
-    "namespace": "rmq-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "RMQ",
-        "message_filter": {
-          "x-user": "^bob$"
-        }
-      }
-    }
-  }
-}
-```
+Keep the `alice` session open. Open a new terminal in the same directory. You use the same `mirrord-up.yaml` with a different session key.
 
 Start a second local consumer. Activate the virtual environment first, because this is a new terminal:
 
 ```bash
 source .venv/bin/activate
-mirrord exec -f mirrord-bob.json -- python3 consumer.py bob
+mirrord up --key bob
 ```
 
 The split is already active, so the deployed pod does not restart for the second session.
@@ -483,10 +460,10 @@ Send the five messages again. Each message now goes to exactly one consumer:
 | `none-1` | Deployed consumer `[deployed]` |
 
 {% hint style="warning" %}
-Make sure that the filters of two developers do not match the same messages. If two filters match a message, one of the two sessions gets it at random.
+Make sure that each developer uses a different session key. If two filters match a message, one of the two sessions gets it at random.
 {% endhint %}
 
-To prevent overlaps, use a filter that is specific to one developer, for example an exact match on a user name or session ID.
+The filter looks for `mirrord-session=<key>` anywhere in a header value. Thus, a key that is the start of a different key, for example `ali` and `alice`, also matches the messages of the longer key. Use keys that are not the start of other keys.
 
 ## Stop the session
 
@@ -518,8 +495,8 @@ When the first session starts, the operator creates two temporary queues: one fo
 flowchart LR
     P[Producer] --> Q[(orders)]
     Q --> O[mirrord operator]
-    O -- "x-user: alice" --> QA[(temporary queue: alice)]
-    O -- "x-user: bob" --> QB[(temporary queue: bob)]
+    O -- "mirrord-session=alice" --> QA[(temporary queue: alice)]
+    O -- "mirrord-session=bob" --> QB[(temporary queue: bob)]
     O -- "no match" --> QD[(temporary queue: deployed)]
     QA --> LA[Local consumer: alice]
     QB --> LB[Local consumer: bob]
@@ -532,9 +509,8 @@ flowchart LR
 - **The environment variable must be readable by the operator.** It must have a `value`, a `valueFrom` with a ConfigMap reference, or come from `envFrom` with a ConfigMap.
 - **The deployed consumer restarts.** When a split starts, the operator patches the workload, so its pods restart. When the split ends, they restart again.
 - **Supported workloads.** The `targetRef` can be a `Deployment`, a `StatefulSet`, or an Argo `Rollout`.
-- **Header filters match by header name.** `message_filter` matches the values of named headers with regular expressions. If you set more than one header, a message must match all of them.
-- **Body filters need newer versions.** `jq_filter` matches on the whole message, including the body. It needs operator `3.201.0` or later and CLI `3.253.0` or later.
-- **Overlapping filters.** If two sessions match the same message, one of them gets it at random.
+- **The filter of `mirrord up`.** `mirrord up` makes a `jq_filter` for each session. The filter matches a message when a string value in its headers contains `mirrord-session=<key>`. The header name does not matter. The filter does not read the body.
+- **Overlapping filters.** If two sessions match the same message, one of them gets it at random. A key that is the start of a different key, for example `ali` and `alice`, matches the messages of both keys.
 - **Queue attributes.** By default, the operator declares temporary queues that are not durable, not exclusive, and not auto-delete. If your consumer declares its queue with other attributes, for example `durable` or `x-queue-type: quorum`, put those attributes in a `MirrordPropertyList` and set `queueConfig` on the queue entry.
 - **Unread messages at teardown.** When the last session ends, the operator waits until the deployed consumer reads its temporary queue. Set `drainTimeout` to limit this wait. Unread messages in a session's temporary queue are lost when that session ends.
 - **Message order.** The operator forwards one message at a time, in the order that it receives them. Do not rely on a strict order, because a retry after an error can change it.
@@ -543,37 +519,37 @@ flowchart LR
 
 To use queue splitting with a real consumer, change these items:
 
-1. **Target.** In `MirrordSplitConfig`, set `spec.targetRef` to your workload. In `mirrord.json`, set `target.path` and `target.namespace` to the same workload and container.
+1. **Target.** In `MirrordSplitConfig`, set `spec.targetRef` to your workload. In `mirrord-up.yaml`, set `target.path` and `target.namespace` to the same workload and container.
 2. **Queue name source.** Set `appConfig.queue[].env` to the environment variable that holds the queue name. If the name is part of a longer string, use `valuePattern`. If the variable holds JSON, use `valueSelector`. If the name is in a mounted config file, use a `volume` source.
 3. **More than one queue.** Add one entry to `spec.queues` for each queue, each with its own `id`.
 4. **Exchanges.** If your consumer reads an exchange name from the environment, add `appConfig.exchange`. The operator then gives your local consumer a dummy exchange name, so it does not publish to or bind against the real exchange.
 5. **Broker connection.** In the `MirrordPropertyList`, set `host` or `url`, and the `username` and `password`. For TLS, set `scheme: amqps` and the certificate properties. For a vhost other than `/`, set `vhost`.
 6. **Shared credentials.** To use one `MirrordPropertyList` in many namespaces, put it in the operator's namespace. A list with the same name in the target's namespace takes priority.
-7. **Filter field.** Use a header that your services already send, for example `baggage` from your tracing library. To filter on the message body, use `jq_filter`.
+7. **Session key in the messages.** Make your producers send `mirrord-session=<key>` in a header. The W3C `baggage` header from your tracing library is a good choice. See [Header propagation](../../sharing-the-cluster/header-propagation.md).
 
 The consumer code does not change. It reads the same environment variable, connects to the same broker, and consumes the same way.
 
-This `mirrord.json` filters on a field in the JSON body instead of a header:
+To use your own filter instead of the session key, set `feature.split_queues` in the `config_patch` of the service. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for that service. This `mirrord-up.yaml` filters on a field in the JSON body. It needs mirrord CLI `3.253.0` or later:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-consumer/container/main",
-    "namespace": "rmq-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "RMQ",
-        "jq_filter": ".payload | fromjson | .user == \"alice\""
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  orders-consumer:
+    target:
+      path: deployment/orders-consumer/container/main
+      namespace: rmq-demo
+    run:
+      command: ["python3", "consumer.py", "{{ key }}"]
+    config_patch:
+      feature:
+        split_queues:
+          orders:
+            queue_type: RMQ
+            jq_filter: '.payload | fromjson | .user == "{{ key }}"'
 ```
 
-A message that does not have a valid JSON body never matches this filter.
+The key `orders` is the queue ID from the `MirrordSplitConfig`. A message that does not have a valid JSON body never matches this filter.
 
 ## Cleanup
 
@@ -594,7 +570,7 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
 Delete the local files:
 
 ```bash
-rm consumer.py mirrord.json mirrord-bob.json
+rm consumer.py mirrord-up.yaml
 rm -rf .venv
 ```
 
@@ -606,11 +582,11 @@ No. The operator changes the queue name in the environment variable or mounted f
 
 ### What happens when two developers' filters match the same RabbitMQ message?
 
-One of the two sessions gets the message, at random. The other session does not get it. Use filters that are specific to one developer, for example an exact match on a user name, so that filters do not overlap.
+One of the two sessions gets the message, at random. The other session does not get it. Give each developer a different session key, so that filters do not overlap. Do not use a key that is the start of a different key.
 
 ### Can I filter RabbitMQ messages on the message body instead of a header?
 
-Yes. Use `jq_filter`. The jq program sees the headers, the basic properties, and the body as `payload`. To read fields of a JSON body, start the program with `.payload | fromjson`. This needs operator `3.201.0` or later and CLI `3.253.0` or later.
+Yes. Set a `jq_filter` in the `config_patch` of the service, under `feature.split_queues`. The jq program sees the headers, the basic properties, and the body as `payload`. To read fields of a JSON body, start the program with `.payload | fromjson`. This needs operator `3.201.0` or later and CLI `3.253.0` or later.
 
 ### What happens to RabbitMQ messages when I stop my mirrord session?
 
@@ -622,7 +598,7 @@ Yes. The operator patches the workload so that it reads a temporary queue, and i
 
 ### Can the deployed consumer still process the messages that my local consumer gets?
 
-Yes. Set `"queue_mode": "mirror"` on the queue in `mirrord.json`. In `mirror` mode, a message that matches your filter goes to your local consumer and to the deployed consumer. The default mode is `steal`, where a matched message goes only to your local consumer. The `mirror` mode needs operator `3.183.0` or later and CLI `3.231.0` or later.
+Yes. Start the session with `mirrord up --key alice --mode mirror`, or set `default_mode: mirror` on the service in `mirrord-up.yaml`. In `mirror` mode, a message that matches your filter goes to your local consumer and to the deployed consumer. The default mode is `split`, where a matched message goes only to your local consumer. The `mirror` mode of `mirrord up` needs CLI `3.258.0` or later and operator `3.183.0` or later.
 
 ## See also
 

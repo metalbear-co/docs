@@ -11,7 +11,7 @@ tags:
 
 A shared staging queue has one problem for developers: all consumers compete for the same messages. If you run a changed consumer on your machine, it takes messages from the deployed consumer and from your teammates. With mirrord queue splitting, you get only the messages that match your filter. The deployed consumer keeps the rest.
 
-This tutorial uses a small sample app: a Python consumer that reads an Azure Service Bus queue, and a Python producer that sends test messages with an application property `user`. You deploy the consumer to Kubernetes, then run a second copy on your machine that gets only the messages where `user` is `alice`.
+This tutorial uses a small sample app: a Python consumer that reads an Azure Service Bus queue, and a Python producer that sends test messages with the application properties `user` and `baggage`. You deploy the consumer to Kubernetes, then run a second copy on your machine with `mirrord up`. It gets only the messages where `baggage` is `mirrord-session=alice`.
 
 Queue splitting needs no changes to the consumer code. You do not add an SDK, an interceptor, or a routing check to the consumer. The mirrord operator changes the queue name that each consumer reads, and it routes each message to the correct queue.
 
@@ -41,8 +41,8 @@ Before you start, make sure that you have these items:
 2. `kubectl`, configured for that cluster.
 3. The Azure CLI (`az`), logged in to a subscription where you can create resources.
 4. Python 3.9 or later on your machine.
-5. The mirrord CLI, version `3.221.0` or later.
-6. The mirrord operator, version `3.170.0` or later, installed with a license.
+5. The mirrord CLI, version `3.243.0` or later. From this version, `mirrord up` tells the operator to skip the queue types that it does not split.
+6. The mirrord operator, version `3.183.0` or later, installed with a license. Queue splitting with `mirrord up` needs this version.
 
 The `azure-servicebus` SDK (version 7.15) needs Python 3.9 or later.
 
@@ -245,7 +245,7 @@ kubectl rollout status deployment/orders-consumer --namespace sb-demo
 
 ### Step 4: Create the mirrord operator resources
 
-Save this manifest as `mirrord-split.yaml`. The `MirrordPropertyList` tells the operator how to connect to Service Bus. The `MirrordSplitConfig` tells the operator that the Deployment reads the queue name from `SERVICE_BUS_QUEUE_NAME`, and it gives the queue the ID `orders-queue`. Your `mirrord.json` uses this ID.
+Save this manifest as `mirrord-split.yaml`. The `MirrordPropertyList` tells the operator how to connect to Service Bus. The `MirrordSplitConfig` tells the operator that the Deployment reads the queue name from `SERVICE_BUS_QUEUE_NAME`, and it gives the queue the ID `orders-queue`. A custom filter in `mirrord-up.yaml` uses this ID.
 
 ```yaml
 apiVersion: mirrord.metalbear.co/v1
@@ -292,7 +292,7 @@ kubectl apply -f mirrord-split.yaml
 
 ### Step 5: Create the producer
 
-Save this script as `producer.py`. It sends a number of messages. If you give a user name, each message gets the application property `user` with that value. If you give `none`, the messages have no property.
+Save this script as `producer.py`. It sends a number of messages. If you give a user name, each message gets the application property `user` with that value, and the property `baggage` with the value `mirrord-session=<user>`. If you give `none`, the messages have no properties.
 
 ```python
 import json
@@ -309,7 +309,8 @@ START = int(sys.argv[3]) if len(sys.argv) > 3 else 1
 with ServiceBusClient.from_connection_string(CONN) as client:
     with client.get_queue_sender(queue_name="orders") as sender:
         for order_id in range(START, START + COUNT):
-            props = None if USER == "none" else {"user": USER}
+            # mirrord up sends a message to the session whose key is in "baggage".
+            props = None if USER == "none" else {"user": USER, "baggage": f"mirrord-session={USER}"}
             body = json.dumps({"order_id": order_id})
             sender.send_messages(ServiceBusMessage(body, application_properties=props))
             print(f"sent order_id={order_id} user={USER}")
@@ -362,43 +363,39 @@ The deployed consumer prints all six messages:
 
 ### Step 1: Write the mirrord configuration
 
-Save this file as `mirrord-alice.json`. The filter sends to your local consumer only the messages where the application property `user` has the exact value `alice`:
+Save this file as `mirrord-up.yaml`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-consumer",
-    "namespace": "sb-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders-queue": {
-        "queue_type": "AzureServiceBus",
-        "message_filter": {
-          "user": "^alice$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  orders-consumer:
+    target:
+      path: deployment/orders-consumer
+      namespace: sb-demo
+    run:
+      command: ["python3", "consumer.py", "{{ key }}"]
 ```
 
-The key `orders-queue` is the queue ID from the `MirrordSplitConfig`. The value of each `message_filter` entry is a regular expression. The operator compares it with the property value as a plain string.
+The file has one service, `orders-consumer`, that runs `consumer.py` against the `orders-consumer` Deployment. `{{ key }}` is the session key. The consumer prints it in front of each line.
+
+The file has no queue configuration. `mirrord up` splits the queues of the target automatically. Your local consumer gets only the messages with an application property value that contains `mirrord-session=<key>`.
 
 ### Step 2: Start the local consumer
 
-Open a new terminal. Activate the virtual environment, and run the same `consumer.py` on your machine with mirrord:
+Open a new terminal. Activate the virtual environment, and run the same `consumer.py` on your machine with `mirrord up` and the session key `alice`:
 
 ```shell
 source .venv/bin/activate
-mirrord exec -f mirrord-alice.json -- python3 consumer.py alice
+mirrord up --key alice
 ```
 
-mirrord gives the local process the environment of the deployed pod, so the script gets the connection string from the cluster. The operator changes `SERVICE_BUS_QUEUE_NAME` for your process to the name of a temporary queue that only your session reads. The local consumer prints a name like this:
+mirrord gives the local process the environment of the deployed pod, so the script gets the connection string from the cluster. The operator changes `SERVICE_BUS_QUEUE_NAME` for your process to the name of a temporary queue that only your session reads. The local consumer prints a name like this. `mirrord up` puts the service name in front of each line of the consumer:
+
+<!-- TODO: confirm on a cluster -->
 
 ```
-[alice] reading queue mirrord-tmp-<random>-orders
+orders-consumer: [alice] reading queue mirrord-tmp-<random>-orders
 ```
 
 When the first session starts, the operator also restarts the pods of the deployed consumer with a new value in `SERVICE_BUS_QUEUE_NAME`. Watch the `kubectl logs` terminal. When the log stops, run the `kubectl logs --follow` command again to see the new pod. The new pod reads its own temporary queue:
@@ -411,7 +408,7 @@ When the first session starts, the operator also restarts the pods of the deploy
 Wait until the old pod is gone before you send messages. Until it stops, the old pod still reads the `orders` queue and can take messages for your session. Make sure that `kubectl get pods --namespace sb-demo` shows only one pod.
 {% endhint %}
 
-### Step 3: Send messages with and without the property
+### Step 3: Send messages with and without the session key
 
 In the producer terminal, send messages for `alice` and messages with no property:
 
@@ -423,9 +420,9 @@ python3 producer.py none 3 20
 Your local consumer gets only the `alice` messages:
 
 ```
-[alice] order_id=10 user=alice
-[alice] order_id=11 user=alice
-[alice] order_id=12 user=alice
+orders-consumer: [alice] order_id=10 user=alice
+orders-consumer: [alice] order_id=11 user=alice
+orders-consumer: [alice] order_id=12 user=alice
 ```
 
 The deployed consumer gets the other messages:
@@ -436,42 +433,20 @@ The deployed consumer gets the other messages:
 [deployed] order_id=22 user=-
 ```
 
-To test a change, edit `consumer.py` on your machine and run the `mirrord exec` command again. You do not rebuild or deploy anything.
+To test a change, edit `consumer.py` on your machine and run the `mirrord up` command again. You do not rebuild or deploy anything.
 
 ### Step 4: Add a second developer
 
 The operator supports more than one session on the same queue. Each new session gets its own temporary queue and its own filter.
 
-Save a copy of the configuration as `mirrord-bob.json` with a different filter:
-
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-consumer",
-    "namespace": "sb-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders-queue": {
-        "queue_type": "AzureServiceBus",
-        "message_filter": {
-          "user": "^bob$"
-        }
-      }
-    }
-  }
-}
-```
-
-Keep the `alice` session open. In a new terminal, activate the virtual environment and start a second session:
+Keep the `alice` session open. Open a new terminal in the same directory. Activate the virtual environment and start a second session with the same `mirrord-up.yaml` and the key `bob`:
 
 ```shell
 source .venv/bin/activate
-mirrord exec -f mirrord-bob.json -- python3 consumer.py bob
+mirrord up --key bob
 ```
 
-Send one message for each user and one with no property:
+Send one message for each user and one with no properties:
 
 ```shell
 python3 producer.py alice 1 30
@@ -482,13 +457,13 @@ python3 producer.py none 1 50
 Each consumer gets only its messages:
 
 ```
-[alice] order_id=30 user=alice
-[bob] order_id=40 user=bob
+orders-consumer: [alice] order_id=30 user=alice
+orders-consumer: [bob] order_id=40 user=bob
 [deployed] order_id=50 user=-
 ```
 
 {% hint style="warning" %}
-If the filters of two sessions both match a message, the operator gives the message to one of the two sessions at random. Use filters that do not overlap, for example one exact user name for each developer.
+If the filters of two sessions both match a message, the operator gives the message to one of the two sessions at random. Use a different session key for each developer. Do not use a key that is the start of a different key, for example `ali` and `alice`.
 {% endhint %}
 
 ### Step 5: Stop the sessions
@@ -539,20 +514,21 @@ When the first session starts, the operator creates two temporary queues in your
 
 ```mermaid
 flowchart LR
-    P[Producer] -->|"user=alice / user=bob / no property"| Q[(orders queue)]
+    P[Producer] -->|"mirrord-session=alice / mirrord-session=bob / no property"| Q[(orders queue)]
     Q --> O[mirrord operator<br/>compares application properties<br/>with session filters]
     O -->|"no filter matches"| TD[(temporary queue<br/>deployed)]
-    O -->|"user=alice"| TA[(temporary queue<br/>alice session)]
-    O -->|"user=bob"| TB[(temporary queue<br/>bob session)]
+    O -->|"mirrord-session=alice"| TA[(temporary queue<br/>alice session)]
+    O -->|"mirrord-session=bob"| TB[(temporary queue<br/>bob session)]
     TD --> D[Deployed consumer<br/>in the cluster]
-    TA --> LA[alice: local consumer<br/>with mirrord exec]
-    TB --> LB[bob: local consumer<br/>with mirrord exec]
+    TA --> LA[alice: local consumer<br/>with mirrord up]
+    TB --> LB[bob: local consumer<br/>with mirrord up]
 ```
 
 ## Behavior and tradeoffs
 
-- **Filters match application properties.** A `message_filter` entry is a property name and a regular expression for its value. Values are compared as plain strings. If you give more than one entry, a message must match all of them.
-- **You can filter on the body.** A `jq_filter` runs on a JSON object with the fields `body`, `application_properties`, `message_id`, `content_type`, and `subject`. For example, `.body | fromjson | .priority == "high"`. If you set `message_filter` and `jq_filter` together, a message must match both.
+- **The filter of `mirrord up` matches application properties.** `mirrord up` makes a `jq_filter` for each session. The filter matches a message when a string value in its application properties contains `mirrord-session=<key>`. The property name does not matter. A key that is the start of a different key, for example `ali` and `alice`, matches the messages of both keys.
+- **Custom filters.** In a `config_patch`, a `message_filter` entry is a property name and a regular expression for its value. Values are compared as plain strings. If you give more than one entry, a message must match all of them.
+- **You can filter on the body.** In a `config_patch`, a `jq_filter` runs on a JSON object with the fields `body`, `application_properties`, `message_id`, `content_type`, and `subject`. For example, `.body | fromjson | .priority == "high"`. If you set `message_filter` and `jq_filter` together, a message must match both.
 - **The producer must set the property.** If the producers do not put the property on the message, no filter matches and the message goes to the deployed consumer. To carry a value such as `baggage` across services, see [Header Propagation](../../sharing-the-cluster/header-propagation.md).
 - **Overlapping filters give random results.** If two filters match one message, one of the two sessions gets it at random.
 - **The queue model restarts the deployed consumer.** The operator restarts the pods of the workload with a new queue name when the split starts and when it ends. The Topic/Subscription model does not restart the deployed application.
@@ -565,18 +541,39 @@ flowchart LR
 
 To use queue splitting with your own consumer, change these items:
 
-1. **Target.** Set `targetRef` in the `MirrordSplitConfig` and `target` in `mirrord.json` to your Deployment, StatefulSet, or Argo Rollout.
+1. **Target.** Set `targetRef` in the `MirrordSplitConfig` and `target` in `mirrord-up.yaml` to your Deployment, StatefulSet, or Argo Rollout.
 2. **Queue name source.** Set `appConfig.queue[].env` to the variable that your consumer reads. If the queue name is inside a connection string as `EntityPath`, use `valuePattern: "EntityPath=(?P<value>[^;]+)"`. The operator then changes only the queue name in the string.
 3. **Topics.** If your consumer reads a topic subscription, use `appConfig.topic` and `appConfig.subscription` instead of `appConfig.queue`. If the topic name is not in an environment variable (for example with MassTransit), give it in `fallback`.
 4. **Authentication.** Use Workload Identity, a connection string, or a service principal in the `MirrordPropertyList`. To share one property list between namespaces, put it in the operator namespace.
-5. **Filter.** Pick an application property that your producers already set, such as a tenant, a user, or a test ID. Each developer uses a different value.
-6. **Queue ID.** Use the same ID in the `MirrordSplitConfig` and in `feature.split_queues`. To use one filter for all queues in the split config, use the ID `*`.
+5. **Session key in the messages.** Make your producers set an application property with `mirrord-session=<key>`, for example `baggage`. Each developer uses a different key.
+6. **Queue ID.** For a custom filter, use the same ID in the `MirrordSplitConfig` and in `feature.split_queues`. To use one filter for all queues in the split config, use the ID `*`.
 
 You do not change the consumer code. The consumer reads its queue name in the same way in the cluster and on your machine. The operator changes only the value.
 
+To use your own filter instead of the session key, set `feature.split_queues` in the `config_patch` of the service. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for that service. This `mirrord-up.yaml` filters on the `user` property. `config_patch` needs mirrord CLI `3.251.0` or later:
+
+```yaml
+common:
+  operator: true
+services:
+  orders-consumer:
+    target:
+      path: deployment/orders-consumer
+      namespace: sb-demo
+    run:
+      command: ["python3", "consumer.py", "{{ key }}"]
+    config_patch:
+      feature:
+        split_queues:
+          orders-queue:
+            queue_type: AzureServiceBus
+            message_filter:
+              user: "^{{ key }}$"
+```
+
 ## Cleanup
 
-Stop all `mirrord exec` sessions and wait for the drain to end. Then delete the demo resources:
+Stop all `mirrord up` sessions and wait for the drain to end. Then delete the demo resources:
 
 ```shell
 kubectl delete -f mirrord-split.yaml
@@ -602,7 +599,7 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
 
 ### How do I test an Azure Service Bus consumer locally without stealing messages from staging?
 
-Use mirrord queue splitting with a filter on an application property. The operator gives your local consumer only the messages that match your filter. The deployed consumer and your teammates keep all other messages.
+Use mirrord queue splitting with `mirrord up` and a session key. The operator gives your local consumer only the messages with your session key in an application property. The deployed consumer and your teammates keep all other messages.
 
 ### Do I need to change my consumer code to use queue splitting?
 
@@ -622,7 +619,7 @@ Yes. On AKS with Workload Identity, give the operator identity the **Azure Servi
 
 ### What happens if two developers use filters that match the same message?
 
-The operator gives the message to one of the two sessions at random. Each developer must use a filter value that no other session uses.
+The operator gives the message to one of the two sessions at random. Each developer must use a session key that no other session uses.
 
 ## See also
 

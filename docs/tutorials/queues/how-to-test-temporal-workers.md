@@ -13,7 +13,7 @@ A Temporal worker in a shared staging cluster polls one task queue. If you run a
 
 mirrord queue splitting solves this problem. The mirrord operator reads the real task queue and sends each task to the correct worker. Tasks that match your filter go to your local worker. All other tasks go to the deployed worker. The worker code needs no routing logic: no SDK, no interceptors, and no filter checks in your code.
 
-In this tutorial, you deploy a small Temporal setup and a Python worker. Then you run the same worker on your laptop with mirrord and start workflows with different workflow IDs. You see which worker processes each workflow.
+In this tutorial, you deploy a small Temporal setup and a Python worker. Then you run the same worker on your laptop with `mirrord up` and start workflows with different workflow IDs. You see which worker processes each workflow.
 
 **Estimated time:** 20 minutes.
 
@@ -46,7 +46,7 @@ On your laptop, you use two scripts: `worker.py` (the same worker code) and `sta
 * `kubectl`, with access to the cluster.
 * `helm`.
 * Python 3.11 or later on your laptop. The `temporalio` release in this tutorial needs it.
-* The mirrord CLI, version `3.221.0` or later.
+* The mirrord CLI, version `3.251.0` or later. The `mirrord-up.yaml` in this tutorial uses `config_patch`, which needs this version.
 * The mirrord operator, version `3.198.0` or later, with a mirrord for Teams license. The operator must have the `operator.temporalSplitting` Helm value set to `true`.
 
 If the operator is not installed, install it with Temporal splitting. Replace `<LICENSE_KEY>` with your license key.
@@ -403,7 +403,7 @@ The `MirrordPropertyList` gives the operator the address of the real Temporal fr
 * The worker reads its task queue name from `TEMPORAL_TASK_QUEUE`. The operator changes this value to a virtual task queue.
 * The worker reads the frontend address from `TEMPORAL_ADDRESS`. The operator changes this value to the address of its Temporal proxy.
 * The worker reads the Temporal namespace from `TEMPORAL_NAMESPACE`.
-* Developers refer to this task queue with the ID `orders` in `mirrord.json`.
+* Developers refer to this task queue with the ID `orders` in `mirrord-up.yaml`.
 
 Apply the manifest:
 
@@ -473,45 +473,50 @@ processed workflow_id=bob-order-1 customer=bob
 
 ### Step 1: Write the mirrord configuration
 
-Alice wants to get only her own workflows. Save this file as `mirrord-alice.json`:
+Alice wants to get only her own workflows. Save this file as `mirrord-up.yaml`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-worker",
-    "namespace": "temporal-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "Temporal",
-        "message_filter": {
-          "workflow_id": "^alice-"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  orders-worker:
+    target:
+      path: deployment/orders-worker
+      namespace: temporal-demo
+    run:
+      command: ["python3", "worker.py"]
+    config_patch:
+      feature:
+        split_queues:
+          orders:
+            queue_type: Temporal
+            message_filter:
+              workflow_id: "^{{ key }}-"
 ```
 
-The key under `split_queues` (`orders`) is the queue ID from the `MirrordSplitConfig`. The value of `queue_type` must be `Temporal`. The filter is a regex on the workflow ID. Only workflows whose IDs start with `alice-` go to the local worker.
+The file has one service, `orders-worker`, that runs `worker.py` against the `orders-worker` Deployment. `{{ key }}` is the session key that you give to `mirrord up`. With the key `alice`, only workflows whose IDs start with `alice-` go to the local worker.
+
+The key under `split_queues` (`orders`) is the queue ID from the `MirrordSplitConfig`. The value of `queue_type` must be `Temporal`.
+
+This tutorial sets the filter in `config_patch`. Without it, `mirrord up` makes a filter that looks for `mirrord-session=<key>` in the Temporal headers of each task. The starter in this tutorial sets no Temporal headers. Also, a workflow gives its headers to its activity tasks only through an interceptor in the worker. A `workflow_id` filter matches the workflow tasks and the activity tasks with no change to the code. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for the service.
 
 ### Step 2: Run the worker locally
 
-Open a new terminal. Activate the virtual environment, and run the same `worker.py` with mirrord:
+Open a new terminal. Activate the virtual environment, and run the same `worker.py` with `mirrord up` and the session key `alice`:
 
 ```bash
 source .venv/bin/activate
-mirrord exec -f mirrord-alice.json -- python3 worker.py
+mirrord up --key alice
 ```
 
 You do not set any environment variables on your laptop. mirrord gives the local worker the environment of the target. The operator replaces the task queue with the session virtual task queue, and the address with its Temporal proxy.
 
-When the session starts, the operator patches the deployed worker to poll the main virtual task queue through the proxy. The deployed worker pod restarts. Wait until the local worker prints a `polling` line:
+When the session starts, the operator patches the deployed worker to poll the main virtual task queue through the proxy. The deployed worker pod restarts. Wait until the local worker prints a `polling` line. `mirrord up` puts the service name in front of each line of the worker:
+
+<!-- TODO: confirm on a cluster -->
 
 ```
-polling task_queue=mirrord-session-<random>-orders address=mirrord-operator.mirrord.svc.cluster.local:7233
+orders-worker: polling task_queue=mirrord-session-<random>-orders address=mirrord-operator.mirrord.svc.cluster.local:7233
 ```
 
 ### Step 3: Start matching and non-matching workflows
@@ -525,7 +530,7 @@ python3 starter.py alice-order-2 bob-order-2 carol-order-2
 The local worker terminal shows only the workflow for Alice:
 
 ```
-processed workflow_id=alice-order-2 customer=alice
+orders-worker: processed workflow_id=alice-order-2 customer=alice
 ```
 
 Look at the logs of the deployed worker:
@@ -541,37 +546,17 @@ processed workflow_id=bob-order-2 customer=bob
 processed workflow_id=carol-order-2 customer=carol
 ```
 
-The worker code is the same in both places. Change `worker.py` on your laptop, for example the text in the `print` call, and run the `mirrord exec` command again. Only your workflows go to the changed code.
+The worker code is the same in both places. Change `worker.py` on your laptop, for example the text in the `print` call, and run the `mirrord up` command again. Only your workflows go to the changed code.
 
 ### Step 4: Add a second developer
 
-Many developers can split the same task queue at the same time. Each session gets its own session virtual task queue. Save this file as `mirrord-bob.json`:
+Many developers can split the same task queue at the same time. Each session gets its own session virtual task queue. Bob uses the same `mirrord-up.yaml` with his own session key. With the key `bob`, the filter is `^bob-`.
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/orders-worker",
-    "namespace": "temporal-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "Temporal",
-        "message_filter": {
-          "workflow_id": "^bob-"
-        }
-      }
-    }
-  }
-}
-```
-
-Keep the session for Alice open. In a new terminal, activate the virtual environment and start a session for Bob:
+Keep the session for Alice open. Open a new terminal in the same directory. Activate the virtual environment and start a session for Bob:
 
 ```bash
 source .venv/bin/activate
-mirrord exec -f mirrord-bob.json -- python3 worker.py
+mirrord up --key bob
 ```
 
 Start three more workflows:
@@ -621,7 +606,7 @@ flowchart LR
     filter -->|no| mainq[Main virtual<br/>task queue]
     sessionq --> proxy[Operator Temporal proxy]
     mainq --> proxy
-    proxy -->|poll| local[Local worker<br/>mirrord exec]
+    proxy -->|poll| local[Local worker<br/>mirrord up]
     proxy -->|poll| deployed[Deployed worker<br/>orders-worker]
     proxy -->|completions, heartbeats| frontend
 ```
@@ -629,7 +614,8 @@ flowchart LR
 ## Behavior and tradeoffs
 
 * **Steal only.** Temporal gives each task to exactly one worker poll. Temporal queue splitting supports `steal` only. If you set `queue_mode: mirror` on a Temporal queue, or use `mirrord up` in mirror mode, the session runs as `steal`. mirrord prints a warning for each Temporal queue when this occurs. This needs operator `3.221.0` or later. The warning needs mirrord CLI `3.274.0` or later.
-* **What the filter can match.** `message_filter` applies regexes to task metadata. The supported keys are:
+* **The automatic filter of `mirrord up`.** Without a `config_patch`, `mirrord up` makes a `jq_filter` that matches a task when a string value in its Temporal headers contains `mirrord-session=<key>`. To use it, the code that starts a workflow must set the header, and the worker must give the header of a workflow to its activities. Temporal SDKs do this through interceptors.
+* **What the filter can match.** In a `config_patch`, `message_filter` applies regexes to task metadata. The supported keys are:
   * `workflow_id`: the workflow ID.
   * `workflow_type`: the workflow type name.
   * `activity_type`: the activity type name.
@@ -650,17 +636,17 @@ flowchart LR
 
 To use queue splitting with a real worker, change these items:
 
-1. **Target.** Set `spec.targetRef` in the `MirrordSplitConfig` and `target` in `mirrord.json` to your worker workload. To use one config for many workloads with the same labels, use `targetSelector` instead of `targetRef`.
+1. **Target.** Set `spec.targetRef` in the `MirrordSplitConfig` and `target` in `mirrord-up.yaml` to your worker workload. To use one config for many workloads with the same labels, use `targetSelector` instead of `targetRef`.
 2. **Task queue source.** Point `appConfig.taskQueue` at the environment variable that holds your task queue name. If the name is in a config file from a ConfigMap or Secret volume, use a `volume` source with `valueSelector`. If your worker uses other variable names for the address and the namespace, change `temporalAddress` and `temporalNamespace` to match.
 3. **Connection and auth.** Set `address` and `namespace` in the `MirrordPropertyList` to your Temporal frontend. For a frontend behind TLS, set `tls: "true"`. For Temporal Cloud, add `apiKey` from a Secret. For a private CA, add `tlsCaCert`. For mutual TLS, add `tlsClientCert` and `tlsClientKey`. Keep certificate material in a Secret and refer to it with `secretKeyRef`.
-4. **Filter field.** Use a field that your workflows already carry. A workflow ID prefix is the easiest choice, because the code that starts the workflow sets it. To filter on a value that moves through many services, use a Temporal header such as `header.baggage`. See [Header Propagation](../../sharing-the-cluster/header-propagation.md).
-5. **Queue ID.** Use the same `id` in the `MirrordSplitConfig` and as the key under `feature.split_queues`.
+4. **Filter field.** Use a field that your workflows already carry. A workflow ID prefix is the easiest choice, because the code that starts the workflow sets it. To filter on a value that moves through many services, put `mirrord-session=<key>` in a Temporal header such as `baggage`, and remove the `config_patch`. `mirrord up` then uses its automatic filter. See [Header Propagation](../../sharing-the-cluster/header-propagation.md).
+5. **Queue ID.** Use the same `id` in the `MirrordSplitConfig` and as the key under `feature.split_queues` in the `config_patch`.
 
 The routing logic of your worker does not change. The worker continues to read its task queue and address from its environment, and the operator changes these values. This tutorial's worker has two other changes: the connection option that turns off gRPC compression, and the `SIGTERM` handler that stops polling at once.
 
 ## Cleanup
 
-Stop all `mirrord exec` sessions and the port-forward with `Ctrl+C`. Then delete the demo namespace:
+Stop all `mirrord up` sessions and the port-forward with `Ctrl+C`. Then delete the demo namespace:
 
 ```bash
 kubectl delete namespace temporal-demo
@@ -686,11 +672,11 @@ No. Temporal gives each task to exactly one worker poll. Temporal queue splittin
 
 ### How do I filter Temporal workflows by workflow ID, header, or search attribute?
 
-Use `message_filter` in `feature.split_queues`. The keys are `workflow_id`, `workflow_type`, `activity_type`, `header.<name>` for a Temporal header, and any other key for a search attribute. Each value is a regex. For filters on the workflow input, use `jq_filter`.
+Use `message_filter` under `feature.split_queues` in the `config_patch` of the service. The keys are `workflow_id`, `workflow_type`, `activity_type`, `header.<name>` for a Temporal header, and any other key for a search attribute. Each value is a regex. For filters on the workflow input, use `jq_filter`.
 
 ### Can several developers test Temporal workers on the same task queue at the same time?
 
-Yes. Each session gets its own session virtual task queue. Give each developer a filter that does not overlap with the others. If two filters match one task, the session that started most recently gets it.
+Yes. Each session gets its own session virtual task queue. Give each developer a session key, and thus a filter, that does not overlap with the others. If two filters match one task, the session that started most recently gets it.
 
 ### What happens to Temporal tasks when I stop my mirrord session?
 

@@ -11,14 +11,14 @@ tags:
 
 A shared staging stream has one problem for developers: all consumers compete for the same messages. If you run a changed consumer on your machine, it takes messages from the deployed consumer and from your teammates. With mirrord queue splitting, you get only the messages that match your filter. The deployed consumer keeps the rest.
 
-This tutorial uses a small sample app: a Python consumer that reads a NATS JetStream stream through a durable pull consumer, and a Python producer that sends test messages with a header `x-user`. You deploy NATS and the consumer to Kubernetes. Then you run a second copy of the consumer on your machine that gets only the messages where `x-user` is `alice`.
+This tutorial uses a small sample app: a Python consumer that reads a NATS JetStream stream through a durable pull consumer, and a Python producer that sends test messages with the headers `x-user` and `baggage`. You deploy NATS and the consumer to Kubernetes. Then you run a second copy of the consumer on your machine with `mirrord up`. It gets only the messages where `baggage` is `mirrord-session=alice`.
 
 Queue splitting needs no changes to the consumer code. You do not add an SDK, an interceptor, or code that decides which consumer gets a message. The mirrord operator changes the stream and consumer names that each consumer reads, and it sends each message to the correct stream.
 
 **Estimated time:** 20 to 30 minutes.
 
 {% hint style="info" %}
-NATS has two models: JetStream (streams with durable consumers) and core NATS pub/sub (plain subject subscriptions, nothing is stored). mirrord can split both. This tutorial uses JetStream, because JetStream delivery is at-least-once. For core NATS pub/sub, see [Core NATS pub/sub](#core-nats-pub-sub) below.
+NATS has two models: JetStream (streams with durable consumers) and core NATS pub/sub (plain subject subscriptions, nothing is stored). mirrord can split both. This tutorial uses JetStream, because JetStream delivery is at-least-once, and because `mirrord up` splits JetStream streams automatically. For core NATS pub/sub, see [Core NATS pub/sub](#core-nats-pub-sub) below.
 {% endhint %}
 
 ## How NATS changes the isolation problem
@@ -45,7 +45,7 @@ Before you start, make sure that you have these items:
 1. A Kubernetes cluster for development or staging, version `1.30` or later. Queue splitting needs this version. Do not use a production cluster.
 2. `kubectl`, configured for that cluster.
 3. Python 3.9 or later on your machine.
-4. The mirrord CLI, version `3.254.0` or later.
+4. The mirrord CLI, version `3.254.0` or later. From this version, `mirrord up` splits NATS JetStream streams automatically.
 5. The mirrord operator, version `3.203.0` or later, installed with a license.
 
 The cluster pods must have access to PyPI, because the pods install `nats-py` when they start.
@@ -195,7 +195,7 @@ async def main():
 asyncio.run(main())
 ```
 
-`producer.py` publishes orders to the subject `orders.created`. The first argument is the value of the `x-user` header. Use `none` to send messages without the header.
+`producer.py` publishes orders to the subject `orders.created`. The first argument is the value of the `x-user` header. The producer also sets the `baggage` header to `mirrord-session=<user>`. Use `none` to send messages without headers.
 
 ```python
 import asyncio
@@ -207,11 +207,12 @@ import nats
 
 
 async def main():
-    user = sys.argv[1]  # Use "none" to send messages without the header.
+    user = sys.argv[1]  # Use "none" to send messages without headers.
     count = int(sys.argv[2]) if len(sys.argv) > 2 else 3
     nc = await nats.connect(os.environ["NATS_URL"])
     js = nc.jetstream()
-    headers = None if user == "none" else {"x-user": user}
+    # mirrord up sends a message to the session whose key is in "baggage".
+    headers = None if user == "none" else {"x-user": user, "baggage": f"mirrord-session={user}"}
     for i in range(1, count + 1):
         order = {"id": f"{user}-{i}", "item": "book"}
         await js.publish("orders.created", json.dumps(order).encode(), headers=headers)
@@ -372,7 +373,7 @@ Before you start a mirrord session, make sure that the deployed consumer gets al
 kubectl logs -n nats-demo deployment/order-processor -f
 ```
 
-In a second terminal, send two orders for `alice` and one order without the header. The producer runs in the consumer pod, because that pod already has `nats-py` and the scripts.
+In a second terminal, send two orders for `alice` and one order without headers. The producer runs in the consumer pod, because that pod already has `nats-py` and the scripts.
 
 ```shell
 kubectl exec -n nats-demo deployment/order-processor -- python /app/producer.py alice 2
@@ -392,43 +393,37 @@ order=none-1 x-user=- subject=orders.created
 
 ### Step 1: Write the mirrord config
 
-Save this file as `mirrord-alice.json`, in the directory with `consumer.py`:
+Save this file as `mirrord-up.yaml`, in the directory with `consumer.py`:
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/order-processor/container/consumer",
-    "namespace": "nats-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "NATS",
-        "message_filter": {
-          "x-user": "^alice$"
-        }
-      }
-    }
-  }
-}
+```yaml
+common:
+  operator: true
+services:
+  order-processor:
+    target:
+      path: deployment/order-processor/container/consumer
+      namespace: nats-demo
+    run:
+      command: ["python3", "consumer.py"]
 ```
 
-The key `orders` is the queue ID from the `MirrordSplitConfig`. `queue_type` is `NATS` for JetStream. `message_filter` maps a header name to a regex for the header value. A message matches only when all entries match. Header names are case-sensitive.
+The file has one service, `order-processor`, that runs `consumer.py` against container `consumer` of the `order-processor` Deployment. The file has no queue configuration. `mirrord up` splits the JetStream streams of the target automatically. Your local consumer gets only the messages with a header value that contains `mirrord-session=<key>`, where `<key>` is your session key.
 
 ### Step 2: Start the local consumer
 
-Run the same `consumer.py` on your machine with mirrord. If you use a new terminal, activate the virtual environment first:
+Run the same `consumer.py` on your machine with `mirrord up` and the session key `alice`. If you use a new terminal, activate the virtual environment first:
 
 ```shell
 source .venv/bin/activate
-mirrord exec -f mirrord-alice.json -- python3 consumer.py
+mirrord up --key alice
 ```
 
-mirrord gives your local process the environment of the target pod, and the operator changes `NATS_STREAM` and `NATS_CONSUMER` to the names of your session stream and consumer. The output is similar to this:
+mirrord gives your local process the environment of the target pod, and the operator changes `NATS_STREAM` and `NATS_CONSUMER` to the names of your session stream and consumer. `mirrord up` puts the service name in front of each line of the consumer. The output is similar to this:
+
+<!-- TODO: confirm on a cluster -->
 
 ```
-reading stream=mirrord-tmp-<random>-order-processor consumer=mirrord-tmp-<random>-order-processor-consumer
+order-processor: reading stream=mirrord-tmp-<random>-order-processor consumer=mirrord-tmp-<random>-order-processor-consumer
 ```
 
 When the first session starts, the operator also restarts the deployed pods with the names of the main-output stream and consumer. The operator sets these values in the new pods. The Deployment manifest does not change.
@@ -451,9 +446,9 @@ The new pod prints the main-output names:
 reading stream=mirrord-tmp-<random>-main-order-processor consumer=mirrord-tmp-<random>-main-order-processor-consumer
 ```
 
-### Step 3: Send messages with and without the header
+### Step 3: Send messages with and without the session key
 
-In a third terminal, send orders for `alice`, for `bob`, and without the header:
+In a third terminal, send orders for `alice`, for `bob`, and without headers:
 
 ```shell
 kubectl exec -n nats-demo deployment/order-processor -- python /app/producer.py alice 2
@@ -464,8 +459,8 @@ kubectl exec -n nats-demo deployment/order-processor -- python /app/producer.py 
 Your local consumer gets only the orders for `alice`:
 
 ```
-order=alice-1 x-user=alice subject=mirrord-tmp-<random>-order-processor.orders.created
-order=alice-2 x-user=alice subject=mirrord-tmp-<random>-order-processor.orders.created
+order-processor: order=alice-1 x-user=alice subject=mirrord-tmp-<random>-order-processor.orders.created
+order-processor: order=alice-2 x-user=alice subject=mirrord-tmp-<random>-order-processor.orders.created
 ```
 
 The deployed consumer gets all other orders:
@@ -480,42 +475,22 @@ The subject now has a prefix: the name of the temporary stream. The operator kee
 
 ### Step 4: Add a second developer
 
-Many developers can split the same stream at the same time. Each session gets its own temporary stream. Save this file as `mirrord-bob.json`:
+Many developers can split the same stream at the same time. Each session gets its own temporary stream.
 
-```json
-{
-  "operator": true,
-  "target": {
-    "path": "deployment/order-processor/container/consumer",
-    "namespace": "nats-demo"
-  },
-  "feature": {
-    "split_queues": {
-      "orders": {
-        "queue_type": "NATS",
-        "message_filter": {
-          "x-user": "^bob$"
-        }
-      }
-    }
-  }
-}
-```
-
-Keep the first session open. In a new terminal, activate the virtual environment and start a second session:
+Keep the first session open. Open a new terminal in the same directory. Activate the virtual environment and start a second session with the same `mirrord-up.yaml` and the key `bob`:
 
 ```shell
 source .venv/bin/activate
-mirrord exec -f mirrord-bob.json -- python3 consumer.py
+mirrord up --key bob
 ```
 
 Send the same three batches of orders again. Now the `alice` session gets `alice-1` and `alice-2`, the `bob` session gets `bob-1` and `bob-2`, and the deployed consumer gets only `none-1`. The second session does not restart the deployed pods again, because the deployment already reads the main-output stream.
 
-Make your filters specific. When the filters of two sessions match the same message, the operator sends the message to one session only. The operator does not define which session gets it.
+Use a different session key for each developer. Do not use a key that is the start of a different key, for example `ali` and `alice`. When the filters of two sessions match the same message, the operator sends the message to one session only. The operator does not define which session gets it.
 
 ### Step 5: Stop the sessions
 
-Press Ctrl+C in each mirrord terminal. When a session ends, the operator deletes its temporary stream. Messages in that stream that your local consumer did not read are deleted with it.
+Press Ctrl+C in each `mirrord up` terminal. When a session ends, the operator deletes its temporary stream. Messages in that stream that your local consumer did not read are deleted with it.
 
 When the last session ends, the deployed consumer continues to read the main-output stream until that stream is empty. Then the operator restores the original `NATS_STREAM` and `NATS_CONSUMER` values, and the deployed pods restart. The operator deletes the main-output stream. Messages that producers publish in this period stay in the original stream, and the deployed consumer reads them after the restart.
 
@@ -547,8 +522,8 @@ flowchart LR
     P[Producer] -->|orders.created| S[(Stream ORDERS)]
     S --> C[Durable consumer order-processor]
     C --> O{mirrord operator<br/>checks filters}
-    O -->|x-user: alice| A[(Session stream<br/>mirrord-tmp-...-order-processor)]
-    O -->|x-user: bob| B[(Session stream<br/>mirrord-tmp-...-order-processor)]
+    O -->|mirrord-session=alice| A[(Session stream<br/>mirrord-tmp-...-order-processor)]
+    O -->|mirrord-session=bob| B[(Session stream<br/>mirrord-tmp-...-order-processor)]
     O -->|no match| M[(Main-output stream<br/>mirrord-tmp-...-main-order-processor)]
     A --> LA[Alice local consumer]
     B --> LB[Bob local consumer]
@@ -561,8 +536,9 @@ The operator records each temporary resource in a `MirrordClusterExternalResourc
 
 - **Delivery is at-least-once.** The operator acknowledges a message on the original consumer only after the republish succeeds. Your consumer can get a message two times, but it does not lose a message.
 - **The subject has a prefix during a split.** Republished messages use the subject `<temporary stream>.<original subject>`. If your consumer routes messages on the exact subject, match on the end of the subject or use a wildcard.
-- **Steal is the default mode.** In `steal` mode, a message that matches goes only to your session. Set `"queue_mode": "mirror"` in the queue entry to also send a copy to the deployed consumer.
-- **What the filter can match.** `message_filter` matches header values with regexes, and all entries must match. `jq_filter` runs a jq program on a JSON object with the fields `subject`, `headers`, and `payload`. `payload` is the parsed message body when the body is valid JSON, and a string when it is not. For example, `"jq_filter": ".payload.id | startswith(\"alice\")"` matches the orders of `alice` by the body.
+- **Split is the default mode.** In the `split` mode of `mirrord up`, a message that matches goes only to your session. Start the session with `mirrord up --mode mirror` (CLI `3.258.0` or later) to also send a copy to the deployed consumer.
+- **The filter of `mirrord up`.** `mirrord up` makes a `jq_filter` for each session. The filter matches a message when a string value in its headers contains `mirrord-session=<key>`. The header name does not matter. A key that is the start of a different key, for example `ali` and `alice`, matches the messages of both keys.
+- **What a custom filter can match.** In a `config_patch`, `message_filter` matches header values with regexes, and all entries must match. `jq_filter` runs a jq program on a JSON object with the fields `subject`, `headers`, and `payload`. `payload` is the parsed message body when the body is valid JSON, and a string when it is not. For example, `"jq_filter": ".payload.id | startswith(\"alice\")"` matches the orders of `alice` by the body.
 - **Durable pull consumers only.** Each queue entry in the `MirrordSplitConfig` describes one stream and one durable pull consumer. The operator does not split a push consumer. If a workload reads through several consumers, add one queue entry for each consumer.
 - **The deployed pods restart.** The operator restarts the workload pods with new environment variable values when the first session starts and when the split ends. The workload manifest does not change.
 - **The names must be in environment variables or files.** The operator reads environment variables only when they are set in the pod template (with `value`, or with `valueFrom` from a ConfigMap) or loaded from a ConfigMap with `envFrom`. Names in mounted config files are also supported.
@@ -572,15 +548,61 @@ The operator records each temporary resource in a `MirrordClusterExternalResourc
 
 To use queue splitting with a real service, change these items. The consumer code does not change.
 
-1. **The target.** Set `targetRef` in the `MirrordSplitConfig` to your Deployment, StatefulSet, or Argo Rollout. Set `target` in `mirrord.json` to the same workload and container.
+1. **The target.** Set `targetRef` in the `MirrordSplitConfig` to your Deployment, StatefulSet, or Argo Rollout. Set `target` in `mirrord-up.yaml` to the same workload and container.
 2. **The name sources.** Change `appConfig.stream` and `appConfig.consumer` to the environment variables that your service reads. If the names are in a mounted config file, use a `volume` source. See [Queue names in mounted config files](../../sharing-the-cluster/queue-splitting.md#queue-names-in-mounted-config-files).
 3. **The connection and auth.** Add the auth properties that your NATS server needs to the `MirrordPropertyList`: `username` and `password`, `token`, `credentials`, or `nkey`. For TLS, use a `tls://` URL or the `tls`, `ca_cert`, `client_cert`, and `client_key` properties. Keep secrets in a Kubernetes Secret and reference them with `valueFrom`.
-4. **The filter field.** Use a header that your producers already send, for example a tenant, a user, or a trace header. If your stack propagates `baggage` or other trace context, you can filter on it.
+4. **The session key in the messages.** Make your producers send `mirrord-session=<key>` in a header. If your stack propagates `baggage`, the session key can go in it. See [Header propagation](../../sharing-the-cluster/header-propagation.md).
 5. **The CRD names.** Give the `MirrordPropertyList` and the `MirrordSplitConfig` names that match your service. To share one property list across namespaces, put it in the operator namespace.
+
+To use your own filter instead of the session key, set `feature.split_queues` in the `config_patch` of the service. A `config_patch` that sets `split_queues` replaces all the queue splits that `mirrord up` makes for that service. This `mirrord-up.yaml` filters on the `x-user` header. `config_patch` needs mirrord CLI `3.251.0` or later:
+
+```yaml
+common:
+  operator: true
+services:
+  order-processor:
+    target:
+      path: deployment/order-processor/container/consumer
+      namespace: nats-demo
+    run:
+      command: ["python3", "consumer.py"]
+    config_patch:
+      feature:
+        split_queues:
+          orders:
+            queue_type: NATS
+            message_filter:
+              x-user: "^{{ key }}$"
+```
+
+The key `orders` is the queue ID from the `MirrordSplitConfig`. `queue_type` is `NATS` for JetStream. Header names are case-sensitive.
 
 ### Core NATS pub/sub
 
-If your service subscribes to plain subjects without JetStream, use the queue kind `natsPubSub` instead. Enable it with the Helm value `operator.natsPubsubSplitting`. It needs operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later. In the `MirrordSplitConfig`, the queue entry uses `kind: natsPubSub` and an `appConfig.subject` source. In `mirrord.json`, use `"queue_type": "NATSPubSub"`.
+If your service subscribes to plain subjects without JetStream, use the queue kind `natsPubSub` instead. Enable it with the Helm value `operator.natsPubsubSplitting`. It needs operator and Helm chart `3.205.0` or later, and mirrord CLI `3.256.0` or later. In the `MirrordSplitConfig`, the queue entry uses `kind: natsPubSub` and an `appConfig.subject` source.
+
+`mirrord up` does not split core NATS subjects automatically. Set the split in the `config_patch` of the service, with `queue_type: NATSPubSub`. This `config_patch` replaces all the automatic queue splits of the service:
+
+```yaml
+common:
+  operator: true
+services:
+  my-subscriber:
+    target:
+      path: deployment/my-subscriber/container/main
+      namespace: my-namespace
+    run:
+      command: ["python3", "subscriber.py"]
+    config_patch:
+      feature:
+        split_queues:
+          events:
+            queue_type: NATSPubSub
+            message_filter:
+              baggage: ".*mirrord-session={{ key }}.*"
+```
+
+The key `events` is the queue ID of the `natsPubSub` entry in the `MirrordSplitConfig`.
 
 {% hint style="warning" %}
 Core NATS stores nothing, so delivery is best-effort. The operator does not replay messages that producers publish while a split starts or stops, or while the operator is not available. Use JetStream for messages that you must not lose.
@@ -613,11 +635,11 @@ helm upgrade mirrord-operator metalbear/mirrord-operator \
 
 ### How do I test a NATS consumer locally without taking messages from staging?
 
-Use mirrord queue splitting with a header filter. The operator sends the messages that match your filter to your local consumer, and the deployed consumer keeps all other messages. You do not need a separate NATS server or a copy of your producers.
+Use mirrord queue splitting with `mirrord up` and a session key. The operator sends the messages with your session key in a header to your local consumer, and the deployed consumer keeps all other messages. You do not need a separate NATS server or a copy of your producers.
 
 ### Does mirrord queue splitting work with NATS JetStream and core NATS?
 
-Yes. For JetStream, use `queue_type: NATS` with a durable pull consumer, and the delivery is at-least-once. For core NATS pub/sub, use `queue_type: NATSPubSub`, and the delivery is best-effort. The two modes have separate Helm values.
+Yes. For JetStream, `mirrord up` splits a durable pull consumer automatically, and the delivery is at-least-once. For core NATS pub/sub, set `queue_type: NATSPubSub` in a `config_patch`, and the delivery is best-effort. The two modes have separate Helm values.
 
 ### Do I need to change my NATS consumer code?
 
@@ -625,7 +647,7 @@ No. The consumer must read the stream and consumer names from environment variab
 
 ### Can I filter NATS messages by the message body?
 
-Yes. Use `jq_filter` in `mirrord.json`. The jq program gets a JSON object with `subject`, `headers`, and `payload`. When the body is valid JSON, `payload` is the parsed body, so a filter such as `.payload.user_id == "test-user"` works.
+Yes. Set a `jq_filter` in the `config_patch` of the service, under `feature.split_queues`. The jq program gets a JSON object with `subject`, `headers`, and `payload`. When the body is valid JSON, `payload` is the parsed body, so a filter such as `.payload.user_id == "test-user"` works.
 
 ### Why does my consumer see a different subject during a split?
 
