@@ -261,7 +261,7 @@ mirrord exec -- curl "mirrord-operator-license-server.mirrord.svc.cluster.local/
 ## Getting an OpenAPI Description of the License Server API
 
 {% hint style="info" %}
-This feature requires at least mirrord-operator-license-server Helm chart version **3.233.0**.
+This feature requires at least mirrord-operator-license-server Helm chart version **3.234.0**.
 {% endhint %}
 
 The license server has an endpoint that returns an OpenAPI 3.1 description of its HTTP API, for use with Swagger UI and other OpenAPI tools. Use it to browse the API or to generate a client for an integration.
