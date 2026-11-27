@@ -11,9 +11,9 @@ tags:
 
 These tutorials show how to test a changed consumer against the real queue in a shared staging cluster. Each tutorial deploys a small sample app, starts a mirrord session with a message filter, and shows which messages go to your local process and which go to the deployed consumer.
 
-## The problem that these tutorials solve
+## The problem that queue splitting solves
 
-A queue does not route a message to a person. When you run a second consumer on a shared queue, the two consumers compete for the messages. Your local consumer gets some of the messages, and your colleagues lose them. When you make a private copy of the queue, you also need a copy of each producer that writes to it.
+When you run a second consumer on a shared queue, the two consumers compete for the messages. Your local consumer gets some of the messages, and your colleagues lose them. Another option is a separate queue for each developer. Then each developer also needs a separate copy of each service that sends messages to the queue.
 
 mirrord queue splitting solves this in the operator. You give a filter, for example a header `x-user: alice`. The operator sends the messages that match the filter to your local consumer, and it sends all other messages to the deployed consumer. Many developers and coding agents can use the same queue at the same time.
 
