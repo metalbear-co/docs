@@ -87,14 +87,6 @@
   * [More](sharing-the-cluster/queue-splitting/more.md)
     * [Migrating to MirrordSplitConfig](sharing-the-cluster/queue-splitting/migrating-to-mirrordsplitconfig.md)
   * [Queue Splitting Status](sharing-the-cluster/queue-splitting/status.md)
-  * [Tutorials](tutorials/queues/README.md "Tutorials")
-    * [How to Test Temporal Workers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-temporal-workers.md "Temporal")
-    * [How to Test RabbitMQ Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-rabbitmq-consumers.md "RabbitMQ")
-    * [How to Test GCP Pub/Sub Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-gcp-pubsub-consumers.md "Google Cloud Pub/Sub")
-    * [How to Test Redis Pub/Sub Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-redis-pubsub-consumers.md "Redis Pub/Sub")
-    * [How to Test NATS Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-nats-consumers.md "NATS")
-    * [How to Test Azure Service Bus Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-azure-service-bus-consumers.md "Azure Service Bus")
-    * [How to Test BullMQ Workers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-bullmq-workers.md "BullMQ")
 * [Header Propagation](sharing-the-cluster/header-propagation.md)
 * [DB Branching](sharing-the-cluster/db-branching.md)
   * [MySQL](sharing-the-cluster/db-branching/mysql.md)
@@ -115,6 +107,17 @@
     * [IAM Authentication](sharing-the-cluster/db-branching/iam-authentication.md)
     * [Schema Migrations](sharing-the-cluster/db-branching/migrations.md)
     * [Branch Management](sharing-the-cluster/db-branching/management.md)
+
+## Tutorials
+
+* [Queue and Workflow Tutorials](tutorials/queues/README.md "Queues and Workflows")
+  * [How to Test Temporal Workers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-temporal-workers.md "Temporal")
+  * [How to Test RabbitMQ Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-rabbitmq-consumers.md "RabbitMQ")
+  * [How to Test GCP Pub/Sub Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-gcp-pubsub-consumers.md "Google Cloud Pub/Sub")
+  * [How to Test Redis Pub/Sub Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-redis-pubsub-consumers.md "Redis Pub/Sub")
+  * [How to Test NATS Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-nats-consumers.md "NATS")
+  * [How to Test Azure Service Bus Consumers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-azure-service-bus-consumers.md "Azure Service Bus")
+  * [How to Test BullMQ Workers in Kubernetes with Queue Splitting](tutorials/queues/how-to-test-bullmq-workers.md "BullMQ")
 
 ## Managing mirrord
 
